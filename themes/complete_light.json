@@ -1,0 +1,140 @@
+{
+  "name": "Complete Dark",
+  "uuid": "F6793D62-3C50-42D0-9119-D417074F691C",
+  "settings": [
+    {
+      "name": "Generic comment",
+      "scope": "comment",
+      "settings":
+      {
+        "foreground": "#0987cb"
+      }
+    },
+
+
+    {
+      "name": "Generic constants",
+      "scope": "constant",
+      "settings":
+      {
+        "foreground": "#e59337"
+      }
+    },
+
+
+    {
+      "name": "Generic entity",
+      "scope": "entity",
+      "settings":
+      {
+        "foreground": "#cc666a"
+      }
+    },
+
+
+    {
+      "name": "Generic invalid",
+      "scope": "invalid",
+      "settings":
+      {
+        "background": "#e03e44",
+        "foreground": "#FFFFFF"
+      }
+    },
+
+
+    {
+      "name": "Generic keyword",
+      "scope": "keyword",
+      "settings":
+      {
+        "fontstyle": "bold",
+        "foreground": "#A0A0A0"
+      }
+    },
+
+
+    {
+      "name": "Generic markup",
+      "scope": "markup",
+      "settings":
+      {
+        "foreground": "#b1e578"
+      }
+    },
+
+
+    {
+      "name": "Generic meta",
+      "scope": "meta",
+      "settings":
+      {
+      }
+    },
+
+
+    {
+      "name": "Generic storage",
+      "scope": "storage",
+      "settings":
+      {
+        "foreground": "#e58dd0"
+      }
+    },
+
+
+    {
+      "name": "Generic string",
+      "scope": "string",
+      "settings":
+      {
+        "foreground": "#e5bd46"
+      }
+    },
+
+
+    {
+      "name": "Generic support",
+      "scope": "support",
+      "settings":
+      {
+        "foreground": "#05b3b5"
+      }
+    },
+
+
+    {
+      "name": "Generic variable",
+      "scope": "variable",
+      "settings":
+      {
+        "foreground": "#63bf8d"
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ]
+}
