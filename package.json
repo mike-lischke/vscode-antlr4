@@ -2,14 +2,10 @@
     "name": "vscode-antlr4",
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
+    "icon": "antlr-logo.png",
     "version": "0.2.0",
     "publisher": "mike-lischke",
-    "licenses": [
-      {
-        "type": "MIT",
-        "url": "http://www.opensource.org/licenses/MIT"
-      }  
-    ],
+    "license": "MIT",
     "repository": {
       "type": "git",
       "url": "https://github.com/mike-lischke/vscode-antlr4"

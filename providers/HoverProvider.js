@@ -1,21 +1,22 @@
 'use strict';
 var vscode = require('vscode');
-var graps = require("antlr4-graps");
 
 var AntlrHoverProvider = (function () {
-    function AntlrHoverProvider(context) {
+    var backend;
+    function AntlrHoverProvider(support) {
+        backend = support;
     }
+
     AntlrHoverProvider.prototype.provideHover = function (document, position, token) {
-        var args = {
-            //file: this.client.asAbsolutePath(document.uri),
-            line: position.line + 1,
-            offset: position.character + 1
-        };
+        var info = backend.infoForSymbol(document.fileName, document.getText(), position);
 
         return new Promise(function (resolve, reject) {
-            resolve(new vscode.Hover({ language: "antlr", value: "query: a | b = c;" }));
+            if (info == "")
+              resolve();
+            else
+            resolve(new vscode.Hover({ language: "antlr", value: info }));
         });
     };
     return AntlrHoverProvider;
 })();
-exports.AntlrHoverProvider = AntlrHoverProvider;
+exports.default = AntlrHoverProvider;
