@@ -12,9 +12,9 @@ Nothing for now.
 
 ## Known Issues
 
-The native module used for parsing (antlr4-graps) doesn't work as 32bit (as required by VS Code, which is still a 32bit app). Hence this extension does not work on Windows currently. The prebuilt Linux binary also seems to have some trouble on certain installations/distros. Need to investigate that yet.
+* The native module used for parsing (antlr4-graps) doesn't work as 32bit on Windows (as required by VS Code, which is still a 32bit app there). Hence this extension does not work on Windows currently. The prebuilt Linux binary also seems to have some trouble on certain installations/distros. Need to investigate that yet. But on OSX everything works nicely.
 
-The complete-light color theme is not fully done yet.
+* The complete-light color theme is not fully done yet.
 
 ## Release Notes
 
