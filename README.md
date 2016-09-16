@@ -6,15 +6,13 @@ This extension for Visual Studio code adds support for ANTLR4 grammars.
 
 This extension adds syntax coloring for ANTLR grammars (.g and .g4 files). Best results are achieved by using one of the provided color themes, but any other color theme will do mostly. With this extension you also get error checking (syntax + symbol checking), go-to-definition and the symbol list for quick navigation. Additionally, hovers (tooltips) are provided to easily show the definition of a symbol ([virtual] lexer tokens, parser rules, modes and channels).
 
-## Requirements
-
-This extension requires the antlr4-graps node module (also written by me) which provides the actual language support. This node module is included in the extension.
-
 ## Extension Settings
 
 Nothing for now.
 
 ## Known Issues
+
+The native module used for parsing (antlr4-graps) doesn't work as 32bit (as required by VS Code, which is still a 32bit app). Hence this extension does not work on Windows currently. The prebuilt Linux binary also seems to have some trouble on certain installations/distros. Need to investigate that yet.
 
 The complete-light color theme is not fully done yet.
 
@@ -33,3 +31,7 @@ Initial vscode-antlr4 project.
 ### 0.3.0
 
 Additions and updates for publishing the extension.
+
+### 0.3.4
+
+Marked the extension as preview and added prebuild binaries.

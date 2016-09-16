@@ -3,9 +3,10 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "antlr-logo.png",
-    "version": "0.3.1",
+    "version": "0.3.4",
     "publisher": "mike-lischke",
     "license": "MIT",
+    "preview": "yes",
     "repository": {
         "type": "git",
         "url": "https://github.com/mike-lischke/vscode-antlr4"
