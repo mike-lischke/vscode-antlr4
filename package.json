@@ -3,12 +3,12 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "antlr-logo.png",
-    "version": "0.2.0",
+    "version": "0.3.1",
     "publisher": "mike-lischke",
     "license": "MIT",
     "repository": {
-      "type": "git",
-      "url": "https://github.com/mike-lischke/vscode-antlr4"
+        "type": "git",
+        "url": "https://github.com/mike-lischke/vscode-antlr4"
     },
     "engines": {
         "vscode": "^1.0.0"
@@ -21,18 +21,28 @@
     ],
     "main": "./extension",
     "contributes": {
-        "languages": [{
-            "id": "antlr",
-            "aliases": ["ANTLR", "antlr"],
-            "extensions": [".g", ".g4"],
-            "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
-            "configuration": "./antlr.configuration.json"
-        }],
-        "grammars": [{
-            "language": "antlr",
-            "scopeName": "source.antlr",
-            "path": "./syntaxes/antlr.json"
-        }],
+        "languages": [
+            {
+                "id": "antlr",
+                "aliases": [
+                    "ANTLR",
+                    "antlr"
+                ],
+                "extensions": [
+                    ".g",
+                    ".g4"
+                ],
+                "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
+                "configuration": "./antlr.configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "antlr",
+                "scopeName": "source.antlr",
+                "path": "./syntaxes/antlr.json"
+            }
+        ],
         "themes": [
             {
                 "label": "Complete Dark",
@@ -47,6 +57,7 @@
         ]
     },
     "scripts": {
+        "compile": "cd ./node_modules/antlr4-graps/ && node-gyp rebuild -j 8 && cd -",
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
     "dependencies": {

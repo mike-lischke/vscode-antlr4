@@ -2,7 +2,7 @@
 
 let vscode = require('vscode');
 
-let graps = require("/Volumes/Extern/Work/projects/antlr4-graps");
+let graps = require("antlr4-graps");
 let backend = new graps.AntlrLanguageSupport();
 
 let hoverProvider = require('./providers/HoverProvider');
