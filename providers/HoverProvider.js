@@ -1,7 +1,7 @@
 'use strict';
 
-var vscode = require('vscode');
-var path = require("path");
+const vscode = require('vscode');
+const path = require("path");
 
 var AntlrHoverProvider = (function () {
     var backend;
@@ -11,7 +11,7 @@ var AntlrHoverProvider = (function () {
     }
 
     AntlrHoverProvider.prototype.provideHover = function (document, position, token) {
-        var info = backend.infoForSymbol(document.fileName, position);
+        var info = backend.infoForSymbol(document.fileName, { line: position.line + 1, character: position.character });
 
         return new Promise(function (resolve, reject) {
             if (info.kind == "")

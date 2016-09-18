@@ -11,7 +11,7 @@ var AntlrDefinitionProvider = (function () {
     }
 
     AntlrDefinitionProvider.prototype.provideDefinition = function (document, position, token) {
-        var info = backend.infoForSymbol(document.fileName, position);
+        var info = backend.infoForSymbol(document.fileName, { line: position.line + 1, character: position.character });
 
         return new Promise(function (resolve, reject) {
             if (info.text == "")
