@@ -58,7 +58,7 @@
         ]
     },
     "scripts": {
-        "compile": "cd ./node_modules/antlr4-graps/ && node-gyp rebuild -j 8 && cd -",
+        "compile": "cd ./node_modules/antlr4-graps/ && node-gyp rebuild -j 8 && cd ../..",
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
     "dependencies": {
