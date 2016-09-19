@@ -4,6 +4,8 @@ This extension for Visual Studio code adds support for ANTLR4 grammars.
 
 ## Features
 
+![](vscode-demo.gif)
+
 This extension adds syntax coloring for ANTLR grammars (.g and .g4 files). Best results are achieved by using one of the provided color themes, but any other color theme will do mostly. With this extension you also get error checking (syntax + symbol checking), go-to-definition and the symbol list for quick navigation. Additionally, hovers (tooltips) are provided to easily show the definition of a symbol ([virtual] lexer tokens, parser rules, modes and channels).
 
 ## Extension Settings
@@ -35,3 +37,7 @@ Additions and updates for publishing the extension.
 ### 0.3.4
 
 Marked the extension as preview and added prebuild binaries.
+
+### 0.3.7
+
+Added a demo animation.
