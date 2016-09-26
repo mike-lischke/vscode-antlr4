@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "antlr-logo.png",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "publisher": "mike-lischke",
     "license": "MIT",
     "preview": "yes",
