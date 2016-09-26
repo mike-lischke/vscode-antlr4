@@ -41,3 +41,12 @@ Marked the extension as preview and added prebuild binaries.
 ### 0.3.7
 
 Added a demo animation.
+
+### 0.4.0
+
+- Updated the symbol handling for the latest change in the antlr4-graps module. We now also show different icons depending on the type of the symbol.
+- Updated prebuilt antlr4-graps binaries for all platforms.
+- Quick navigation has been extended to imports/tokenvocabs and lexer modes.
+- The symbols list now contains some markup to show where a section with a specific lexer mode starts.
+- Fixed also a little mishighlighting in the language syntax file.
+- Added a license file.

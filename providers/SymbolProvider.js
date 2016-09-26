@@ -2,6 +2,7 @@
 
 let vscode = require('vscode');
 let path = require("path");
+let symbolHelper = require("../src/Symbol");
 
 var AntlrSymbolProvider = (function () {
     var backend;
@@ -19,7 +20,17 @@ var AntlrSymbolProvider = (function () {
             for (let symbol of symbols) {
                 let range = new vscode.Range(symbol.start.line - 1, symbol.start.character, symbol.stop.line - 1, symbol.stop.character + 1);
                 let location = new vscode.Location(vscode.Uri.file(basePath + "/" + symbol.source), range);
-                let info = new vscode.SymbolInformation(symbol.name, vscode.SymbolKind.Function, "", location);
+
+                var description = symbolHelper.symbolDescriptionFromEnum(backend, symbol.kind);
+                const kind = symbolHelper.translateSymbolKind(backend, symbol.kind);
+                let totalTextLength = symbol.name.length + description.length + 1;
+                if (symbol.kind == backend.SymbolKind.LexerMode && totalTextLength < 80) {
+                    // Add a marker to show parts which belong to a particular lexer mode.
+                    // Not 100% perfect (i.e. right aligned, as symbol and description use different fonts), but good enough.
+                    var markerWidth = 80 - totalTextLength;
+                    description += " " + "-".repeat(markerWidth);
+                }
+                let info = new vscode.SymbolInformation(symbol.name, kind, description, location);
                 symbolsList.push(info);
             }
             resolve(symbolsList);

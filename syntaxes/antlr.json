@@ -2,7 +2,7 @@
   "name": "ANTLR4",
   "scopeName": "source.antlr",
   "uuid": "ACABDECD-4F22-47D9-A5F4-DBA957A2A1CC",
-  "fileTypes":[
+  "fileTypes": [
     "g",
     "g4"
   ],
@@ -154,6 +154,11 @@
   ],
 
   "repository": {
+    "identifier": {
+      "name": "constant.other.antlr",
+      "match": "\\b\\D\\w*\\b"
+    },
+
     "comments": {
         "patterns": [
           {
@@ -238,13 +243,14 @@
             }
           },
           "patterns": [
-            { "include": "#strings" },
-            { "include": "#comments" },
-            { "include": "#numeric" },
             {
               "name": "variable.other.option.antlr",
               "match": "\\b(superClass|language|tokenVocab|TokenLabelType|contextSuperClass)\\b"
-            }
+            },
+            { "include": "#strings" },
+            { "include": "#comments" },
+            { "include": "#identifier" },
+            { "include": "#numeric" }
           ]
         }
       ]
