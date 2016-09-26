@@ -4,9 +4,16 @@ This extension for Visual Studio code adds support for ANTLR4 grammars.
 
 ## Features
 
-![](vscode-demo.gif)
+![Some of the features](vscode-demo.gif)
 
-This extension adds syntax coloring for ANTLR grammars (.g and .g4 files). Best results are achieved by using one of the provided color themes, but any other color theme will do mostly. With this extension you also get error checking (syntax + symbol checking), go-to-definition and the symbol list for quick navigation. Additionally, hovers (tooltips) are provided to easily show the definition of a symbol ([virtual] lexer tokens, parser rules, modes and channels).
+This extension adds support for ANTLR4 grammar files, which includes these features:
+
+* Syntax coloring for ANTLR grammars (.g and .g4 files).
+* An own color theme, which not only includes all the [recommended groups](http://manual.macromates.com/en/language_grammars), but also some special rules for grammar elements that you don't find in other themes.
+* Syntax and some semantic error checking (symbol matchin)
+* Quick navigation via ctrl/cmd+click.
+* The symbol list for quick navigation (via shift+ctrl/cmd+O).
+* Hovers (tooltips) with symbol information.
 
 ## Extension Settings
 
@@ -14,8 +21,8 @@ Nothing for now.
 
 ## Known Issues
 
-* The native module used for parsing (antlr4-graps) doesn't work as 32bit on Windows (as required by VS Code, which is still a 32bit app there). Hence this extension does not work on Windows currently. The prebuilt Linux binary also seems to have some trouble on certain installations/distros. Need to investigate that yet. But on OSX everything works nicely.
-
+* The native module used for parsing (antlr4-graps) seems to have trouble with Visual Studio Code on Windows. It works nicely in a standalone node session there, though.
+* The prebuilt Linux binary also seems to have some trouble on certain installations/distros. Need to investigate that yet.
 * The complete-light color theme is not fully done yet.
 
 ## Release Notes
@@ -50,3 +57,9 @@ Added a demo animation.
 - The symbols list now contains some markup to show where a section with a specific lexer mode starts.
 - Fixed also a little mishighlighting in the language syntax file.
 - Added a license file.
+
+### 0.4.1
+
+- Bug fix (node module reference).
+- Corrected version number
+
