@@ -13,7 +13,14 @@ let ANTLR = { language: 'antlr', scheme: 'file' };
 
 let diagnosticCollection = vscode.languages.createDiagnosticCollection('antlr');
 
+var DiagnosticTypeMap = new Map();
+
 function activate(context) {
+    DiagnosticTypeMap[backend.DiagnosticType.Hint] = vscode.DiagnosticSeverity.Hint;
+    DiagnosticTypeMap[backend.DiagnosticType.Info] = vscode.DiagnosticSeverity.Information;
+    DiagnosticTypeMap[backend.DiagnosticType.Warning] = vscode.DiagnosticSeverity.Warning;
+    DiagnosticTypeMap[backend.DiagnosticType.Error] = vscode.DiagnosticSeverity.Error;
+
     context.subscriptions.push(vscode.languages.registerHoverProvider(ANTLR, new hoverProvider.default(backend)));
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(ANTLR, new definitionProvider.default(backend)));
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(ANTLR, new symbolProvider.default(backend)));
@@ -26,11 +33,14 @@ exports.deactivate = deactivate;
 
 function processDiagnostic(document) {
     var diagnostics = [];
-    let errors = backend.getErrors(document.fileName);
-    for (let error of errors) {
-        let range = new vscode.Range(error.position.line - 1, error.position.character,
-            error.position.line - 1, error.position.character + error.length);
-        diagnostics.push(new vscode.Diagnostic(range, error.message, vscode.DiagnosticSeverity.Error));
+    let entries = backend.getDiagnostics(document.fileName);
+    for (let entry of entries) {
+        let range = new vscode.Range(entry.position.line - 1, entry.position.character,
+            entry.position.line - 1, entry.position.character + entry.length);
+
+        var diagnostic = new vscode.Diagnostic(range, entry.message, DiagnosticTypeMap[entry.type]);
+        //diagnostic.source = "ANTLR semantic check";
+        diagnostics.push(diagnostic);
     }
     diagnosticCollection.set(document.uri, diagnostics);
 }

@@ -13,7 +13,7 @@ exports.symbolDescriptionFromEnum = function(backend, kind) {
     case backend.SymbolKind.VirtualLexerToken:
       return "Virtual Lexer Token";
     case backend.SymbolKind.FragmentLexerToken:
-      return "Fragement Lexer Token";
+      return "Fragment Lexer Token";
     case backend.SymbolKind.BuiltInLexerToken:
       return "Predefined Lexer Token";
     case backend.SymbolKind.ParserRule:

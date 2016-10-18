@@ -12,13 +12,15 @@ var AntlrSymbolProvider = (function () {
     }
 
     AntlrSymbolProvider.prototype.provideDocumentSymbols = function (document, token) {
-        var symbols = backend.listSymbols(document.fileName);
+        var symbols = backend.listSymbols(document.fileName, false);
 
         return new Promise(function (resolve, reject) {
             let basePath = path.dirname(document.fileName);
             var symbolsList = [];
             for (let symbol of symbols) {
-                let range = new vscode.Range(symbol.start.line - 1, symbol.start.character, symbol.stop.line - 1, symbol.stop.character + 1);
+                let start = symbol.start.line > 0 ? symbol.start.line - 1 : 0;
+                let stop = symbol.stop.line > 0 ? symbol.stop.line - 1 : 0;
+                let range = new vscode.Range(start, symbol.start.character, stop, symbol.stop.character + 1);
                 let location = new vscode.Location(vscode.Uri.file(basePath + "/" + symbol.source), range);
 
                 var description = symbolHelper.symbolDescriptionFromEnum(backend, symbol.kind);
