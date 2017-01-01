@@ -1,2 +1,2 @@
-node_modules/*
-!node_modules/antlr4-graps/
+out
+node_modules

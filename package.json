@@ -3,17 +3,16 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "antlr-logo.png",
-    "version": "0.4.2",
+    "version": "1.0.0",
     "publisher": "mike-lischke",
     "license": "MIT",
-    "preview": "yes",
     "repository": {
         "type": "git",
         "url": "https://github.com/mike-lischke/vscode-antlr4"
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.0.0"
+        "vscode": "^1.5.0"
     },
     "categories": [
         "Languages"
@@ -21,7 +20,7 @@
     "activationEvents": [
         "onLanguage:antlr"
     ],
-    "main": "./extension",
+    "main": "./out/src/extension",
     "contributes": {
         "languages": [
             {
@@ -59,13 +58,21 @@
         ]
     },
     "scripts": {
-        "compile": "cd ./node_modules/antlr4-graps/ && node-gyp rebuild -j 8 && cd ../..",
-        "postinstall": "node ./node_modules/vscode/bin/install"
+        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+	    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
     },
     "dependencies": {
-        "antlr4-graps": "*"
+        "antlr4-graps": "^1.2.0"
     },
     "devDependencies": {
-        "vscode": "^0.11.0"
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.3",
+        "mocha": "^2.3.3",
+        "chai": "^3.5.0",
+        "@types/node": "^6.0.40",
+        "@types/mocha": "^2.2.32",
+        "@types/chai": "^3.4.34"
     }
 }

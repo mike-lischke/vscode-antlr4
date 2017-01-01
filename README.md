@@ -63,3 +63,9 @@ Added a demo animation.
 - Bug fix (node module reference).
 - Corrected version number
 
+### 1.0.0
+
+- Rework of the code - now using Typescript.
+- Adjustments for reworked antlr4-graps nodejs module.
+- Native code compilation is a matter of the past, so problems on e.g. Windows are gone now.
+- No loger considered a preview new.
