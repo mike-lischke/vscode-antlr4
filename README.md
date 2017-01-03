@@ -27,45 +27,49 @@ Nothing for now.
 
 ## Release Notes
 
-### 0.0.1
 
-Initial vscode-antlr4 project.
+###1.0.1 (Jan 2, 2017)
+Some finetuning in the extension package to make it really work without manual tweaking.
 
-### 0.2.0
+###1.0.0 (Jan 1, 2017)
+
+* Rework of the code - now using Typescript.
+* Adjustments for reworked antlr4-graps nodejs module.
+* Native code compilation is a matter of the past, so problems on e.g. Windows are gone now.
+* No longer considered a preview.
+
+###0.4.1
+
+* Bug fix (node module reference).
+* Corrected version number
+
+###0.4.0
+
+* Updated the symbol handling for the latest change in the antlr4-graps module. We now also show different icons depending on the type of the symbol.
+* Updated prebuilt antlr4-graps binaries for all platforms.
+* Quick navigation has been extended to imports/tokenvocabs and lexer modes.
+* The symbols list now contains some markup to show where a section with a specific lexer mode starts.
+* Fixed also a little mishighlighting in the language syntax file.
+* Added a license file.
+
+###0.3.7
+
+Added a demo animation.
+
+###0.3.4
+
+Marked the extension as preview and added prebuild binaries.
+
+###0.3.0
+
+Additions and updates for publishing the extension.
+
+###0.2.0
 
 * full setup of the project
 * added most of the required settings etc.
 * included dark theme is complete
 
-### 0.3.0
+###0.0.1
 
-Additions and updates for publishing the extension.
-
-### 0.3.4
-
-Marked the extension as preview and added prebuild binaries.
-
-### 0.3.7
-
-Added a demo animation.
-
-### 0.4.0
-
-- Updated the symbol handling for the latest change in the antlr4-graps module. We now also show different icons depending on the type of the symbol.
-- Updated prebuilt antlr4-graps binaries for all platforms.
-- Quick navigation has been extended to imports/tokenvocabs and lexer modes.
-- The symbols list now contains some markup to show where a section with a specific lexer mode starts.
-- Fixed also a little mishighlighting in the language syntax file.
-- Added a license file.
-
-### 0.4.1
-
-- Bug fix (node module reference).
-- Corrected version number
-
-### 1.0.0
-
-- Rework of the code - now using Typescript.
-- Adjustments for reworked antlr4-graps nodejs module.
-- Native code compilation is a matter of the past, so problems on e.g. Windows are gone now.
-- No loger considered a preview new.
+Initial vscode-antlr4 project.
