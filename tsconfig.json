@@ -10,12 +10,11 @@
         "isolatedModules": false,
 		"allowSyntheticDefaultImports": true,
 		"experimentalDecorators": true,
-        "lib": [
-            "es6"
-        ]
+		"strictNullChecks": true
     },
     "files": [
         "src/extension.ts",
+        "src/CodeLensProvider.ts",
         "src/DefinitionProvider.ts",
         "src/HoverProvider.ts",
         "src/Symbol.ts",

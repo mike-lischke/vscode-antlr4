@@ -15,6 +15,7 @@ let backend = new AntlrLanguageSupport();
 import { HoverProvider } from '../src/HoverProvider';
 import { DefinitionProvider } from '../src/DefinitionProvider';
 import { SymbolProvider } from '../src/SymbolProvider';
+import { AntlrCodeLensProvider } from '../src/CodeLensProvider';
 
 let ANTLR = { language: 'antlr', scheme: 'file' };
 let diagnosticCollection = languages.createDiagnosticCollection('antlr');
@@ -31,6 +32,7 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerHoverProvider(ANTLR, new HoverProvider(backend)));
     context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new DefinitionProvider(backend)));
     context.subscriptions.push(languages.registerDocumentSymbolProvider(ANTLR, new SymbolProvider(backend)));
+    context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, new AntlrCodeLensProvider(backend)));
 
 }
 
@@ -50,29 +52,31 @@ function processDiagnostic(document: TextDocument) {
 }
 
 workspace.onDidOpenTextDocument((doc: TextDocument) => {
-    if (doc && doc.languageId == "antlr") {
+    if (doc.languageId == "antlr") {
         backend.loadGrammar(doc.fileName);
         processDiagnostic(doc);
     }
 })
 
 workspace.onDidCloseTextDocument((doc: TextDocument) => {
-    if (doc && doc.languageId === "antlr") {
+    if (doc.languageId === "antlr") {
         backend.releaseGrammar(doc.fileName);
     }
 })
 
-var changeTimeout: NodeJS.Timer;
+var changeTimeout: NodeJS.Timer | undefined;
 
 workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
-    if (changeTimeout != null) {
-        clearTimeout(changeTimeout);
-    }
+    if (event.document.languageId === "antlr") {
+        if (changeTimeout) {
+            clearTimeout(changeTimeout);
+        }
 
-    changeTimeout = setInterval(function () {
-        clearTimeout(changeTimeout);
-        changeTimeout = null;
-        backend.reparse(event.document.fileName, event.document.getText());
-        processDiagnostic(event.document);
-    }, 500);
+        changeTimeout = setInterval(function () {
+            clearTimeout(changeTimeout!);
+            changeTimeout = undefined;
+            backend.reparse(event.document.fileName, event.document.getText());
+            processDiagnostic(event.document);
+        }, 500);
+    }
 })

@@ -25,6 +25,9 @@ export class SymbolProvider {
             let basePath = path.dirname(document.fileName);
             var symbolsList = [];
             for (let symbol of symbols) {
+                if (!symbol.definition) {
+                    continue;
+                }
                 let start = symbol.definition.start.row > 0 ? symbol.definition.start.row - 1 : 0;
                 let stop = symbol.definition.end.row > 0 ? symbol.definition.end.row - 1 : 0;
                 let range = new Range(start, symbol.definition.start.column, stop, symbol.definition.end.column + 1);

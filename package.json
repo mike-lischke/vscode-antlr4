@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "antlr-logo.png",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -64,7 +64,8 @@
         "vscode:prepublish": "npm install && npm update && tsc --outDir ./out/src",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "publish": "vsce publish patch",
-        "test": "node ./node_modules/vscode/bin/test"
+        "test": "node ./node_modules/vscode/bin/test",
+        "compile": "tsc --outDir ./out/src"
     },
     "dependencies": {
         "antlr4-graps": "^1.2.0"

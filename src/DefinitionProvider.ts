@@ -28,12 +28,15 @@ export class DefinitionProvider {
                 // to limit the amount of text we only pass on the smallest range which is possible.
                 // Yet we need the correct start position to not break the goto-definition feature.
                 if (info.definition) {
-                    let position = new Position(info.definition.start.row - 1, info.definition.start.column);
-                    resolve(new Location(Uri.file(basePath + "/" + info.source), position));
+                    let range = new Range(
+                        info.definition.start.row - 1, info.definition.start.column,
+                        info.definition.start.row - 1, info.definition.start.column + info.name.length
+                    );
+                    resolve(new Location(Uri.file(basePath + "/" + info.source), range));
                 } else {
                     // Empty for built-in entities.
                     let position = new Position(0, 0);
-                    resolve(new Location(undefined, position));
+                    resolve(new Location(Uri.parse(""), position));
                 }
             }
         });
