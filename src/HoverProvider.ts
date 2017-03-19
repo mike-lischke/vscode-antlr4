@@ -9,7 +9,7 @@
 
 import { TextDocument, Position, CancellationToken, Range, Location, Uri, Hover } from 'vscode';
 
-import { AntlrLanguageSupport } from 'antlr4-graps';
+import { AntlrLanguageSupport } from "antlr4-graps";
 
 import { symbolDescriptionFromEnum } from '../src/Symbol';
 
@@ -25,7 +25,7 @@ export class HoverProvider {
             else {
                 const description = symbolDescriptionFromEnum(info.kind);
                 resolve(new Hover([
-                    "**" + description + "**\n`defined in: " + info.source + "`",
+                    "**" + description + "**\ndefined in: " + info.source,
                     { language: "antlr", value: (info.definition? info.definition.text : "") }
                 ]));
             }

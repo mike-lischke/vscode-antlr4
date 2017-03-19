@@ -14,16 +14,18 @@ This extension adds support for ANTLR4 grammar files, which includes these featu
 * Quick navigation via ctrl/cmd+click.
 * The symbol list for quick navigation (via shift+ctrl/cmd+O).
 * Hovers (tooltips) with symbol information.
+* Railroad diagrams for all types of rules (parser, lexer, fragment lexer).
+* Rule reference counts via code lens.
 
 ## Extension Settings
 
-Nothing for now.
+* "antlr4.referencesCodeLens.enabled", boolean, if true enables code lens feature
+* "antlr4.railroaddiagram.customcss", string, path to a custom css file for railroad diagrams
 
 ## Known Issues
 
-* The complete-light color theme is not fully done yet.
+None
 
 ## Release Notes
-
 
 For details see [Git commit history](https://github.com/mike-lischke/vscode-antlr4/commits/master).

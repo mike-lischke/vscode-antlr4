@@ -7,9 +7,9 @@
 
 "use strict"
 
-import { CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, Command } from 'vscode';
+import { workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, Command } from "vscode";
 
-import { AntlrLanguageSupport, SymbolKind, SymbolInfo } from 'antlr4-graps';
+import { AntlrLanguageSupport, SymbolKind, SymbolInfo } from "antlr4-graps";
 
 class SymbolCodeLens extends CodeLens {
     constructor(public symbol: SymbolInfo, range: Range) {
@@ -22,6 +22,10 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
     constructor(private backend: AntlrLanguageSupport) { }
 
     public provideCodeLenses(document: TextDocument, token: CancellationToken): CodeLens[] | Thenable<CodeLens[]> {
+        if (workspace.getConfiguration("antlr4.referencesCodeLens")["enabled"] !== true) {
+            return [];
+        }
+
         this.documentName = document.fileName;
         let symbols = this.backend.listSymbols(document.fileName, false);
         var lenses = [];

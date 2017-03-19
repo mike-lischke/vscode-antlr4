@@ -10,7 +10,7 @@
 import { TextDocument, Position, CancellationToken, Range, Location, Uri } from 'vscode';
 import * as path from "path";
 
-import { AntlrLanguageSupport } from 'antlr4-graps';
+import { AntlrLanguageSupport } from "antlr4-graps";
 
 export class DefinitionProvider {
     constructor(private backend: AntlrLanguageSupport) { }

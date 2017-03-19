@@ -4,17 +4,21 @@
   "uuid": "ACABDECD-4F22-47D9-A5F4-DBA957A2A1CC",
   "fileTypes": [
     "g",
-    "g4"
-  ],
+    "g4" ],
 
-  "patterns": [
-    { "include": "#strings" },
-    { "include": "#comments" },
-    { "include": "#options-list" },
+  "patterns": [{
+      "include": "#strings"
+    },
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#options-list"
+    },
 
     {
       "name": "keyword.other.antlr",
-      "match": "\\b(import|fragment|lexer|parser|grammar|throws|catch|finally|mode)\\b"
+      "match": "\\b(import|lexer|parser|grammar|throws|catch|finally|mode)\\b"
     },
 
     {
@@ -22,30 +26,36 @@
       "begin": "\\btokens\\b",
       "beginCaptures": {
         "0": {
-          "name":"keyword.other.tokens.antlr"
+          "name": "keyword.other.tokens.antlr"
         }
       },
       "end": "(?<=\\})",
-      "patterns": [
-        { "include": "#lexer-rule-reference" },
-        { "include": "#comments" }
+      "patterns": [{
+          "include": "#lexer-rule-reference"
+        },
+        {
+          "include": "#comments"
+        }
       ]
     },
 
     {
       "name": "meta.channels.antlr",
       "begin": "\\bchannels\\b",
-      "beginCaptures":
-      {
-        "0": { "name": "keyword.other.channels.antlr" }
+      "beginCaptures": {
+        "0": {
+          "name": "keyword.other.channels.antlr"
+        }
       },
       "end": "(?<=\\})",
-      "endCaptures":
-      {
-        "0": { "name": "punctuation.section.options.end.antlr" }
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.options.end.antlr"
+        }
       },
-      "patterns": [
-        { "include": "#comments" },
+      "patterns": [{
+          "include": "#comments"
+        },
         {
           "name": "constant.language.channel.antlr",
           "match": "\\w+"
@@ -55,35 +65,55 @@
 
     {
       "name": "meta.action.named.antlr",
-      "begin": "(\\@[[:alnum:]]+)(::[\\p{L}]+)?",
+      "begin": "(\\@[[:alpha:]]+)(::([\\p{L}]+))?",
       "beginCaptures": {
-        "1": { "name": "entity.name.block.action.named.antlr" },
-        "2": { "name": "support.constant.action.named.antlr" }
+        "1": {
+          "name": "entity.name.block.action.named.antlr"
+        },
+        "2": {
+          "name": "support.constant.action.named.antlr"
+        }
       },
       "end": "(?<=\\})",
-      "patterns": [
-        { "include": "#comments" }
-      ]
+      "patterns": [{
+        "name": "meta.action.block.antlr",
+        "begin": "{",
+        "end": "}",
+        "patterns": [{
+            "include": "#comments"
+          },
+          {
+            "include": "#action"
+          }
+        ]
+      }]
     },
 
     {
       "name": "meta.rule.lexer.antlr",
-      "begin": "[\\p{Lu}][\\p{L}\\p{N}_]*(?=\\s*:)",
+      "begin": "^(\\s*)(fragment)?(\\s*)([[:upper:]][[:alnum:]_]*)",
       "beginCaptures": {
-        "0": { "name": "entity.name.function.lexer.antlr" }
+        "2": {
+          "name": "keyword.other.antlr"
+        },
+        "4": {
+          "name": "entity.name.function.lexer.antlr"
+        }
       },
       "end": "(?<=\\;)",
-      "patterns": [
-        {
+      "patterns": [{
           "name": "meta.action.lexer.antlr",
           "begin": "(->)\\s*([\\p{L}]+)",
           "beginCaptures": {
-            "1": { "name": "entity.other.pointer.antlr" },
-            "2": { "name": "entity.name.function.antlr" }
+            "1": {
+              "name": "entity.other.pointer.antlr"
+            },
+            "2": {
+              "name": "entity.name.function.antlr"
+            }
           },
           "end": "(?<=\\;)",
-          "patterns": [
-            {
+          "patterns": [{
               "match": "[\\w]+",
               "name": "entity.name.function.antlr"
             },
@@ -94,27 +124,46 @@
           ]
         },
 
-        { "include": "#comments" },
-        { "include": "#character-range" },
-        { "include": "#strings" },
-        { "include": "#numeric" },
-        { "include": "#lexer-rule-reference" },
-        { "include": "#predicate" },
-        { "include": "#action" },
-        { "include": "#wildcard-regexp" },
-        { "include": "#regexp-parts" }
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#character-range"
+        },
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#numeric"
+        },
+        {
+          "include": "#lexer-rule-reference"
+        },
+        {
+          "include": "#predicate"
+        },
+        {
+          "include": "#action"
+        },
+        {
+          "include": "#wildcard-regexp"
+        },
+        {
+          "include": "#regexp-parts"
+        }
       ]
     },
 
     {
       "name": "meta.rule.parser.antlr",
-      "begin": "[[:lower:]][[:alnum:]_]*(?=.*?:)",
+      "begin": "^(\\s*)([[:lower:]][[:alnum:]_]*)",
       "beginCaptures": {
-        "0": { "name": "entity.name.function.parser.antlr" }
+        "0": {
+          "name": "entity.name.function.parser.antlr"
+        }
       },
       "end": "(?<=;)",
-      "patterns": [
-        {
+      "patterns": [{
           "name": "variable.other",
           "match": "\\[.*?\\]"
         },
@@ -128,7 +177,7 @@
         },
         {
           "name": "entity.other.rule.option",
-          "match":" <.*?>"
+          "match": " <.*?>"
         },
         {
           "name": "variable.other.antlr",
@@ -139,15 +188,33 @@
           "match": "#.*"
         },
 
-        { "include": "#comments" },
-        { "include": "#strings" },
-        { "include": "#lexer-rule-reference" },
-        { "include": "#parser-rule-reference" },
-        { "include": "#predicate" },
-        { "include": "#action" },
-        { "include": "#wildcard-regexp" },
-        { "include": "#regexp-parts" },
-        { "include": "#options-list" }
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#strings"
+        },
+        {
+          "include": "#lexer-rule-reference"
+        },
+        {
+          "include": "#parser-rule-reference"
+        },
+        {
+          "include": "#predicate"
+        },
+        {
+          "include": "#action"
+        },
+        {
+          "include": "#wildcard-regexp"
+        },
+        {
+          "include": "#regexp-parts"
+        },
+        {
+          "include": "#options-list"
+        }
 
       ]
     }
@@ -160,29 +227,26 @@
     },
 
     "comments": {
-        "patterns": [
-          {
-            "name":"comment.block.antlr",
-            "begin":"\/\\*",
-            "end":"\\*\/"
-          },
-          {
-            "name":"comment.line.double-slash.antlr",
-            "match":"\/\/.*"
-          }
-        ]
+      "patterns": [{
+          "name": "comment.block.antlr",
+          "begin": "\/\\*",
+          "end": "\\*\/"
+        },
+        {
+          "name": "comment.line.double-slash.antlr",
+          "match": "\/\/.*"
+        }
+      ]
     },
 
     "strings": {
       "name": "string.quoted.single.antlr",
       "begin": "'",
       "end": "'",
-      "patterns": [
-        {
-          "match": "\\\\(u\\h{4}|.)",
-          "name": "constant.character.escape.antlr"
-        }
-      ]
+      "patterns": [{
+        "match": "\\\\(u\\h{4}|.)",
+        "name": "constant.character.escape.antlr"
+      }]
     },
 
     "numeric": {
@@ -196,16 +260,14 @@
       "end": "\\}"
     },
 
-    "character-range":{
+    "character-range": {
       "name": "constant.other.antlr",
       "begin": "~?\\[",
       "end": "\\](\\*|\\+|\\?)?",
-      "patterns": [
-        {
-          "match": "\\\\(u\\h{4}|.)",
-          "name": "constant.character.escape.antlr"
-        }
-      ]
+      "patterns": [{
+        "match": "\\\\(u\\h{4}|.)",
+        "name": "constant.character.escape.antlr"
+      }]
     },
 
     "wildcard-regexp": {
@@ -227,33 +289,38 @@
           "name": "keyword.other.options.antlr"
         }
       },
-      "patterns": [
-        {
-          "name": "meta.options.block.antlr",
-          "begin": "\\{",
-          "beginCaptures": {
-            "0": {
-              "name": "punctuation.block.begin.antlr"
-            }
+      "patterns": [{
+        "name": "meta.options.block.antlr",
+        "begin": "\\{",
+        "beginCaptures": {
+          "0": {
+            "name": "punctuation.block.begin.antlr"
+          }
+        },
+        "end": "\\}",
+        "endCaptures": {
+          "0": {
+            "name": "punctuation.block.end.antlr"
+          }
+        },
+        "patterns": [{
+            "name": "variable.other.option.antlr",
+            "match": "\\b(superClass|language|tokenVocab|TokenLabelType|contextSuperClass)\\b"
           },
-          "end": "\\}",
-          "endCaptures": {
-            "0":{
-              "name": "punctuation.block.end.antlr"
-            }
+          {
+            "include": "#strings"
           },
-          "patterns": [
-            {
-              "name": "variable.other.option.antlr",
-              "match": "\\b(superClass|language|tokenVocab|TokenLabelType|contextSuperClass)\\b"
-            },
-            { "include": "#strings" },
-            { "include": "#comments" },
-            { "include": "#identifier" },
-            { "include": "#numeric" }
-          ]
-        }
-      ]
+          {
+            "include": "#comments"
+          },
+          {
+            "include": "#identifier"
+          },
+          {
+            "include": "#numeric"
+          }
+        ]
+      }]
     },
 
     "lexer-rule-reference": {
@@ -267,8 +334,8 @@
     },
 
     "predicate": {
-      "name":"entity.other.predicate.antlr",
-      "match":"\\{.*?\\}\\?"
+      "name": "entity.other.predicate.antlr",
+      "match": "\\{.*?\\}\\?"
     }
   }
 

@@ -11,7 +11,7 @@ import { TextDocument, Position, CancellationToken, Range, Location, Uri, Symbol
 import { SymbolKind as vscSymbolKind } from 'vscode';
 import * as path from "path";
 
-import { AntlrLanguageSupport, SymbolKind } from 'antlr4-graps';
+import { AntlrLanguageSupport, SymbolKind } from "antlr4-graps";
 
 import { symbolDescriptionFromEnum, translateSymbolKind } from './Symbol';
 

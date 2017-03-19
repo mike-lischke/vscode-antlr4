@@ -13,7 +13,7 @@ import * as graps from 'antlr4-graps';
 /**
  * Provides a textual expression for a native symbol kind.
  */
-export function symbolDescriptionFromEnum(kind: number): string { // TODO: graps.SymbolKind is not known here, fix that.
+export function symbolDescriptionFromEnum(kind: graps.SymbolKind): string {
   // Could be localized.
   switch (kind) {
     case graps.SymbolKind.LexerToken:
@@ -47,7 +47,7 @@ export function symbolDescriptionFromEnum(kind: number): string { // TODO: graps
 /**
  * Converts the native symbol kind to a vscode symbol kind.
  */
-export function translateSymbolKind(kind: /* graps.SymbolKind */ number): vscode.SymbolKind { // TODO: same here
+export function translateSymbolKind(kind: graps.SymbolKind): vscode.SymbolKind {
   switch (kind) {
     case graps.SymbolKind.LexerToken:
       return vscode.SymbolKind.Function;
@@ -74,5 +74,38 @@ export function translateSymbolKind(kind: /* graps.SymbolKind */ number): vscode
 
     default:
       return vscode.SymbolKind.Null;
+  }
+}
+
+/**
+ * Converts the native symbol kind to a vscode symbol kind.
+ */
+export function translateCompletionKind(kind:graps.SymbolKind): vscode.CompletionItemKind {
+  switch (kind) {
+    case graps.SymbolKind.LexerToken:
+      return vscode.CompletionItemKind.Function;
+    case graps.SymbolKind.VirtualLexerToken:
+      return vscode.CompletionItemKind.Enum;
+    case graps.SymbolKind.FragmentLexerToken:
+      return vscode.CompletionItemKind.Function;
+    case graps.SymbolKind.BuiltInLexerToken:
+      return vscode.CompletionItemKind.Property;
+    case graps.SymbolKind.ParserRule:
+      return vscode.CompletionItemKind.Method;
+    case graps.SymbolKind.LexerMode:
+      return vscode.CompletionItemKind.Variable;
+    case graps.SymbolKind.BuiltInMode:
+      return vscode.CompletionItemKind.Variable;
+    case graps.SymbolKind.TokenChannel:
+      return vscode.CompletionItemKind.Variable;
+    case graps.SymbolKind.BuiltInChannel:
+      return vscode.CompletionItemKind.Variable;
+    case graps.SymbolKind.Import:
+      return vscode.CompletionItemKind.Module;
+    case graps.SymbolKind.TokenVocab:
+      return vscode.CompletionItemKind.Module;
+
+    default:
+      return vscode.CompletionItemKind.Text;
   }
 }

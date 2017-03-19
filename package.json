@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "antlr-logo.png",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -25,30 +25,25 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "languages": [
-            {
-                "id": "antlr",
-                "aliases": [
-                    "ANTLR",
-                    "antlr"
-                ],
-                "extensions": [
-                    ".g",
-                    ".g4"
-                ],
-                "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
-                "configuration": "./antlr.configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "antlr",
-                "scopeName": "source.antlr",
-                "path": "./syntaxes/antlr.json"
-            }
-        ],
-        "themes": [
-            {
+        "languages": [{
+            "id": "antlr",
+            "aliases": [
+                "ANTLR",
+                "antlr"
+            ],
+            "extensions": [
+                ".g",
+                ".g4"
+            ],
+            "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
+            "configuration": "./antlr.configuration.json"
+        }],
+        "grammars": [{
+            "language": "antlr",
+            "scopeName": "source.antlr",
+            "path": "./syntaxes/antlr.json"
+        }],
+        "themes": [{
                 "label": "Complete Dark",
                 "uiTheme": "vs-dark",
                 "path": "./themes/complete_dark.json"
@@ -58,7 +53,44 @@
                 "uiTheme": "vs",
                 "path": "./themes/complete_light.json"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "ANTLR4 configuration",
+            "properties": {
+                "antlr4.referencesCodeLens.enabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable/disable the references code lens"
+                },
+                "antlr4.railroaddiagram.customcss": {
+                    "type": "string",
+                    "default": "",
+                    "description": "File or web URL for a custom CSS file for railroad diagrams"
+                }
+
+            }
+        },
+        "commands": [{
+                "command": "antlr.railroadDiagram",
+                "title": "Open Railroad Diagram View"
+            },
+            {
+                "command": "antlr.dependencyGraph",
+                "title": "Show Dependency Graph"
+            }
+        ],
+        "menus": {
+            "editor/title/context": [{
+                "when": "resourceLangId == antlr",
+                "command": "antlr.dependencyGraph",
+                "group": "antlr@1"
+            }],
+            "editor/context": [{
+                "when": "resourceLangId == antlr",
+                "command": "antlr.railroadDiagram",
+                "group": "antlr@1"
+            }]
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm install && npm update && tsc --outDir ./out/src",
