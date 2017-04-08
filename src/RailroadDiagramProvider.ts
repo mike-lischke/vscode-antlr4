@@ -13,144 +13,70 @@ import * as vscode from "vscode";
 import { AntlrLanguageSupport } from "antlr4-graps";
 
 export class AntlrRailroadDiagramProvider implements vscode.TextDocumentContentProvider {
+    private waiting: boolean = false;
     private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
-    private defaultCSS = `<style>
-        h1 {
-            font-size: 1.5em;
-        }
+    private positionCache: Map<string, vscode.Position> = new Map();
 
-        /*===== Dark styles =====*/
-        body.vscode-dark svg.railroad-diagram { /* DIAGRAM_CLASS setting */
-            background: rgba(255, 255, 255, 0.05);
-        }
+    constructor(
+        private backend: AntlrLanguageSupport,
+        private context: vscode.ExtensionContext
+    ) { }
 
-        body.vscode-dark svg.railroad-diagram path { /* The connection lines. */
-            stroke-width: 2;
-            stroke: darkgray;
-            fill: rgba(0, 0, 0, 0);
-        }
+    public provideTextDocumentContent(uri: vscode.Uri): Thenable<string> {
+        const sourceUri = vscode.Uri.parse(uri.query);
 
-        body.vscode-dark svg.railroad-diagram text { /* All text except comments. */
-            font: bold 12px Hack, "Source Code Pro", monospace;
-            text-anchor: middle;
-            fill: #404040; /* Use fill instead of color for svg text. */
-        }
+        return vscode.workspace.openTextDocument(sourceUri).then(document => {
+            vscode.window.showTextDocument(document);
 
-        body.vscode-dark svg.railroad-diagram text.comment { /* Comment text */
-            font: italic 12px Hack, "Source Code Pro", monospace;
-            fill: white;
-        }
+            // We need the currently active editor for the caret position.
+            // If there is one we were triggered (or activated) from that.
+            // If not the user probably switched preview windows. In that case we use
+            // the last position stored when we had an active editor.
+            let fileName = document.fileName;
+            let caret: vscode.Position | undefined;
+            let editor = vscode.window.activeTextEditor;
+            if (editor && editor.document == document) {
+                caret = editor.selection.active;
+                this.positionCache.set(fileName, caret);
+            } else if (this.positionCache.has(fileName)) {
+                caret = this.positionCache.get(fileName);
+            }
+            if (!caret) {
+                return "";
+            }
 
-        body.vscode-dark svg.railroad-diagram g.non-terminal rect { /* The non-terminal boxes. */
-            stroke-width: 2;
-            stroke: #404040;
-            fill: rgba(255, 255, 255, 1);
-        }
+            let rule = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+            let scriptPath = path.resolve(__dirname, 'railroad-diagrams.js');
 
-        body.vscode-dark svg.railroad-diagram g.terminal rect { /* The terminal boxes. */
-            stroke-width: 2;
-            stroke: #404040;
-            fill: rgba(255, 255, 255, 0.7);
-        }
+			// Content Security Policy
+			const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
+            let diagram = `<!DOCTYPE html>
+                <html>
+                <head>
+                    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+                    ${this.getStyles(uri)}
+                    <base href="${document.uri.toString(true)}">
+                </head>
 
-        body.vscode-dark svg.railroad-diagram text.diagram-text { /* Multiple choice text, not working atm. */
-            font-size: 12px  Hack, "Source Code Pro", monospace;
-            fill: red;
-        }
+                <body>
+                <script>
 
-        body.vscode-dark svg.railroad-diagram path.diagram-text { /* Multiple choice text, not working atm. */
-            stroke-width: 1;
-            stroke: red;
-            fill: white;
-            cursor: help;
-        }
+                </script>
+                ${this.getScripts(nonce)}
+                Zoom: <span style="font-size: 30px;">
+                    <a onClick="zoom(1.25);" style="cursor: pointer; cursor: hand;">⊕</a>
+                    <a onClick="resetZoom();" style="cursor: pointer; cursor: hand;">⊙</a>
+                    <a onClick="zoom(0.82);" style="cursor: pointer; cursor: hand;">⊖</a>
+                </span>
 
-        body.vscode-dark svg.railroad-diagram g.diagram-text:hover path.diagram-text { /* Multiple choice text, not working atm. */
-            fill: #f00;
-        }
-
-        /*===== Light styles =====*/
-        body.vscode-light svg.railroad-diagram { /* DIAGRAM_CLASS setting */
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        body.vscode-light svg.railroad-diagram path { /* The connection lines. */
-            stroke-width: 2;
-            stroke: darkgray;
-            fill: rgba(0, 0, 0, 0);
-        }
-
-        body.vscode-light svg.railroad-diagram text { /* All text except comments. */
-            font: bold 12px  Hack, "Source Code Pro", monospace;
-            text-anchor: middle;
-            fill: #404040; /* Use fill instead of color for svg text. */
-        }
-
-        body.vscode-light svg.railroad-diagram text.comment { /* Comment text */
-            font: italic 12px  Hack, "Source Code Pro", monospace;
-            fill: #404040;
-        }
-
-        body.vscode-light svg.railroad-diagram g.non-terminal rect { /* The non-terminal boxes. */
-            stroke-width: 2;
-            stroke: #404040;
-            fill: rgba(255, 255, 255, 1);
-        }
-
-        body.vscode-light svg.railroad-diagram g.terminal rect { /* The terminal boxes. */
-            stroke-width: 2;
-            stroke: #404040;
-            fill: rgba(0, 0, 0, 0.1);
-        }
-
-        body.vscode-light svg.railroad-diagram text.diagram-text { /* Multiple choice text, not working atm. */
-            font-size: 12px  Hack, "Source Code Pro", monospace;
-            fill: red;
-        }
-
-        body.vscode-light svg.railroad-diagram path.diagram-text { /* Multiple choice text, not working atm. */
-            stroke-width: 1;
-            stroke: red;
-            fill: red;
-            cursor: help;
-        }
-
-        body.vscode-light svg.railroad-diagram g.diagram-text:hover path.diagram-text { /* Multiple choice text, not working atm. */
-            fill: #f00;
-        }
-
-        </style>
-    `;
-
-    constructor(private backend: AntlrLanguageSupport) { }
-
-    public provideTextDocumentContent(uri: vscode.Uri): string {
-        let editor = vscode.window.activeTextEditor;
-        if (!editor || !(editor.document.languageId === "antlr")) {
-            return "";
-        }
-        let fileName = editor.document.fileName;
-        let caret = editor.selection.active;
-        let rule = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
-        let scriptPath = path.resolve(__dirname, 'railroad-diagrams.js');
-
-        let diagram = `<!DOCTYPE html><html><head>`;
-        let customCSSPath = vscode.workspace.getConfiguration("antlr4.railroaddiagram")["customcss"];
-        if (customCSSPath || customCSSPath.length > 0) {
-            diagram += `<link href="${customCSSPath}" rel="stylesheet" type="text/css" />`;
-        } else {
-            diagram += this.defaultCSS;
-        }
-
-        diagram += `<script src='${scriptPath}'></script></head>
-            <body>
-            <h1 id='ident'>${rule}</h1>
-            <div>
-            <script> ${this.backend.getRRDScript(fileName, rule)}</script>
-            </div>
+                <h1>${rule}</h1>
+                <div id="container" style="transform: scale(1, 1); transform-origin: 0 0;">
+                    <script> ${this.backend.getRRDScript(fileName, rule)}</script>
+                </div>
             </body></html>`;
 
-        return diagram;
+            return diagram;
+        });
     }
 
     get onDidChange(): vscode.Event<vscode.Uri> {
@@ -158,7 +84,80 @@ export class AntlrRailroadDiagramProvider implements vscode.TextDocumentContentP
     }
 
     public update(uri: vscode.Uri) {
-        this._onDidChange.fire(uri);
+        if (!this.waiting) {
+            this.waiting = true;
+            setTimeout(() => {
+                this.waiting = false;
+                this._onDidChange.fire(uri);
+            }, 300);
+        }
     }
 
+    // A few support functions taken from the markdown preview extension.
+	private getMiscPath(file: string): string {
+		return vscode.Uri.file(this.context.asAbsolutePath(path.join('misc', file))).toString();
+	}
+
+	private isAbsolute(p: string): boolean {
+		return path.normalize(p + '/') === path.normalize(path.resolve(p) + '/');
+	}
+
+	private fixHref(resource: vscode.Uri, href: string): string {
+		if (!href) {
+			return href;
+		}
+
+		// Use href if it is already an URL.
+		if (vscode.Uri.parse(href).scheme) {
+			return href;
+		}
+
+		// Use href as file URI if it is absolute.
+		if (this.isAbsolute(href)) {
+			return vscode.Uri.file(href).toString();
+		}
+
+		// Use a workspace relative path if there is a workspace.
+		let rootPath = vscode.workspace.rootPath;
+		if (rootPath) {
+			return vscode.Uri.file(path.join(rootPath, href)).toString();
+		}
+
+		// Otherwise look relative to the grammar file.
+		return vscode.Uri.file(path.join(path.dirname(resource.fsPath), href)).toString();
+	}
+
+	private computeCustomStyleSheetIncludes(uri: vscode.Uri): string {
+		const styles = vscode.workspace.getConfiguration('antlr4.rrd')['customcss'];
+		if (styles && Array.isArray(styles) && styles.length > 0) {
+			return styles.map((style) => {
+				return `<link rel="stylesheet" href="${this.fixHref(uri, style)}" type="text/css" media="screen">`;
+			}).join('\n');
+		}
+		return '';
+	}
+
+	private getStyles(uri: vscode.Uri): string {
+		const baseStyles = [
+			this.getMiscPath('rrd.css')
+		];
+
+		return `${baseStyles.map(href => `<link rel="stylesheet" type="text/css" href="${href}">`).join('\n')}
+			${this.computeCustomStyleSheetIncludes(uri)}`;
+	}
+
+	private getScripts(nonce: string): string {
+		const scripts = [
+            this.getMiscPath('utils.js'),
+            this.getMiscPath("railroad-diagrams.js")
+        ];
+		return scripts
+			.map(source => `<script src="${source}" nonce="${nonce}"></script>`)
+			.join('\n');
+	}
+
+}
+
+export function getRrdUri(uri: vscode.Uri): vscode.Uri {
+    return uri.with({ scheme: 'antlr.rrd', path: uri.fsPath + '.rendered', query: uri.toString() });
 }

@@ -176,7 +176,7 @@ At runtime, these constants can be found on the Diagram class.
 
 	function Diagram(items) {
 		if(!(this instanceof Diagram)) return new Diagram([].slice.call(arguments));
-		FakeSVG.call(this, 'svg', {class: Diagram.DIAGRAM_CLASS});
+		FakeSVG.call(this, 'svg', { xmlns: "http://www.w3.org/2000/svg", class: Diagram.DIAGRAM_CLASS });
 		this.items = items.map(wrapString);
 		this.items.unshift(new Start);
 		this.items.push(new End);
@@ -797,7 +797,7 @@ At runtime, these constants can be found on the Diagram class.
 		FakeSVG.call(this, 'g', {'class': 'terminal'});
 		this.text = text;
 		this.href = href;
-		this.width = text.length * 8 + 20; /* Assume that each char is .5em, and that the em is 16px */
+		this.width = text.length * 8 + 30; /* Assume that each char is .5em, and that the em is 16px */
 		this.height = 0;
 		this.up = 11;
 		this.down = 11;
@@ -815,7 +815,8 @@ At runtime, these constants can be found on the Diagram class.
 		Path(x+gaps[0]+this.width,y).h(gaps[1]).addTo(this);
 		x += gaps[0];
 
-		FakeSVG('rect', {x:x, y:y-11, width:this.width, height:this.up+this.down, rx:10, ry:10}).addTo(this);
+		FakeSVG('rect', {x:x, y:y-11, width:this.width, height:this.up+this.down,
+			rx:Diagram.TERMINAL_ARC_RADIUS, ry:Diagram.TERMINAL_ARC_RADIUS}).addTo(this);
 		var text = FakeSVG('text', {x:x+this.width/2, y:y+4}, this.text);
 		if(this.href)
 			FakeSVG('a', {'xlink:href': this.href}, [text]).addTo(this);
@@ -829,7 +830,7 @@ At runtime, these constants can be found on the Diagram class.
 		FakeSVG.call(this, 'g', {'class': 'non-terminal'});
 		this.text = text;
 		this.href = href;
-		this.width = text.length * 8 + 20;
+		this.width = text.length * 8 + 30;
 		this.height = 0;
 		this.up = 11;
 		this.down = 11;
@@ -847,7 +848,8 @@ At runtime, these constants can be found on the Diagram class.
 		Path(x+gaps[0]+this.width,y).h(gaps[1]).addTo(this);
 		x += gaps[0];
 
-		FakeSVG('rect', {x:x, y:y-11, width:this.width, height:this.up+this.down}).addTo(this);
+		FakeSVG('rect', {x:x, y:y-11, width:this.width, height:this.up+this.down,
+			rx:Diagram.NON_TERMINAL_ARC_RADIUS, ry:Diagram.NON_TERMINAL_ARC_RADIUS}).addTo(this);
 		var text = FakeSVG('text', {x:x+this.width/2, y:y+4}, this.text);
 		if(this.href)
 			FakeSVG('a', {'xlink:href': this.href}, [text]).addTo(this);
@@ -861,7 +863,7 @@ At runtime, these constants can be found on the Diagram class.
 		FakeSVG.call(this, 'g');
 		this.text = text;
 		this.href = href;
-		this.width = text.length * 7 + 10;
+		this.width = text.length * 7 + 15;
 		this.height = 0;
 		this.up = 11;
 		this.down = 11;
@@ -934,5 +936,7 @@ At runtime, these constants can be found on the Diagram class.
 	DIAGRAM_CLASS: 'railroad-diagram',
 	STROKE_ODD_PIXEL_LENGTH: true,
 	INTERNAL_ALIGNMENT: 'left',
+	TERMINAL_ARC_RADIUS: 0,
+	NON_TERMINAL_ARC_RADIUS: 8
 	}
 );

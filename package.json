@@ -2,7 +2,7 @@
     "name": "vscode-antlr4",
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
-    "icon": "antlr-logo.png",
+    "icon": "misc/antlr-logo.png",
     "version": "1.0.3",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
@@ -62,17 +62,26 @@
                     "default": false,
                     "description": "Enable/disable the references code lens"
                 },
-                "antlr4.railroaddiagram.customcss": {
+                "antlr4.rrd.customcss": {
                     "type": "string",
                     "default": "",
                     "description": "File or web URL for a custom CSS file for railroad diagrams"
+                },
+                "antlr4.rrd.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default target folder for railroad diagrams"
                 }
 
             }
         },
         "commands": [{
-                "command": "antlr.railroadDiagram",
-                "title": "Open Railroad Diagram View"
+                "command": "antlr.rrd.singleRule",
+                "title": "Show Railroad Diagram for Rule"
+            },
+            {
+                "command": "antlr.rrd.allRules",
+                "title": "Show Railroad Diagrama for all Rules"
             },
             {
                 "command": "antlr.dependencyGraph",
@@ -87,8 +96,18 @@
             }],
             "editor/context": [{
                 "when": "resourceLangId == antlr",
-                "command": "antlr.railroadDiagram",
-                "group": "antlr@1"
+                "command": "antlr.rrd.singleRule",
+                "group": "antlr.rrd@1"
+            },
+            {
+                "when": "resourceLangId == antlr",
+                "command": "antlr.rrd.allRules",
+                "group": "antlr.rrd@2"
+            },
+            {
+                "when": "resourceLangId == antlr",
+                "command": "antlr.dependencyGraph",
+                "group": "antlr@2"
             }]
         }
     },

@@ -9,7 +9,7 @@
 
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
-    commands, Uri, window, TextEditorSelectionChangeEvent
+    commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor
 } from 'vscode';
 
 import { AntlrLanguageSupport, DiagnosticType } from "antlr4-graps";
@@ -20,7 +20,10 @@ import { DefinitionProvider } from '../src/DefinitionProvider';
 import { SymbolProvider } from '../src/SymbolProvider';
 import { AntlrCodeLensProvider } from '../src/CodeLensProvider';
 import { AntlrCompletionItemProvider } from '../src/CompletionItemProvider';
-import { AntlrRailroadDiagramProvider } from '../src/RailroadDiagramProvider';
+import { AntlrRailroadDiagramProvider, getRrdUri } from '../src/RailroadDiagramProvider';
+
+import * as path from "path";
+import * as fs from "fs";
 
 let ANTLR = { language: 'antlr', scheme: 'file' };
 let diagnosticCollection = languages.createDiagnosticCollection('antlr');
@@ -40,17 +43,29 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, new AntlrCodeLensProvider(backend)));
     //context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend), " "));
 
-    let diagramProvider = new AntlrRailroadDiagramProvider(backend);
-    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr", diagramProvider));
+    let diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
+    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
 
-    let previewUri = Uri.parse('antlr://authority/railroad');
+    context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.singleRule', (editor: TextEditor, edit: TextEditorEdit) => {
+        return commands.executeCommand('vscode.previewHtml', getRrdUri(editor.document.uri), 2,
+            "ANTLR RRD: " + path.basename(editor.document.fileName)).then((success: boolean) => {
+            }, (reason) => {
+                window.showErrorMessage(reason);
+            });
+    }));
 
-    let open = commands.registerTextEditorCommand('antlr.railroadDiagram', (te, t) => {
-        return commands.executeCommand('vscode.previewHtml', previewUri, 2, "ANTLR Rule Railroad Diagram").then((success: boolean) => {
-        }, (reason) => {
-            window.showErrorMessage(reason);
+    context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.allRules', (editor: TextEditor, edit: TextEditorEdit) => {
+        commands.executeCommand('_workbench.htmlPreview.postMessage', getRrdUri(editor.document.uri), "getContent");
+    }));
+
+    context.subscriptions.push(commands.registerCommand('_rrdPreview.getScript', (text: string) => {
+        //const sourceUri = Uri.parse(decodeURIComponent(uri));
+        var stream = fs.createWriteStream("/tmp/test.html");
+        stream.once('open', function (fd) {
+            stream.write(text);
+            stream.end();
         });
-    });
+    }));
 
     workspace.onDidOpenTextDocument((doc: TextDocument) => {
         if (doc.languageId == "antlr") {
@@ -65,30 +80,26 @@ export function activate(context: ExtensionContext) {
         }
     })
 
-    var changeTimeout: NodeJS.Timer | undefined;
-
+    let waiting = false;
     workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
         if (event.document.languageId === "antlr") {
-            if (changeTimeout) {
-                clearTimeout(changeTimeout);
+            if (event.document === window.activeTextEditor.document) {
+                diagramProvider.update(getRrdUri(event.document.uri));
             }
-
-            changeTimeout = setInterval(function () {
-                clearTimeout(changeTimeout!);
-                changeTimeout = undefined;
-                backend.reparse(event.document.fileName, event.document.getText());
-                processDiagnostic(event.document);
-
-                if (event.document === window.activeTextEditor.document) {
-                    diagramProvider.update(previewUri);
-                }
-            }, 500);
+            if (!waiting) {
+                waiting = true;
+                setTimeout(() => {
+                    waiting = false;
+                    backend.reparse(event.document.fileName, event.document.getText());
+                    processDiagnostic(event.document);
+                }, 300);
+            }
         }
     })
 
-    window.onDidChangeTextEditorSelection((e: TextEditorSelectionChangeEvent) => {
-        if (e.textEditor === window.activeTextEditor) {
-            diagramProvider.update(previewUri);
+    window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
+        if (event.textEditor === window.activeTextEditor) {
+            diagramProvider.update(getRrdUri(event.textEditor.document.uri));
         }
     })
 
