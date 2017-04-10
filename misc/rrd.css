@@ -1,10 +1,5 @@
 /* Default CSS for railroad diagrams */
 
-h1 {
-	font-size: 1.5em;
-}
-
-
 /*===== Dark styles =====*/
 
 body.vscode-dark svg.railroad-diagram {
@@ -126,4 +121,45 @@ body.vscode-light svg.railroad-diagram path.diagram-text {
 body.vscode-light svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 	/* Multiple choice text, not working atm. */
 	fill: #f00;
+}
+
+.icon {
+	width: 1em;
+	height: 1em;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-position: center bottom;
+}
+
+body.vscode-light .icon {
+	filter: invert(100%);
+	-webkit-filter: invert(100%);
+}
+
+.icon-box {
+	font-size: 12pt;
+	margin-left: 20px;
+}
+
+.header {
+	position: fixed;
+	font-size: 14pt;
+	z-index: 9999;
+	top: 0;
+	left: 0;
+	right: 0;
+	background-color: var(--background-color);
+	height: 30px;
+}
+
+#container {
+	margin-top: 30px;
+}
+
+svg {
+	display: block;
+}
+
+body {
+	padding-left: 20px;
 }

@@ -4,7 +4,7 @@ This extension for Visual Studio code adds support for ANTLR4 grammars.
 
 ## Features
 
-![Some of the features](vscode-demo.gif)
+![Some of the features](misc/vscode-demo.gif)
 
 This extension adds support for ANTLR4 grammar files, which includes these features:
 
@@ -14,8 +14,10 @@ This extension adds support for ANTLR4 grammar files, which includes these featu
 * Quick navigation via ctrl/cmd+click.
 * The symbol list for quick navigation (via shift+ctrl/cmd+O).
 * Hovers (tooltips) with symbol information.
-* Railroad diagrams for all types of rules (parser, lexer, fragment lexer).
 * Rule reference counts via code lens.
+
+* Railroad diagrams for all types of rules (parser, lexer, fragment lexer).
+![RDD diagrams in action](misc/rrd.gif)
 
 ## Extension Settings
 

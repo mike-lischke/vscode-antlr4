@@ -21,16 +21,30 @@ function resetZoom() {
 	container.style.transform = "scale(" + currentScale + ", " + currentScale + ")";
 }
 
+function save() {
+	// Doesn't save actually, but sends a command to our vscode extension.
+	// Only very view HTML messages are handled in the vscode weblclient (and forwarded to registered listeners).
+	// We choose "did-click-link" (like the markdown preview extension does).
+
+	// The resulting HTML code contains both the RRD source scripts and the generated SVGs. If we would export both
+	// all diagrams would be rendered twice, because the RRD js module would again be called.
+	// Hence we remove all the source scripts before getting the HTML code.
+	[].forEach.call(document.querySelectorAll('.rrdSource'), function (e) {
+		e.parentNode.removeChild(e);
+	});
+	let html = document.getElementsByTagName("html")[0];
+	const args = [html.outerHTML];
+	window.parent.postMessage({
+		command: "did-click-link",
+		data: `command:_rrdPreview.saveDiagram?${encodeURIComponent(JSON.stringify(args))}`
+	}, "file://");
+
+}
+
 (function () {
+	// Used to send messages from the extension to this previewHTML webview.
 	window.addEventListener('message', function (event) {
 		switch (event.data) {
-			case "getContent":
-				let html = document.getElementsByTagName("html")[0];
-				const args = [ html.outerHTML ];
-				window.parent.postMessage({
-					command: "did-click-link",
-					data: `command:_rrdPreview.getScript?${encodeURIComponent(JSON.stringify(args))}`
-				}, "file://");
 		}
 	});
 

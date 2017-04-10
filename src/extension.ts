@@ -47,7 +47,7 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
 
     context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.singleRule', (editor: TextEditor, edit: TextEditorEdit) => {
-        return commands.executeCommand('vscode.previewHtml', getRrdUri(editor.document.uri), 2,
+        return commands.executeCommand('vscode.previewHtml', getRrdUri(editor.document.uri, "single"), 2,
             "ANTLR RRD: " + path.basename(editor.document.fileName)).then((success: boolean) => {
             }, (reason) => {
                 window.showErrorMessage(reason);
@@ -55,16 +55,28 @@ export function activate(context: ExtensionContext) {
     }));
 
     context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.allRules', (editor: TextEditor, edit: TextEditorEdit) => {
-        commands.executeCommand('_workbench.htmlPreview.postMessage', getRrdUri(editor.document.uri), "getContent");
+        return commands.executeCommand('vscode.previewHtml', getRrdUri(editor.document.uri, "full"), 2,
+            "ANTLR RRD: " + path.basename(editor.document.fileName)).then((success: boolean) => {
+            }, (reason) => {
+                window.showErrorMessage(reason);
+            });
     }));
 
-    context.subscriptions.push(commands.registerCommand('_rrdPreview.getScript', (text: string) => {
-        //const sourceUri = Uri.parse(decodeURIComponent(uri));
-        var stream = fs.createWriteStream("/tmp/test.html");
-        stream.once('open', function (fd) {
-            stream.write(text);
-            stream.end();
-        });
+    context.subscriptions.push(commands.registerCommand('_rrdPreview.saveDiagram', (text: string) => {
+        window.showInputBox({ placeHolder: "<Enter full file name here>", prompt: "Enter the name to an html file to save the diagram\n" }).then((value: string) => {
+            if (value) {
+                var stream = fs.createWriteStream(value, { encoding: "utf-8", autoClose: true });
+                stream.on("error", function (error: any) {
+                    window.showErrorMessage("Could not write to file '" + value + "'. " + error);
+                });
+                stream.once('open', function (fd) {
+                    stream.write(text);
+                    stream.end();
+
+                    window.showInformationMessage("Diagram successfully written to file '" + value + "'.");
+                });
+            }
+        })
     }));
 
     workspace.onDidOpenTextDocument((doc: TextDocument) => {
@@ -82,15 +94,13 @@ export function activate(context: ExtensionContext) {
 
     let waiting = false;
     workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
-        if (event.document.languageId === "antlr") {
-            if (event.document === window.activeTextEditor.document) {
-                diagramProvider.update(getRrdUri(event.document.uri));
-            }
+        if (event.document.languageId === "antlr" && event.document === window.activeTextEditor.document) {
             if (!waiting) {
                 waiting = true;
                 setTimeout(() => {
                     waiting = false;
                     backend.reparse(event.document.fileName, event.document.getText());
+                    diagramProvider.update(getRrdUri(event.document.uri, "single"));
                     processDiagnostic(event.document);
                 }, 300);
             }
@@ -99,7 +109,7 @@ export function activate(context: ExtensionContext) {
 
     window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
         if (event.textEditor === window.activeTextEditor) {
-            diagramProvider.update(getRrdUri(event.textEditor.document.uri));
+            diagramProvider.update(getRrdUri(event.textEditor.document.uri, "single"));
         }
     })
 
