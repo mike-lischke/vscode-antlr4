@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "misc/antlr-logo.png",
-    "version": "1.0.3",
+    "version": "1.0.5",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -25,25 +25,30 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "languages": [{
-            "id": "antlr",
-            "aliases": [
-                "ANTLR",
-                "antlr"
-            ],
-            "extensions": [
-                ".g",
-                ".g4"
-            ],
-            "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
-            "configuration": "./antlr.configuration.json"
-        }],
-        "grammars": [{
-            "language": "antlr",
-            "scopeName": "source.antlr",
-            "path": "./syntaxes/antlr.json"
-        }],
-        "themes": [{
+        "languages": [
+            {
+                "id": "antlr",
+                "aliases": [
+                    "ANTLR",
+                    "antlr"
+                ],
+                "extensions": [
+                    ".g",
+                    ".g4"
+                ],
+                "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
+                "configuration": "./antlr.configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "antlr",
+                "scopeName": "source.antlr",
+                "path": "./syntaxes/antlr.json"
+            }
+        ],
+        "themes": [
+            {
                 "label": "Complete Dark",
                 "uiTheme": "vs-dark",
                 "path": "./themes/complete_dark.json"
@@ -72,10 +77,10 @@
                     "default": "",
                     "description": "Default target folder for railroad diagrams"
                 }
-
             }
         },
-        "commands": [{
+        "commands": [
+            {
                 "command": "antlr.rrd.singleRule",
                 "title": "Show Railroad Diagram for Rule"
             },
@@ -89,26 +94,30 @@
             }
         ],
         "menus": {
-            "editor/title/context": [{
-                "when": "resourceLangId == antlr",
-                "command": "antlr.dependencyGraph",
-                "group": "antlr@1"
-            }],
-            "editor/context": [{
-                "when": "resourceLangId == antlr",
-                "command": "antlr.rrd.singleRule",
-                "group": "antlr.rrd@1"
-            },
-            {
-                "when": "resourceLangId == antlr",
-                "command": "antlr.rrd.allRules",
-                "group": "antlr.rrd@2"
-            },
-            {
-                "when": "resourceLangId == antlr",
-                "command": "antlr.dependencyGraph",
-                "group": "antlr@2"
-            }]
+            "editor/title/context": [
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.dependencyGraph",
+                    "group": "antlr@1"
+                }
+            ],
+            "editor/context": [
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.rrd.singleRule",
+                    "group": "antlr.rrd@1"
+                },
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.rrd.allRules",
+                    "group": "antlr.rrd@2"
+                },
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.dependencyGraph",
+                    "group": "antlr@2"
+                }
+            ]
         }
     },
     "scripts": {
