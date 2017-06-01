@@ -935,7 +935,7 @@ At runtime, these constants can be found on the Diagram class.
 	ARC_RADIUS: 10,
 	DIAGRAM_CLASS: 'railroad-diagram',
 	STROKE_ODD_PIXEL_LENGTH: true,
-	INTERNAL_ALIGNMENT: 'left',
+	INTERNAL_ALIGNMENT: 'center',
 	TERMINAL_ARC_RADIUS: 0,
 	NON_TERMINAL_ARC_RADIUS: 8
 	}

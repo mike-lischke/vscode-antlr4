@@ -1,0 +1,23 @@
+/* Default CSS for ATN graphs (dark theme). Contains only the elements that differ from light them. */
+
+body.vscode-dark .marker {
+  fill: #eee;
+  stroke: none;
+}
+
+body.vscode-dark .stateLabel {
+  fill: #202020;
+}
+
+body.vscode-dark .stateTypeLabel {
+  fill: #404040;
+}
+
+body.vscode-dark .linkLabel {
+  fill: #ddd;
+}
+
+body.vscode-dark .state {
+  stroke: white;
+  filter: url(#white-glow);
+}

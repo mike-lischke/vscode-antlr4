@@ -305,7 +305,7 @@
         },
         "patterns": [{
             "name": "variable.other.option.antlr",
-            "match": "\\b(superClass|language|tokenVocab|TokenLabelType|contextSuperClass)\\b"
+            "match": "\\b(superClass|language|tokenVocab|TokenLabelType|contextSuperClass|exportMacro)\\b"
           },
           {
             "include": "#strings"

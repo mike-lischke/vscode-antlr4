@@ -38,7 +38,8 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
                 case SymbolKind.LexerToken:
                 case SymbolKind.LexerMode:
                 case SymbolKind.ParserRule: {
-                    let range = new Range(symbol.definition.start.row - 1, symbol.definition.start.column, symbol.definition.end.row - 1, symbol.definition.end.column);
+                    let range = new Range(symbol.definition.range.start.row - 1, symbol.definition.range.start.column,
+                        symbol.definition.range.end.row - 1, symbol.definition.range.end.column);
                     let lens = new SymbolCodeLens(symbol, range);
                     lenses.push(lens);
                 }

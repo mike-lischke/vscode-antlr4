@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "misc/antlr-logo.png",
-    "version": "1.0.5",
+    "version": "1.1.0",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -15,7 +15,7 @@
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.5.0"
+        "vscode": "^1.11.0"
     },
     "categories": [
         "Languages"
@@ -68,18 +68,75 @@
                     "description": "Enable/disable the references code lens"
                 },
                 "antlr4.rrd.customcss": {
-                    "type": "string",
-                    "default": "",
-                    "description": "File or web URL for a custom CSS file for railroad diagrams"
+                    "type": [],
+                    "default": [],
+                    "description": "List of custom CSS URIs for railroad diagram SVG files"
                 },
                 "antlr4.rrd.saveDir": {
                     "type": "string",
                     "default": "",
-                    "description": "Default target folder for railroad diagrams"
+                    "description": "Default export target folder for railroad diagrams"
+                },
+                "antlr4.atn.customcss": {
+                    "type": [],
+                    "default": [],
+                    "description": "List of custom CSS URIs for ATN graph SVG files"
+                },
+                "antlr4.atn.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default export target folder for ATN SVG files"
+                },
+                "antlr4.atn.maxLabelCount": {
+                    "type": "number",
+                    "default": 3,
+                    "description": "Max number of labels displayed on a transition in an ATN graph"
+                },
+                "antlr4.generation.mode": {
+                    "type": "string",
+                    "default": "internal",
+                    "description": "Determines the mode for code generation (none at all, only for internal use, also for external use)",
+                    "enum": [
+                        "none", "internal", "external"
+                    ]
+                },
+                "antlr4.generation.outputDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Output dir where all output is generated (relative to grammar or absolute path)"
+                },
+                "antlr4.generation.importDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Location to import grammars from (relative to a grammar or absolute path)"
+                },
+                "antlr4.generation.package": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Package/namespace for generated code"
+                },
+                "antlr4.generation.language": {
+                    "type": "string",
+                    "default": "Java",
+                    "description": "Specifies the target language for the generated code, overriding what is specified in the grammar"
+                },
+                "antlr4.generation.listeners": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Also create listeners on code generation"
+                },
+                "antlr4.generation.visitors": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Also create visitors on code generation"
                 }
             }
         },
         "commands": [
+            {
+                "command": "antlr.atn.singleRule",
+                "title": "Show ATN graph for Rule"
+            },
             {
                 "command": "antlr.rrd.singleRule",
                 "title": "Show Railroad Diagram for Rule"
@@ -87,17 +144,13 @@
             {
                 "command": "antlr.rrd.allRules",
                 "title": "Show Railroad Diagrama for all Rules"
-            },
-            {
-                "command": "antlr.dependencyGraph",
-                "title": "Show Dependency Graph"
             }
         ],
         "menus": {
             "editor/title/context": [
                 {
                     "when": "resourceLangId == antlr",
-                    "command": "antlr.dependencyGraph",
+                    "command": "antlr.rrd.allRules",
                     "group": "antlr@1"
                 }
             ],
@@ -114,8 +167,8 @@
                 },
                 {
                     "when": "resourceLangId == antlr",
-                    "command": "antlr.dependencyGraph",
-                    "group": "antlr@2"
+                    "command": "antlr.atn.singleRule",
+                    "group": "antlr.atn@1"
                 }
             ]
         }
@@ -128,15 +181,19 @@
         "compile": "tsc --outDir ./out/src"
     },
     "dependencies": {
-        "antlr4-graps": "^1.2.0"
+        "antlr4-graps": "^1.2.0",
+        "d3": "^4.8.0",
+        "fs-extra": "^3.0.0"
     },
     "devDependencies": {
         "typescript": "^2.0.3",
-        "vscode": "^1.0.3",
+        "vscode": "^1.1.0",
         "mocha": "^2.3.3",
         "chai": "^3.5.0",
         "@types/node": "^6.0.40",
         "@types/mocha": "^2.2.32",
-        "@types/chai": "^3.4.34"
+        "@types/chai": "^3.4.34",
+        "@types/d3": "^4.8.0",
+        "@types/fs-extra": "^2.1.0"
     }
 }

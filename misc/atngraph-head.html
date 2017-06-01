@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    ##header##
+</head>
+<body>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <div class="header">##objectName##
+      <span class="icon-box">
+          | <a onClick="resetTransformation();" style="cursor: pointer; cursor: hand;">Reset display</a>
+          | <a onClick="exportToSVG('atn', '##objectName##');" style="cursor: pointer; cursor: hand;">Save to file: <span class="icon save" title="Save graph to svg file"></span></a>
+      </span>
+  </div>
+
+<div id="svg-container">
+
+<svg>
+  <defs>
+    <filter id="white-glow" x="-1000%" y="-1000%" width="2000%" height="2000%">
+      <feFlood result="flood" flood-color="#ffffff" flood-opacity="0.15"></feFlood>
+      <feComposite in="flood" result="mask" in2="SourceGraphic" operator="in"></feComposite>
+      <feMorphology in="mask" result="dilated" operator="dilate" radius="5"></feMorphology>
+      <feGaussianBlur in="dilated" result="blurred" stdDeviation="5"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="blurred"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+
+    <filter id="black-glow" x="-5000%" y="-5000%" width="10000%" height="10000%">
+      <feFlood result="flood" flood-color="#000000" flood-opacity="0.15"></feFlood>
+      <feComposite in="flood" result="mask" in2="SourceGraphic" operator="in"></feComposite>
+      <feMorphology in="mask" result="dilated" operator="dilate" radius="4"></feMorphology>
+      <feGaussianBlur in="dilated" result="blurred" stdDeviation="5"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="blurred"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+
+    <marker id="transitionEndCircle" viewBox="0 -5 10 10" refX="31" refY="0" markerWidth="7" markerHeight="7"
+      orient="auto" class="marker">
+      <path d="M0,-4L10,0L0,4" />
+    </marker>
+    <marker id="transitionEndRect" viewBox="0 -5 10 10" refX="10" refY="0" markerWidth="7" markerHeight="7"
+      orient="auto" class="marker">
+      <path d="M0,-4L10,0L0,4" />
+    </marker>
+  </defs>
+
+</svg>
+
+<script>
+  var objectName = "##objectName##";
+  const maxLabelCount = ##maxLabelCount##;

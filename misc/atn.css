@@ -1,0 +1,84 @@
+/* Default CSS for ATN graphs (light theme + svg) */
+
+.transition {
+  fill: none;
+  stroke: #AAA;
+  stroke-width: 2px;
+}
+
+.marker {
+  fill: #999;
+  stroke: none;
+}
+
+.stateLabel {
+  font: bold 11pt "Helvetica Neue", Arial, sans-serif;
+  fill: white;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.stateTypeLabel {
+  font: bold 7pt monospace;
+  fill: #EEE;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.linkLabel {
+  font: bold 9pt "Helvetica Neue", Arial, sans-serif;
+  fill: #606060;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.state {
+  stroke: #505050;
+  stroke-width: 3px;
+  cursor: move;
+  pointer-events: all;
+  /*filter: url(#black-glow);*/
+}
+
+.state.BASIC {
+  fill: #AAA;
+}
+.state.START {
+  fill: #36bde0;
+}
+.state.BSTART {
+  fill: #f39900;
+}
+.state.PBSTART {
+  fill: #98c000;
+}
+.state.SBSTART {
+  fill: #607dbd;
+}
+.state.TSTART {
+  fill: #ffd300;
+}
+.state.STOP {
+  fill: #2baa5b;
+}
+.state.BEND {
+  fill: #c2c269;
+}
+.state.SLBACK {
+  fill: #608b4e;
+}
+.state.SLENTRY {
+  fill: #a260cb;
+}
+.state.PLBACK {
+  fill: #517979;
+}
+.state.LEND {
+  fill: #9b90c3;
+}
+.state.RULE {
+  fill: #b73645;
+}
+.state.RULE.recursive {
+  fill: #36bde0;
+}

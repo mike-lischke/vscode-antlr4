@@ -7,7 +7,7 @@
 
 'use strict';
 
-import { TextDocument, Position, CancellationToken, Range, Location, Uri, Hover } from 'vscode';
+import { TextDocument, Position, CancellationToken, Range, Location, Uri, Hover, ProviderResult } from 'vscode';
 
 import { AntlrLanguageSupport } from "antlr4-graps";
 
@@ -16,19 +16,16 @@ import { symbolDescriptionFromEnum } from '../src/Symbol';
 export class HoverProvider {
     constructor(private backend: AntlrLanguageSupport) { }
 
-    public provideHover(document: TextDocument, position: Position, token: CancellationToken) {
-        var info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1);
+    public provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+        let info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1, true);
+        if (!info) {
+            return undefined;
+        }
 
-        return new Promise(function (resolve, reject) {
-            if (!info)
-                resolve();
-            else {
-                const description = symbolDescriptionFromEnum(info.kind);
-                resolve(new Hover([
-                    "**" + description + "**\ndefined in: " + info.source,
-                    { language: "antlr", value: (info.definition? info.definition.text : "") }
-                ]));
-            }
-        });
+        const description = symbolDescriptionFromEnum(info.kind);
+        return new Hover([
+            "**" + description + "**\ndefined in: " + info.source,
+            { language: "antlr", value: (info.definition? info.definition.text : "") }
+        ]);
     };
 }
