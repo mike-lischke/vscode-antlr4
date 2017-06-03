@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "misc/antlr-logo.png",
-    "version": "1.1.0",
+    "version": "1.1.4",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -97,7 +97,9 @@
                     "default": "internal",
                     "description": "Determines the mode for code generation (none at all, only for internal use, also for external use)",
                     "enum": [
-                        "none", "internal", "external"
+                        "none",
+                        "internal",
+                        "external"
                     ]
                 },
                 "antlr4.generation.outputDir": {
