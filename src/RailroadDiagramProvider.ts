@@ -20,8 +20,6 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
         const command = uri.fragment;
 
         return vscode.workspace.openTextDocument(sourceUri).then(document => {
-            vscode.window.showTextDocument(document);
-
             // We need the currently active editor for the caret position.
             // If there is one we were triggered (or activated) from that.
             // If not the user probably switched preview windows. In that case we use
