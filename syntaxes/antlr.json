@@ -257,7 +257,10 @@
     "action": {
       "name": "entity.other.block.antlr",
       "begin": "\\{",
-      "end": "\\}"
+      "end": "\\}",
+      "patterns" : [
+        { "include" : "#action" }
+      ]
     },
 
     "character-range": {
