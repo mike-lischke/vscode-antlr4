@@ -19,7 +19,6 @@ This extension adds support for ANTLR4 grammar files, which includes these featu
 * Railroad diagrams for all types of rules (parser, lexer, fragment lexer).
 ![Some of the features](misc/antlr4-3.png)
 * ATN graphs for all rule types. This is a visualization of the internal ATN that drives lexers + parsers. It uses D3.js for layout and interaction. Nodes can be repositioned with the mouse and you can drag and zoom the image. The transformation and position state is restored when reopening a graph.
-
 ![Some of the features](misc/antlr4-4.png)
 
 ## Extension Settings
@@ -47,10 +46,14 @@ None
 
 ## What's next?
 
-- Show reference list for a symobl
-- Code formatter
-- Refactoring (rename symbols, remove left recursion etc.)
-- Debugging support
+* Show reference list for a symobl
+* Code formatter
+* Refactoring (rename symbols, remove left recursion etc.)
+* Live grammar interpreter for grammar preview
+    * Specify test input (file or a string) + a start rule
+    * Token list
+    * Parse tree display
+    * Call stack
 
 ## Release Notes
 

@@ -80,30 +80,38 @@ export function translateSymbolKind(kind: graps.SymbolKind): vscode.SymbolKind {
 /**
  * Converts the native symbol kind to a vscode symbol kind.
  */
-export function translateCompletionKind(kind:graps.SymbolKind): vscode.CompletionItemKind {
+export function translateCompletionKind(kind: graps.SymbolKind): vscode.CompletionItemKind {
   switch (kind) {
+    case graps.SymbolKind.Keyword:
+      return vscode.CompletionItemKind.Keyword;
+
     case graps.SymbolKind.LexerToken:
-      return vscode.CompletionItemKind.Function;
+      return vscode.CompletionItemKind.Text;
     case graps.SymbolKind.VirtualLexerToken:
-      return vscode.CompletionItemKind.Enum;
+      return vscode.CompletionItemKind.Text;
     case graps.SymbolKind.FragmentLexerToken:
-      return vscode.CompletionItemKind.Function;
+      return vscode.CompletionItemKind.Text;
     case graps.SymbolKind.BuiltInLexerToken:
-      return vscode.CompletionItemKind.Property;
+      return vscode.CompletionItemKind.Constant;
+
     case graps.SymbolKind.ParserRule:
       return vscode.CompletionItemKind.Method;
     case graps.SymbolKind.LexerMode:
-      return vscode.CompletionItemKind.Variable;
+      return vscode.CompletionItemKind.Enum;
     case graps.SymbolKind.BuiltInMode:
-      return vscode.CompletionItemKind.Variable;
+      return vscode.CompletionItemKind.Constant;
     case graps.SymbolKind.TokenChannel:
-      return vscode.CompletionItemKind.Variable;
+      return vscode.CompletionItemKind.Property;
     case graps.SymbolKind.BuiltInChannel:
-      return vscode.CompletionItemKind.Variable;
+      return vscode.CompletionItemKind.Constant;
     case graps.SymbolKind.Import:
       return vscode.CompletionItemKind.Module;
     case graps.SymbolKind.TokenVocab:
       return vscode.CompletionItemKind.Module;
+
+    case graps.SymbolKind.Action:
+    case graps.SymbolKind.Predicate:
+      return vscode.CompletionItemKind.Snippet;
 
     default:
       return vscode.CompletionItemKind.Text;

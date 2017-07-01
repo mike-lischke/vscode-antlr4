@@ -72,7 +72,8 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new DefinitionProvider(backend)));
     context.subscriptions.push(languages.registerDocumentSymbolProvider(ANTLR, new SymbolProvider(backend)));
     context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, new AntlrCodeLensProvider(backend)));
-    //context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend), " "));
+    context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend),
+        " ", ":", "@", "<", "{", "["));
 
     let diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
     context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
@@ -214,12 +215,13 @@ export function activate(context: ExtensionContext) {
         }
 
         if (event.document.languageId === "antlr" && event.document === window.activeTextEditor.document) {
+            backend.setText(event.document.fileName, event.document.getText());
             if (changeTimer) {
                 clearTimeout(changeTimer);
             }
             changeTimer = setTimeout(() => {
                 changeTimer = null;
-                backend.reparse(event.document.fileName, event.document.getText());
+                backend.reparse(event.document.fileName);
                 diagramProvider.update(getTextProviderUri(event.document.uri, "rrd", "single"));
                 processDiagnostic(event.document);
             }, 300);
@@ -329,7 +331,7 @@ export function activate(context: ExtensionContext) {
                     for (let file of files) {
                         if (file.endsWith(".interp")) {
                             let targetFile = path.join(antlrPath, file);
-                            fs.copySync(path.join(outputDir, file), targetFile, { clobber: true });
+                            fs.copySync(path.join(outputDir, file), targetFile, { overwrite: true });
                             fs.removeSync(targetFile);
                         }
                     }
