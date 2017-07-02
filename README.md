@@ -9,17 +9,18 @@ This extension adds support for ANTLR4 grammar files, which includes these featu
 * Syntax coloring for ANTLR grammars (.g and .g4 files).
 ![Some of the features](misc/antlr4-1.png)
 * An own color theme, which not only includes all the [recommended groups](http://manual.macromates.com/en/language_grammars), but also some special rules for grammar elements that you don't find in other themes.
-* Parser generation on save.
-* Syntax and some semantic error checking (symbol matching)
-![Some of the features](misc/antlr4-2.png)
+* **Parser generation** on save.
+* Syntax and some semantic error checking (symbol matching) done internally, for quick feedback on edit and/or if no parser generation is available.
+* ![Some of the features](misc/antlr4-2.png)
+* **Code completion**.
 * Quick navigation via ctrl/cmd+click.
 * The symbol list for quick navigation (via shift+ctrl/cmd+O).
 * Hovers (tooltips) with symbol information.
 * Rule reference counts via code lens.
-* Railroad diagrams for all types of rules (parser, lexer, fragment lexer).
+* **Railroad diagrams** for all types of rules (parser, lexer, fragment lexer).
 ![Some of the features](misc/antlr4-3.png)
 * ATN graphs for all rule types. This is a visualization of the internal ATN that drives lexers + parsers. It uses D3.js for layout and interaction. Nodes can be repositioned with the mouse and you can drag and zoom the image. The transformation and position state is restored when reopening a graph.
-![Some of the features](misc/antlr4-4.png)
+* ![Some of the features](misc/antlr4-4.png)
 
 ## Extension Settings
 
