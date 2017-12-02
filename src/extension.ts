@@ -24,6 +24,7 @@ import { AntlrCodeLensProvider } from './CodeLensProvider';
 import { AntlrCompletionItemProvider } from './CompletionItemProvider';
 import { AntlrRailroadDiagramProvider } from './RailroadDiagramProvider';
 import { AntlrATNGraphProvider, ATNStateEntry } from "./ATNGraphProvider";
+import { AntlrFormattingProvider } from "./FormattingProvider";
 
 import { Utils } from "./Utils";
 import { getTextProviderUri } from "./TextContentProvider";
@@ -74,6 +75,7 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, new AntlrCodeLensProvider(backend)));
     context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend),
         " ", ":", "@", "<", "{", "["));
+    context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider(ANTLR, new AntlrFormattingProvider(backend)));
 
     let diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
     context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
@@ -106,6 +108,13 @@ export function activate(context: ExtensionContext) {
             }, (reason) => {
                 window.showErrorMessage(reason);
             });
+    }));
+
+    // Sentence generation.
+    // This is currently not enabled in the UI. This generation can too easily go endless if the grammar is highly recursive.
+    // Need to get an idea how to make this really usable.
+    context.subscriptions.push(commands.registerTextEditorCommand('antlr.tools.generateSentences', (editor: TextEditor, edit: TextEditorEdit) => {
+        return workspace.openTextDocument(editor.document.uri).then(doc => window.showTextDocument(doc, editor.viewColumn! + 1));
     }));
 
     // Used for debugging in JS files (console.log doesn't have any effect).
@@ -200,11 +209,12 @@ export function activate(context: ExtensionContext) {
             backend.loadGrammar(doc.fileName);
             regenerateBackgroundData(doc);
         }
-    })
+    });
 
     workspace.onDidCloseTextDocument((document: TextDocument) => {
         if (document.languageId === "antlr" && document.uri.scheme === "file") {
             backend.releaseGrammar(document.fileName);
+            diagnosticCollection.set(document.uri, []);
         }
     })
 

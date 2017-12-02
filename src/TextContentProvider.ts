@@ -14,12 +14,13 @@ import { AntlrLanguageSupport, SymbolKind } from "antlr4-graps";
 import { Utils } from "./Utils";
 
 /**
- * The base class for all text document content provides, holding a number of support members needed them.
+ * The base class for all text document content providers, holding a number of support members needed them.
  */
 export class AntlrTextContentProvider implements vscode.TextDocumentContentProvider {
     private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
     protected positionCache: Map<string, vscode.Position> = new Map();
     protected currentRule: string | undefined;
+    protected currentRuleIndex: number | undefined;
     protected lastUri: vscode.Uri | undefined; // Vscode doesn't tell us which editor lost activation on switch.
 
     constructor(
@@ -96,7 +97,7 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
      * Queries the current text editor for a caret position (or loads that from the position cache)
      * and tries to get a rule from the backend.
      */
-    protected findCurrentRule(editorUri: vscode.Uri): string | undefined {
+    protected findCurrentRule(editorUri: vscode.Uri): [string | undefined, number | undefined] {
         // We need the currently active editor for the caret position.
         // If there is one we were triggered (or activated) from that.
         // If not the user probably switched preview windows. In that case we use
@@ -111,10 +112,13 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
             caret = this.positionCache.get(fileName);
         }
         if (!caret) {
-            return;
+            return [undefined, undefined];
         }
 
-        return this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+        let result = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+        if (!result)
+            return [undefined, undefined];
+        return result;
     }
 }
 

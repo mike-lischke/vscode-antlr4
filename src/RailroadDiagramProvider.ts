@@ -37,9 +37,13 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 return "";
             }
 
-            let rule = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
-            if (!rule) {
+            let [ruleName, ruleIndex] = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+            if (!ruleName) {
                 return "";
+            }
+
+            if (!ruleName) {
+                ruleName = "?";
             }
 
             let baseName = path.basename(fileName, path.extname(fileName));
@@ -76,8 +80,26 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                             height: 30px;
                         }
 
+                        .rule-initial {
+                            font-size: 28pt;
+                            color: rgba(10, 188, 80, 0.75);
+                            font-weight: bold;
+                            vertical-align: middle;
+                        }
+
+                        .rule-initial-small {
+                            font-size: 16pt;
+                            color: rgba(10, 188, 80, 0.75);
+                            font-weight: bold;
+                            vertical-align: middle;
+                        }
+
+                        .rule-index {
+                            font-size: 8pt;
+                        }
+
                         body.vscode-light .icon { filter: invert(100%); -webkit-filter: invert(100%); }
-                        #container { margin-top: 30px; }
+                        #container { margin-top: 40px; }
                         svg { display: block; }
                         body { padding-left: 20px; }
                         .icon-box { font: 10pt monospace; margin-left: 0px; }
@@ -94,7 +116,7 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 diagram += `
                     <div class="header">
                         <span class="icon-box">
-                            <a onClick="exportToHTML('rrd', '${baseName}');" style="cursor: pointer; cursor: hand;">Save all diagrams in an HTML file <span class="icon save" title="Save to disk"></span></a>
+                            <a onClick="exportToHTML('rrd', '${baseName}');" style="cursor: pointer; cursor: hand; margin-left: 15px;""><span class="rule-initial-small">⤑</span> Save all diagrams in an HTML file <span class="icon save" title="Save to disk"></span></a>
                         </span>
                     </div>
                     <div id="container">`;
@@ -110,13 +132,13 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 diagram += `</div>`;
             } else {
                 diagram += `
-                    <div class="header">${rule}
+                    <div class="header"><span class="rule-initial">Ⓡ</span>&nbsp;&nbsp;${ruleName} <span class="rule-index">(rule index: ${ruleIndex})</span>
                         <span class="icon-box">
-                            <a onClick="exportToSVG('rrd', '${rule}');" style="cursor: pointer; cursor: hand;">| Save to file: <span class="icon save" title="Save to disk"></span></a>
+                            <a onClick="exportToSVG('rrd', '${ruleName}');" style="cursor: pointer; cursor: hand; margin-left: 15px;"><span class="rule-initial-small">⤑</span> Save to file</a>
                         </span>
                     </div>
                     <div id="container" style="transform: scale(1, 1); transform-origin: 0 0; width: 100%">
-                        <script>${this.backend.getRRDScript(fileName, rule)}</script>
+                        <script>${this.backend.getRRDScript(fileName, ruleName)}</script>
                     </div>
                 `;
             }

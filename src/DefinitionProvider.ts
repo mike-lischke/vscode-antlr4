@@ -36,7 +36,7 @@ export class DefinitionProvider {
         } else {
             // Empty for built-in entities.
             let position = new Position(0, 0);
-             return new Location(Uri.parse(""), position);
+            return new Location(Uri.parse(""), position);
         }
     };
 };

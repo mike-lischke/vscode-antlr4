@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "misc/antlr-logo.png",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -131,6 +131,141 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Also create visitors on code generation"
+                },
+                "antlr4.format.alignTrailingComments": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, aligns trailing comments"
+                },
+                "antlr4.format.allowShortBlocksOnASingleLine": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Allows contracting short blocks to a single line"
+                },
+                "antlr4.format.breakBeforeBraces": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When true start predicates and actions on a new line"
+                },
+                "antlr4.format.columnLimit": {
+                    "type": "number",
+                    "default": 100,
+                    "description": "The character count after which automatic line breaking takes place"
+                },
+                "antlr4.format.continuationIndentWidth": {
+                    "type": "number",
+                    "default": 4,
+                    "description": "Indentation for line continuation (only used if useTab is false)"
+                },
+                "antlr4.format.indentWidth": {
+                    "type": "number",
+                    "default": 4,
+                    "description": "Character count for indentation (if useTab is false)"
+                },
+                "antlr4.format.keepEmptyLinesAtTheStartOfBlocks": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, empty lines at the start of blocks is kept"
+                },
+                "antlr4.format.maxEmptyLinesToKeep": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "The maximum number of consecutive empty lines to keep"
+                },
+                "antlr4.format.reflowComments": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Reformat comments to fit the column limit"
+                },
+                "antlr4.format.spaceBeforeAssignmentOperators": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables spaces around operators"
+                },
+                "antlr4.format.tabWidth": {
+                    "type": "number",
+                    "default": 4,
+                    "description": "Multiples of this value determine tab stops in a document"
+                },
+                "antlr4.format.useTab": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use tabs for indentation"
+                },
+                "antlr4.format.alignColons": {
+                    "type": "string",
+                    "default": "none",
+                    "enum": [
+                        "none",
+                        "trailing",
+                        "hanging"
+                    ],
+                    "description": "Align colons among rules (scope depends on groupedAlignments)"
+                },
+                "antlr4.format.singleLineOverrulesHangingColon": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Single line mode overrides hanging colon setting (applies also to alignSemicolons)"
+                },
+                "antlr4.format.allowShortRulesOnASingleLine": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Allows contracting short rules on a single line (short: < 2/3 of columnLimit)"
+                },
+                "antlr4.format.alignSemicolons": {
+                    "type": "string",
+                    "default": "none",
+                    "enum": [
+                        "none",
+                        "ownLine",
+                        "hanging"
+                    ],
+                    "description": "Determines the alignment of semicolons in rules (no alignment, first column on an own line or aligned to pipe chars on an own line)"
+                },
+                "antlr4.format.breakBeforeParens": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "For blocks: if true puts opening parentheses on an own line"
+                },
+                "antlr4.format.ruleInternalsOnSingleLine": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Place rule internals (return value, local variables, @init, @after) all on a single line"
+                },
+                "antlr4.format.minEmptyLines": {
+                    "type": "number",
+                    "default": 0,
+                    "description": "Determines the number of empty lines that must exist (between rules or other full statements)"
+                },
+                "antlr4.format.groupedAlignments": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "When true only consecutive lines are considered for alignments"
+                },
+                "antlr4.format.alignFirstTokens": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Align the first token after the colon among rules"
+                },
+                "antlr4.format.alignLexerCommands": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Align lexer commands (starting with ->) among rule"
+                },
+                "antlr4.format.alignActions": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Align action blocks + predicates among rules and alternatives"
+                },
+                "antlr4.format.alignLabels": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Align alt labels (only when a rule is not on a single line)"
+                },
+                "antlr4.format.alignTrailers": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Combine all alignments (align whatever comes first: colons, comments etc.)"
                 }
             }
         },
@@ -146,10 +281,47 @@
             {
                 "command": "antlr.rrd.allRules",
                 "title": "Show Railroad Diagrama for all Rules"
+            },
+            {
+                "command": "antlr.file.createParserSkeleton",
+                "title": "Create new ANTLR4 parser grammar"
+            },
+            {
+                "command": "antlr.file.createCombinedSkeleton",
+                "title": "Create new ANTLR4 combined grammar"
+            },
+            {
+                "command": "antlr.file.createLexerSkeleton",
+                "title": "Create new ANTLR4 lexer grammar"
+            },
+            {
+                "command": "antlr.tools.generateSentences",
+                "title": "Generate sentences from grammar"
             }
         ],
         "menus": {
+            "explorer/context": [
+                {
+                    "command": "antlr.file.createLexerSkeleton",
+                    "group": "antlr@1"
+                },
+                {
+                    "command": "antlr.file.createParserSkeleton",
+                    "group": "antlr@2"
+                },
+                {
+                    "command": "antlr.file.createCombinedSkeleton",
+                    "group": "antlr@3"
+                }
+            ],
             "editor/title/context": [
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.rrd.allRules",
+                    "group": "antlr@1"
+                }
+            ],
+            "editor/title": [
                 {
                     "when": "resourceLangId == antlr",
                     "command": "antlr.rrd.allRules",
@@ -184,19 +356,19 @@
         "cleanup": "npm unlink antlr4-graps --no-save && npm install"
     },
     "dependencies": {
-        "d3": "^4.8.0",
-        "fs-extra": "^3.0.0",
-        "antlr4-graps": "^1.3.6"
+        "antlr4-graps": "^1.3.12",
+        "d3": "^4.11.0",
+        "fs-extra": "^3.0.0"
     },
     "devDependencies": {
         "@types/chai": "^3.4.34",
-        "@types/d3": "^4.8.0",
+        "@types/d3": "^4.12.0",
         "@types/fs-extra": "^3.0.3",
-        "@types/mocha": "^2.2.32",
-        "@types/node": "^8.0.7",
-        "chai": "^4.0.2",
-        "mocha": "^3.4.2",
-        "typescript": "^2.4.1",
-        "vscode": "^1.1.1"
+        "@types/mocha": "^2.2.44",
+        "@types/node": "^8.0.53",
+        "chai": "^4.1.2",
+        "mocha": "^3.5.3",
+        "typescript": "^2.6.2",
+        "vscode": "^1.1.9"
     }
 }

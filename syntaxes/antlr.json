@@ -185,7 +185,7 @@
         },
         {
           "name": "entity.name.tag.antlr",
-          "match": "#.*"
+          "match": "#\\s*[[:alnum:]_]+"
         },
 
         {

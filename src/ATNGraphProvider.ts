@@ -8,12 +8,11 @@
 'use strict';
 
 import * as fs from "fs-extra";
-import * as vscode from "vscode";
 
 import { AntlrLanguageSupport, SymbolKind } from "antlr4-graps";
 import { AntlrTextContentProvider } from "./TextContentProvider";
 import { Utils } from "./Utils";
-import { workspace } from "vscode";
+import { window, workspace, Uri, commands } from "vscode";
 
 // ATN graph state info for a single rule.
 export class ATNStateEntry {
@@ -27,12 +26,12 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
     // Set by the update method if there's cached state data for the current rule.
     private cachedRuleStates: ATNStateEntry | undefined;
 
-    public provideTextDocumentContent(uri: vscode.Uri): Thenable<string> {
-        const sourceUri = vscode.Uri.parse(uri.query);
+    public provideTextDocumentContent(uri: Uri): Thenable<string> {
+        const sourceUri = Uri.parse(uri.query);
         const command = uri.fragment;
 
-        return vscode.workspace.openTextDocument(sourceUri).then(document => {
-            vscode.window.showTextDocument(document);
+        return workspace.openTextDocument(sourceUri).then(document => {
+            window.showTextDocument(document);
 
             if (!this.currentRule) {
                 return `<html><body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body><html>`;
@@ -68,8 +67,26 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
                         height: 30px;
                     }
 
+                    .rule-initial {
+                        font-size: 28pt;
+                        color: rgba(206, 11, 70, 0.75);
+                        font-weight: bold;
+                        vertical-align: middle;
+                    }
+
+                    .rule-initial-small {
+                        font-size: 16pt;
+                        color: rgba(206, 11, 70, 0.75);
+                        font-weight: bold;
+                        vertical-align: middle;
+                    }
+
+                    .rule-index {
+                        font-size: 8pt;
+                    }
+
                     body.vscode-light .icon { filter: invert(100%); -webkit-filter: invert(100%); }
-                    #container { margin-top: 30px; }
+                    #svg-container { margin-top: 40px; }
                     svg { display: block; }
                     body { padding-left: 20px; }
                     .icon-box { font: 10pt monospace; margin-left: 0px; }
@@ -77,7 +94,9 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
                 </style>
             </head>
             `.replace(/\$/g, "$$"));
+
             html = html.replace(/##objectName##/g, this.currentRule.replace(/\$/g, "$$"));
+            html = html.replace(/##index##/g, this.currentRuleIndex ? "" + this.currentRuleIndex : "?");
 
             let maxLabelCount = workspace.getConfiguration("antlr4.atn")["maxLabelCount"];
             html = html.replace("##maxLabelCount##", maxLabelCount > 1 ? maxLabelCount : 5);
@@ -142,8 +161,8 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
 
     };
 
-    public update(uri: vscode.Uri, forced: boolean = false, cachedStates?: Map<string, ATNStateEntry>) {
-        let currentRule = this.findCurrentRule(uri);
+    public update(uri: Uri, forced: boolean = false, cachedStates?: Map<string, ATNStateEntry>) {
+        let [currentRule, ruleIndex] = this.findCurrentRule(uri);
         if (!this.lastUri || this.lastUri.fsPath !== uri.fsPath || this.currentRule !== currentRule || forced) {
             if (!cachedStates || !currentRule) {
                 this.cachedRuleStates = undefined;
@@ -154,16 +173,18 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
             // Update content only if this is the first invocation, editors were switched or
             // the currently selected rule changed.
             if (this.lastUri) {
-                vscode.commands.executeCommand('_workbench.htmlPreview.postMessage',
+                commands.executeCommand('_workbench.htmlPreview.postMessage',
                     this.lastUri, { action: "saveATNState", file: this.lastUri.fsPath, rule: this.currentRule }
                 ).then((value) => {
                     this.lastUri = uri;
                     this.currentRule = currentRule;
+                    this.currentRuleIndex = ruleIndex;
                     super.update(uri);
                 });
             } else {
                 this.lastUri = uri;
                 this.currentRule = currentRule;
+                this.currentRuleIndex = ruleIndex;
                 super.update(uri);
             }
         }

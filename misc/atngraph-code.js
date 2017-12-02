@@ -4,17 +4,14 @@ var stateType = [
   { short: "BASIC", long: "Basic state" },
   { short: "START", long: "Rule start\nThe entry node of a rule." },
   { short: "BSTART", long: "Block start state\nThe start of a regular (...) block." },
-  { short: "PBSTART", long: "Plus block start state\nStart of a (A|b|...)+ loop. Technically a decision state and not " +
-    "used for code generation. In reality, the Plus Loopback State is the real decision-making note." },
-  { short: "SBSTART", long: "Star block start\nThe block that begins a closure loop." },
-  { short: "TSTART", long: "Token start\nThe tokens rule start state linking to each lexer rule start state." },
-  { short: "STOP", long: "Rule stop\nThe exit node of a rule." },
+  { short: "PBSTART", long: "Plus block start state\nStart of the actual block in a (A|b|...)+ loop." },
+  { short: "SBSTART", long: "Star block start\nStart of the actual block in a (A|b|...)* loop." },
+  { short: "TSTART", long: "Token start\nThe entry state of a rule." },
+  { short: "STOP", long: "Rule stop\nThe exit state of a rule." },
   { short: "BEND", long: "Block end\nTerminal node of a simple (A|b|...) block." },
-  { short: "SLBACK", long: "Star loop back" },
-  { short: "SLENTRY", long: "Star loop entry\nIndicates whether this state can benefit from a precedence DFA during " +
-    "SLL decision making." },
-  { short: "PLBACK", long: "Plus loop entry\nDecision state for A+ and (A|b|...)+. It has two transitions: one to the " +
-    "loop back to start of the block and one to exit." },
+  { short: "SLBACK", long: "Star loop back\nThe loop back state from the inner block to the star loop entry state." },
+  { short: "SLENTRY", long: "Star loop entry\nEntry + exit state for (A|B|...)* loops." },
+  { short: "PLBACK", long: "Plus loop back\nThe loop back state from the inner block to the plus block start state." },
   { short: "LEND", long: "Loop end\nMarks the end of a * or + loop." },
 
   { short: "RULE", long: "Rule call\nRepresents a transition to a subrule." }, // Fake state
