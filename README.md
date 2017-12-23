@@ -15,7 +15,7 @@
 ### Syntax Coloring
 
 * Complete syntax coloring for ANTLR grammars (.g and .g4 files).
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-5.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-5.png)
     
 * Comes with an own beautiful color theme, which not only includes all the [recommended groups](http://manual.macromates.com/en/language_grammars), but also some special rules for grammar elements that you don't find in other themes.
 
@@ -24,15 +24,15 @@
 * Code suggestions for all rule + token names, channels, modes etc. (including built-in ones).
 
 * Symbol type + location are shown on mouse hover. Navigate to any symbol with Ctrl/Cmd + Click. This works even for nested grammars (token vocabulary + imports).
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-1.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-1.png)
 
 * Symbol list for quick navigation (via Shift + Ctrl/Cmd + O).
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-6.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-6.png)
 
 ### Grammar Validations
 
 * In the background syntax checking takes place, while typing. Also some semantic checks are done, e.g. for duplicate or unknown symbols.
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-2.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-2.png)
 
 * When parser generation is enabled (at least for internal use) ANTLR4 itself is used to check for errors and warnings. These are then reported instead of the internally found problems and give you so the full validation power of ANTLR4.
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-8.png)
@@ -44,16 +44,16 @@
 ### Graphical Visualizations
 
 * There is a function to generate railroad diagrams for all types of rules (parser, lexer, fragment lexer), provided by the [railroad-diagrams script from Tab Atkins Jr.](http://github.com/tabatkins/railroad-diagrams). You can either do that for the rule under the caret (and the display changes as you move the caret) or for the entire grammar file. An export function allows to generate an SVG file of the graph on disk. Colors + fonts can be adjusted by using custom CSS file(s). See also the available options below.
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-3.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-3.png)
 
 * Another cool feature are ATN graphs for all rule types. This is a visualization of the internal ATN that drives lexers + parsers. It uses D3.js for layout and interaction. Nodes can be repositioned with the mouse and you can drag and zoom the image. The transformation and position state is restored when reopening a graph. Also here you can customize the display with own CSS and save the image to disk.
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-4.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-4.png)
 
 ### Formatting
 
 The extension is able to format grammar source code, considering a large set of options (see below). The [clang-format](http://clang.llvm.org/docs/ClangFormatStyleOptions.html) tool acted as a model for option naming and some settings that have been taken over. Other options are specific to grammar files. Beside the usual things like block formatting, colon and semicolon placement etc. there's a powerful alignment implementation. It allows to align certain grammar elements (trailing comments, lexer commands, alt labels, predicates and others) between consecutive lines that contain this grammar element (when grouped alignment is on) or for the entire file. There can even be multiple alignments on a line:
 
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-9.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-9.png)
 
 The formatting feature can be controlled by special comments, which allow to switch a setting on the fly (e.g. columnWidth). You can even completely switch off formatting for file or a part of it. Below are some examples for such a formatting comment. You can use boolean values (on, off, true, false), numbers and identifiers (for word options). They are not case-sensitive.
 
@@ -72,11 +72,11 @@ In order to set all settings to their default values use: `// $antlr-format rese
 
 * There is an option to switch on rule reference counts via Code Lens. This feature is switchable independent of the vscode Code Lens setting.
 
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-7.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-7.png)
 
 * For each grammar its dependencies are shown in a sidebar view (i.e. token vocabulary and imports).
 
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-10.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-10.png)
 
 ## Extension Settings
 
