@@ -74,6 +74,10 @@ In order to set all settings to their default values use: `// $antlr-format rese
 
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-7.png)
 
+* For each grammar its dependencies are shown in a sidebar view (i.e. token vocabulary and imports).
+
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-10.png)
+
 ## Extension Settings
 
 * **antlr4.referencesCodeLens.enabled**, boolean (default: false), if true enables the reference count display via Code Lens
@@ -147,3 +151,6 @@ None
 ## Release Notes
 
 For details see [Git commit history](https://github.com/mike-lischke/vscode-antlr4/commits/master).
+
+## Other Notes
+The dependencies view icons have been taken from the vscode tree view example.

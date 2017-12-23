@@ -29,6 +29,7 @@ import { AntlrFormattingProvider } from "./FormattingProvider";
 import { Utils } from "./Utils";
 import { getTextProviderUri } from "./TextContentProvider";
 import { ProgressIndicator } from "./ProgressIndicator";
+import { ImportsProvider } from "./ImportsProvider";
 
 let ANTLR = { language: 'antlr', scheme: 'file' };
 
@@ -68,6 +69,9 @@ export function activate(context: ExtensionContext) {
             }
         }
     }
+
+    let importsProvider = new ImportsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.imports", importsProvider));
 
     context.subscriptions.push(languages.registerHoverProvider(ANTLR, new HoverProvider(backend)));
     context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new DefinitionProvider(backend)));
@@ -233,6 +237,7 @@ export function activate(context: ExtensionContext) {
                 changeTimer = null;
                 backend.reparse(event.document.fileName);
                 diagramProvider.update(getTextProviderUri(event.document.uri, "rrd", "single"));
+                importsProvider.refresh();
                 processDiagnostic(event.document);
             }, 300);
         }
@@ -253,7 +258,8 @@ export function activate(context: ExtensionContext) {
         }
     });
 
-    workspace.onDidChangeConfiguration(() => {
+    window.onDidChangeActiveTextEditor((editor) => {
+        importsProvider.refresh();
     });
 
     function processDiagnostic(document: TextDocument) {
