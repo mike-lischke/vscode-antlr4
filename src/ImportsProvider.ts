@@ -34,7 +34,11 @@ export class ImportsProvider implements TreeDataProvider<Import> {
                 let dependencies = this.backend.getDependencies(editor.document.fileName);
                 let imports: Import[] = [];
                 for (let dep of dependencies) {
-                    imports.push(new Import(dep, TreeItemCollapsibleState.None));
+                    imports.push(new Import(path.basename(dep), TreeItemCollapsibleState.None, {
+                        title: "<unused>",
+                        command: "antlr.openGrammar",
+                        arguments: [dep]
+                    }));
                 }
                 return new Promise(resolve => {
                     resolve(imports);
@@ -54,9 +58,10 @@ class Import extends TreeItem {
     constructor(
         public readonly label: string,
         public readonly collapsibleState: TreeItemCollapsibleState,
-        public readonly command?: Command
+        command_?: Command
     ) {
         super(label, collapsibleState);
+        this.command = command_;
     }
 
     iconPath = {
@@ -65,5 +70,4 @@ class Import extends TreeItem {
     };
 
     contextValue = 'grammar-dependency';
-
 }

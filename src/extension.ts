@@ -12,7 +12,8 @@ import * as fs from "fs-extra";
 
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
-    commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, StatusBarAlignment, OutputChannel
+    commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, StatusBarAlignment, OutputChannel,
+    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult
 } from 'vscode';
 
 import { AntlrLanguageSupport, DiagnosticType, GenerationOptions } from "antlr4-graps";
@@ -31,7 +32,7 @@ import { getTextProviderUri } from "./TextContentProvider";
 import { ProgressIndicator } from "./ProgressIndicator";
 import { ImportsProvider } from "./ImportsProvider";
 
-let ANTLR = { language: 'antlr', scheme: 'file' };
+const ANTLR = { language: 'antlr', scheme: 'file' };
 
 let diagnosticCollection = languages.createDiagnosticCollection('antlr');
 let DiagnosticTypeMap: Map<DiagnosticType, DiagnosticSeverity> = new Map();
@@ -117,8 +118,24 @@ export function activate(context: ExtensionContext) {
     // Sentence generation.
     // This is currently not enabled in the UI. This generation can too easily go endless if the grammar is highly recursive.
     // Need to get an idea how to make this really usable.
-    context.subscriptions.push(commands.registerTextEditorCommand('antlr.tools.generateSentences', (editor: TextEditor, edit: TextEditorEdit) => {
+    context.subscriptions.push(commands.registerTextEditorCommand("antlr.tools.generateSentences", (editor: TextEditor, edit: TextEditorEdit) => {
         return workspace.openTextDocument(editor.document.uri).then(doc => window.showTextDocument(doc, editor.viewColumn! + 1));
+    }));
+
+    // Debugging support.
+    context.subscriptions.push(commands.registerCommand("antlr.getTestInputName", config => {
+        return window.showInputBox({
+            placeHolder: "Please enter the name of a text file containing parse test input",
+            value: "input.txt"
+        });
+    }));
+
+    context.subscriptions.push(debug.registerDebugConfigurationProvider('antlr-debug', new AntlrDebugConfigurationProvider()));
+
+    context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
+        workspace.openTextDocument(grammar).then((document) => {
+            window.showTextDocument(document, 0, false);
+        });
     }));
 
     // Used for debugging in JS files (console.log doesn't have any effect).
@@ -208,6 +225,7 @@ export function activate(context: ExtensionContext) {
         }
     ));
 
+    //----- Events -----
     workspace.onDidOpenTextDocument((doc: TextDocument) => {
         if (doc.languageId == "antlr" && doc.uri.scheme === "file") {
             backend.loadGrammar(doc.fileName);
@@ -258,7 +276,7 @@ export function activate(context: ExtensionContext) {
         }
     });
 
-    window.onDidChangeActiveTextEditor((editor) => {
+    window.onDidChangeActiveTextEditor((editor: TextEditor) => {
         importsProvider.refresh();
     });
 
@@ -373,4 +391,47 @@ export function activate(context: ExtensionContext) {
 } // activate() function
 
 export function deactivate() {
+}
+
+/**
+ * Validates launch configuration for grammar debugging.
+ */
+class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
+    constructor() {}
+
+    resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
+         token?: CancellationToken): ProviderResult<DebugConfiguration> {
+
+        // launch.json missing or empty?
+        if (!config.type || !config.request || !config.name) {
+            return window.showErrorMessage("Create a launch configuration for debugging of ANTLR grammars first.").then(_ => {
+                return undefined;
+            });
+        }
+
+        if (!config.input) {
+            return window.showErrorMessage("No test input file specified").then(_ => {
+                return undefined;
+            });
+        }
+
+        const editor = window.activeTextEditor;
+        if (editor && editor.document.languageId === 'antlr') {
+            let diagnostics = diagnosticCollection.get(editor.document.uri);
+            if (diagnostics && diagnostics.length > 0) {
+                return window.showErrorMessage("Cannot lauch grammar debugging. There are errors in the code.").then(_ => {
+                    return undefined;
+                });
+            }
+
+            config.grammar = editor.document.fileName;
+
+            return config;
+        } else {
+            window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
+        }
+
+        return undefined;
+    }
+
 }
