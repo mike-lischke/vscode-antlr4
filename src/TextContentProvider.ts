@@ -68,8 +68,8 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
         return vscode.Uri.file(path.join(path.dirname(resource.fsPath), href)).toString();
     }
 
-    protected computeCustomStyleSheetIncludes(uri: vscode.Uri, section: string): string {
-        const styles = vscode.workspace.getConfiguration("antlr4." + section)['customcss'];
+    protected computeCustomStyleSheetIncludes(uri: vscode.Uri): string {
+        const styles = vscode.workspace.getConfiguration("antlr4")['customcss'];
         if (styles && Array.isArray(styles) && styles.length > 0) {
             return styles.map((style) => {
                 return `<link rel="stylesheet" href="${this.fixHref(uri, style)}" type="text/css" media="screen">`;
@@ -78,14 +78,14 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
         return '';
     }
 
-    protected getStyles(uri: vscode.Uri, section: string): string {
+    protected getStyles(uri: vscode.Uri): string {
         const baseStyles = [
-            Utils.getMiscPath(section + ".css", this.context),
-            Utils.getMiscPath(section + "-dark.css", this.context)
+            Utils.getMiscPath("light.css", this.context),
+            Utils.getMiscPath("dark.css", this.context)
         ];
 
         return `${baseStyles.map(href => `<link rel="stylesheet" type="text/css" href="${href}">`).join('\n')}
-			${this.computeCustomStyleSheetIncludes(uri, section)}`;
+			${this.computeCustomStyleSheetIncludes(uri)}`;
     }
 
     protected getScripts(nonce: string, scripts: string[]): string {

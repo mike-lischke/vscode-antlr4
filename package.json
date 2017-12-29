@@ -69,20 +69,15 @@
                     "default": false,
                     "description": "Enable/disable the references code lens"
                 },
-                "antlr4.rrd.customcss": {
+                "antlr4.customcss": {
                     "type": [],
                     "default": [],
-                    "description": "List of custom CSS URIs for railroad diagram SVG files"
+                    "description": "List of custom CSS URIs for diagram SVG files"
                 },
                 "antlr4.rrd.saveDir": {
                     "type": "string",
                     "default": "",
                     "description": "Default export target folder for railroad diagrams"
-                },
-                "antlr4.atn.customcss": {
-                    "type": [],
-                    "default": [],
-                    "description": "List of custom CSS URIs for ATN graph SVG files"
                 },
                 "antlr4.atn.saveDir": {
                     "type": "string",

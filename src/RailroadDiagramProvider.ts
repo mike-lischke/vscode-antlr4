@@ -57,7 +57,7 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-                    ${this.getStyles(uri, "rrd")}
+                    ${this.getStyles(uri)}
                     <base href="${document.uri.toString(true)}">
 
                     <style>

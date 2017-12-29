@@ -45,7 +45,7 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
             ];
 
             html = html.replace("##header##", `
-                ${this.getStyles(uri, "atn")}
+                ${this.getStyles(uri)}
                 <base target="_blank" />
                 <style>
                     .icon {

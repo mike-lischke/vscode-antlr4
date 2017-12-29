@@ -81,9 +81,8 @@ In order to set all settings to their default values use: `// $antlr-format rese
 ## Extension Settings
 
 * **antlr4.referencesCodeLens.enabled**, boolean (default: false), if true enables the reference count display via Code Lens
-* **antlr4.rrd.customcss**, array of string (default: empty array), list of custom css URIs for railroad diagrams
+* **antlr4.customcss**, array of string (default: empty array), list of custom css URIs for diagrams/graphs
 * **antlr4.rrd.saveDir**, string (default: empty/undefined), default export target folder for railroad diagrams
-* **antlr4.atn.customcss**, array of string (default: empty array), list of custom css URIs for ATN graphs
 * **antlr4.atn.saveDir**, string (default: empty/undefined), default export target folder for railroad diagrams
 * **antlr4.atn.maxLabelCount**, number (default: 3), max number of labels displayed on a transition in an ATN graph
 * **antlr4.generation.mode**, string enum (default: "internal"), determines what code generation pattern should be followed:
