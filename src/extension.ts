@@ -26,11 +26,12 @@ import { AntlrCompletionItemProvider } from './CompletionItemProvider';
 import { AntlrRailroadDiagramProvider } from './RailroadDiagramProvider';
 import { AntlrATNGraphProvider, ATNStateEntry } from "./ATNGraphProvider";
 import { AntlrFormattingProvider } from "./FormattingProvider";
-
-import { Utils } from "./Utils";
 import { getTextProviderUri } from "./TextContentProvider";
-import { ProgressIndicator } from "./ProgressIndicator";
 import { ImportsProvider } from "./ImportsProvider";
+import { AntlrCallGraphProvider } from "./CallGraphProvider";
+
+import { ProgressIndicator } from "./ProgressIndicator";
+import { Utils } from "./Utils";
 
 const ANTLR = { language: 'antlr', scheme: 'file' };
 
@@ -110,6 +111,17 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(commands.registerTextEditorCommand("antlr.atn.singleRule", (editor: TextEditor, edit: TextEditorEdit) => {
         return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "atn", "single"), 2,
             "ANTLR ATN Graph: " + path.basename(editor.document.fileName)).then((success: boolean) => {
+            }, (reason) => {
+                window.showErrorMessage(reason);
+            });
+    }));
+
+    // The call graph command.
+    let callGraphProvider = new AntlrCallGraphProvider(backend, context);
+    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.call-graph", callGraphProvider));
+    context.subscriptions.push(commands.registerTextEditorCommand('antlr.call-graph', (editor: TextEditor, edit: TextEditorEdit) => {
+        return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "call-graph", ""), 2,
+            "Call Graph: " + path.basename(editor.document.fileName)).then((success: boolean) => {
             }, (reason) => {
                 window.showErrorMessage(reason);
             });
@@ -256,6 +268,7 @@ export function activate(context: ExtensionContext) {
                 backend.reparse(event.document.fileName);
                 diagramProvider.update(getTextProviderUri(event.document.uri, "rrd", "single"));
                 importsProvider.refresh();
+                callGraphProvider.update(getTextProviderUri(event.document.uri, "call-graph", ""));
                 processDiagnostic(event.document);
             }, 300);
         }

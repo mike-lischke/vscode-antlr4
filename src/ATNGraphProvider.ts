@@ -38,7 +38,7 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
             }
 
             let html = fs.readFileSync(this.context.asAbsolutePath("misc/atngraph-head.html"), { encoding: "utf-8" });
-            let code = fs.readFileSync(this.context.asAbsolutePath("misc/atngraph-code.js"), { encoding: "utf-8" });
+            let code = fs.readFileSync(this.context.asAbsolutePath("misc/atngraph.js"), { encoding: "utf-8" });
 
             const scripts = [
                 Utils.getMiscPath('utils.js', this.context),
@@ -72,6 +72,7 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
                         color: rgba(206, 11, 70, 0.75);
                         font-weight: bold;
                         vertical-align: middle;
+                        padding-left: 10px;
                     }
 
                     .rule-initial-small {

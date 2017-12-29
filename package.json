@@ -269,7 +269,7 @@
         "commands": [
             {
                 "command": "antlr.atn.singleRule",
-                "title": "Show ATN graph for Rule"
+                "title": "Show ATN Graph for Rule"
             },
             {
                 "command": "antlr.rrd.singleRule",
@@ -277,23 +277,27 @@
             },
             {
                 "command": "antlr.rrd.allRules",
-                "title": "Show Railroad Diagrama for all Rules"
+                "title": "Show Railroad Diagram for all Rules"
+            },
+            {
+                "command": "antlr.call-graph",
+                "title": "Show Grammar Call Graph"
             },
             {
                 "command": "antlr.file.createParserSkeleton",
-                "title": "Create new ANTLR4 parser grammar"
+                "title": "Create new ANTLR4 Parser Grammar"
             },
             {
                 "command": "antlr.file.createCombinedSkeleton",
-                "title": "Create new ANTLR4 combined grammar"
+                "title": "Create new ANTLR4 Combined Grammar"
             },
             {
                 "command": "antlr.file.createLexerSkeleton",
-                "title": "Create new ANTLR4 lexer grammar"
+                "title": "Create new ANTLR4 Lexer Grammar"
             },
             {
                 "command": "antlr.tools.generateSentences",
-                "title": "Generate sentences from grammar"
+                "title": "Generate Sentences From Grammar"
             }
         ],
         "menus": {
@@ -329,17 +333,22 @@
                 {
                     "when": "resourceLangId == antlr",
                     "command": "antlr.rrd.singleRule",
-                    "group": "antlr.rrd@1"
+                    "group": "antlr@1"
                 },
                 {
                     "when": "resourceLangId == antlr",
                     "command": "antlr.rrd.allRules",
-                    "group": "antlr.rrd@2"
+                    "group": "antlr@2"
                 },
                 {
                     "when": "resourceLangId == antlr",
                     "command": "antlr.atn.singleRule",
-                    "group": "antlr.atn@1"
+                    "group": "antlr@3"
+                },
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.call-graph",
+                    "group": "antlr@4"
                 }
             ]
         },

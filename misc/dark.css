@@ -82,3 +82,34 @@ body.vscode-dark svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 	/* Multiple choice text, not working atm. */
 	fill: #f00;
 }
+
+/* Default CSS for call graphs (dark theme) */
+
+body.vscode-dark .link {
+    stroke: #fff;
+    stroke-opacity: .2;
+    fill: none;
+    pointer-events: none;
+}
+
+body.vscode-dark .node-source {
+    fill: #e6db74;
+}
+
+body.vscode-dark .node-target {
+    fill: #45aa73;
+}
+
+body.vscode-dark .link-source,
+body.vscode-dark .link-target {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+}
+
+body.vscode-dark .link-source {
+    stroke: #45aa73;
+}
+
+body.vscode-dark .link-target {
+    stroke: #e6db74;
+}

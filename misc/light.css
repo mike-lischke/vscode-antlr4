@@ -142,3 +142,89 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 	/* Multiple choice text, not working atm. */
 	fill: #f00;
 }
+
+/* Default CSS for call graphs (light theme + svg) */
+
+.node {
+    font: 200 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.link {
+    stroke: #fff;
+    stroke-opacity: .2;
+    fill: none;
+    pointer-events: none;
+}
+
+.module-1 {
+    fill: #0ca9fd;
+}
+
+.module-2 {
+    fill: #63bf8d;
+}
+
+.module-3 {
+    fill: #ff8801;
+}
+
+.module-4 {
+    fill: #b9fc34;
+}
+
+.module-5 {
+    fill: #90e0e0;
+}
+
+.module-6 {
+    fill: #b4a3f5;
+}
+
+.module-7 {
+    fill: #f92672;
+}
+
+.module-8 {
+    fill: #e9e901;
+}
+
+.module-9 {
+    fill: #83be69;
+}
+
+.module-10 {
+    fill: #f1d18c;
+}
+
+.node:hover {
+    fill: #fff;
+}
+
+.node:hover,
+.node-source,
+.node-target {
+    font: 700 12px "Helvetica Neue", Helvetica, Arial, sans-serif;
+    cursor: pointer;
+}
+
+.node-source {
+    fill: #e6db74;
+}
+
+.node-target {
+    fill: #45aa73;
+}
+
+.link-source,
+.link-target {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+}
+
+.link-source {
+    stroke: #45aa73;
+}
+
+.link-target {
+    stroke: #e6db74;
+}

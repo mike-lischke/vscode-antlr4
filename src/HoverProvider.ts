@@ -13,6 +13,8 @@ import { AntlrLanguageSupport } from "antlr4-graps";
 
 import { symbolDescriptionFromEnum } from '../src/Symbol';
 
+import * as path from 'path';
+
 export class HoverProvider {
     constructor(private backend: AntlrLanguageSupport) { }
 
@@ -24,7 +26,7 @@ export class HoverProvider {
 
         const description = symbolDescriptionFromEnum(info.kind);
         return new Hover([
-            "**" + description + "**\ndefined in: " + info.source,
+            "**" + description + "**\ndefined in: " + path.basename(info.source),
             { language: "antlr", value: (info.definition? info.definition.text : "") }
         ]);
     };

@@ -14,7 +14,8 @@ import { AntlrLanguageSupport, SymbolKind } from "antlr4-graps";
 import { AntlrTextContentProvider } from "./TextContentProvider";
 import { Utils } from "./Utils";
 
-export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
+export class AntlrCallGraphProvider extends AntlrTextContentProvider {
+
     public provideTextDocumentContent(uri: vscode.Uri): Thenable<string> {
         const sourceUri = vscode.Uri.parse(uri.query);
         const command = uri.fragment;
@@ -25,33 +26,26 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
             // If not the user probably switched preview windows. In that case we use
             // the last position stored when we had an active editor.
             let fileName = document.fileName;
-            let caret: vscode.Position | undefined;
-            let editor = vscode.window.activeTextEditor;
-            if (editor && editor.document == document) {
-                caret = editor.selection.active;
-                this.positionCache.set(fileName, caret);
-            } else if (this.positionCache.has(fileName)) {
-                caret = this.positionCache.get(fileName);
-            }
-            if (!caret) {
-                return "";
-            }
-
-            let [ruleName, ruleIndex] = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
-            if (!ruleName) {
-                return "";
-            }
-
-            if (!ruleName) {
-                ruleName = "?";
-            }
-
             let baseName = path.basename(fileName, path.extname(fileName));
+
+            let graph = this.backend.getReferenceGraph(fileName);
+            let data = [];
+            for (let entry of graph) {
+                let references: string[] = [];
+                for (let ref of entry[1].rules) {
+                    references.push(ref);
+                }
+                for (let ref of entry[1].tokens) {
+                    references.push(ref);
+                }
+                data.push({ name: entry[0], references: references });
+            }
+
             // Content Security Policy
             const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
             const scripts = [
                 Utils.getMiscPath('utils.js', this.context),
-                Utils.getMiscPath("railroad-diagrams.js", this.context)
+                Utils.getMiscPath("call-graph.js", this.context)
             ];
             let diagram = `<!DOCTYPE html>
                 <html>
@@ -82,7 +76,7 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
 
                         .rule-initial {
                             font-size: 28pt;
-                            color: rgba(10, 188, 80, 0.75);
+                            color: rgba(96, 125, 189, 0.75);
                             font-weight: bold;
                             vertical-align: middle;
                             padding-left: 10px;
@@ -90,7 +84,7 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
 
                         .rule-initial-small {
                             font-size: 16pt;
-                            color: rgba(10, 188, 80, 0.75);
+                            color: rgba(96, 125, 189, 0.75);
                             font-weight: bold;
                             vertical-align: middle;
                         }
@@ -110,40 +104,21 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 </head>
 
                 <body>
-                ${this.getScripts(nonce, scripts)}
-            `;
+                    <div class="header"><span class="rule-initial">Ⓒ</span>
+                        <span class="icon-box">
+                            <a onClick="exportToSVG('call-graph', '');" style="cursor: pointer; cursor: hand; margin-left: 15px;"><span class="rule-initial-small">⤑</span> Save to file</a>
+                        </span>
+                    </div>
 
-            if (command == "full") {
-                diagram += `
-                    <div class="header">
-                        <span class="icon-box">
-                            <a onClick="exportToHTML('rrd', '${baseName}');" style="cursor: pointer; cursor: hand; margin-left: 15px;""><span class="rule-initial-small">⤑</span> Save all diagrams in an HTML file <span class="icon save" title="Save to disk"></span></a>
-                        </span>
+                    <div id="container">
+                        <svg width="2000" , height="2000">
+                        </svg>
+                        <script src="https://d3js.org/d3.v4.min.js"></script>
                     </div>
-                    <div id="container">`;
-                var symbols = this.backend.listSymbols(document.fileName, false);
-                for (let symbol of symbols) {
-                    if (symbol.kind == SymbolKind.LexerToken
-                        || symbol.kind == SymbolKind.ParserRule
-                        || symbol.kind == SymbolKind.FragmentLexerToken) {
-                        let script = this.backend.getRRDScript(fileName, symbol.name);
-                        diagram += `<h3>${symbol.name}</h3>\n<script>${script}</script>\n\n`;
-                    }
-                }
-                diagram += `</div>`;
-            } else {
-                diagram += `
-                    <div class="header"><span class="rule-initial">Ⓡ</span>&nbsp;&nbsp;${ruleName} <span class="rule-index">(rule index: ${ruleIndex})</span>
-                        <span class="icon-box">
-                            <a onClick="exportToSVG('rrd', '${ruleName}');" style="cursor: pointer; cursor: hand; margin-left: 15px;"><span class="rule-initial-small">⤑</span> Save to file</a>
-                        </span>
-                    </div>
-                    <div id="container" style="transform: scale(1, 1); transform-origin: 0 0; width: 100%">
-                        <script>${this.backend.getRRDScript(fileName, ruleName)}</script>
-                    </div>
-                `;
-            }
-            diagram += `</body></html>`;
+                    <script>var data = ${JSON.stringify(data)}</script>
+                    ${this.getScripts(nonce, scripts)}
+                </body>
+            </html>`;
 
             return diagram;
         });

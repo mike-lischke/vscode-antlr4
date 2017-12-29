@@ -30,7 +30,7 @@ export class SymbolProvider {
             let startRow = symbol.definition.range.start.row > 0 ? symbol.definition.range.start.row - 1 : 0;
             let endRow = symbol.definition.range.end.row > 0 ? symbol.definition.range.end.row - 1 : 0;
             let range = new Range(startRow, symbol.definition.range.start.column, endRow, symbol.definition.range.end.column);
-            let location = new Location(Uri.file(basePath + "/" + symbol.source), range);
+            let location = new Location(Uri.file(symbol.source), range);
 
             var description = symbolDescriptionFromEnum(symbol.kind);
             const kind = translateSymbolKind(symbol.kind);

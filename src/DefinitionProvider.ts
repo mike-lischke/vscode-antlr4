@@ -32,7 +32,7 @@ export class DefinitionProvider {
                 info.definition.range.start.row - 1, info.definition.range.start.column,
                 info.definition.range.end.row - 1, info.definition.range.end.column
             );
-            return new Location(Uri.file(basePath + "/" + info.source), range);
+            return new Location(Uri.file(info.source), range);
         } else {
             // Empty for built-in entities.
             let position = new Position(0, 0);
