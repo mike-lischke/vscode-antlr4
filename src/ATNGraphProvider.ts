@@ -47,52 +47,6 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
             html = html.replace("##header##", `
                 ${this.getStyles(uri)}
                 <base target="_blank" />
-                <style>
-                    .icon {
-                        width: 1em;
-                        height: 1em;
-                        display: inline-block;
-                        background-repeat: no-repeat;
-                        background-position: center bottom;
-                    }
-
-                    .header {
-                        position: fixed;
-                        font-size: 14pt;
-                        z-index: 9999;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        background-color: var(--background-color);
-                        height: 30px;
-                    }
-
-                    .rule-initial {
-                        font-size: 28pt;
-                        color: rgba(206, 11, 70, 0.75);
-                        font-weight: bold;
-                        vertical-align: middle;
-                        padding-left: 10px;
-                    }
-
-                    .rule-initial-small {
-                        font-size: 16pt;
-                        color: rgba(206, 11, 70, 0.75);
-                        font-weight: bold;
-                        vertical-align: middle;
-                    }
-
-                    .rule-index {
-                        font-size: 8pt;
-                    }
-
-                    body.vscode-light .icon { filter: invert(100%); -webkit-filter: invert(100%); }
-                    #svg-container { margin-top: 40px; }
-                    svg { display: block; }
-                    body { padding-left: 20px; }
-                    .icon-box { font: 10pt monospace; margin-left: 0px; }
-                    .icon.save { background-image: url("${Utils.getMiscPath('save.svg', this.context)}"); }
-                </style>
             </head>
             `.replace(/\$/g, "$$"));
 

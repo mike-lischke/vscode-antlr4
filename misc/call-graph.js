@@ -1,173 +1,204 @@
-var diameter = 1000;
-var radius = diameter / 2;
-var innerRadius = radius * 0.90;
+const initialDiameter = 1000;
 
+var diameter = initialDiameter;
 var initialScale = 0.5;
 
-var svg = d3.select("svg")
-    .attr("xmlns", "http://www.w3.org/2000/svg")
-    .attr("version", "1.1")
-    .attr("viewBox", "0 0 " + diameter + " " + diameter);
+function render() {
+	var radius = diameter / 2;
+	var innerRadius = radius * 0.90;
 
-var topGroup = svg.append("g");
+	var svg = d3.select("svg")
+	    .attr("xmlns", "http://www.w3.org/2000/svg")
+	    .attr("version", "1.1")
+	    .attr("viewBox", "0 0 " + diameter + " " + diameter);
 
-var zoom = d3.zoom()
-    .scaleExtent([0.3, 2])
-    .on("zoom", zoomed);
+	var topGroup = svg.append("g");
 
-function zoomed() {
-    topGroup.attr("transform", d3.event.transform);
-}
+	var zoom = d3.zoom()
+	    .scaleExtent([0.5 * initialScale, 10 * initialScale])
+	    .on("zoom", zoomed);
 
-svg
-    .call(zoom)
-    .call(zoom.transform, d3.zoomIdentity
-        .scale(initialScale, initialScale)
-        .translate(radius, diameter * (1 - initialScale))
-    )
-    .on("dblclick.zoom", null);
+	function zoomed() {
+	    topGroup.attr("transform", d3.event.transform);
+	}
 
-var cluster = d3.cluster()
-    .size([360, innerRadius]);
+	svg
+	    .call(zoom)
+	    .call(zoom.transform, d3.zoomIdentity
+	        .scale(initialScale, initialScale)
+	        .translate(radius, radius)
+	    )
+	    .on("dblclick.zoom", null);
 
-const line = d3.radialLine()
-    .radius(function (d) {
-        return d.y;
-    })
-    .angle(function (d) {
-        return d.x / 180 * Math.PI;
-    })
-    .curve(d3.curveBundle.beta(0.75));
+	var cluster = d3.cluster()
+	    .size([360, innerRadius]);
 
-var link = topGroup.append("g").selectAll(".link");
-var node = topGroup.append("g").selectAll(".node");
+	const line = d3.radialLine()
+	    .radius(function (d) {
+	        return d.y;
+	    })
+	    .angle(function (d) {
+	        return d.x / 180 * Math.PI;
+	    })
+	    .curve(d3.curveBundle.beta(0.75));
 
-var root = d3.hierarchy(packageHierarchy(data), (d) => d.children);
-var nodes = root.descendants();
+	var link = topGroup.append("g").selectAll(".link");
+	var node = topGroup.append("g").selectAll(".node");
 
-var links = packageReferences(nodes);
+	var root = d3.hierarchy(packageHierarchy(data), (d) => d.children);
+	var nodes = root.descendants();
 
-cluster(root);
+	var links = packageReferences(nodes);
 
-link = link
-    .data(links)
-    .enter().append('path')
-    .attr('class', 'link')
-    .attr('d', d => line(d.source.path(d.target)));
+	cluster(root);
 
-node = node
-    .data(nodes.filter(function (n) {
-        return !n.children;
-    }))
-    .enter().append("text")
-    .attr("class", function (d) {
-        return "node " + d.data.class;
-    })
-    .attr("dy", "0.31em")
-    .attr("transform", function (d) {
-        return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 10) + ",0)" + (d.x < 180 ? "" :
-            "rotate(180)");
-    })
-    .style("text-anchor", function (d) {
-        return d.x < 180 ? "start" : "end";
-    })
-    .text(function (d) {
-        return d.data.key;
-    })
-    .on("mouseover", onMouseOver)
-    .on("mouseout", onMouseOut);
+	link = link
+	    .data(links)
+	    .enter().append('path')
+	    .attr('class', 'link')
+	    .attr('d', d => line(d.source.path(d.target)));
 
+	node = node
+	    .data(nodes.filter(function (n) {
+	        return !n.children;
+	    }))
+	    .enter().append("text")
+	    .attr("class", function (d) {
+	        return "node " + d.data.class;
+	    })
+	    .attr("dy", "0.31em")
+	    .attr("transform", function (d) {
+	        return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 10) + ",0)" + (d.x < 180 ? "" :
+	            "rotate(180)");
+	    })
+	    .style("text-anchor", function (d) {
+	        return d.x < 180 ? "start" : "end";
+	    })
+	    .text(function (d) {
+	        return d.data.key;
+	    })
+	    .on("mouseover", onMouseOver)
+	    .on("mouseout", onMouseOut);
 
-function onMouseOver(d) {
-    node
-        .each(function (n) {
-            n.target = n.source = false;
-        });
+	var fadeTimer = null;
 
-    link
-        .classed("link-target", function (l) {
-            if (l.target === d) return l.source.source = true;
-        })
-        .classed("link-source", function (l) {
-            if (l.source === d) return l.target.target = true;
-        });
+    function onMouseOver(d) {
+		clearTimeout(fadeTimer);
+		
+        node
+			.each(function (n) {
+        		n.target = n.source = false;
+			});
 
-    node
-        .classed("node-target", function (n) {
-            return n.target;
-        })
-        .classed("node-source", function (n) {
-            return n.source;
-        });
-}
+		link
+			.classed("link-target", function (l) {
+        		if (l.target === d) return l.source.source = true;
+			})
+			.classed("link-source", function (l) {
+        		if (l.source === d) return l.target.target = true;
+			})
+    		.classed("link-dimmed", function (l) {
+        		return (l.source !== d) && (l.target !== d);
+			});
 
-function onMouseOut(d) {
-    link
-        .classed("link-target", false)
-        .classed("link-source", false);
+		node
+			.classed("node-target", function (n) {
+        		return n.target;
+			})
+    		.classed("node-source", function (n) {
+        		return n.source;
+			});
+	}
 
-    node
-        .classed("node-target", false)
-        .classed("node-source", false);
-}
+	function onMouseOut(d) {
+		if (fadeTimer) {
+			clearTimeout(fadeTimer);
+		}
 
-function packageHierarchy(rules) {
-    var map = {};
-    var modules = [];
+    	fadeTimer = setTimeout(() => {
+        	fadeTimer = null;
+    		link.classed("link-dimmed", false);
+		}, 200);
 
-    function find(name, data) {
-        var node = map[name];
-        var i;
-        if (!node) {
-            node = map[name] = data || {
-                name: name,
-                children: []
-            };
-            if (name.length > 0) {
-                node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
-                node.parent.children.push(node);
+    	link
+			.classed("link-target", false)
+        	.classed("link-source", false);
 
-                // Pick one out of 10 color classes for this node.
-                var index = modules.indexOf(node.parent.name);
-                if (index < 0) {
-                    modules.push(node.parent.name);
-                    index = modules.length - 1;
-                }
-                index = index % 10;
-                node.class = "module-" + index;
-                node.key = name.substring(i + 1);
-            }
-        }
-        return node;
+    	node
+       		.classed("node-target", false)
+        	.classed("node-source", false);
     }
 
-    rules.forEach(function (d) {
-        find(d.name, d);
-    });
+	function packageHierarchy(rules) {
+	    var map = {};
+	    var modules = [];
 
-    return map[""];
+	    function find(name, data) {
+	        var node = map[name];
+	        var i;
+	        if (!node) {
+	            node = map[name] = data || {
+	                name: name,
+	                children: []
+	            };
+	            if (name.length > 0) {
+	                node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
+	                node.parent.children.push(node);
+
+	                // Pick one out of 10 color classes for this node.
+	                var index = modules.indexOf(node.parent.name);
+	                if (index < 0) {
+	                    modules.push(node.parent.name);
+	                    index = modules.length - 1;
+	                }
+	                index = index % 10;
+	                node.class = "module-" + index;
+	                node.key = name.substring(i + 1);
+	            }
+	        }
+	        return node;
+	    }
+
+	    rules.forEach(function (d) {
+	        find(d.name, d);
+	    });
+
+	    return map[""];
+	}
+
+	function packageReferences(nodes) {
+	    var map = {};
+	    var references = [];
+
+	    // Compute a map from name to node.
+	    nodes.forEach(function (d) {
+	        map[d.data.name] = d;
+	    });
+
+	    // For each import, construct a link from the source to target node.
+	    nodes.forEach(function (d) {
+	        if (d.data.references) {
+	            d.data.references.forEach(function (i) {
+	                references.push({
+	                    source: map[d.data.name],
+	                    target: map[i]
+	                });
+	            });
+	        }
+	    });
+
+	    return references;
+	}
 }
 
-function packageReferences(nodes) {
-    var map = {};
-    var references = [];
-
-    // Compute a map from name to node.
-    nodes.forEach(function (d) {
-        map[d.data.name] = d;
-    });
-
-    // For each import, construct a link from the source to target node.
-    nodes.forEach(function (d) {
-        if (d.data.references) {
-            d.data.references.forEach(function (i) {
-                references.push({
-                    source: map[d.data.name],
-                    target: map[i]
-                });
-            });
-        }
-    });
-
-    return references;
+function changeDiameter(factor) {
+	const svg = document.querySelectorAll('svg')[0];	
+	while (svg.firstChild) {
+	    svg.removeChild(svg.firstChild);
+	}
+	diameter *= factor;
+	diameter = diameter < 100 ? 100 : (diameter > 10000 ? 10000 : diameter);
+	initialScale = diameter / initialDiameter / 2;
+	
+	render();
 }

@@ -113,3 +113,87 @@ body.vscode-dark .link-source {
 body.vscode-dark .link-target {
     stroke: #e6db74;
 }
+
+/* Default CSS for call graphs (dark theme) */
+
+body.vscode-dark .link {
+    stroke: #fff;
+    stroke-opacity: .2;
+    fill: none;
+    pointer-events: none;
+	animation: fadeIn 0.5s ease-out 0.2s 1 normal backwards;
+}
+
+body.vscode-dark .module-1 {
+    fill: #0ca9fd;
+}
+
+body.vscode-dark .module-2 {
+    fill: #63bf8d;
+}
+
+body.vscode-dark .module-3 {
+    fill: #ff8801;
+}
+
+body.vscode-dark .module-4 {
+    fill: #b9fc34;
+}
+
+body.vscode-dark .module-5 {
+    fill: #90e0e0;
+}
+
+body.vscode-dark .module-6 {
+    fill: #b4a3f5;
+}
+
+body.vscode-dark .module-7 {
+    fill: #f92672;
+}
+
+body.vscode-dark .module-8 {
+    fill: #e9e901;
+}
+
+body.vscode-dark .module-9 {
+    fill: #83be69;
+}
+
+body.vscode-dark .module-10 {
+    fill: #f1d18c;
+}
+
+body.vscode-dark .node:hover {
+    fill: #fff;
+}
+
+body.vscode-dark .node-source {
+    fill: #ff5711;
+}
+
+body.vscode-dark .node-target {
+    fill: #45aa73;
+}
+
+body.vscode-dark .link-source {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+    stroke: #45aa73;
+	animation: none;
+}
+
+body.vscode-dark .link-target {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+    stroke: #ff5711;
+	animation: none;
+}
+
+body.vscode-dark .link-dimmed {
+    stroke-opacity: 0.075;
+    animation: fadeOut 0.25s ease-out 0s 1 normal backwards;
+}
+
+/* Default CSS for internal elements, only visible in vscode */
+

@@ -5,10 +5,10 @@
 </head>
 <body>
   <script src="https://d3js.org/d3.v4.min.js"></script>
-  <div class="header"><span class="rule-initial">Ⓡ</span>&nbsp;&nbsp;##objectName## <span class="rule-index">(rule index: ##index##)</span>
-      <span class="icon-box">
-          <a onClick="resetTransformation();" style="cursor: pointer; cursor: hand; margin-left: 15px"><span class="rule-initial-small">↺</span> Reset display</a>
-          <a onClick="exportToSVG('atn', '##objectName##');" style="cursor: pointer; cursor: hand; margin-left: 15px"><span class="rule-initial-small">⤑</span> Save to file</a>
+  <div class="header"><span class="atn-graph-color"><span class="rule-initial">Ⓡ</span>ule</span> ##objectName## <span class="rule-index">(rule index: ##index##)</span>
+      <span class="action-box">
+          <a onClick="resetTransformation();"><span class="rule-initial-small atn-graph-color">↺</span> Reset display</a>
+          <a onClick="exportToSVG('atn', '##objectName##');"><span class="rule-initial-small atn-graph-color">⤑</span> Save to file</a>
       </span>
   </div>
 

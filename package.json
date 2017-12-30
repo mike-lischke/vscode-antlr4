@@ -84,6 +84,11 @@
                     "default": "",
                     "description": "Default export target folder for ATN SVG files"
                 },
+                "antlr4.call-graph.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default export target folder for call graphs"
+                },
                 "antlr4.atn.maxLabelCount": {
                     "type": "number",
                     "default": 3,

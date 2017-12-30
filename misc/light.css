@@ -150,10 +150,11 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 }
 
 .link {
-    stroke: #fff;
+    stroke: #000;
     stroke-opacity: .2;
     fill: none;
     pointer-events: none;
+    animation: fadeIn 0.25s ease-out 0.2s 1 normal backwards;
 }
 
 .module-1 {
@@ -197,7 +198,7 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 }
 
 .node:hover {
-    fill: #fff;
+    fill: #000;
 }
 
 .node:hover,
@@ -208,7 +209,7 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 }
 
 .node-source {
-    fill: #e6db74;
+    fill: #ff5711;
 }
 
 .node-target {
@@ -219,12 +220,91 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 .link-target {
     stroke-opacity: 1;
     stroke-width: 2px;
+	animation: none;
 }
 
 .link-source {
-    stroke: #45aa73;
+    stroke: #3dcd92;
 }
 
 .link-target {
-    stroke: #e6db74;
+    stroke: #ff5711;
 }
+
+@keyframes fadeOut {
+    0% { stroke-opacity: 0.2; }
+    100% { stroke-opacity: 0.075; }
+}
+
+@keyframes fadeIn {
+    0% { stroke-opacity: 0.075; }
+    100% { stroke-opacity: 0.2; }
+}
+
+.link-dimmed {
+    stroke-opacity: 0.075;
+    animation: fadeOut 0.25s ease-out 0.1s 1 normal backwards;
+}
+
+/* Default CSS for internal elements, only visible in vscode */
+
+body {
+	padding-left: 20px;
+}
+
+.header {
+    position: fixed;
+    font-size: 12pt;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+	background-color: var(--background-color);
+	cursor: default;
+}
+
+.rule-initial {
+    font-size: 30pt;
+    font-weight: bold;
+    vertical-align: middle;
+    padding-left: 10px;
+}
+
+.rule-initial-small {
+    font-size: 16pt;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+.rule-index {
+    font-size: 8pt;
+}
+
+#container {
+	margin-top: 40px;
+}
+
+.action-box {
+    font: 10pt monospace;
+    cursor: pointer;
+	cursor: hand;
+	margin-left: 15px;
+}
+
+svg {
+	display: block;
+}
+
+.atn-graph-color {
+    color: rgba(206, 11, 70, 0.75);
+}
+
+.rrd-color {
+    color: rgba(10, 188, 80, 0.75);
+}
+
+.call-graph-color {
+    color: rgba(255, 191, 15, 0.75);
+}
+

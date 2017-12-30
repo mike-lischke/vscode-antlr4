@@ -59,54 +59,6 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
                     ${this.getStyles(uri)}
                     <base href="${document.uri.toString(true)}">
-
-                    <style>
-                        .icon {
-                            width: 1em;
-                            height: 1em;
-                            display: inline-block;
-                            background-repeat: no-repeat;
-                            background-position: center bottom;
-                        }
-
-                        .header {
-                            position: fixed;
-                            font-size: 14pt;
-                            z-index: 9999;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                            background-color: var(--background-color);
-                            height: 30px;
-                        }
-
-                        .rule-initial {
-                            font-size: 28pt;
-                            color: rgba(10, 188, 80, 0.75);
-                            font-weight: bold;
-                            vertical-align: middle;
-                            padding-left: 10px;
-                        }
-
-                        .rule-initial-small {
-                            font-size: 16pt;
-                            color: rgba(10, 188, 80, 0.75);
-                            font-weight: bold;
-                            vertical-align: middle;
-                        }
-
-                        .rule-index {
-                            font-size: 8pt;
-                        }
-
-                        body.vscode-light .icon { filter: invert(100%); -webkit-filter: invert(100%); }
-                        #container { margin-top: 40px; }
-                        svg { display: block; }
-                        body { padding-left: 20px; }
-                        .icon-box { font: 10pt monospace; margin-left: 0px; }
-                        .icon.save { background-image: url("${Utils.getMiscPath('save.svg', this.context)}"); }
-
-                    </style>
                 </head>
 
                 <body>
@@ -116,8 +68,8 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
             if (command == "full") {
                 diagram += `
                     <div class="header">
-                        <span class="icon-box">
-                            <a onClick="exportToHTML('rrd', '${baseName}');" style="cursor: pointer; cursor: hand; margin-left: 15px;""><span class="rule-initial-small">⤑</span> Save all diagrams in an HTML file <span class="icon save" title="Save to disk"></span></a>
+                        <span class="action-box">
+                            <a onClick="exportToHTML('rrd', '${baseName}');"><span class="rule-initial-small rrd-color">⤑</span> Save all diagrams in an HTML file</a>
                         </span>
                     </div>
                     <div id="container">`;
@@ -133,12 +85,12 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 diagram += `</div>`;
             } else {
                 diagram += `
-                    <div class="header"><span class="rule-initial">Ⓡ</span>&nbsp;&nbsp;${ruleName} <span class="rule-index">(rule index: ${ruleIndex})</span>
-                        <span class="icon-box">
-                            <a onClick="exportToSVG('rrd', '${ruleName}');" style="cursor: pointer; cursor: hand; margin-left: 15px;"><span class="rule-initial-small">⤑</span> Save to file</a>
+                    <div class="header"><span class="rrd-color"><span class="rule-initial">Ⓡ</span>ule</span>&nbsp;&nbsp;${ruleName} <span class="rule-index">(rule index: ${ruleIndex})</span>
+                        <span class="action-box">
+                            <a onClick="exportToSVG('rrd', '${ruleName}');"><span class="rule-initial-small rrd-color">⤑</span> Save to file</a>
                         </span>
                     </div>
-                    <div id="container" style="transform: scale(1, 1); transform-origin: 0 0; width: 100%">
+                    <div id="container">
                         <script>${this.backend.getRRDScript(fileName, ruleName)}</script>
                     </div>
                 `;

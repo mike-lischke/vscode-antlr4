@@ -84,6 +84,7 @@ In order to set all settings to their default values use: `// $antlr-format rese
 * **antlr4.customcss**, array of string (default: empty array), list of custom css URIs for diagrams/graphs
 * **antlr4.rrd.saveDir**, string (default: empty/undefined), default export target folder for railroad diagrams
 * **antlr4.atn.saveDir**, string (default: empty/undefined), default export target folder for railroad diagrams
+* **antlr4.call-graph.saveDir**, string (default: empty/undefined), default export target folder for call graphs
 * **antlr4.atn.maxLabelCount**, number (default: 3), max number of labels displayed on a transition in an ATN graph
 * **antlr4.generation.mode**, string enum (default: "internal"), determines what code generation pattern should be followed:
     * **none**: don't generate any code, not even for internal use

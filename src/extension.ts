@@ -158,8 +158,8 @@ export function activate(context: ExtensionContext) {
     // The export to svg command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveSVG", (args: { name: string, type: string, svg: string }) => {
         let css: string[] = [];
-        css.push(Utils.getMiscPath(args.type + ".css", context, false));
-        let customStyles = workspace.getConfiguration("antlr4." + args.type)['customcss'];
+        css.push(Utils.getMiscPath("light.css", context, false));
+        let customStyles = workspace.getConfiguration("antlr4")['customcss'];
         if (customStyles && Array.isArray(customStyles)) {
             for (let style of customStyles) {
                 css.push(style);
@@ -174,24 +174,32 @@ export function activate(context: ExtensionContext) {
         svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
             '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + args.svg;
 
-        Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"], args.name + "." + args.type + ".svg"),
-            ".svg", "Enter the name to an svg file.", svg, css);
+        try {
+            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"],
+                args.name + "." + args.type + ".svg"), ".svg", "Enter the name to an svg file.", svg, css);
+        } catch (error) {
+            window.showErrorMessage("Couldn't write SVG file: " + error);
+        }
     }));
 
     // The export to html command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveHTML", (args: { name: string, type: string, html: string }) => {
         let css: string[] = [];
-        css.push(Utils.getMiscPath(args.type + ".css", context, false));
-        css.push(Utils.getMiscPath(args.type + "-dark.css", context, false));
-        let customStyles = workspace.getConfiguration("antlr4." + args.type)['customcss'];
+        css.push(Utils.getMiscPath("light.css", context, false));
+        css.push(Utils.getMiscPath("dark.css", context, false));
+        let customStyles = workspace.getConfiguration("antlr4")['customcss'];
         if (customStyles && Array.isArray(customStyles)) {
             for (let style of customStyles) {
                 css.push(style);
             }
         }
-        Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"],
-            args.name + "." + args.type + ".html"), ".html", "Enter the name to an svg file.", args.html, css);
-    }));
+        try {
+            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"],
+                args.name + "." + args.type + ".html"), ".html", "Enter the name to an svg file.", args.html, css);
+        } catch (error) {
+            window.showErrorMessage("Couldn't write HTML file: " + error);
+        }
+        }));
 
     // The save ATN state notification.
     context.subscriptions.push(commands.registerCommand('_antlr.saveATNState',
