@@ -35,7 +35,7 @@
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-2.png)
 
 * When parser generation is enabled (at least for internal use) ANTLR4 itself is used to check for errors and warnings. These are then reported instead of the internally found problems and give you so the full validation power of ANTLR4.
->![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr4-8.png)
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-8.png)
 
 ### Parser Generation
 
@@ -49,13 +49,16 @@
 * Another cool feature are ATN graphs for all rule types. This is a visualization of the internal ATN that drives lexers + parsers. It uses D3.js for layout and interaction. Nodes can be repositioned with the mouse and you can drag and zoom the image. The transformation and position state is restored when reopening a graph. Also here you can customize the display with own CSS and save the image to disk.
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-4.png)
 
+* In order get an impression about the complexity of your grammar and visually find rule relationships there's a call graph (a dendogram) you can open via the editor context menu. It draws connections between rules (parser, lexer + fragment rules), for the current grammar as well as those used by it. The more lines you see the higher the rules interact with each other. You can hover with the mouse over a rule name and will get marked all relationships for that rule (while the rest is faded out). Red lines are drawn to callers of that rule, green lines for those called by it. Hence many red lines means this is a rule used by many others and hence a good candidate for optimization. Many green lines however indicate a high complexity and you should perhaps refactor this rule into multiple smaller ones. Like the other graphs you can save this image as svg file. A new saveDir setting has been added for this.
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-11.png)
+
 ### Formatting
 
 The extension is able to format grammar source code, considering a large set of options (see below). The [clang-format](http://clang.llvm.org/docs/ClangFormatStyleOptions.html) tool acted as a model for option naming and some settings that have been taken over. Other options are specific to grammar files. Beside the usual things like block formatting, colon and semicolon placement etc. there's a powerful alignment implementation. It allows to align certain grammar elements (trailing comments, lexer commands, alt labels, predicates and others) between consecutive lines that contain this grammar element (when grouped alignment is on) or for the entire file. There can even be multiple alignments on a line:
 
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-9.png)
 
-The formatting feature can be controlled by special comments, which allow to switch a setting on the fly (e.g. columnWidth). You can even completely switch off formatting for file or a part of it. Below are some examples for such a formatting comment. You can use boolean values (on, off, true, false), numbers and identifiers (for word options). They are not case-sensitive.
+The formatting feature can be controlled by special comments, which allow to switch a setting on the fly. You can even completely switch off formatting for file or a part of it. Below are some examples for such a formatting comment. You can use boolean values (on, off, true, false), numbers and identifiers (for word options). They are not case-sensitive.
 
 ```
 // $antlr-format on
@@ -83,7 +86,7 @@ In order to set all settings to their default values use: `// $antlr-format rese
 * **antlr4.referencesCodeLens.enabled**, boolean (default: false), if true enables the reference count display via Code Lens
 * **antlr4.customcss**, array of string (default: empty array), list of custom css URIs for diagrams/graphs
 * **antlr4.rrd.saveDir**, string (default: empty/undefined), default export target folder for railroad diagrams
-* **antlr4.atn.saveDir**, string (default: empty/undefined), default export target folder for railroad diagrams
+* **antlr4.atn.saveDir**, string (default: empty/undefined), default export target folder for atn graph
 * **antlr4.call-graph.saveDir**, string (default: empty/undefined), default export target folder for call graphs
 * **antlr4.atn.maxLabelCount**, number (default: 3), max number of labels displayed on a transition in an ATN graph
 * **antlr4.generation.mode**, string enum (default: "internal"), determines what code generation pattern should be followed:
