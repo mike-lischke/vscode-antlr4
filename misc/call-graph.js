@@ -15,7 +15,7 @@ function render() {
 	var topGroup = svg.append("g");
 
 	var zoom = d3.zoom()
-	    .scaleExtent([0.5 * initialScale, 10 * initialScale])
+	    .scaleExtent([0.1 * initialScale, 10 * initialScale])
 	    .on("zoom", zoomed);
 
 	function zoomed() {

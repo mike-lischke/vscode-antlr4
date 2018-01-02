@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2017 Mike Lischke
+ * Copyright (c) 2016, 2018, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,6 +9,7 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as Net from 'net';
 
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
@@ -29,9 +30,15 @@ import { AntlrFormattingProvider } from "./FormattingProvider";
 import { getTextProviderUri } from "./TextContentProvider";
 import { ImportsProvider } from "./ImportsProvider";
 import { AntlrCallGraphProvider } from "./CallGraphProvider";
+import { TokenListProvider } from "./TokenListProvider";
+import { LexerSymbolsProvider } from "./LexerSymbolsProvider";
+import { ParserSymbolsProvider } from "./ParserSymbolsProvider";
+import { ChannelsProvider } from "./ChannelsProvider";
+import { ModesProvider } from "./ModesProvider";
 
 import { ProgressIndicator } from "./ProgressIndicator";
 import { Utils } from "./Utils";
+import { AntlrDebugSession } from "./AntlrDebugger";
 
 const ANTLR = { language: 'antlr', scheme: 'file' };
 
@@ -44,6 +51,11 @@ let atnStates: Map<string, Map<string, ATNStateEntry>> = new Map();
 let backend: AntlrLanguageSupport;
 let progress: ProgressIndicator;
 let outputChannel: OutputChannel;
+let tokenListProvider: TokenListProvider;
+let lexerSymbolsProvider: LexerSymbolsProvider;
+let parserSymbolsProvider: ParserSymbolsProvider;
+let channelsProvider: ChannelsProvider;
+let modesProvider: ModesProvider;
 
 export function activate(context: ExtensionContext) {
 
@@ -144,6 +156,22 @@ export function activate(context: ExtensionContext) {
 
     context.subscriptions.push(debug.registerDebugConfigurationProvider('antlr-debug', new AntlrDebugConfigurationProvider()));
 
+    tokenListProvider = new TokenListProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.tokenList", tokenListProvider));
+
+    lexerSymbolsProvider = new LexerSymbolsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.lexerSymbols", lexerSymbolsProvider));
+
+    parserSymbolsProvider = new ParserSymbolsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.parserSymbols", parserSymbolsProvider));
+
+    channelsProvider = new ChannelsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.channels", channelsProvider));
+
+    modesProvider = new ModesProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.modes", modesProvider));
+
+    // Helper commands.
     context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
         workspace.openTextDocument(grammar).then((document) => {
             window.showTextDocument(document, 0, false);
@@ -199,7 +227,7 @@ export function activate(context: ExtensionContext) {
         } catch (error) {
             window.showErrorMessage("Couldn't write HTML file: " + error);
         }
-        }));
+    }));
 
     // The save ATN state notification.
     context.subscriptions.push(commands.registerCommand('_antlr.saveATNState',
@@ -418,10 +446,13 @@ export function deactivate() {
  * Validates launch configuration for grammar debugging.
  */
 class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
-    constructor() {}
+    private server?: Net.Server;
+    private port?: number;
+
+    constructor() { }
 
     resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
-         token?: CancellationToken): ProviderResult<DebugConfiguration> {
+        token?: CancellationToken): ProviderResult<DebugConfiguration> {
 
         // launch.json missing or empty?
         if (!config.type || !config.request || !config.name) {
@@ -447,6 +478,26 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
 
             config.grammar = editor.document.fileName;
 
+            if (!this.server) {
+                this.server = Net.createServer(socket => {
+                    /*socket.on('end', () => {
+                        console.error('>> client connection closed\n');
+                    });*/
+
+                    const session = new AntlrDebugSession(backend, [
+                        tokenListProvider,
+                        lexerSymbolsProvider,
+                        parserSymbolsProvider,
+                        channelsProvider,
+                        modesProvider
+                    ]);
+                    session.setRunAsServer(true);
+                    session.start(<NodeJS.ReadableStream>socket, socket);
+                }).listen(0);
+            }
+
+            config.debugServer = this.server.address().port;
+
             return config;
         } else {
             window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
@@ -455,4 +506,9 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
         return undefined;
     }
 
+    dispose() {
+        if (this.server) {
+            this.server.close();
+        }
+    }
 }

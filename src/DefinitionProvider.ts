@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2017 Mike Lischke
+ * Copyright (c) 2016, 2018, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -22,7 +22,6 @@ export class DefinitionProvider {
             return undefined;
         }
 
-        let basePath = path.dirname(document.fileName);
         // VS code shows the text for the range given here on holding ctrl/cmd, which is rather
         // useless given that we show this info already in the hover provider. So, in order
         // to limit the amount of text we only pass on the smallest range which is possible.

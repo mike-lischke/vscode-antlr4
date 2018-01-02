@@ -1,13 +1,11 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, Mike Lischke
+ * Copyright (c) 2017, 2018, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
 "use strict"
-
-import { GrapsDebugger, AntlrLanguageSupport } from "antlr4-graps";
 
 import {
     DebugSession, LoggingDebugSession, Handles, InitializedEvent, logger, Logger, Thread, Scope, Source, OutputEvent, TerminatedEvent
@@ -17,6 +15,10 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { basename } from 'path';
 import { window } from "vscode";
 import * as fs from "fs-extra";
+
+import { GrapsDebugger, AntlrLanguageSupport } from "antlr4-graps";
+
+import { TokenListProvider } from "./TokenListProvider";
 
 /**
  * Interface that reflects the arguments as specified in package.json.
@@ -29,16 +31,20 @@ interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     grammar: string;
 }
 
+export interface DebuggerConsumer {
+    debugger: GrapsDebugger;
+
+    refresh(): void;
+}
+
 export class AntlrDebugSession extends LoggingDebugSession {
 	private static THREAD_ID = 1;
 
-	private debugger: GrapsDebugger | undefined;
-
-	/**
+    /**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
 	 */
-	public constructor() {
+	constructor(private backend: AntlrLanguageSupport, private consumers: DebuggerConsumer[]) {
 		super("antlr4-vscode-trace.txt");
 
 		// this backend uses zero-based lines and columns
@@ -70,10 +76,13 @@ export class AntlrDebugSession extends LoggingDebugSession {
 			e.body.column = this.convertbackendColumnToClient(column);
 			this.sendEvent(e);
 		});
-		this._runtime.on('end', () => {
+		this.debugger!.on('end', () => {
 			this.sendEvent(new TerminatedEvent());
 		});*/
 	}
+
+    shutdown(): void {
+    }
 
 	/**
 	 * The 'initialize' request is the first request called by the frontend
@@ -100,16 +109,21 @@ export class AntlrDebugSession extends LoggingDebugSession {
 	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
-        // The passed in arguments are a combination of what is specified in the launch configuration (launch.json) and
-        // the AntlrDebugConfigurationProvider.
         try {
             let testInput = fs.readFileSync(args.input, { encoding: "utf8" });
-            //this.debugger = extension.backend.createDebugger(args.grammar, "lexer.g4", "parser.g4", testInput);
+            let d = this.backend.createDebugger(args.grammar, "lexer.g4", "parser.g4", testInput)!;
+            if (!d) {
+                throw Error("No interpreter data available. Make sure you have set the \"antlr4.generation.mode\" setting to at least \"internal\"");
+            }
+            this.debugger = d;
+            for (let consumer of this.consumers) {
+                consumer.debugger = d;
+                consumer.refresh();
+            }
         } catch (e) {
             this.sendErrorResponse(response, { id: 1, format: "Error while launching debug session: " + e });
             return;
         }
-
 		this.debugger!.start(!!args.stopOnEntry);
 
 		this.sendResponse(response);
@@ -179,7 +193,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 	}
 
 	protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-		this.debugger!.continue();
+		//this.debugger!.continue();
 		this.sendResponse(response);
 	}
 
@@ -188,7 +202,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
  	}
 
 	protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
-		this.debugger!.step();
+		//this.debugger!.step();
 		this.sendResponse(response);
 	}
 
@@ -233,7 +247,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
 	private createSource(filePath: string): Source {
 		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
-	}
-}
+    }
 
-DebugSession.run(AntlrDebugSession);
+    private debugger: GrapsDebugger;
+}

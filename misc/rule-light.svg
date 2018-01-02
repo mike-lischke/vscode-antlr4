@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="60" height="30" viewBox="0, 0, 60, 30">
+  <g id="Ebene_1">
+    <path d="M7.656,3.286 L53.344,3.286 C55.57,3.286 57.375,5.64 57.375,8.544 L57.375,22.456 C57.375,25.36 55.57,27.714 53.344,27.714 L7.656,27.714 C5.43,27.714 3.625,25.36 3.625,22.456 L3.625,8.544 C3.625,5.64 5.43,3.286 7.656,3.286 z" fill-opacity="0" stroke="#666666" stroke-width="4"/>
+  </g>
+</svg>

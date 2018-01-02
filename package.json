@@ -27,30 +27,25 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "languages": [
-            {
-                "id": "antlr",
-                "aliases": [
-                    "ANTLR",
-                    "antlr"
-                ],
-                "extensions": [
-                    ".g",
-                    ".g4"
-                ],
-                "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
-                "configuration": "./antlr.configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "antlr",
-                "scopeName": "source.antlr",
-                "path": "./syntaxes/antlr.json"
-            }
-        ],
-        "themes": [
-            {
+        "languages": [{
+            "id": "antlr",
+            "aliases": [
+                "ANTLR",
+                "antlr"
+            ],
+            "extensions": [
+                ".g",
+                ".g4"
+            ],
+            "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
+            "configuration": "./antlr.configuration.json"
+        }],
+        "grammars": [{
+            "language": "antlr",
+            "scopeName": "source.antlr",
+            "path": "./syntaxes/antlr.json"
+        }],
+        "themes": [{
                 "label": "Complete Dark",
                 "uiTheme": "vs-dark",
                 "path": "./themes/complete_dark.json"
@@ -271,8 +266,7 @@
                 }
             }
         },
-        "commands": [
-            {
+        "commands": [{
                 "command": "antlr.atn.singleRule",
                 "title": "Show ATN Graph for Rule"
             },
@@ -306,8 +300,7 @@
             }
         ],
         "menus": {
-            "explorer/context": [
-                {
+            "explorer/context": [{
                     "command": "antlr.file.createLexerSkeleton",
                     "group": "antlr@1"
                 },
@@ -320,22 +313,17 @@
                     "group": "antlr@3"
                 }
             ],
-            "editor/title/context": [
-                {
-                    "when": "resourceLangId == antlr",
-                    "command": "antlr.rrd.allRules",
-                    "group": "antlr@1"
-                }
-            ],
-            "editor/title": [
-                {
-                    "when": "resourceLangId == antlr",
-                    "command": "antlr.rrd.allRules",
-                    "group": "antlr@1"
-                }
-            ],
-            "editor/context": [
-                {
+            "editor/title/context": [{
+                "when": "resourceLangId == antlr",
+                "command": "antlr.rrd.allRules",
+                "group": "antlr@1"
+            }],
+            "editor/title": [{
+                "when": "resourceLangId == antlr",
+                "command": "antlr.rrd.allRules",
+                "group": "antlr@1"
+            }],
+            "editor/context": [{
                     "when": "resourceLangId == antlr",
                     "command": "antlr.rrd.singleRule",
                     "group": "antlr@1"
@@ -358,69 +346,80 @@
             ]
         },
         "views": {
-            "explorer": [
-                {
-                    "id": "antlr4.imports",
-                    "name": "Grammar Dependencies",
-                    "when": "resourceLangId == 'antlr'"
-                }
-            ]
-        },
-        "debuggers": [
+            "explorer": [{
+                "id": "antlr4.imports",
+                "name": "Grammar Dependencies",
+                "when": "resourceLangId == 'antlr'"
+            }],
+            "debug": [{
+                "id": "antlr4.tokenList",
+                "name": "Test Input Tokens"
+            },
             {
-                "type": "antlr-debug",
-                "label": "ANTLR4 Debug",
-                "program": "./out/src/AntlrDebugger.js",
-                "runtime": "node",
-                "configurationAttributes": {
-                    "launch": {
-                        "required": [
-                            "input"
-                        ],
-                        "properties": {
-                            "input": {
-                                "type": "string",
-                                "description": "Absolute path to a text file containing test input to parse.",
-                                "default": "${workspaceFolder}/${command:AskForTestInput}"
-                            },
-                            "stopOnEntry": {
-                                "type": "boolean",
-                                "description": "Automatically stop on initial rule.",
-                                "default": false
-                            },
-                            "trace": {
-                                "type": "boolean",
-                                "description": "Log internal debugger messages to debug console.",
-                                "default": false
-                            }
+                "id": "antlr4.lexerSymbols",
+                "name": "Lexer Tokens"
+            },
+            {
+                "id": "antlr4.parserSymbols",
+                "name": "Parser Rules"
+            },
+            {
+                "id": "antlr4.channels",
+                "name": "Token channels"
+            },
+            {
+                "id": "antlr4.modes",
+                "name": "Lexer modes"
+            }]
+        },
+        "debuggers": [{
+            "type": "antlr-debug",
+            "label": "ANTLR4 Debug",
+            "runtime": "node",
+            "configurationAttributes": {
+                "launch": {
+                    "required": [
+                        "input"
+                    ],
+                    "properties": {
+                        "input": {
+                            "type": "string",
+                            "description": "Absolute path to a text file containing test input to parse.",
+                            "default": "${workspaceFolder}/${command:AskForTestInput}"
+                        },
+                        "stopOnEntry": {
+                            "type": "boolean",
+                            "description": "Automatically stop on initial rule.",
+                            "default": false
+                        },
+                        "trace": {
+                            "type": "boolean",
+                            "description": "Log internal debugger messages to debug console.",
+                            "default": false
                         }
                     }
-                },
-                "initialConfigurations": [
-                    {
-                        "type": "antlr-debug",
-                        "request": "launch",
-                        "input": "${workspaceFolder}/${command:AskForTestInput}",
-                        "stopOnEntry": true
-                    }
-                ],
-                "configurationSnippets": [
-                    {
-                        "label": "ANTLR: Parse",
-                        "description": "A new configuration for parsing with a grammar.",
-                        "body": {
-                            "type": "antlr-debug",
-                            "request": "launch",
-                            "name": "${2:Run Parser}",
-                            "input": "^\"\\${workspaceFolder}/${1:Input}\""
-                        }
-                    }
-                ],
-                "variables": {
-                    "AskForTestInput": "antlr.getTestInputName"
                 }
+            },
+            "initialConfigurations": [{
+                "type": "antlr-debug",
+                "request": "launch",
+                "input": "${workspaceFolder}/${command:AskForTestInput}",
+                "stopOnEntry": true
+            }],
+            "configurationSnippets": [{
+                "label": "ANTLR: Parse",
+                "description": "A new configuration for parsing with a grammar.",
+                "body": {
+                    "type": "antlr-debug",
+                    "request": "launch",
+                    "name": "${2:Run Parser}",
+                    "input": "^\"\\${workspaceFolder}/${1:Input}\""
+                }
+            }],
+            "variables": {
+                "AskForTestInput": "antlr.getTestInputName"
             }
-        ]
+        }]
     },
     "scripts": {
         "vscode:prepublish": "npm run cleanup && tsc --outDir ./out/src",
