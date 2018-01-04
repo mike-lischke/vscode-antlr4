@@ -68,8 +68,8 @@ class ParserSymbol extends TreeItem {
     }
 
     iconPath = {
-        light: path.join(__dirname, '..', '..', 'misc', 'rule-light.svg'),
-        dark: path.join(__dirname, '..', '..', 'misc', 'rule-dark.svg')
+        light: path.join(__dirname, '..', '..', 'misc', 'rule.svg'),
+        dark: path.join(__dirname, '..', '..', 'misc', 'rule.svg')
     };
 
     contextValue = 'parserSymbols';

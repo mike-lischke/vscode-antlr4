@@ -69,25 +69,44 @@
                     "default": [],
                     "description": "List of custom CSS URIs for diagram SVG files"
                 },
-                "antlr4.rrd.saveDir": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Default export target folder for railroad diagrams"
+                "antlr4.rrd": {
+                    "type": "object",
+                    "default": {
+                        "saveDir": ""
+                    },
+                    "description": "Settings related to railroad diagrams",
+                    "properties": {
+                        "saveDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Default export target folder for railroad diagrams"
+                        }
+                    }
                 },
-                "antlr4.atn.saveDir": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Default export target folder for ATN SVG files"
+                "antlr4.atn": {
+                    "type": "object",
+                    "default": {
+                        "saveDir": "",
+                        "maxLabelCount": 3
+                    },
+                    "description": "Settings related to ATN graphs",
+                    "properties": {
+                        "saveDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Default export target folder for ATN SVG files"
+                        },
+                        "antlr4.atn.maxLabelCount": {
+                            "type": "number",
+                            "default": 3,
+                            "description": "Max number of labels displayed on a transition in an ATN graph"
+                        }
+                    }
                 },
                 "antlr4.call-graph.saveDir": {
                     "type": "string",
                     "default": "",
                     "description": "Default export target folder for call graphs"
-                },
-                "antlr4.atn.maxLabelCount": {
-                    "type": "number",
-                    "default": 3,
-                    "description": "Max number of labels displayed on a transition in an ATN graph"
                 },
                 "antlr4.generation.mode": {
                     "type": "string",
@@ -263,6 +282,20 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Combine all alignments (align whatever comes first: colons, comments etc.)"
+                },
+                "antlr4.debug": {
+                    "type": "object",
+                    "description": "Debugging related settings",
+                    "default": {
+                        "printParseTree": true
+                    },
+                    "properties" : {
+                        "printParseTree": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Print the final parse tree as text on the debug console"
+                        }
+                    }
                 }
             }
         },

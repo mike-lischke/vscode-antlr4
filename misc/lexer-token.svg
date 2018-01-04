@@ -3,7 +3,7 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="37.5" height="17.5" viewBox="0, 0, 75, 35">
   <g id="Ebene_1">
     <text transform="matrix(1, 0, 0, 1, 37.422, 16.75)">
-      <tspan x="-39.672" y="10" font-family="HelveticaNeue-Medium" font-size="36" fill="#CCCCCC">[a..z]</tspan>
+      <tspan x="-39.672" y="10" font-family="HelveticaNeue-Medium" font-size="36" fill="#d63775">[a..z]</tspan>
     </text>
   </g>
 </svg>
