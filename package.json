@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "misc/antlr-logo.png",
-    "version": "1.2.8",
+    "version": "1.2.10",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -431,18 +431,18 @@
         "cleanup": "npm unlink antlr4-graps --no-save && npm install"
     },
     "dependencies": {
-        "antlr4-graps": "^1.3.14",
+        "antlr4-graps": "^1.3.16",
         "d3": "^4.12.2",
         "fs-extra": "^5.0.0",
         "vscode-debugadapter": "^1.25.0",
         "vscode-debugprotocol": "^1.25.0"
     },
     "devDependencies": {
-        "@types/chai": "^4.0.10",
+        "@types/chai": "^4.1.0",
         "@types/d3": "^4.12.0",
         "@types/fs-extra": "^5.0.0",
-        "@types/mocha": "^2.2.45",
-        "@types/node": "^8.5.2",
+        "@types/mocha": "^2.2.46",
+        "@types/node": "^8.5.8",
         "chai": "^4.1.2",
         "mocha": "^4.1.0",
         "typescript": "^2.6.2",
