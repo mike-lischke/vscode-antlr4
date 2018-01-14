@@ -185,7 +185,27 @@ body.vscode-dark .link-dimmed {
     animation: fadeOut 0.25s ease-out 0s 1 normal backwards;
 }
 
-/* Default CSS for parse trees */
+/* Parse trees */
+body.vscode-dark .tree-node {
+    cursor: pointer;
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 1);
+}
+
+body.vscode-dark .tree-root {
+    cursor: pointer;
+    stroke-width: 2;
+    fill: rgba(37, 84, 158, 1);
+    stroke: #ffffff;
+}
+
+body.vscode-dark .tree-leaf {
+    cursor: move;
+    stroke-width: 2;
+    fill: #399e58;
+    stroke: #ffffff;
+}
 
 /* Default CSS for internal elements, only visible in vscode */
 

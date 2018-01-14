@@ -13,14 +13,14 @@ import {
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 
-import { basename } from 'path';
-import { window, workspace, WorkspaceFolder } from "vscode";
+import { window, workspace, WorkspaceFolder, commands, Uri } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 
 import { GrapsDebugger, AntlrLanguageSupport, ParseTreeNode, ParseTreeNodeType } from "antlr4-graps";
 
 import { TokenListProvider } from "./TokenListProvider";
+import { getTextProviderUri } from './TextContentProvider';
 
 /**
  * Interface that reflects the arguments as specified in package.json.
@@ -130,6 +130,13 @@ export class AntlrDebugSession extends LoggingDebugSession {
                         this.sendEvent(new OutputEvent("No Parse Tree\n"));
                     }
                 }
+
+                commands.executeCommand('vscode.previewHtml', getTextProviderUri(Uri.parse("http://debugger.net"), "parse-tree", ""), 2,
+                    "Parse Tree").then((success: boolean) => {
+                    }, (reason) => {
+                        window.showErrorMessage(reason);
+                    });
+
                 this.sendEvent(new TerminatedEvent());
             });
 
@@ -264,7 +271,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
     //---- helpers
 
     private createSource(filePath: string): Source {
-        return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'antlr-data');
+        return new Source(path.basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'antlr-data');
     }
 
     private parseNodeToString(node: ParseTreeNode, level: number = 0): string {
@@ -272,7 +279,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         switch (node.type) {
             case ParseTreeNodeType.Rule: {
                 let name = this.debugger.ruleName(node.ruleIndex!);
-                result +=  name ? name : "<unknown rule>";
+                result += name ? name : "<unknown rule>";
 
                 if (node.children.length > 0) {
                     result += " (\n";

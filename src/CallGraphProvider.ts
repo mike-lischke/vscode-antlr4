@@ -21,10 +21,6 @@ export class AntlrCallGraphProvider extends AntlrTextContentProvider {
         const command = uri.fragment;
 
         return vscode.workspace.openTextDocument(sourceUri).then(document => {
-            // We need the currently active editor for the caret position.
-            // If there is one we were triggered (or activated) from that.
-            // If not the user probably switched preview windows. In that case we use
-            // the last position stored when we had an active editor.
             let fileName = document.fileName;
             let baseName = path.basename(fileName, path.extname(fileName));
 

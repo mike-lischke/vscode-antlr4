@@ -19,6 +19,8 @@ import {
 
 import { AntlrLanguageSupport, DiagnosticType, GenerationOptions } from "antlr4-graps";
 
+import { getTextProviderUri } from "./TextContentProvider";
+
 import { HoverProvider } from './HoverProvider';
 import { DefinitionProvider } from './DefinitionProvider';
 import { SymbolProvider } from './SymbolProvider';
@@ -27,7 +29,6 @@ import { AntlrCompletionItemProvider } from './CompletionItemProvider';
 import { AntlrRailroadDiagramProvider } from './RailroadDiagramProvider';
 import { AntlrATNGraphProvider, ATNStateEntry } from "./ATNGraphProvider";
 import { AntlrFormattingProvider } from "./FormattingProvider";
-import { getTextProviderUri } from "./TextContentProvider";
 import { ImportsProvider } from "./ImportsProvider";
 import { AntlrCallGraphProvider } from "./CallGraphProvider";
 import { TokenListProvider } from "./TokenListProvider";
@@ -35,6 +36,7 @@ import { LexerSymbolsProvider } from "./LexerSymbolsProvider";
 import { ParserSymbolsProvider } from "./ParserSymbolsProvider";
 import { ChannelsProvider } from "./ChannelsProvider";
 import { ModesProvider } from "./ModesProvider";
+import { AntlrParseTreeProvider } from "./ParseTreeProvider";
 
 import { ProgressIndicator } from "./ProgressIndicator";
 import { Utils } from "./Utils";
@@ -56,6 +58,7 @@ let lexerSymbolsProvider: LexerSymbolsProvider;
 let parserSymbolsProvider: ParserSymbolsProvider;
 let channelsProvider: ChannelsProvider;
 let modesProvider: ModesProvider;
+let parseTreeProvider: AntlrParseTreeProvider;
 
 export function activate(context: ExtensionContext) {
 
@@ -170,6 +173,16 @@ export function activate(context: ExtensionContext) {
 
     modesProvider = new ModesProvider(backend);
     context.subscriptions.push(window.registerTreeDataProvider("antlr4.modes", modesProvider));
+
+    parseTreeProvider = new AntlrParseTreeProvider(backend, context);
+    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.parse-tree", parseTreeProvider));
+    /*context.subscriptions.push(commands.registerTextEditorCommand('antlr.call-graph', (editor: TextEditor, edit: TextEditorEdit) => {
+        return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "call-graph", ""), 2,
+            "Call Graph: " + path.basename(editor.document.fileName)).then((success: boolean) => {
+            }, (reason) => {
+                window.showErrorMessage(reason);
+            });
+    }));*/
 
     // Helper commands.
     context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
@@ -492,7 +505,8 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                         lexerSymbolsProvider,
                         parserSymbolsProvider,
                         channelsProvider,
-                        modesProvider
+                        modesProvider,
+                        parseTreeProvider
                     ]);
                     session.setRunAsServer(true);
                     session.start(<NodeJS.ReadableStream>socket, socket);

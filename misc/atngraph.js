@@ -1,3 +1,9 @@
+/*
+ * This file is released under the MIT license.
+ * Copyright (c) 2018, Mike Lischke
+ *
+ * See LICENSE file for more info.
+ */
 
 var stateType = [
   { short: "INVALID", long: "Invalid state" },
@@ -36,7 +42,6 @@ var svg = d3.select("svg")
   .attr("xmlns", "http://www.w3.org/2000/svg")
   .attr("version", "1.1")
   .attr("preserveAspectRatio", "xMinYMin meet")
-  //.attr("width", "100%")
   .attr("viewBox", "0 0 " +  width + " " + height);
 
 let topGroup = svg.append("g");

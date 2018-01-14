@@ -1,3 +1,10 @@
+/*
+ * This file is released under the MIT license.
+ * Copyright (c) 2018, Mike Lischke
+ *
+ * See LICENSE file for more info.
+ */
+
 const initialDiameter = 1000;
 
 var diameter = initialDiameter;
@@ -84,7 +91,7 @@ function render() {
 
     function onMouseOver(d) {
 		clearTimeout(fadeTimer);
-		
+
         node
 			.each(function (n) {
         		n.target = n.source = false;
@@ -192,13 +199,13 @@ function render() {
 }
 
 function changeDiameter(factor) {
-	const svg = document.querySelectorAll('svg')[0];	
+	const svg = document.querySelectorAll('svg')[0];
 	while (svg.firstChild) {
 	    svg.removeChild(svg.firstChild);
 	}
 	diameter *= factor;
 	diameter = diameter < 100 ? 100 : (diameter > 10000 ? 10000 : diameter);
 	initialScale = diameter / initialDiameter / 2;
-	
+
 	render();
 }

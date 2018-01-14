@@ -284,7 +284,45 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 
 
 /* Parse trees */
+.tree-node {
+    cursor: pointer;
+    stroke-width: 2;
+    stroke: #C0C0C0;
+    fill: rgba(255, 255, 255, 1);
+}
 
+.tree-root {
+    cursor: pointer;
+    stroke-width: 2;
+    fill: rgba(37, 84, 158, 1);
+    stroke: rgba(37, 84, 158, 0.5);
+}
+
+.tree-leaf {
+    cursor: move;
+    stroke-width: 2;
+    fill: rgba(57, 158, 88, 1);
+    stroke: rgba(57, 158, 88, 0.5);
+}
+
+.tree-node text {
+    font: 12px "Helvetica Neue", sans-serif;
+    fill: rgba(41, 41, 41, 1);
+    stroke: none;
+}
+
+.tree-leaf text,
+.tree-root text {
+    font: 12px "Helvetica Neue", sans-serif;
+    fill: #ffffff;
+    stroke: none;
+}
+
+.tree-link {
+    stroke-width: 2px;
+    fill: none;
+    stroke: rgba(128, 128, 128, 1);
+}
 
 /* Internal elements, only visible in vscode */
 
@@ -338,4 +376,8 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 
 .call-graph-color {
     color: rgba(255, 191, 15, 0.75);
+}
+
+.parse-tree-color {
+    color: rgba(49, 112, 212, 0.75);
 }
