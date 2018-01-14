@@ -477,14 +477,17 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
             }
 
             config.grammar = editor.document.fileName;
+            if (config.printParseTree == undefined) {
+                config.printParseTree = true;
+            }
 
             if (!this.server) {
                 this.server = Net.createServer(socket => {
-                    /*socket.on('end', () => {
-                        console.error('>> client connection closed\n');
-                    });*/
+                    socket.on('end', () => {
+                        //console.error('>> ANTLR debugging client connection closed\n');
+                    });
 
-                    const session = new AntlrDebugSession(backend, [
+                    const session = new AntlrDebugSession(folder!, backend, [
                         tokenListProvider,
                         lexerSymbolsProvider,
                         parserSymbolsProvider,

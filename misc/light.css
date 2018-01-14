@@ -1,149 +1,177 @@
-/* Default CSS for ATN graphs (light theme + svg) */
+/*
+ * This file contains all default CSS rules for the light vscode them, used for various diagrams and graphs.
+ * Use the "antlr4.customcss" setting in vscode to specify your own file, if you like to override some rules.
+ *
+ * Most of the appearance is defined here, while only some adjustments for the dark theme exist in dark.css.
+ * This style sheet is also used for exported svg files.
+ */
+
+ body {
+    padding-left: 20px;
+}
+
+svg {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+
+/* ATN graphs */
 
 .transition {
-  fill: none;
-  stroke: #AAA;
-  stroke-width: 2px;
+    fill: none;
+    stroke: #AAA;
+    stroke-width: 2px;
 }
 
 .marker {
-  fill: #999;
-  stroke: none;
+    fill: #999;
+    stroke: none;
 }
 
 .stateLabel {
-  font: bold 11pt "Helvetica Neue", Arial, sans-serif;
-  fill: white;
-  text-anchor: middle;
-  pointer-events: none;
+    font: bold 11pt "Helvetica Neue", Arial, sans-serif;
+    fill: white;
+    text-anchor: middle;
+    pointer-events: none;
 }
 
 .stateTypeLabel {
-  font: bold 7pt monospace;
-  fill: #EEE;
-  text-anchor: middle;
-  pointer-events: none;
+    font: bold 7pt monospace;
+    fill: #EEE;
+    text-anchor: middle;
+    pointer-events: none;
 }
 
 .linkLabel {
-  font: bold 9pt "Helvetica Neue", Arial, sans-serif;
-  fill: #606060;
-  text-anchor: middle;
-  pointer-events: none;
+    font: bold 9pt "Helvetica Neue", Arial, sans-serif;
+    fill: #606060;
+    text-anchor: middle;
+    pointer-events: none;
 }
 
 .state {
-  stroke: #505050;
-  stroke-width: 3px;
-  cursor: move;
-  pointer-events: all;
-  /*filter: url(#black-glow);*/
+    stroke: #505050;
+    stroke-width: 3px;
+    cursor: move;
+    pointer-events: all;
+    /*filter: url(#black-glow);*/
 }
 
 .state.BASIC {
-  fill: #AAA;
+    fill: #AAA;
 }
+
 .state.START {
-  fill: #36bde0;
+    fill: #36bde0;
 }
+
 .state.BSTART {
-  fill: #f39900;
+    fill: #f39900;
 }
+
 .state.PBSTART {
-  fill: #98c000;
+    fill: #98c000;
 }
+
 .state.SBSTART {
-  fill: #607dbd;
+    fill: #607dbd;
 }
+
 .state.TSTART {
-  fill: #ffd300;
+    fill: #ffd300;
 }
+
 .state.STOP {
-  fill: #2baa5b;
+    fill: #2baa5b;
 }
+
 .state.BEND {
-  fill: #c2c269;
+    fill: #c2c269;
 }
+
 .state.SLBACK {
-  fill: #608b4e;
+    fill: #608b4e;
 }
+
 .state.SLENTRY {
-  fill: #a260cb;
+    fill: #a260cb;
 }
+
 .state.PLBACK {
-  fill: #517979;
+    fill: #517979;
 }
+
 .state.LEND {
-  fill: #9b90c3;
+    fill: #9b90c3;
 }
+
 .state.RULE {
-  fill: #b73645;
+    fill: #b73645;
 }
+
 .state.RULE.recursive {
-  fill: #36bde0;
+    fill: #36bde0;
 }
 
-/* Default CSS for railroad diagrams (light theme + svg) */
 
-svg.railroad-diagram {
-	background: rgba(0, 0, 0, 0.05);
-}
+/* Railroad diagrams */
 
 svg.railroad-diagram path {
-	/* The connection lines. */
-	stroke-width: 2;
-	stroke: darkgray;
-	fill: rgba(0, 0, 0, 0);
+    /* The connection lines. */
+    stroke-width: 2;
+    stroke: darkgray;
+    fill: rgba(0, 0, 0, 0);
 }
 
 svg.railroad-diagram text {
-	/* All text except comments. */
-	font: bold 12px Hack, "Source Code Pro", monospace;
-	text-anchor: middle;
-	fill: #404040;
-	/* Use fill instead of color for svg text. */
+    /* All text except comments. */
+    font: bold 12px Hack, "Source Code Pro", monospace;
+    text-anchor: middle;
+    fill: #404040;
+    /* Use fill instead of color for svg text. */
 }
 
 svg.railroad-diagram text.comment {
-	/* Comment text */
-	font: italic 10px Hack, "Source Code Pro", monospace;
-	fill: #404040;
+    /* Comment text */
+    font: italic 10px Hack, "Source Code Pro", monospace;
+    fill: #404040;
 }
 
 svg.railroad-diagram g.non-terminal rect {
-	/* The non-terminal boxes. */
-	stroke-width: 2;
-	stroke: #404040;
-	fill: rgba(255, 255, 255, 1);
+    /* The non-terminal boxes. */
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 1);
 }
 
 svg.railroad-diagram g.terminal rect {
-	/* The terminal boxes. */
-	stroke-width: 2;
-	stroke: #404040;
-	fill: rgba(0, 0, 0, 0.1);
+    /* The terminal boxes. */
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(0, 0, 0, 0.1);
 }
 
 svg.railroad-diagram text.diagram-text {
-	/* Multiple choice text, not working atm. */
-	font-size: 12px Hack, "Source Code Pro", monospace;
-	fill: red;
+    /* Multiple choice text, not working atm. */
+    font-size: 12px Hack, "Source Code Pro", monospace;
+    fill: red;
 }
 
 svg.railroad-diagram path.diagram-text {
-	/* Multiple choice text, not working atm. */
-	stroke-width: 1;
-	stroke: red;
-	fill: red;
-	cursor: help;
+    /* Multiple choice text, not working atm. */
+    stroke-width: 1;
+    stroke: red;
+    fill: red;
+    cursor: help;
 }
 
 svg.railroad-diagram g.diagram-text:hover path.diagram-text {
-	/* Multiple choice text, not working atm. */
-	fill: #f00;
+    /* Multiple choice text, not working atm. */
+    fill: #f00;
 }
 
-/* Default CSS for call graphs (light theme + svg) */
+
+/* Call graphs */
 
 .node {
     font: 200 10px "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -220,7 +248,7 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 .link-target {
     stroke-opacity: 1;
     stroke-width: 2px;
-	animation: none;
+    animation: none;
 }
 
 .link-source {
@@ -232,13 +260,21 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 }
 
 @keyframes fadeOut {
-    0% { stroke-opacity: 0.2; }
-    100% { stroke-opacity: 0.075; }
+    0% {
+        stroke-opacity: 0.2;
+    }
+    100% {
+        stroke-opacity: 0.075;
+    }
 }
 
 @keyframes fadeIn {
-    0% { stroke-opacity: 0.075; }
-    100% { stroke-opacity: 0.2; }
+    0% {
+        stroke-opacity: 0.075;
+    }
+    100% {
+        stroke-opacity: 0.2;
+    }
 }
 
 .link-dimmed {
@@ -246,11 +282,11 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
     animation: fadeOut 0.25s ease-out 0.1s 1 normal backwards;
 }
 
-/* Default CSS for internal elements, only visible in vscode */
 
-body {
-	padding-left: 20px;
-}
+/* Parse trees */
+
+
+/* Internal elements, only visible in vscode */
 
 .header {
     position: fixed;
@@ -259,9 +295,9 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 40px;
-	background-color: var(--background-color);
-	cursor: default;
+    height: 45px;
+    background-color: var(--background-color);
+    cursor: default;
 }
 
 .rule-initial {
@@ -282,18 +318,14 @@ body {
 }
 
 #container {
-	margin-top: 40px;
+    margin-top: 40px;
 }
 
 .action-box {
     font: 10pt monospace;
     cursor: pointer;
-	cursor: hand;
-	margin-left: 15px;
-}
-
-svg {
-	display: block;
+    cursor: hand;
+    margin-left: 15px;
 }
 
 .atn-graph-color {
@@ -307,4 +339,3 @@ svg {
 .call-graph-color {
     color: rgba(255, 191, 15, 0.75);
 }
-

@@ -14,8 +14,9 @@ import {
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 
 import { basename } from 'path';
-import { window, workspace } from "vscode";
+import { window, workspace, WorkspaceFolder } from "vscode";
 import * as fs from "fs-extra";
+import * as path from "path";
 
 import { GrapsDebugger, AntlrLanguageSupport, ParseTreeNode, ParseTreeNodeType } from "antlr4-graps";
 
@@ -28,6 +29,7 @@ interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     input: string;
     stopOnEntry?: boolean;
     trace?: boolean;
+    printParseTree?: boolean;
 
     grammar: string;
 }
@@ -45,7 +47,10 @@ export class AntlrDebugSession extends LoggingDebugSession {
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
 	 */
-    constructor(private backend: AntlrLanguageSupport, private consumers: DebuggerConsumer[]) {
+    constructor(
+        private folder: WorkspaceFolder,
+        private backend: AntlrLanguageSupport,
+        private consumers: DebuggerConsumer[]) {
         super("antlr4-vscode-trace.txt");
 
         // this backend uses zero-based lines and columns
@@ -82,7 +87,11 @@ export class AntlrDebugSession extends LoggingDebugSession {
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
         try {
-            let testInput = fs.readFileSync(args.input, { encoding: "utf8" });
+            let input = args.input;
+            if (!path.isAbsolute(input)) {
+                input = path.join(this.folder.uri.fsPath, input);
+            }
+            let testInput = fs.readFileSync(input, { encoding: "utf8" });
             let d = this.backend.createDebugger(args.grammar, "lexer.g4", "parser.g4", testInput)!;
             if (!d) {
                 throw Error("No interpreter data available. Make sure you have set the \"antlr4.generation.mode\" setting to at least \"internal\"");
@@ -112,8 +121,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 this.sendEvent(e);
             });
             d.on('end', () => {
-                let showTree = workspace.getConfiguration("antlr4.debug")["printParseTree"];
-                if (showTree) {
+                if (args.printParseTree) {
                     let tree = this.debugger.currentParseTree;
                     if (tree) {
                         let text = this.parseNodeToString(tree);
