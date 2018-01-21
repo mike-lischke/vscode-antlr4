@@ -33,7 +33,7 @@ export class ModesProvider implements TreeDataProvider<ModeEntry>, DebuggerConsu
     getChildren(element?: ModeEntry): Thenable<ModeEntry[]> {
         if (!element) {
             let editor = window.activeTextEditor;
-            if (editor && editor.document.languageId === "antlr" && this.debugger) {
+            if (this.debugger) {
                 let list: ModeEntry[] = [];
                 for (let mode of this.debugger.modes) {
                     list.push(new ModeEntry(mode, TreeItemCollapsibleState.None, {

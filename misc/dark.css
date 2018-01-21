@@ -193,18 +193,37 @@ body.vscode-dark .tree-node {
     fill: rgba(255, 255, 255, 1);
 }
 
-body.vscode-dark .tree-root {
+body.vscode-dark g .tree-root {
     cursor: pointer;
     stroke-width: 2;
-    fill: rgba(37, 84, 158, 1);
+    fill: #25549e;
     stroke: #ffffff;
 }
 
-body.vscode-dark .tree-leaf {
+body.vscode-dark g .tree-leaf {
     cursor: move;
     stroke-width: 2;
-    fill: #399e58;
+    fill: #828e66;
     stroke: #ffffff;
+}
+
+body.vscode-dark g .tree-error {
+    cursor: move;
+    stroke-width: 2;
+    fill: rgb(187, 43, 33);
+    stroke: #ffffff;
+}
+
+body.vscode-dark g .token-value {
+    fill: white;
+    stroke: none;
+    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
+}
+
+body.vscode-dark g .token-range {
+    fill: #bb832c;
+    stroke: none;
+    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
 }
 
 /* Default CSS for internal elements, only visible in vscode */

@@ -33,7 +33,7 @@ export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, Debugge
     getChildren(element?: ChannelEntry): Thenable<ChannelEntry[]> {
         if (!element) {
             let editor = window.activeTextEditor;
-            if (editor && editor.document.languageId === "antlr" && this.debugger) {
+            if (this.debugger) {
                 let list: ChannelEntry[] = [];
                 for (let channel of this.debugger.channels) {
                     if (!channel || channel == "null") {

@@ -33,7 +33,7 @@ export class TokenListProvider implements TreeDataProvider<TokenItem>, DebuggerC
     getChildren(element?: TokenItem): Thenable<TokenItem[]> {
         if (!element) {
             let editor = window.activeTextEditor;
-            if (editor && editor.document.languageId === "antlr" && this.debugger) {
+            if (this.debugger) {
                 let tokens = this.debugger.tokenList;
                 let list: TokenItem[] = [];
                 for (let i = 0, j = 0; i < tokens.length; ++i, ++j) {

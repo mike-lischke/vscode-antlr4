@@ -46,25 +46,38 @@ export class AntlrParseTreeProvider extends AntlrTextContentProvider implements 
                     <script src="https://d3js.org/d3.v4.min.js"></script>
                     <script>
                         var data = ${JSON.stringify(graph)};
+                        var useCluster = true;
                         const width = 1000, height = 1000;
-                        const initialScale = 1;
-                        const initialTranslateX = 1000;
-                        const initialTranslateY = 100;
+                        const initialScale = 0.5;
+                        const initialTranslateX = 500;
+                        const initialTranslateY = 250;
                     </script>
-                    ${this.getScripts(nonce, scripts)}
                 </head>
 
             <body>
-                <div class="header"><span class="parse-tree-color"><span class="rule-initial">Ⓟ</span>arse Tree</span>
+                <div class="header"><span class="parse-tree-color"><span class="rule-initial">Ⓟ</span>arse Tree</span>&nbsp;&nbsp;
                     <span class="action-box">
-                        <a onClick="changeDiameter(0.8);"><span class="parse-tree-color">-</span></a>
-                        <span style="margin-left: -5px; margin-right: -5px; cursor: default;">Change radius</span>
+                        Tree
+                        <span class="switch">
+                            <span class="switch-border">
+                                <input id="switch1" type="checkbox" checked onclick='toggleParseTree(this)'; />
+                                <label for="switch1"></label>
+                                <span class="switch-handle-top"></span>
+                            </span>
+                        </span>
+                        Cluster&nbsp;&nbsp;
+                        <a onClick="changeDiameter(1.2);"><span class="parse-tree-color"><b>-</b></span></a>
+                        Node Size
+                        <a onClick="changeDiameter(1.2);"><span class="parse-tree-color"><b>+</b></span></a>&nbsp;&nbsp;
+                        <a onClick="changeDiameter(1.2);"><span class="parse-tree-color">-</span></a>
+                        Node Separation
                         <a onClick="changeDiameter(1.2);"><span class="parse-tree-color">+</span></a>&nbsp;&nbsp;
-                        <a onClick="exportToHTML('parse-tree', '${path.basename(this.uri.fsPath)}');"><span class="rule-initial-small parse-tree-color">⤑</span> Save to file</a>
+                        <a onClick="exportToSVG('parse-tree', '${path.basename(this.uri.fsPath)}');"><span class="rule-initial-small parse-tree-color">⤑</span> Save to file</a>
                     </span>
                 </div>
 
                 <svg></svg>
+                ${this.getScripts(nonce, scripts)}
                 <script>render();</script>
             </body>
         </html>`;

@@ -33,7 +33,7 @@ export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol>, De
     getChildren(element?: ParserSymbol): Thenable<ParserSymbol[]> {
         if (!element) {
             let editor = window.activeTextEditor;
-            if (editor && editor.document.languageId === "antlr" && this.debugger) {
+            if (this.debugger) {
                 let symbols = this.debugger.parserSymbols;
                 let list: ParserSymbol[] = [];
                 for (let i = 0; i < symbols.length; ++i) {

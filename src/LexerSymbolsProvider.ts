@@ -33,7 +33,7 @@ export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol>, Debu
     getChildren(element?: LexerSymbol): Thenable<LexerSymbol[]> {
         if (!element) {
             let editor = window.activeTextEditor;
-            if (editor && editor.document.languageId === "antlr" && this.debugger) {
+            if (this.debugger) {
                 let symbols = this.debugger.lexerSymbols;
                 let list: LexerSymbol[] = [];
                 for (let i = 0; i < symbols.length; ++i) {

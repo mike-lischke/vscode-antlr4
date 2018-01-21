@@ -429,6 +429,16 @@
                                 "description": "Absolute path to a text file containing test input to parse.",
                                 "default": "${workspaceFolder}/${command:AskForTestInput}"
                             },
+                            "startRule": {
+                                "type": "string",
+                                "description": "The name of the rule to be used as entry point. If none is given the rule with index 0 is used.",
+                                "default": ""
+                            },
+                            "grammar": {
+                                "type": "string",
+                                "description": "The path to a grammar to debug. Leave empty to debug the grammar in the active editor.",
+                                "default": null
+                            },
                             "stopOnEntry": {
                                 "type": "boolean",
                                 "description": "Automatically stop on initial rule.",

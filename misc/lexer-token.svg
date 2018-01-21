@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="37.5" height="17.5" viewBox="0, 0, 75, 35">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="16" height="16" viewBox="0, 0, 16, 16">
   <g id="Ebene_1">
-    <text transform="matrix(1, 0, 0, 1, 37.422, 16.75)">
-      <tspan x="-39.672" y="10" font-family="HelveticaNeue-Medium" font-size="36" fill="#d63775">[a..z]</tspan>
-    </text>
+    <g>
+      <path d="M12.036,3.108 L13.073,4.18 L6.352,10.681 L5.314,9.608 L12.036,3.108 z" fill="#d63775"/>
+      <path d="M13.482,2.079 L13.791,2.255 C14.168,2.574 14.228,3.122 13.925,3.478 C13.622,3.834 12.259,2.674 12.561,2.318 C13.001,1.98 12.716,2.118 13.482,2.079 z M13.492,2.605 C13.326,2.645 13.452,2.607 13.163,2.83 C13.106,2.964 13.103,2.902 13.142,3.016 C13.177,3.045 13.259,3.041 13.323,2.966 C13.497,2.644 13.479,2.776 13.492,2.605 z" fill="#d63775"/>
+      <path d="M4.963,9.922 L6,10.995 L4.269,11.71 L4.963,9.922 z" fill="#d63775"/>
+      <path d="M10.238,3.822 L10.238,4.822 L2.882,4.822 L2.882,12.969 L11.029,12.969 L11.029,6.209 L12.029,6.209 L12.029,13.969 L1.882,13.969 L1.882,3.822 L10.238,3.822 z" fill="#d63775"/>
+    </g>
   </g>
 </svg>

@@ -8,17 +8,17 @@
 function render() {
     var i = 0;
     const duration = 250;
-    const rectW = 160;
+    const rectW = 180;
     const rectH = 25;
 
     var tree = d3.tree()
-        .nodeSize([200, 60])
+        .nodeSize([190, 60])
         .separation(function (a, b) {
             return 1;
         });
 
     var cluster = d3.cluster()
-        .nodeSize([180, 60])
+        .nodeSize([190, 60])
         .separation(function (a, b) {
             return 1;
         });
@@ -36,18 +36,19 @@ function render() {
 
     svg.call(zoom)
         .call(zoom.transform, d3.zoomIdentity
+            .translate(initialTranslateX - rectW / 2, initialTranslateY)
             .scale(initialScale, initialScale)
-            .translate(initialTranslateX, initialTranslateY))
+        )
         .on("dblclick.zoom", null);
 
     var root = d3.hierarchy(data, (d) => d.children);
-    root.x0 = 0;
-    root.y0 = 400;
+    root.x0 = width / 2;
+    root.y0 = height / 2;
 
     update(root);
 
     function update(parent) {
-        cluster(root);
+        useCluster ? cluster(root) : tree(root);
         var nodes = root.descendants();
 
         var node = topGroup.selectAll(".tree-node")
@@ -60,7 +61,18 @@ function render() {
                 if (!d.parent) {
                     return "tree-node tree-root";
                 }
-                return (d.children || d._children) ? "tree-node" : "tree-node tree-leaf";
+                var result = "tree-node";
+                switch (d.data.type) {
+                    case 1: { // A terminal node.
+                        result += " tree-leaf";
+                        break;
+                    }
+                    case 2: { // An error node.
+                        result += " tree-error";
+                        break;
+                    }
+                }
+                return result;
             })
             .attr("transform", function (d) {
                 return "translate(" + parent.x0 + "," + parent.y0 + ")";
@@ -78,14 +90,7 @@ function render() {
                 return (d.children || d._children) ? 0 : 10;
             });
 
-        nodeEnter.append("text")
-            .attr("x", rectW / 2)
-            .attr("y", rectH / 2)
-            .attr("dy", ".35em")
-            .attr("text-anchor", "middle")
-            .text(function (d) {
-                return d.data.name;
-            });
+        createText(nodeEnter);
 
         var t = d3.transition().duration(duration);
 
@@ -150,6 +155,16 @@ function render() {
             d.x0 = d.x;
             d.y0 = d.y;
         });
+
+        function changed() {
+            //(this.value === "checked" ? tree : cluster)(root);
+            cluster(root);
+            var t = d3.transition().duration(750);
+            node.transition(t).attr("transform", function (d) {
+                return "translate(" + d.y + "," + d.x + ")";
+            });
+            link.transition(t).attr("d", diagonal);
+        }
     }
 
     // Toggle children on click.
@@ -175,4 +190,59 @@ function render() {
             " " + (d.parent.x + rectW / 2) + "," + (d.parent.y + rectH / 2);
     }
 
+    function createText(nodeEnter) {
+        // The node's text.
+        nodeEnter.append("text")
+            .attr("x", rectW / 2)
+            .attr("y", rectH / 2)
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(function (d) {
+                return d.data.name;
+            });
+
+        // The node's token index/rang info.
+        nodeEnter.append("text")
+            .attr("class", "token-range")
+            .attr("x", rectW)
+            .attr("y", rectH / 2)
+            .attr("dx", "-1em")
+            .attr("dy", "-1.8em")
+            .attr("text-anchor", "end")
+            .text(function (d) {
+                if (d.data.type != 0) {
+                    if (d.data.symbol.tokenIndex == -1) {
+                        return "no index";
+                    }
+                    return "\u2A33 " + d.data.symbol.tokenIndex;
+                }
+                if (d.data.start.tokenIndex == d.data.stop.tokenIndex) {
+                    return "\u2A33 " + d.data.start.tokenIndex;
+                }
+                return "\u2A33 " + d.data.start.tokenIndex + "-" + d.data.stop.tokenIndex;
+            });
+
+        // The node's content if this it is a terminal.
+        nodeEnter.append("text")
+            .attr("class", "token-value")
+            .attr("x", rectW / 2)
+            .attr("y", rectH / 2)
+            .attr("dy", "2.5em")
+            .attr("text-anchor", "middle")
+            .text(function (d) {
+                if (d.data.type == 0) {
+                    return "";
+                }
+
+                if (d.data.type == 2) { // Error node.
+                    if (d.data.symbol.tokenIndex == -1) {
+                        return "<missing>";
+                    }
+                    return "<unexpected: " + d.data.symbol.text + ">";
+                }
+
+                return d.data.symbol.text;
+            });
+
+    }
 }

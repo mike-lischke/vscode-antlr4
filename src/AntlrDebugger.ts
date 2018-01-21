@@ -27,11 +27,11 @@ import { getTextProviderUri } from './TextContentProvider';
  */
 interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     input: string;
+    startRule: string;
+    grammar: string;
     stopOnEntry?: boolean;
     trace?: boolean;
     printParseTree?: boolean;
-
-    grammar: string;
 }
 
 export interface DebuggerConsumer {
@@ -41,8 +41,6 @@ export interface DebuggerConsumer {
 }
 
 export class AntlrDebugSession extends LoggingDebugSession {
-    private static THREAD_ID = 1;
-
     /**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
@@ -92,7 +90,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 input = path.join(this.folder.uri.fsPath, input);
             }
             let testInput = fs.readFileSync(input, { encoding: "utf8" });
-            let d = this.backend.createDebugger(args.grammar, "lexer.g4", "parser.g4", testInput)!;
+            let d = this.backend.createDebugger(args.grammar, testInput)!;
             if (!d) {
                 throw Error("No interpreter data available. Make sure you have set the \"antlr4.generation.mode\" setting to at least \"internal\"");
             }
@@ -131,7 +129,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
                     }
                 }
 
-                commands.executeCommand('vscode.previewHtml', getTextProviderUri(Uri.parse("http://debugger.net"), "parse-tree", ""), 2,
+                commands.executeCommand('vscode.previewHtml', getTextProviderUri(Uri.parse("http://debugger.net"), "parse-tree", ""), 1,
                     "Parse Tree").then((success: boolean) => {
                     }, (reason) => {
                         window.showErrorMessage(reason);
@@ -311,5 +309,6 @@ export class AntlrDebugSession extends LoggingDebugSession {
         return result;
     }
 
+    private static THREAD_ID = 1;
     private debugger: GrapsDebugger;
 }

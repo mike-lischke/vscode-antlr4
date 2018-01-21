@@ -294,15 +294,22 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 .tree-root {
     cursor: pointer;
     stroke-width: 2;
-    fill: rgba(37, 84, 158, 1);
-    stroke: rgba(37, 84, 158, 0.5);
+    fill: #7db6dd;
+    stroke: #7db6dd;
 }
 
 .tree-leaf {
     cursor: move;
     stroke-width: 2;
-    fill: rgba(57, 158, 88, 1);
-    stroke: rgba(57, 158, 88, 0.5);
+    fill: rgba(160, 171, 136, 1);
+    stroke: rgba(117, 119, 91, 1);
+}
+
+.tree-error {
+    cursor: move;
+    stroke-width: 2;
+    fill: #dd8f7d;
+    stroke: rgba(188, 106, 122, 1);
 }
 
 .tree-node text {
@@ -312,7 +319,8 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 }
 
 .tree-leaf text,
-.tree-root text {
+.tree-root text,
+.tree-error text {
     font: 12px "Helvetica Neue", sans-serif;
     fill: #ffffff;
     stroke: none;
@@ -324,7 +332,20 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
     stroke: rgba(128, 128, 128, 1);
 }
 
-/* Internal elements, only visible in vscode */
+g .token-value {
+    fill: #404040;
+    font: 8pt;
+    stroke: none;
+    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
+}
+
+g .token-range {
+    fill: rgba(0, 77, 98, 1);
+    stroke: none;
+    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
+}
+
+/* Internal elements, only used in vscode */
 
 .header {
     position: fixed;
@@ -380,4 +401,52 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 
 .parse-tree-color {
     color: rgba(49, 112, 212, 0.75);
+}
+
+.switch label {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 10;
+}
+
+.switch input {
+	display: none;
+}
+
+.switch > span {
+    display: inline-block;
+    top: 5px;
+	transition: left 0.2s;
+}
+
+.switch-border {
+	height: 15px;
+	width: 30px;
+	position: relative;
+    border: 1px solid rgba(49, 112, 212, 0.75);
+    background-color: rgba(49, 112, 212, 0.75);
+	border-radius: 3.5em;
+}
+
+.switch-handle-top {
+	width: 15px;
+	height: 15px;
+	position: absolute;
+	left: 15px;
+	top: 0px;
+	z-index: 4;
+	background-color: white;
+	border-radius: 2.5em;
+	transition: left 0.2s;
+}
+
+.switch input:checked~.switch-handle-top  {
+    top: 0px;
+    left: 0px;
 }

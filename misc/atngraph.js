@@ -301,3 +301,24 @@ function dblclick(d) {
   d.fx = null;
   d.fy = null;
 }
+
+function resetTransformation() {
+	var scale = 0.5 * Math.exp(-nodes.length / 50) + 0.1;
+    svg
+        .call(zoom.transform, d3.zoomIdentity
+        .scale(scale, scale)
+        .translate(width * (1 - initialScale), height * (1 - initialScale)));
+
+    for (let node of nodes) {
+        if (node.type === 2) {
+            node.fx = 40;
+            node.fy = height / 4;
+        } else if (node.type === 7) {
+            node.fx = width - 40;
+            node.fy = height / 4;
+        } else {
+        	node.fx = null;
+        	node.fy = null;
+        }
+    }
+}

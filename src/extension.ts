@@ -216,7 +216,7 @@ export function activate(context: ExtensionContext) {
             '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + args.svg;
 
         try {
-            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"],
+            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
                 args.name + "." + args.type + ".svg"), ".svg", "Enter the name to an svg file.", svg, css);
         } catch (error) {
             window.showErrorMessage("Couldn't write SVG file: " + error);
@@ -235,8 +235,8 @@ export function activate(context: ExtensionContext) {
             }
         }
         try {
-            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"],
-                args.name + "." + args.type + ".html"), ".html", "Enter the name to an svg file.", args.html, css);
+            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
+                args.name + "." + args.type + ".html"), ".html", "Enter the name to an HTML file.", args.html, css);
         } catch (error) {
             window.showErrorMessage("Couldn't write HTML file: " + error);
         }
@@ -459,9 +459,6 @@ export function deactivate() {
  * Validates launch configuration for grammar debugging.
  */
 class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
-    private server?: Net.Server;
-    private port?: number;
-
     constructor() { }
 
     resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
@@ -480,47 +477,48 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
             });
         }
 
-        const editor = window.activeTextEditor;
-        if (editor && editor.document.languageId === 'antlr') {
-            let diagnostics = diagnosticCollection.get(editor.document.uri);
-            if (diagnostics && diagnostics.length > 0) {
-                return window.showErrorMessage("Cannot lauch grammar debugging. There are errors in the code.").then(_ => {
-                    return undefined;
-                });
-            }
-
-            config.grammar = editor.document.fileName;
-            if (config.printParseTree == undefined) {
-                config.printParseTree = true;
-            }
-
-            if (!this.server) {
-                this.server = Net.createServer(socket => {
-                    socket.on('end', () => {
-                        //console.error('>> ANTLR debugging client connection closed\n');
+        if (!config.grammar) {
+            const editor = window.activeTextEditor;
+            if (editor && editor.document.languageId === 'antlr') {
+                let diagnostics = diagnosticCollection.get(editor!.document.uri);
+                if (diagnostics && diagnostics.length > 0) {
+                    return window.showErrorMessage("Cannot lauch grammar debugging. There are errors in the code.").then(_ => {
+                        return undefined;
                     });
+                }
 
-                    const session = new AntlrDebugSession(folder!, backend, [
-                        tokenListProvider,
-                        lexerSymbolsProvider,
-                        parserSymbolsProvider,
-                        channelsProvider,
-                        modesProvider,
-                        parseTreeProvider
-                    ]);
-                    session.setRunAsServer(true);
-                    session.start(<NodeJS.ReadableStream>socket, socket);
-                }).listen(0);
+                config.grammar = editor.document.fileName;
+            } else {
+                window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
             }
-
-            config.debugServer = this.server.address().port;
-
-            return config;
-        } else {
-            window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
         }
 
-        return undefined;
+        if (!config.grammar) {
+            return undefined;
+        }
+
+        if (!this.server) {
+            this.server = Net.createServer(socket => {
+                socket.on('end', () => {
+                    //console.error('>> ANTLR debugging client connection closed\n');
+                });
+
+                const session = new AntlrDebugSession(folder!, backend, [
+                    tokenListProvider,
+                    lexerSymbolsProvider,
+                    parserSymbolsProvider,
+                    channelsProvider,
+                    modesProvider,
+                    parseTreeProvider
+                ]);
+                session.setRunAsServer(true);
+                session.start(<NodeJS.ReadableStream>socket, socket);
+            }).listen(0);
+        }
+
+        config.debugServer = this.server.address().port;
+
+        return config;
     }
 
     dispose() {
@@ -528,4 +526,7 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
             this.server.close();
         }
     }
+
+    private server?: Net.Server;
+    private port?: number;
 }
