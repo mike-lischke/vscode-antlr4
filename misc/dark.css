@@ -36,6 +36,22 @@ body.vscode-dark .state {
 
 /* Railroad diagrams */
 
+body.vscode-dark .atn-save-image {
+    background: rgba(206, 11, 70, 1) url('../misc/save-dark.png');
+}
+
+body.vscode-dark .rrd-save-image {
+    background: rgba(10, 188, 80, 1) url('../misc/save-dark.png');
+}
+
+body.vscode-dark .call-graph-save-image {
+    background: rgba(255, 191, 15, 1) url('../misc/save-dark.png');
+}
+
+body.vscode-dark .parse-tree-save-image {
+    background: rgba(49, 112, 212, 1) url('../misc/save-dark.png');
+}
+
 body.vscode-dark svg.railroad-diagram path {
 	/* The connection lines. */
 	stroke-width: 2;
@@ -196,7 +212,7 @@ body.vscode-dark .tree-node {
 body.vscode-dark g .tree-root {
     cursor: pointer;
     stroke-width: 2;
-    fill: #25549e;
+    fill: #3a3c37;
     stroke: #ffffff;
 }
 
@@ -217,13 +233,13 @@ body.vscode-dark g .tree-error {
 body.vscode-dark g .token-value {
     fill: white;
     stroke: none;
-    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
+    font: 12pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
 }
 
 body.vscode-dark g .token-range {
     fill: #bb832c;
     stroke: none;
-    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
+    font: 8pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
 }
 
 /* Default CSS for internal elements, only visible in vscode */

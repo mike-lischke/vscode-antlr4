@@ -334,15 +334,14 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 
 g .token-value {
     fill: #404040;
-    font: 8pt;
     stroke: none;
-    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
+    font: 12pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;;
 }
 
 g .token-range {
     fill: rgba(0, 77, 98, 1);
     stroke: none;
-    font: 8pt "Source Code Pro", "Hack", "Andale Mono", monospace;
+    font: 8pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
 }
 
 /* Internal elements, only used in vscode */
@@ -357,19 +356,15 @@ g .token-range {
     height: 45px;
     background-color: var(--background-color);
     cursor: default;
+    user-select: none;
+    white-space: nowrap;
 }
 
-.rule-initial {
+.graph-initial {
     font-size: 30pt;
     font-weight: bold;
     vertical-align: middle;
     padding-left: 10px;
-}
-
-.rule-initial-small {
-    font-size: 16pt;
-    font-weight: bold;
-    vertical-align: middle;
 }
 
 .rule-index {
@@ -377,30 +372,71 @@ g .token-range {
 }
 
 #container {
-    margin-top: 40px;
+    margin-top: 45px;
 }
 
 .action-box {
     font: 10pt monospace;
-    cursor: pointer;
-    cursor: hand;
     margin-left: 15px;
+    padding: 5px;
+    border: dotted 1px #606060;
+    cursor: default;
 }
 
 .atn-graph-color {
-    color: rgba(206, 11, 70, 0.75);
+    color: rgba(206, 11, 70, 1);
+}
+
+.atn-graph-save-image {
+    background: rgba(206, 11, 70, 1) url('../misc/save.png');
+    vertical-align: middle;
+    margin-left: 5px;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .rrd-color {
-    color: rgba(10, 188, 80, 0.75);
+    color: rgba(10, 188, 80, 1);
+}
+
+.rrd-save-image {
+    background: rgba(10, 188, 80, 1) url('../misc/save.png');
+    vertical-align: middle;
+    margin-left: 5px;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .call-graph-color {
-    color: rgba(255, 191, 15, 0.75);
+    color: rgba(255, 191, 15, 1);
+}
+
+.call-graph-save-image {
+    background: rgba(255, 191, 15, 1) url('../misc/save.png');
+    vertical-align: middle;
+    margin-left: 5px;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .parse-tree-color {
-    color: rgba(49, 112, 212, 0.75);
+    color: rgba(49, 112, 212, 1);
+}
+
+.parse-tree-save-image {
+    background: rgba(49, 112, 212, 1) url('../misc/save.png');
+    vertical-align: middle;
+    margin-left: 5px;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .switch label {
@@ -421,13 +457,13 @@ g .token-range {
 
 .switch > span {
     display: inline-block;
-    top: 5px;
+    top: 3px;
 	transition: left 0.2s;
 }
 
 .switch-border {
-	height: 15px;
-	width: 30px;
+	height: 12px;
+	width: 24px;
 	position: relative;
     border: 1px solid rgba(49, 112, 212, 0.75);
     background-color: rgba(49, 112, 212, 0.75);
@@ -435,10 +471,10 @@ g .token-range {
 }
 
 .switch-handle-top {
-	width: 15px;
-	height: 15px;
+	width: 12px;
+	height: 12px;
 	position: absolute;
-	left: 15px;
+	left: 0px;
 	top: 0px;
 	z-index: 4;
 	background-color: white;
@@ -448,5 +484,5 @@ g .token-range {
 
 .switch input:checked~.switch-handle-top  {
     top: 0px;
-    left: 0px;
+    left: 12px;
 }

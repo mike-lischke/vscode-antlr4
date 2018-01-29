@@ -39,7 +39,9 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
     }
 
     public update(uri: vscode.Uri) {
-        this._onDidChange.fire(uri);
+        if (uri) {
+            this._onDidChange.fire(uri);
+        }
     }
 
     // A few support functions taken from the markdown preview extension.

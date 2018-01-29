@@ -57,12 +57,12 @@ export class AntlrCallGraphProvider extends AntlrTextContentProvider {
                     </head>
 
                 <body>
-                    <div class="header"><span class="call-graph-color"><span class="rule-initial">Ⓒ</span>all Graph</span>
+                    <div class="header"><span class="call-graph-color"><span class="graph-initial">Ⓒ</span>all Graph</span>
                         <span class="action-box">
-                            <a onClick="changeDiameter(0.8);"><span class="call-graph-color">-</span></a>
+                            <a onClick="changeDiameter(0.8);"><span class="call-graph-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">-</span></a>
                             <span style="margin-left: -5px; margin-right: -5px; cursor: default;">Change radius</span>
-                            <a onClick="changeDiameter(1.2);"><span class="call-graph-color">+</span></a>&nbsp;&nbsp;
-                            <a onClick="exportToSVG('call-graph', '${baseName}');"><span class="rule-initial-small call-graph-color">⤑</span> Save to file</a>
+                            <a onClick="changeDiameter(1.2);"><span class="call-graph-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">+</span></a>&nbsp;
+                            Save to SVG<a onClick="exportToSVG('call-graph', '${baseName}');"><span class="call-graph-save-image" /></a>
                         </span>
                     </div>
 

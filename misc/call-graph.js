@@ -38,7 +38,7 @@ function render() {
 	    .on("dblclick.zoom", null);
 
 	var cluster = d3.cluster()
-	    .size([360, innerRadius]);
+        .size([360, innerRadius]);
 
 	const line = d3.radialLine()
 	    .radius(function (d) {
