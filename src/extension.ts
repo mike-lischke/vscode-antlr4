@@ -475,6 +475,15 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
             return window.showErrorMessage("No test input file specified").then(_ => {
                 return undefined;
             });
+        } else {
+            if (!path.isAbsolute(config.input) && folder) {
+                config.input = path.join(folder.uri.fsPath, config.input);
+            }
+            if (!fs.existsSync(config.input)) {
+                return window.showErrorMessage("Cannot read test input file: " + config.input).then(_ => {
+                    return undefined;
+                });
+            }
         }
 
         if (!config.grammar) {
@@ -490,6 +499,15 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                 config.grammar = editor.document.fileName;
             } else {
                 window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
+            }
+        } else {
+            if (!path.isAbsolute(config.grammar) && folder) {
+                config.grammar = path.join(folder.uri.fsPath, config.grammar);
+            }
+            if (!fs.existsSync(config.grammar)) {
+                return window.showErrorMessage("Cannot read grammar file: " + config.grammar).then(_ => {
+                    return undefined;
+                });
             }
         }
 

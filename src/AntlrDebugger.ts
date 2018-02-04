@@ -159,11 +159,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         this.showGraphicalParseTree = args.visualParseTree || false;
 
         try {
-            let input = args.input;
-            if (!path.isAbsolute(input)) {
-                input = path.join(this.folder.uri.fsPath, input);
-            }
-            let testInput = fs.readFileSync(input, { encoding: "utf8" });
+            let testInput = fs.readFileSync(args.input, { encoding: "utf8" });
 
             let startRuleIndex = this.debugger.ruleIndexFromName(args.startRule);
             if (startRuleIndex < 0) {
