@@ -86,47 +86,26 @@ export class Utils {
      * overwrite it, if so. Also copies a number extra files to the target folder.
      *
      * @param fileName A default file name the user can change, if wanted.
-     * @param extension The target file extension (including the dot).
-     * @param prompt The prompt text for the file selection dialog.
+     * @param filter The file type filter as used in showSaveDialog.
      * @param data The data to write.
      * @param extraFiles Files to copy to the target folder (e.g. css).
      */
-    public static exportDataWithConfirmation(fileName: string, extension: string, prompt: string, data: string, extraFiles: string[]) {
-        window.showInputBox({
-            value: fileName,
-            placeHolder: "<Enter full file name here>",
-            prompt: prompt
-        }).then((value: string) => {
-            if (value) try {
-                if (path.extname(value) !== extension) {
-                    value += extension;
-                }
-
-                if (fs.existsSync(value)) {
-                    window.showWarningMessage("The specified file exists already", { modal: true }, ...["Overwrite"]).then((action: string) => {
-                        if (action === "Overwrite") {
-                            fs.writeFile(value, data, (error) => {
-                                if (error) {
-                                    window.showErrorMessage("Could not write to file: " + value + ": " + error.message);
-                                } else {
-                                    this.copyFilesIfNewer(extraFiles, path.dirname(value));
-                                    window.showInformationMessage("Diagram successfully written to file '" + value + "'.");
-                                }
-                            });
-                        }
-                    });
-                } else {
-                    fs.writeFile(value, data, (error) => {
-                        if (error) {
-                            window.showErrorMessage("Could not write to file: " + value + ": " + error.message);
-                        } else {
-                            this.copyFilesIfNewer(extraFiles, path.dirname(value));
-                            window.showInformationMessage("Diagram successfully written to file '" + value + "'.");
-                        }
-                    });
-                }
-            } catch (error) {
-                window.showErrorMessage("Unexpected error encountered: " + error);
+    public static exportDataWithConfirmation(fileName: string, filters: { [name: string]: string[] }, data: string,
+        extraFiles: string[]) {
+        window.showSaveDialog({
+            defaultUri: Uri.file(fileName),
+            filters: filters
+        }).then((uri: Uri | undefined) => {
+            if (uri) {
+                let value = uri.fsPath;
+                fs.writeFile(value, data, (error) => {
+                    if (error) {
+                        window.showErrorMessage("Could not write to file: " + value + ": " + error.message);
+                    } else {
+                        this.copyFilesIfNewer(extraFiles, path.dirname(value));
+                        window.showInformationMessage("Diagram successfully written to file '" + value + "'.");
+                    }
+                });
             }
         })
     }

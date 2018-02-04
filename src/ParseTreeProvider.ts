@@ -25,6 +25,10 @@ export class AntlrParseTreeProvider extends AntlrTextContentProvider implements 
         this.update(this.uri);
     }
 
+    debuggerStopped(): void {
+        // no-op
+    }
+
     public provideTextDocumentContent(uri: vscode.Uri): Thenable<string> {
         this.uri = uri;
 

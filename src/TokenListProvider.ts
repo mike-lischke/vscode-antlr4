@@ -23,6 +23,12 @@ export class TokenListProvider implements TreeDataProvider<TokenItem>, DebuggerC
     public debugger: GrapsDebugger; // Set by the AntlrDebugSession when launching the session.
 
     refresh(): void {
+        this.startIndex = 0;
+        this._onDidChangeTreeData.fire();
+    }
+
+    debuggerStopped(): void {
+        this.startIndex = this.debugger.currentTokenIndex;
         this._onDidChangeTreeData.fire();
     }
 
@@ -36,7 +42,7 @@ export class TokenListProvider implements TreeDataProvider<TokenItem>, DebuggerC
             if (this.debugger) {
                 let tokens = this.debugger.tokenList;
                 let list: TokenItem[] = [];
-                for (let i = 0, j = 0; i < tokens.length; ++i, ++j) {
+                for (let i = this.startIndex, j = this.startIndex; i < tokens.length; ++i, ++j) {
                     let token = tokens[i];
 
                     // Add placeholders for skipped tokens.
@@ -75,6 +81,7 @@ export class TokenListProvider implements TreeDataProvider<TokenItem>, DebuggerC
         return new Promise(resolve => {
             resolve([]);
         });
+
     }
 
     private escapeText(text: string): string {
@@ -101,6 +108,8 @@ export class TokenListProvider implements TreeDataProvider<TokenItem>, DebuggerC
 
         return result;
     }
+
+    private startIndex: number;
 }
 
 class TokenItem extends TreeItem {

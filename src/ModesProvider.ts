@@ -26,6 +26,10 @@ export class ModesProvider implements TreeDataProvider<ModeEntry>, DebuggerConsu
         this._onDidChangeTreeData.fire();
     }
 
+    debuggerStopped(): void {
+        // no-op
+    }
+
     getTreeItem(element: ModeEntry): TreeItem {
         return element;
     }

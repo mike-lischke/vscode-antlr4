@@ -26,6 +26,10 @@ export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, Debugge
         this._onDidChangeTreeData.fire();
     }
 
+    debuggerStopped(): void {
+        // no-op
+    }
+
     getTreeItem(element: ChannelEntry): TreeItem {
         return element;
     }

@@ -227,15 +227,15 @@ function diagonal(d) {
 
 function createText(nodeEnter) {
     // The node's text.
-    nodeEnter.append("text")
+    var nodeText = nodeEnter.append("text")
         .attr("class", "node-text")
-        .attr("x", rectW / 2)
         .attr("y", rectH / 2)
         .attr("dy", ".35em")
-        .attr("text-anchor", "middle")
         .text(function (d) {
             return d.data.name;
         });
+    nodeText // The bounding box is valid not before the node addition happened actually.
+        .attr("x", function (d) { return (rectW - this.getBBox().width) / 2; });
 
     // The node's token index/rang info.
     nodeEnter.append("text")
@@ -244,7 +244,6 @@ function createText(nodeEnter) {
         .attr("y", rectH / 2)
         .attr("dx", d => horizontal ? 0 : "-1em")
         .attr("dy", "-1.8em")
-        .attr("text-anchor", d => horizontal ? "begin" : "end")
         .text(function (d) {
             if (d.data.type != 0) {
                 if (d.data.symbol.tokenIndex == -1) {
@@ -259,13 +258,11 @@ function createText(nodeEnter) {
         });
 
     // The node's content if this it is a terminal.
-    nodeEnter.append("text")
+    nodeText = nodeEnter.append("text")
         .attr("class", "token-value")
-        .attr("x", rectW / 2)
-        .attr("dx", d => horizontal ? rectW / 2 + 20 : 0)
+        .attr("x", 0)
         .attr("y", rectH / 2)
         .attr("dy", d => horizontal ? "0.25em" : "2.5em")
-        .attr("text-anchor", d => horizontal ? "begin" : "middle")
         .text(function (d) {
             if (d.data.type == 0) {
                 return "";
@@ -280,7 +277,8 @@ function createText(nodeEnter) {
 
             return d.data.symbol.text;
         });
-
+    nodeText
+        .attr("dx", function (d) { return horizontal ? rectW + 20: (rectW - this.getBBox().width) / 2; });
 }
 
 function updateExistingNodes(t) {
@@ -288,14 +286,13 @@ function updateExistingNodes(t) {
     nodeSelection.selectAll("rect").transition(t)
         .attr("width", rectW);
     nodeSelection.selectAll(".node-text").transition(t)
-        .attr("x", rectW / 2);
+        .attr("x", function (d) { return (rectW - this.getBBox().width) / 2; });
     nodeSelection.selectAll(".token-range").transition(t)
-        .attr("x", d => horizontal ? 0 : rectW)
-        .attr("text-anchor", d => horizontal ? "begin" : "end");
+        .attr("x", 0)
+        .attr("dx", function (d) { return horizontal ? 0 : rectW - this.getBBox().width; })
     nodeSelection.selectAll(".token-value").transition(t)
-        .attr("dx", d => horizontal ? rectW / 2 + 20 : 0)
+        .attr("dx", function (d) { return horizontal ? rectW + 20: (rectW - this.getBBox().width) / 2; })
         .attr("dy", d => horizontal ? "0.25em" : "2.5em")
-        .attr("text-anchor", d => horizontal ? "begin" : "middle");
 }
 
 function applyChanges(durationFactor) {
@@ -337,9 +334,12 @@ function changeNodeSize(factor) {
     if (horizontal) {
         tree.nodeSize([nodeWidth, nodeHeight * nodeSizeFactor]);
         cluster.nodeSize([nodeWidth, nodeHeight * nodeSizeFactor]);
+        rectW = 0.9 * nodeHeight * nodeSizeFactor;
     } else {
         tree.nodeSize([nodeWidth * nodeSizeFactor, nodeHeight]);
         cluster.nodeSize([nodeWidth * nodeSizeFactor, nodeHeight]);
+        rectW = 0.9 * nodeWidth * nodeSizeFactor;
     }
+
     applyChanges(1);
 }

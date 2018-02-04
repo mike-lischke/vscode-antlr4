@@ -217,7 +217,7 @@ export function activate(context: ExtensionContext) {
 
         try {
             Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
-                args.name + "." + args.type + ".svg"), ".svg", "Enter the name to an svg file.", svg, css);
+                args.name + "." + args.type), { "SVG": ["svg"] }, svg, css);
         } catch (error) {
             window.showErrorMessage("Couldn't write SVG file: " + error);
         }
@@ -236,7 +236,7 @@ export function activate(context: ExtensionContext) {
         }
         try {
             Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
-                args.name + "." + args.type + ".html"), ".html", "Enter the name to an HTML file.", args.html, css);
+                args.name + "." + args.type), { "HTML": ["html"] }, args.html, css);
         } catch (error) {
             window.showErrorMessage("Couldn't write HTML file: " + error);
         }
@@ -503,7 +503,7 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                     //console.error('>> ANTLR debugging client connection closed\n');
                 });
 
-                const session = new AntlrDebugSession(folder!, backend, [
+                const session = new AntlrDebugSession(folder!, backend, config.grammar, [
                     tokenListProvider,
                     lexerSymbolsProvider,
                     parserSymbolsProvider,

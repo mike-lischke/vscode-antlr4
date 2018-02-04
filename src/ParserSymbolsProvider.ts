@@ -26,6 +26,10 @@ export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol>, De
         this._onDidChangeTreeData.fire();
     }
 
+    debuggerStopped(): void {
+        // no-op
+    }
+
     getTreeItem(element: ParserSymbol): TreeItem {
         return element;
     }

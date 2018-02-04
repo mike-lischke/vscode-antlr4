@@ -26,6 +26,10 @@ export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol>, Debu
         this._onDidChangeTreeData.fire();
     }
 
+    debuggerStopped(): void {
+        // no-op
+    }
+
     getTreeItem(element: LexerSymbol): TreeItem {
         return element;
     }

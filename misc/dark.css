@@ -36,7 +36,7 @@ body.vscode-dark .state {
 
 /* Railroad diagrams */
 
-body.vscode-dark .atn-save-image {
+body.vscode-dark .atn-graph-save-image {
     background: rgba(206, 11, 70, 1) url('../misc/save-dark.png');
 }
 
