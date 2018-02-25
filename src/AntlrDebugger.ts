@@ -54,24 +54,25 @@ export class AntlrDebugSession extends LoggingDebugSession {
         private consumers: DebuggerConsumer[]) {
         super("antlr4-vscode-trace.txt");
 
-        // this backend uses zero-based lines and columns
-        this.setDebuggerLinesStartAt1(false);
+        this.setDebuggerLinesStartAt1(true);
         this.setDebuggerColumnsStartAt1(false);
     }
 
     shutdown(): void {
     }
 
-	/**
-	 * The 'initialize' request is the first request called by the frontend
-	 * to interrogate the features the debug adapter provides.
-	 */
     protected initializeRequest(response: DebugProtocol.InitializeResponse,
         args: DebugProtocol.InitializeRequestArguments): void {
 
-        let d = this.backend.createDebugger(this.grammar)!;
+        let basePath = path.dirname(this.grammar);
+        let d = this.backend.createDebugger(this.grammar, path.join(basePath, ".antlr"));
         if (!d) {
-            throw Error("No interpreter data available. Make sure you have set the \"antlr4.generation.mode\" setting to at least \"internal\"");
+            throw Error("Debugger creation failed. There are grammar errors.");
+        }
+
+        if (!d.isValid) {
+            throw Error("Debugger creation failed. You are either trying to debug an unsupported file type or " +
+                "no interpreter data has been generated yet for the given grammar.");
         }
 
         d.on('stopOnStep', () => {
@@ -108,6 +109,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         });
 
         d.on('end', () => {
+            this.notifyConsumers();
             if (this.showTextualParseTree) {
                 let tree = this.debugger.currentParseTree;
                 if (tree) {
@@ -142,7 +144,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
         response.body = response.body || {};
         response.body.supportsConfigurationDoneRequest = true;
-        //response.body.supportsStepInTargetsRequest = false;
+        response.body.supportsStepInTargetsRequest = true;
 
         this.sendResponse(response);
     }
@@ -181,11 +183,14 @@ export class AntlrDebugSession extends LoggingDebugSession {
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
         this.debugger.clearBreakPoints();
         if (args.breakpoints && args.source.path) {
-            const actualBreakpoints = args.breakpoints.map(source => {
-                let { validated, line, id } = this.debugger.addBreakPoint(args.source.path!, source.line);
-                const bp = <DebugProtocol.Breakpoint>new Breakpoint(validated, line);
-                bp.id = id;
-                return bp;
+            const actualBreakpoints = args.breakpoints.map(sourceBreakPoint => {
+                let { validated, line, id } = this.debugger.addBreakPoint(args.source.path!,
+                    this.convertDebuggerLineToClient(sourceBreakPoint.line));
+                const targetBreakPoint = <DebugProtocol.Breakpoint>new Breakpoint(validated,
+                    this.convertClientLineToDebugger(line));
+                targetBreakPoint.id = id;
+
+                return targetBreakPoint;
             });
 
             response.body = {
@@ -214,9 +219,12 @@ export class AntlrDebugSession extends LoggingDebugSession {
         let frames: StackFrame[] = [];
         for (let i = 0; i < stack.length; ++i) {
             let entry = stack[i];
-            let frame = new StackFrame(i, entry.name, this.createSource(entry.source),
-                entry.definition!.range.start.row, entry.definition!.range.start.column);
-                frames.push(frame);
+            let frame = new StackFrame(i, entry.name,
+                this.createSource(entry.source),
+                this.convertDebuggerLineToClient(entry.next[0].start.row),
+                this.convertDebuggerColumnToClient(entry.next[0].start.column)
+            );
+            frames.push(frame);
         }
         response.body = {
             stackFrames: frames,

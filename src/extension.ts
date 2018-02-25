@@ -330,7 +330,7 @@ export function activate(context: ExtensionContext) {
     });
 
     window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
-        if (event.textEditor === window.activeTextEditor) {
+        if (event.textEditor.document.languageId === "antlr" && event.textEditor.document.uri.scheme === "file") {
             diagramProvider.update(getTextProviderUri(event.textEditor.document.uri, "rrd", "single"));
 
             let hash = Utils.hashFromPath(event.textEditor.document.uri.fsPath);
@@ -420,7 +420,7 @@ export function activate(context: ExtensionContext) {
                 });
             }
 
-            // Finally move interpreter files to our interal folder and reload that.
+            // Finally move interpreter files to our internal folder and reload that.
             if (externalMode) {
                 try {
                     let files = fs.readdirSync(outputDir);
@@ -463,6 +463,13 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
 
     resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
         token?: CancellationToken): ProviderResult<DebugConfiguration> {
+
+        if (workspace.getConfiguration("antlr4.generation")["mode"] === "none") {
+            return window.showErrorMessage("Interpreter data generation is disabled in the preferences (see " +
+                "'antlr4.generation'). Set this at least to 'internal' to enable debugging.").then(_ => {
+                return undefined;
+            });
+        }
 
         // launch.json missing or empty?
         if (!config.type || !config.request || !config.name) {

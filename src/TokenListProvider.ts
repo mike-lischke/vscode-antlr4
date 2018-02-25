@@ -57,7 +57,7 @@ export class TokenListProvider implements TreeDataProvider<TokenItem>, DebuggerC
                     }
 
                     // Note: lines are already one-based, need to make columns one-based too.
-                    let caption = token.tokenIndex + ": " + token.type + " \"" + this.escapeText(token.text) + "\"" +
+                    let caption = token.tokenIndex + ": " + token.name + " \"" + this.escapeText(token.text) + "\"" +
                         " [" + token.line + ", " + (token.offset + 1) + "]";
                     if (token.channel != 0) {
                         if (token.channel == 1) {
