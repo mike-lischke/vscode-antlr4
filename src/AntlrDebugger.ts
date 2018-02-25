@@ -171,7 +171,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 });
                 return;
             }
-            this.debugger.start(startRuleIndex, testInput);
+            this.debugger.start(startRuleIndex, testInput, args.noDebug ? true : false);
         } catch (e) {
             this.sendErrorResponse(response, { id: 1, format: "Error while launching debug session: " + e });
             return;
@@ -234,11 +234,13 @@ export class AntlrDebugSession extends LoggingDebugSession {
     }
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
-        const frameReference = args.frameId;
-        response.body = {
-            scopes: []
-        };
-        this.sendResponse(response);
+		const scopes = new Array<Scope>();
+		scopes.push(new Scope("Context", args.frameId, false));
+
+		response.body = {
+			scopes: scopes
+		};
+		this.sendResponse(response);
     }
 
     protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): void {
