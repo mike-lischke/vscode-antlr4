@@ -376,10 +376,6 @@
                 "when": "resourceLangId == 'antlr'"
             }],
             "debug": [{
-                    "id": "antlr4.tokenList",
-                    "name": "Test Input Tokens"
-                },
-                {
                     "id": "antlr4.lexerSymbols",
                     "name": "Lexer Tokens"
                 },

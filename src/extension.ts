@@ -31,7 +31,6 @@ import { AntlrATNGraphProvider, ATNStateEntry } from "./ATNGraphProvider";
 import { AntlrFormattingProvider } from "./FormattingProvider";
 import { ImportsProvider } from "./ImportsProvider";
 import { AntlrCallGraphProvider } from "./CallGraphProvider";
-import { TokenListProvider } from "./TokenListProvider";
 import { LexerSymbolsProvider } from "./LexerSymbolsProvider";
 import { ParserSymbolsProvider } from "./ParserSymbolsProvider";
 import { ChannelsProvider } from "./ChannelsProvider";
@@ -53,7 +52,8 @@ let atnStates: Map<string, Map<string, ATNStateEntry>> = new Map();
 let backend: AntlrLanguageSupport;
 let progress: ProgressIndicator;
 let outputChannel: OutputChannel;
-let tokenListProvider: TokenListProvider;
+
+let importsProvider: ImportsProvider;
 let lexerSymbolsProvider: LexerSymbolsProvider;
 let parserSymbolsProvider: ParserSymbolsProvider;
 let channelsProvider: ChannelsProvider;
@@ -86,9 +86,6 @@ export function activate(context: ExtensionContext) {
             }
         }
     }
-
-    let importsProvider = new ImportsProvider(backend);
-    context.subscriptions.push(window.registerTreeDataProvider("antlr4.imports", importsProvider));
 
     context.subscriptions.push(languages.registerHoverProvider(ANTLR, new HoverProvider(backend)));
     context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new DefinitionProvider(backend)));
@@ -159,8 +156,8 @@ export function activate(context: ExtensionContext) {
 
     context.subscriptions.push(debug.registerDebugConfigurationProvider('antlr-debug', new AntlrDebugConfigurationProvider()));
 
-    tokenListProvider = new TokenListProvider(backend);
-    context.subscriptions.push(window.registerTreeDataProvider("antlr4.tokenList", tokenListProvider));
+    importsProvider = new ImportsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.imports", importsProvider));
 
     lexerSymbolsProvider = new LexerSymbolsProvider(backend);
     context.subscriptions.push(window.registerTreeDataProvider("antlr4.lexerSymbols", lexerSymbolsProvider));
@@ -176,13 +173,6 @@ export function activate(context: ExtensionContext) {
 
     parseTreeProvider = new AntlrParseTreeProvider(backend, context);
     context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.parse-tree", parseTreeProvider));
-    /*context.subscriptions.push(commands.registerTextEditorCommand('antlr.call-graph', (editor: TextEditor, edit: TextEditorEdit) => {
-        return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "call-graph", ""), 2,
-            "Call Graph: " + path.basename(editor.document.fileName)).then((success: boolean) => {
-            }, (reason) => {
-                window.showErrorMessage(reason);
-            });
-    }));*/
 
     // Helper commands.
     context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
@@ -196,7 +186,7 @@ export function activate(context: ExtensionContext) {
         window.showInformationMessage(args.message, { modal: true });
     }));
 
-    // The export to svg command.
+    // The export to SVG command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveSVG", (args: { name: string, type: string, svg: string }) => {
         let css: string[] = [];
         css.push(Utils.getMiscPath("light.css", context, false));
@@ -529,7 +519,6 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                 });
 
                 const session = new AntlrDebugSession(folder!, backend, config.grammar, [
-                    tokenListProvider,
                     lexerSymbolsProvider,
                     parserSymbolsProvider,
                     channelsProvider,

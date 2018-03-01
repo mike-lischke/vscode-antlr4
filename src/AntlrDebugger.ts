@@ -17,9 +17,10 @@ import { window, workspace, WorkspaceFolder, commands, Uri } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { GrapsDebugger, AntlrLanguageSupport, ParseTreeNode, ParseTreeNodeType, GrapsBreakPoint } from "antlr4-graps";
+import {
+    GrapsDebugger, AntlrLanguageSupport, ParseTreeNode, ParseTreeNodeType, GrapsBreakPoint, LexerToken
+} from "antlr4-graps";
 
-import { TokenListProvider } from "./TokenListProvider";
 import { getTextProviderUri } from './TextContentProvider';
 
 /**
@@ -159,6 +160,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
         this.showTextualParseTree = args.printParseTree || false;
         this.showGraphicalParseTree = args.visualParseTree || false;
+        this.testInput = args.input;
 
         try {
             let testInput = fs.readFileSync(args.input, { encoding: "utf8" });
@@ -234,18 +236,91 @@ export class AntlrDebugSession extends LoggingDebugSession {
     }
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
-		const scopes = new Array<Scope>();
-		scopes.push(new Scope("Context", args.frameId, false));
+        // Cache a few values that stay the same during a single request for scopes and variables.
+        this.tokens = this.debugger.tokenList;
+        this.variables = this.debugger.getVariables(args.frameId);
 
-		response.body = {
-			scopes: scopes
-		};
-		this.sendResponse(response);
+		let scopes: Scope[] = [];
+		scopes.push(new Scope("Globals", VarRef.Globals, true));
+		scopes.push(new Scope(this.debugger.getStackInfo(args.frameId), 101, false));
+        response.body = {
+            scopes: scopes
+        };
+        this.sendResponse(response);
     }
 
     protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments): void {
+        let variables: DebugProtocol.Variable[] = [];
+        switch (args.variablesReference) {
+            case VarRef.Globals: {
+                variables.push({
+                    name: "Test Input",
+                    type: "string",
+                    value: this.testInput,
+                    variablesReference: 0
+                });
+                variables.push({
+                    name: "Input Size",
+                    type: "number",
+                    value: this.debugger.inputSize.toString(),
+                    variablesReference: 0
+                });
+                variables.push({
+                    name: "Error Count",
+                    type: "number",
+                    value: this.debugger.errorCount.toString(),
+                    variablesReference: 0
+                });
+                variables.push({
+                    name: "Input Tokens",
+                    value: (this.tokens.length - this.debugger.currentTokenIndex).toString(),
+                    variablesReference: VarRef.Tokens,
+                    indexedVariables: this.tokens.length - this.debugger.currentTokenIndex
+                });
+                break;
+            }
+
+            case VarRef.Context: { // Context related
+                break;
+            }
+
+            case VarRef.Tokens: {
+                let start =  this.debugger.currentTokenIndex + (args.start ? args.start : 0);
+                let length = args.count ? args.count : this.tokens.length;
+                for (let i = 0; i < length; ++i) {
+                    let index = start + i;
+                    variables.push({
+                        name: this.tokens[index].name + " (index: " + index + ")",
+                        type: "Token",
+                        value: "",
+                        variablesReference: VarRef.Token + index,
+                        presentationHint: { kind: "class", attributes: ["readonly"] }
+                    });
+                }
+                break;
+            }
+
+            default: {
+                if (args.variablesReference >= VarRef.Token) {
+                    let tokenIndex = args.variablesReference % VarRef.Token;
+                    if (tokenIndex >= 0 && tokenIndex < this.tokens.length) {
+                        let token = this.tokens[tokenIndex];
+                        for (let property in token) {
+                            variables.push({
+                                name: property,
+                                type: typeof token[property],
+                                value: this.escapeText(token[property] + ""),
+                                variablesReference: 0
+                            });
+                        }
+                    }
+                }
+                break;
+            }
+        }
+
         response.body = {
-            variables: []
+            variables: variables
         };
         this.sendResponse(response);
     }
@@ -277,29 +352,6 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
     protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
         let reply: string | undefined = undefined;
-        /*
-                if (args.context === 'repl') {
-                    // 'evaluate' supports to create and delete breakpoints from the 'repl':
-                    const matches = /new +([0-9]+)/.exec(args.expression);
-                    if (matches && matches.length === 2) {
-                        const mbp = this._runtime.setBreakPoint(this._runtime.sourceFile, this.convertClientLineTobackend(parseInt(matches[1])));
-                        const bp = <DebugProtocol.Breakpoint> new Breakpoint(mbp.verified, this.convertbackendLineToClient(mbp.line), undefined, this.createSource(this._runtime.sourceFile));
-                        bp.id= mbp.id;
-                        this.sendEvent(new BreakpointEvent('new', bp));
-                        reply = `breakpoint created`;
-                    } else {
-                        const matches = /del +([0-9]+)/.exec(args.expression);
-                        if (matches && matches.length === 2) {
-                            const mbp = this._runtime.clearBreakPoint(this._runtime.sourceFile, this.convertClientLineTobackend(parseInt(matches[1])));
-                            if (mbp) {
-                                const bp = <DebugProtocol.Breakpoint> new Breakpoint(false);
-                                bp.id= mbp.id;
-                                this.sendEvent(new BreakpointEvent('removed', bp));
-                                reply = `breakpoint deleted`;
-                            }
-                        }
-                    }
-                }*/
 
         response.body = {
             result: reply ? reply : `evaluate(context: '${args.context}', '${args.expression}')`,
@@ -357,8 +409,50 @@ export class AntlrDebugSession extends LoggingDebugSession {
         }
     }
 
+    private escapeText(input: string): string {
+        let result = "";
+        for (let c of input) {
+            switch (c) {
+                case "\n": {
+                    result += "\\n";
+                    break;
+                }
+
+                case "\r": {
+                    result += "\\r";
+                    break;
+                }
+
+                case "\t": {
+                    result += "\\t";
+                    break;
+                }
+
+                default: {
+                    result += c;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     private static THREAD_ID = 1;
+
     private debugger: GrapsDebugger;
     private showTextualParseTree = false;
     private showGraphicalParseTree = false;
+    private testInput = "";
+
+    // Some variables, which are updated between each scope/var request.
+    private tokens: LexerToken[];
+    private variables: [string, string][];
+}
+
+enum VarRef {
+    Globals = 1000,
+    ParseTree = 1002,
+    Context = 2000,
+    Tokens = 3000,
+    Token = 10000,
 }
