@@ -69,7 +69,7 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 diagram += `
                     <div class="header"><span class="rrd-color"><span class="graph-initial">Ⓡ</span>rd&nbsp;&nbsp;</span>All rules
                         <span class="action-box">
-                            <a onClick="exportToHTML('rrd', '${baseName}');">Save to HTML<span class="rrd-save-image" /></a>
+                        Save to HTML<a onClick="exportToHTML('rrd', '${baseName}');"><span class="rrd-save-image" /></a>
                         </span>
                     </div>
                     <div id="container">`;
@@ -87,7 +87,7 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 diagram += `
                     <div class="header"><span class="rrd-color"><span class="graph-initial">Ⓡ</span>ule&nbsp;&nbsp;</span>&nbsp;&nbsp;${ruleName} <span class="rule-index">(rule index: ${ruleIndex})</span>
                         <span class="action-box">
-                            <a onClick="exportToSVG('rrd', '${ruleName}');">Save to SVG<span class="rrd-save-image" /></a>
+                        Save to SVG<a onClick="exportToSVG('rrd', '${ruleName}');"><span class="rrd-save-image" /></a>
                         </span>
                     </div>
                     <div id="container">

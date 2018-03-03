@@ -242,7 +242,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
 		let scopes: Scope[] = [];
 		scopes.push(new Scope("Globals", VarRef.Globals, true));
-		scopes.push(new Scope(this.debugger.getStackInfo(args.frameId), 101, false));
+		//scopes.push(new Scope(this.debugger.getStackInfo(args.frameId), VarRef.Context, false));
         response.body = {
             scopes: scopes
         };
