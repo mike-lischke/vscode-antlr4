@@ -3,7 +3,7 @@
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
     "icon": "misc/antlr-logo.png",
-    "version": "1.2.10",
+    "version": "1.3.1",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -22,8 +22,7 @@
         "Debuggers"
     ],
     "activationEvents": [
-        "onLanguage:antlr",
-        "onDebug:antlr-grammar"
+        "onLanguage:antlr"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -74,25 +73,44 @@
                     "default": [],
                     "description": "List of custom CSS URIs for diagram SVG files"
                 },
-                "antlr4.rrd.saveDir": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Default export target folder for railroad diagrams"
+                "antlr4.rrd": {
+                    "type": "object",
+                    "default": {
+                        "saveDir": ""
+                    },
+                    "description": "Settings related to railroad diagrams",
+                    "properties": {
+                        "saveDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Default export target folder for railroad diagrams"
+                        }
+                    }
                 },
-                "antlr4.atn.saveDir": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Default export target folder for ATN SVG files"
+                "antlr4.atn": {
+                    "type": "object",
+                    "default": {
+                        "saveDir": "",
+                        "maxLabelCount": 3
+                    },
+                    "description": "Settings related to ATN graphs",
+                    "properties": {
+                        "saveDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Default export target folder for ATN SVG files"
+                        },
+                        "antlr4.atn.maxLabelCount": {
+                            "type": "number",
+                            "default": 3,
+                            "description": "Max number of labels displayed on a transition in an ATN graph"
+                        }
+                    }
                 },
                 "antlr4.call-graph.saveDir": {
                     "type": "string",
                     "default": "",
                     "description": "Default export target folder for call graphs"
-                },
-                "antlr4.atn.maxLabelCount": {
-                    "type": "number",
-                    "default": 3,
-                    "description": "Max number of labels displayed on a transition in an ATN graph"
                 },
                 "antlr4.generation.mode": {
                     "type": "string",
@@ -268,6 +286,12 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Combine all alignments (align whatever comes first: colons, comments etc.)"
+                },
+                "antlr4.debug": {
+                    "type": "object",
+                    "description": "Debugging related settings",
+                    "default": {},
+                    "properties": {}
                 }
             }
         },
@@ -364,13 +388,35 @@
                     "name": "Grammar Dependencies",
                     "when": "resourceLangId == 'antlr'"
                 }
+            ],
+            "debug": [
+                {
+                    "id": "antlr4.lexerSymbols",
+                    "name": "Lexer Tokens"
+                },
+                {
+                    "id": "antlr4.parserSymbols",
+                    "name": "Parser Rules"
+                },
+                {
+                    "id": "antlr4.channels",
+                    "name": "Token channels"
+                },
+                {
+                    "id": "antlr4.modes",
+                    "name": "Lexer modes"
+                }
             ]
         },
+        "breakpoints": [
+            {
+                "language": "antlr"
+            }
+        ],
         "debuggers": [
             {
                 "type": "antlr-debug",
                 "label": "ANTLR4 Debug",
-                "program": "./out/src/AntlrDebugger.js",
                 "runtime": "node",
                 "configurationAttributes": {
                     "launch": {
@@ -383,27 +429,34 @@
                                 "description": "Absolute path to a text file containing test input to parse.",
                                 "default": "${workspaceFolder}/${command:AskForTestInput}"
                             },
-                            "stopOnEntry": {
-                                "type": "boolean",
-                                "description": "Automatically stop on initial rule.",
-                                "default": false
+                            "startRule": {
+                                "type": "string",
+                                "description": "The name of the rule to be used as entry point. If none is given the rule with index 0 is used.",
+                                "default": ""
+                            },
+                            "grammar": {
+                                "type": "string",
+                                "description": "The path to a grammar to debug. Leave empty to debug the grammar in the active editor.",
+                                "default": null
                             },
                             "trace": {
                                 "type": "boolean",
                                 "description": "Log internal debugger messages to debug console.",
                                 "default": false
+                            },
+                            "printParseTree": {
+                                "type": "boolean",
+                                "description": "Print the textual parse tree in the debug console",
+                                "default": true
+                            },
+                            "visualParseTree": {
+                                "type": "boolean",
+                                "description": "Show a visual parse tree during debug",
+                                "default": true
                             }
                         }
                     }
                 },
-                "initialConfigurations": [
-                    {
-                        "type": "antlr-debug",
-                        "request": "launch",
-                        "input": "${workspaceFolder}/${command:AskForTestInput}",
-                        "stopOnEntry": true
-                    }
-                ],
                 "configurationSnippets": [
                     {
                         "label": "ANTLR: Parse",
@@ -412,7 +465,8 @@
                             "type": "antlr-debug",
                             "request": "launch",
                             "name": "${2:Run Parser}",
-                            "input": "^\"\\${workspaceFolder}/${1:Input}\""
+                            "input": "^\"\\${workspaceFolder}/${1:Input}\"",
+                            "visualParseTree": true
                         }
                     }
                 ],
@@ -428,24 +482,24 @@
         "publish": "vsce publish",
         "test": "node ./node_modules/vscode/bin/test",
         "compile": "tsc --outDir ./out/src",
-        "cleanup": "npm unlink antlr4-graps --no-save && npm install"
+        "cleanup": "npm unlink antlr4-graps --no-save && npm update && npm install"
     },
     "dependencies": {
-        "antlr4-graps": "^1.3.16",
-        "d3": "^4.12.2",
+        "antlr4-graps": "^1.4.0",
+        "d3": "^4.13.0",
         "fs-extra": "^5.0.0",
-        "vscode-debugadapter": "^1.25.0",
-        "vscode-debugprotocol": "^1.25.0"
+        "vscode-debugadapter": "^1.27.0",
+        "vscode-debugprotocol": "^1.27.0"
     },
     "devDependencies": {
-        "@types/chai": "^4.1.0",
-        "@types/d3": "^4.12.0",
-        "@types/fs-extra": "^5.0.0",
-        "@types/mocha": "^2.2.46",
-        "@types/node": "^8.5.8",
+        "@types/chai": "^4.1.2",
+        "@types/d3": "^4.13.0",
+        "@types/fs-extra": "^5.0.1",
+        "@types/mocha": "^2.2.48",
+        "@types/node": "^8.9.4",
         "chai": "^4.1.2",
         "mocha": "^4.1.0",
-        "typescript": "^2.6.2",
+        "typescript": "^2.7.2",
         "vscode": "^1.1.10"
     }
 }

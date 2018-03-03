@@ -1,3 +1,9 @@
+/*
+ * This file is released under the MIT license.
+ * Copyright (c) 2018, Mike Lischke
+ *
+ * See LICENSE file for more info.
+ */
 
 var stateType = [
   { short: "INVALID", long: "Invalid state" },
@@ -36,7 +42,6 @@ var svg = d3.select("svg")
   .attr("xmlns", "http://www.w3.org/2000/svg")
   .attr("version", "1.1")
   .attr("preserveAspectRatio", "xMinYMin meet")
-  //.attr("width", "100%")
   .attr("viewBox", "0 0 " +  width + " " + height);
 
 let topGroup = svg.append("g");
@@ -295,4 +300,25 @@ function dragged(d) {
 function dblclick(d) {
   d.fx = null;
   d.fy = null;
+}
+
+function resetTransformation() {
+	var scale = 0.5 * Math.exp(-nodes.length / 50) + 0.1;
+    svg
+        .call(zoom.transform, d3.zoomIdentity
+        .scale(scale, scale)
+        .translate(width * (1 - initialScale), height * (1 - initialScale)));
+
+    for (let node of nodes) {
+        if (node.type === 2) {
+            node.fx = 40;
+            node.fy = height / 4;
+        } else if (node.type === 7) {
+            node.fx = width - 40;
+            node.fy = height / 4;
+        } else {
+        	node.fx = null;
+        	node.fy = null;
+        }
+    }
 }

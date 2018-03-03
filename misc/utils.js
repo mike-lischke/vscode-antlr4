@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2017 Mike Lischke
+ * Copyright (c) 2016, 2018, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -15,39 +15,21 @@ function showMessage(message) {
 	}, "file://");
 }
 
-function resetTransformation() {
-	var scale = 0.5 * Math.exp(-nodes.length / 50) + 0.1;
-    svg
-        .call(zoom.transform, d3.zoomIdentity
-        .scale(scale, scale)
-        .translate(width * (1 - initialScale), height * (1 - initialScale)));
-
-    for (let node of nodes) {
-        if (node.type === 2) {
-            node.fx = 40;
-            node.fy = height / 4;
-        } else if (node.type === 7) {
-            node.fx = width - 40;
-            node.fy = height / 4;
-        } else {
-        	node.fx = null;
-        	node.fy = null;
-        }
-    }
-}
-
 function exportToSVG(type, name) {
 	// Doesn't save actually, but sends a command to our vscode extension.
 	// Only very few HTML messages are handled in the vscode webclient (and forwarded to registered listeners).
 	// We choose "did-click-link" (like the markdown preview extension does).
 	const svg = document.querySelectorAll('svg')[0];
-	const args = { name: name, type: type, svg: svg.outerHTML };
+	const args = {
+        name: name,
+        type: type,
+        svg: svg.outerHTML
+    };
 
 	window.parent.postMessage({
 		command: "did-click-link",
 		data: `command:_antlr.saveSVG?${encodeURIComponent(JSON.stringify(args))}`
 	}, "file://");
-
 }
 
 function exportToHTML(type, name) {
@@ -85,7 +67,12 @@ function exportToHTML(type, name) {
 	window.addEventListener('message', function (event) {
 		switch (event.data.action) {
 			case "saveATNState":
-				const args = { nodes: nodes, file: event.data.file, rule: event.data.rule, transform: topGroup.attr("transform") };
+				const args = {
+                    nodes: nodes,
+                    file: event.data.file,
+                    rule: event.data.rule,
+                    transform: topGroup.attr("transform")
+                };
 				window.parent.postMessage({
 					command: "did-click-link",
 					data: `command:_antlr.saveATNState?${encodeURIComponent(JSON.stringify(args))}`
@@ -93,5 +80,4 @@ function exportToHTML(type, name) {
 				break;
 		}
 	});
-
 }());

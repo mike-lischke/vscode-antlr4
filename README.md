@@ -41,7 +41,77 @@
 
 * When enabled the extension creates parser and lexer files on each save of your grammar. This can used for internal operations only (e.g. to find detailed error information or to generate railroad diagrams) or to generate these files for you. Furthermore, interpreter data is generated which is used to generate the ATN graphs. This generation process can be finetuned by various settings (see below).
 
+### Debugging
+
+The extension supports debugging of grammar files (parser rules only). At least internal code generation must be enabled (the default), to allow debugging (which in turn requires a usable Java installation). This is the first non-Java debugger implementation and depends on the interpreter data export introduced in ANTLR4 4.7.1 (which is hence the lowest supported ANTLR4 version).
+
+All of the usual operations are supported:
+
+* Run w/o debugging - just run the parser interpreter (no profiling yet, though it's planned)
+* Run with debugging - run the interpreter and stop on breakpoints
+* Step into parser rules
+* Step over lexer tokens and parser rules
+* Step out of the current parser rule
+
+Once the entire input is parsed the parse tree can be visualized, either in the debug console as text or as graphical output. This is configurable in the launch task setup.
+
+![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-12.png)
+
+The graphic parse tree is interactive. You can collapse/expand parser rule nodes to hide/show tree parts. Both a horizontal and a vertical layout is supported and you can switch between the standard (compact) tree layout or the cluster layout where all terminals are align on the bottom (for the vertical tree layout) or on the right (horizontal).
+
+As with all graphs in this extension, you can export it to an svg file, along with custom or built in CSS code to style the parse tree.
+
+#### Breakpoints
+
+Breakpoints can be set for rule enter and rule exit. Currently no intermediate lines are supported. Breakpoints set within a rule are moved automatically to the rule name line and work as rule enter breakpoints. 
+
+#### Debug Informations
+A number of standard and special views for ANTLR4 grammars are shown:
+
+* Variables - shows a few global values like the used test input and its size, the current error count and the lexed input tokens.
+* Call stack - shows the parser rule invocation stack
+* Breakpoints - shows rule enter + exit breakpoints.
+* Lexer Tokens - displays a list of all defined lexer tokens, along with their assigned index.
+* Parser Rules - displays a list of all defined parser rules, along with their assigned index.
+* Lexer Modes - displays a list of all defined lexer modes (including the default mode)
+* Token Channels - displays a list of used token channels (including predefined ones)
+
+#### Debugging Setup
+There's no extra tool or anything required to run a debug session (except for Java to create the interpreter data). Everything else is configured in the launch task. Here's an example:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "antlr4-mysql",
+            "type": "antlr-debug",
+            "request": "launch",
+            //"input": "${workspaceFolder}/${command:AskForTestInput}",
+            "input": "input.sql",
+            "grammar": "grammars/MySQLParser.g4",
+            "startRule": "query",
+            "printParseTree": true,
+            "visualParseTree": true
+        }
+    ]
+}
+```
+
+As usual, the configuration has a name and a type, as well as a request type. Debugging a parser requires some sample input. This is provided via an external file. You can either specify the name of the file in the `input` parameter or let vscode ask ask you for a path (by using the outcommented variant). Everything else is optional. If no grammar is specified, the file in the currently active editor is used (provided it is an ANTLR4 grammar). The start rule allows to specify any parser rule by name and allows so to parse full input as well as just a subpart, which lets you focus on problematic things without the overhead of the full input. If not given the rule at index 0 is used as starting rule (which is the first rule found in your parser grammar). The parse tree settings switch the output after the debugger has ended (both are `false` by default).
+
+#### Limitations
+The debugger uses the lexer and parser interpreters provided in the ANTLR4 runtime. These interpreters use the same prediction engine like the standard classes, but cannot execute and target runtime code. Hence it is not possible to execute actions or semantic predicates. If your parser depends on that you will have to modify your grammars to avoid the need for such code. There are however considerations about using an answer file or similar to fake the output of predicates.
+
+The interpreters are implemented in Typescript and transpiled to Javascript, hence you shouldn't expect high performance parsing from the debugger. However, it should be good enough for normal error search.
+
+Even though ANTLR4 supports (direct) left recursive rules, their internal representation is totally different (they are converted to non-left-recursive rules). This makes it fairly difficult to match the currently executing ATN state to a concrete source position. Expect therefor non-optimal step marker visualization in such rules.
+
+Parser rule context variables, parameters and return values cannot be inspected, as they don't exist in the interpreter generated parse tree.
+
 ### Graphical Visualizations
+
+This extension can create a number of graphical visualizations. All of them (except for the railroad diagram) share the same look and feel (they are all based on D3.js). You can click on a free area and drag, to move the graph view port. The mouse wheel or track pad can be used to zoom in and out.
 
 * There is a function to generate railroad diagrams for all types of rules (parser, lexer, fragment lexer), provided by the [railroad-diagrams script from Tab Atkins Jr.](http://github.com/tabatkins/railroad-diagrams). You can either do that for the rule under the caret (and the display changes as you move the caret) or for the entire grammar file. An export function allows to generate an SVG file of the graph on disk. Colors + fonts can be adjusted by using custom CSS file(s). See also the available options below.
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-3.png)
@@ -74,11 +144,9 @@ In order to set all settings to their default values use: `// $antlr-format rese
 ### Miscellaneous
 
 * There is an option to switch on rule reference counts via Code Lens. This feature is switchable independent of the vscode Code Lens setting.
-
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-7.png)
 
 * For each grammar its dependencies are shown in a sidebar view (i.e. token vocabulary and imports).
-
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-10.png)
 
 ## Extension Settings
@@ -145,15 +213,54 @@ None
 
 * Show reference list for a symobl
 * Refactoring (rename symbols, remove left recursion etc.)
-* Live grammar interpreter for grammar preview
-    * Specify test input (file or a string) + a start rule
-    * Token list
-    * Parse tree display
-    * Call stack
 
 ## Release Notes
 
-For details see [Git commit history](https://github.com/mike-lischke/vscode-antlr4/commits/master).
+### 1.3.0
+- Added grammar debugger.
+- Added graphical and textual parse tree display.
+
+### 1.2.5
+- Added dependency graph.
+- Added call graph.
+
+### 1.1.5
+- Added ATN graphs.
+- Added SVG export for ATN graphs + railroad diagrams.
+- Now showing a progress indicator for background tasks (parser generation).
+
+### 1.0.4
+- Added code lens support.
+- Added code completion support.
+- Finished the light theme.
+
+### 1.0.0
+
+* Rework of the code - now using Typescript.
+* Adjustments for reworked antlr4-graps nodejs module.
+* Native code compilation is a matter of the past, so problems on e.g. Windows are gone now.
+* No longer considered a preview.
+
+### 0.4.0
+
+* Updated the symbol handling for the latest change in the antlr4-graps module. We now also show different icons depending on the type of the symbol.
+* Updated prebuilt antlr4-graps binaries for all platforms.
+* Quick navigation has been extended to imports/tokenvocabs and lexer modes.
+* The symbols list now contains some markup to show where a section with a specific lexer mode starts.
+* Fixed also a little mishighlighting in the language syntax file.
+* Added a license file.
+
+### 0.3.4
+
+Marked the extension as preview and added prebuild binaries.
+
+### 0.2.0
+
+* full setup of the project
+* added most of the required settings etc.
+* included dark theme is complete
+
+For further details see the [Git commit history](https://github.com/mike-lischke/vscode-antlr4/commits/master).
 
 ## Other Notes
 The dependencies view icons have been taken from the vscode tree view example.

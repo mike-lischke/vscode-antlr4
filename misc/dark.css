@@ -1,4 +1,16 @@
-/* Default CSS for ATN graphs (dark theme). Contains only the elements that differ from light theme. */
+/*
+ * This file contains all default CSS rules for the dark vscode them, used for various diagrams and graphs.
+ * Use the "antlr4.customcss" setting in vscode to specify your own file, if you like to override some rules.
+ *
+ * Usually most of the appearance is defined in light.css and here we only have some adjustments for
+ * the dark theme.
+ */
+
+ body.vscode-dark svg {
+	background: rgba(255, 255, 255, 0.05);
+}
+
+/* ATN graphs. */
 
 body.vscode-dark .marker {
   fill: #eee;
@@ -22,11 +34,22 @@ body.vscode-dark .state {
   filter: url(#white-glow);
 }
 
-/* Default CSS for railroad diagrams (dark theme) */
+/* Railroad diagrams */
 
-body.vscode-dark svg.railroad-diagram {
-	/* DIAGRAM_CLASS setting */
-	background: rgba(255, 255, 255, 0.05);
+body.vscode-dark .atn-graph-save-image {
+    background: rgba(206, 11, 70, 1) url('../misc/save-dark.png');
+}
+
+body.vscode-dark .rrd-save-image {
+    background: rgba(10, 188, 80, 1) url('../misc/save-dark.png');
+}
+
+body.vscode-dark .call-graph-save-image {
+    background: rgba(255, 191, 15, 1) url('../misc/save-dark.png');
+}
+
+body.vscode-dark .parse-tree-save-image {
+    background: rgba(49, 112, 212, 1) url('../misc/save-dark.png');
 }
 
 body.vscode-dark svg.railroad-diagram path {
@@ -83,14 +106,7 @@ body.vscode-dark svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 	fill: #f00;
 }
 
-/* Default CSS for call graphs (dark theme) */
-
-body.vscode-dark .link {
-    stroke: #fff;
-    stroke-opacity: .2;
-    fill: none;
-    pointer-events: none;
-}
+/* Call graphs */
 
 body.vscode-dark .node-source {
     fill: #e6db74;
@@ -98,30 +114,6 @@ body.vscode-dark .node-source {
 
 body.vscode-dark .node-target {
     fill: #45aa73;
-}
-
-body.vscode-dark .link-source,
-body.vscode-dark .link-target {
-    stroke-opacity: 1;
-    stroke-width: 2px;
-}
-
-body.vscode-dark .link-source {
-    stroke: #45aa73;
-}
-
-body.vscode-dark .link-target {
-    stroke: #e6db74;
-}
-
-/* Default CSS for call graphs (dark theme) */
-
-body.vscode-dark .link {
-    stroke: #fff;
-    stroke-opacity: .2;
-    fill: none;
-    pointer-events: none;
-	animation: fadeIn 0.5s ease-out 0.2s 1 normal backwards;
 }
 
 body.vscode-dark .module-1 {
@@ -176,6 +168,20 @@ body.vscode-dark .node-target {
     fill: #45aa73;
 }
 
+body.vscode-dark .link-source,
+body.vscode-dark .link-target {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+}
+
+body.vscode-dark .link {
+    stroke: #fff;
+    stroke-opacity: .2;
+    fill: none;
+    pointer-events: none;
+	animation: fadeIn 0.5s ease-out 0.2s 1 normal backwards;
+}
+
 body.vscode-dark .link-source {
     stroke-opacity: 1;
     stroke-width: 2px;
@@ -193,6 +199,47 @@ body.vscode-dark .link-target {
 body.vscode-dark .link-dimmed {
     stroke-opacity: 0.075;
     animation: fadeOut 0.25s ease-out 0s 1 normal backwards;
+}
+
+/* Parse trees */
+body.vscode-dark .tree-node {
+    cursor: pointer;
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 1);
+}
+
+body.vscode-dark g .tree-root {
+    cursor: pointer;
+    stroke-width: 2;
+    fill: #3a3c37;
+    stroke: #ffffff;
+}
+
+body.vscode-dark g .tree-leaf {
+    cursor: move;
+    stroke-width: 2;
+    fill: #828e66;
+    stroke: #ffffff;
+}
+
+body.vscode-dark g .tree-error {
+    cursor: move;
+    stroke-width: 2;
+    fill: rgb(187, 43, 33);
+    stroke: #ffffff;
+}
+
+body.vscode-dark g .token-value {
+    fill: white;
+    stroke: none;
+    font: 12pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
+}
+
+body.vscode-dark g .token-range {
+    fill: #bb832c;
+    stroke: none;
+    font: 8pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
 }
 
 /* Default CSS for internal elements, only visible in vscode */

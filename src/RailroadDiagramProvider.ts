@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017 Mike Lischke
+ * Copyright (c) 2017, 2018, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -67,9 +67,9 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
 
             if (command == "full") {
                 diagram += `
-                    <div class="header">
+                    <div class="header"><span class="rrd-color"><span class="graph-initial">Ⓡ</span>rd&nbsp;&nbsp;</span>All rules
                         <span class="action-box">
-                            <a onClick="exportToHTML('rrd', '${baseName}');"><span class="rule-initial-small rrd-color">⤑</span> Save all diagrams in an HTML file</a>
+                        Save to HTML<a onClick="exportToHTML('rrd', '${baseName}');"><span class="rrd-save-image" /></a>
                         </span>
                     </div>
                     <div id="container">`;
@@ -85,9 +85,9 @@ export class AntlrRailroadDiagramProvider extends AntlrTextContentProvider {
                 diagram += `</div>`;
             } else {
                 diagram += `
-                    <div class="header"><span class="rrd-color"><span class="rule-initial">Ⓡ</span>ule</span>&nbsp;&nbsp;${ruleName} <span class="rule-index">(rule index: ${ruleIndex})</span>
+                    <div class="header"><span class="rrd-color"><span class="graph-initial">Ⓡ</span>ule&nbsp;&nbsp;</span>&nbsp;&nbsp;${ruleName} <span class="rule-index">(rule index: ${ruleIndex})</span>
                         <span class="action-box">
-                            <a onClick="exportToSVG('rrd', '${ruleName}');"><span class="rule-initial-small rrd-color">⤑</span> Save to file</a>
+                        Save to SVG<a onClick="exportToSVG('rrd', '${ruleName}');"><span class="rrd-save-image" /></a>
                         </span>
                     </div>
                     <div id="container">

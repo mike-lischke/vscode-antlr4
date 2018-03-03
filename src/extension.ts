@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2017 Mike Lischke
+ * Copyright (c) 2016, 2018, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,6 +9,7 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as Net from 'net';
 
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
@@ -18,6 +19,8 @@ import {
 
 import { AntlrLanguageSupport, DiagnosticType, GenerationOptions } from "antlr4-graps";
 
+import { getTextProviderUri } from "./TextContentProvider";
+
 import { HoverProvider } from './HoverProvider';
 import { DefinitionProvider } from './DefinitionProvider';
 import { SymbolProvider } from './SymbolProvider';
@@ -26,12 +29,17 @@ import { AntlrCompletionItemProvider } from './CompletionItemProvider';
 import { AntlrRailroadDiagramProvider } from './RailroadDiagramProvider';
 import { AntlrATNGraphProvider, ATNStateEntry } from "./ATNGraphProvider";
 import { AntlrFormattingProvider } from "./FormattingProvider";
-import { getTextProviderUri } from "./TextContentProvider";
 import { ImportsProvider } from "./ImportsProvider";
 import { AntlrCallGraphProvider } from "./CallGraphProvider";
+import { LexerSymbolsProvider } from "./LexerSymbolsProvider";
+import { ParserSymbolsProvider } from "./ParserSymbolsProvider";
+import { ChannelsProvider } from "./ChannelsProvider";
+import { ModesProvider } from "./ModesProvider";
+import { AntlrParseTreeProvider } from "./ParseTreeProvider";
 
 import { ProgressIndicator } from "./ProgressIndicator";
 import { Utils } from "./Utils";
+import { AntlrDebugSession } from "./AntlrDebugger";
 
 const ANTLR = { language: 'antlr', scheme: 'file' };
 
@@ -44,6 +52,13 @@ let atnStates: Map<string, Map<string, ATNStateEntry>> = new Map();
 let backend: AntlrLanguageSupport;
 let progress: ProgressIndicator;
 let outputChannel: OutputChannel;
+
+let importsProvider: ImportsProvider;
+let lexerSymbolsProvider: LexerSymbolsProvider;
+let parserSymbolsProvider: ParserSymbolsProvider;
+let channelsProvider: ChannelsProvider;
+let modesProvider: ModesProvider;
+let parseTreeProvider: AntlrParseTreeProvider;
 
 export function activate(context: ExtensionContext) {
 
@@ -71,9 +86,6 @@ export function activate(context: ExtensionContext) {
             }
         }
     }
-
-    let importsProvider = new ImportsProvider(backend);
-    context.subscriptions.push(window.registerTreeDataProvider("antlr4.imports", importsProvider));
 
     context.subscriptions.push(languages.registerHoverProvider(ANTLR, new HoverProvider(backend)));
     context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new DefinitionProvider(backend)));
@@ -144,6 +156,25 @@ export function activate(context: ExtensionContext) {
 
     context.subscriptions.push(debug.registerDebugConfigurationProvider('antlr-debug', new AntlrDebugConfigurationProvider()));
 
+    importsProvider = new ImportsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.imports", importsProvider));
+
+    lexerSymbolsProvider = new LexerSymbolsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.lexerSymbols", lexerSymbolsProvider));
+
+    parserSymbolsProvider = new ParserSymbolsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.parserSymbols", parserSymbolsProvider));
+
+    channelsProvider = new ChannelsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.channels", channelsProvider));
+
+    modesProvider = new ModesProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.modes", modesProvider));
+
+    parseTreeProvider = new AntlrParseTreeProvider(backend, context);
+    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.parse-tree", parseTreeProvider));
+
+    // Helper commands.
     context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
         workspace.openTextDocument(grammar).then((document) => {
             window.showTextDocument(document, 0, false);
@@ -155,7 +186,7 @@ export function activate(context: ExtensionContext) {
         window.showInformationMessage(args.message, { modal: true });
     }));
 
-    // The export to svg command.
+    // The export to SVG command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveSVG", (args: { name: string, type: string, svg: string }) => {
         let css: string[] = [];
         css.push(Utils.getMiscPath("light.css", context, false));
@@ -175,8 +206,8 @@ export function activate(context: ExtensionContext) {
             '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + args.svg;
 
         try {
-            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"],
-                args.name + "." + args.type + ".svg"), ".svg", "Enter the name to an svg file.", svg, css);
+            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
+                args.name + "." + args.type), { "SVG": ["svg"] }, svg, css);
         } catch (error) {
             window.showErrorMessage("Couldn't write SVG file: " + error);
         }
@@ -194,12 +225,12 @@ export function activate(context: ExtensionContext) {
             }
         }
         try {
-            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"],
-                args.name + "." + args.type + ".html"), ".html", "Enter the name to an svg file.", args.html, css);
+            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
+                args.name + "." + args.type), { "HTML": ["html"] }, args.html, css);
         } catch (error) {
             window.showErrorMessage("Couldn't write HTML file: " + error);
         }
-        }));
+    }));
 
     // The save ATN state notification.
     context.subscriptions.push(commands.registerCommand('_antlr.saveATNState',
@@ -289,7 +320,7 @@ export function activate(context: ExtensionContext) {
     });
 
     window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
-        if (event.textEditor === window.activeTextEditor) {
+        if (event.textEditor.document.languageId === "antlr" && event.textEditor.document.uri.scheme === "file") {
             diagramProvider.update(getTextProviderUri(event.textEditor.document.uri, "rrd", "single"));
 
             let hash = Utils.hashFromPath(event.textEditor.document.uri.fsPath);
@@ -379,7 +410,7 @@ export function activate(context: ExtensionContext) {
                 });
             }
 
-            // Finally move interpreter files to our interal folder and reload that.
+            // Finally move interpreter files to our internal folder and reload that.
             if (externalMode) {
                 try {
                     let files = fs.readdirSync(outputDir);
@@ -418,10 +449,17 @@ export function deactivate() {
  * Validates launch configuration for grammar debugging.
  */
 class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
-    constructor() {}
+    constructor() { }
 
     resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
-         token?: CancellationToken): ProviderResult<DebugConfiguration> {
+        token?: CancellationToken): ProviderResult<DebugConfiguration> {
+
+        if (workspace.getConfiguration("antlr4.generation")["mode"] === "none") {
+            return window.showErrorMessage("Interpreter data generation is disabled in the preferences (see " +
+                "'antlr4.generation'). Set this at least to 'internal' to enable debugging.").then(_ => {
+                return undefined;
+            });
+        }
 
         // launch.json missing or empty?
         if (!config.type || !config.request || !config.name) {
@@ -434,25 +472,75 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
             return window.showErrorMessage("No test input file specified").then(_ => {
                 return undefined;
             });
-        }
-
-        const editor = window.activeTextEditor;
-        if (editor && editor.document.languageId === 'antlr') {
-            let diagnostics = diagnosticCollection.get(editor.document.uri);
-            if (diagnostics && diagnostics.length > 0) {
-                return window.showErrorMessage("Cannot lauch grammar debugging. There are errors in the code.").then(_ => {
+        } else {
+            if (!path.isAbsolute(config.input) && folder) {
+                config.input = path.join(folder.uri.fsPath, config.input);
+            }
+            if (!fs.existsSync(config.input)) {
+                return window.showErrorMessage("Cannot read test input file: " + config.input).then(_ => {
                     return undefined;
                 });
             }
-
-            config.grammar = editor.document.fileName;
-
-            return config;
-        } else {
-            window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
         }
 
-        return undefined;
+        if (!config.grammar) {
+            const editor = window.activeTextEditor;
+            if (editor && editor.document.languageId === 'antlr') {
+                let diagnostics = diagnosticCollection.get(editor!.document.uri);
+                if (diagnostics && diagnostics.length > 0) {
+                    return window.showErrorMessage("Cannot lauch grammar debugging. There are errors in the code.").then(_ => {
+                        return undefined;
+                    });
+                }
+
+                config.grammar = editor.document.fileName;
+            } else {
+                window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
+            }
+        } else {
+            if (!path.isAbsolute(config.grammar) && folder) {
+                config.grammar = path.join(folder.uri.fsPath, config.grammar);
+            }
+            if (!fs.existsSync(config.grammar)) {
+                return window.showErrorMessage("Cannot read grammar file: " + config.grammar).then(_ => {
+                    return undefined;
+                });
+            }
+        }
+
+        if (!config.grammar) {
+            return undefined;
+        }
+
+        if (!this.server) {
+            this.server = Net.createServer(socket => {
+                socket.on('end', () => {
+                    //console.error('>> ANTLR debugging client connection closed\n');
+                });
+
+                const session = new AntlrDebugSession(folder!, backend, config.grammar, [
+                    lexerSymbolsProvider,
+                    parserSymbolsProvider,
+                    channelsProvider,
+                    modesProvider,
+                    parseTreeProvider
+                ]);
+                session.setRunAsServer(true);
+                session.start(<NodeJS.ReadableStream>socket, socket);
+            }).listen(0);
+        }
+
+        config.debugServer = this.server.address().port;
+
+        return config;
     }
 
+    dispose() {
+        if (this.server) {
+            this.server.close();
+        }
+    }
+
+    private server?: Net.Server;
+    private port?: number;
 }
