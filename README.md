@@ -222,7 +222,7 @@ These settings have been modelled after clang-format.
 
 ## Known Issues
 
-None
+See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues).
 
 ## What's next?
 

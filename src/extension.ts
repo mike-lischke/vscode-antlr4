@@ -232,7 +232,7 @@ export function activate(context: ExtensionContext) {
         }
     }));
 
-    // The save ATN state notification.
+    // The "save ATN state" notification.
     context.subscriptions.push(commands.registerCommand('_antlr.saveATNState',
         (args: { nodes: any, file: string, rule: string, transform: string }) => {
 
@@ -411,7 +411,7 @@ export function activate(context: ExtensionContext) {
             }
 
             // Finally move interpreter files to our internal folder and reload that.
-            if (externalMode) {
+            if (externalMode && antlrPath != outputDir) {
                 try {
                     let files = fs.readdirSync(outputDir);
                     for (let file of files) {
