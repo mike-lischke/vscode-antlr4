@@ -73,219 +73,245 @@
                     "default": [],
                     "description": "List of custom CSS URIs for diagram SVG files"
                 },
-                "antlr4.rrd": {
-                    "type": "object",
-                    "default": {
-                        "saveDir": ""
-                    },
-                    "description": "Settings related to railroad diagrams",
-                    "properties": {
-                        "saveDir": {
-                            "type": "string",
-                            "default": "",
-                            "description": "Default export target folder for railroad diagrams"
-                        }
-                    }
+                "antlr4.rrd.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default export target folder for railroad diagrams"
                 },
-                "antlr4.atn": {
-                    "type": "object",
-                    "default": {
-                        "saveDir": "",
-                        "maxLabelCount": 3
-                    },
-                    "description": "Settings related to ATN graphs",
-                    "properties": {
-                        "saveDir": {
-                            "type": "string",
-                            "default": "",
-                            "description": "Default export target folder for ATN SVG files"
-                        },
-                        "antlr4.atn.maxLabelCount": {
-                            "type": "number",
-                            "default": 3,
-                            "description": "Max number of labels displayed on a transition in an ATN graph"
-                        }
-                    }
+                "antlr4.atn.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default export target folder for ATN SVG files"
+                },
+                "antlr4.atn.maxLabelCount": {
+                    "type": "number",
+                    "default": 3,
+                    "description": "Max number of labels displayed on a transition in an ATN graph"
                 },
                 "antlr4.call-graph.saveDir": {
                     "type": "string",
                     "default": "",
                     "description": "Default export target folder for call graphs"
                 },
-                "antlr4.generation.mode": {
-                    "type": "string",
-                    "default": "internal",
-                    "description": "Determines the mode for code generation (none at all, only for internal use, also for external use)",
-                    "enum": [
-                        "none",
-                        "internal",
-                        "external"
-                    ]
+                "antlr4.generation": {
+                    "type": "object",
+                    "default": {
+                        "mode": "internal",
+                        "language": "Java",
+                        "listeners": true,
+                        "visitors": false
+                    },
+                    "description": "Settings related to parser generation",
+                    "properties": {
+                        "mode": {
+                            "type": "string",
+                            "default": "internal",
+                            "description": "Determines the mode for code generation (none at all, only for internal use, also for external use)",
+                            "enum": [
+                                "none",
+                                "internal",
+                                "external"
+                            ]
+                        },
+                        "outputDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Output dir where all output is generated (relative to grammar or absolute path)"
+                        },
+                        "importDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Location to import grammars from (relative to a grammar or absolute path)"
+                        },
+                        "package": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Package/namespace for generated code"
+                        },
+                        "language": {
+                            "type": "string",
+                            "default": "Java",
+                            "description": "Specifies the target language for the generated code, overriding what is specified in the grammar"
+                        },
+                        "listeners": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Also create listeners on code generation"
+                        },
+                        "visitors": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Also create visitors on code generation"
+                        }
+                    }
                 },
-                "antlr4.generation.outputDir": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Output dir where all output is generated (relative to grammar or absolute path)"
-                },
-                "antlr4.generation.importDir": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Location to import grammars from (relative to a grammar or absolute path)"
-                },
-                "antlr4.generation.package": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Package/namespace for generated code"
-                },
-                "antlr4.generation.language": {
-                    "type": "string",
-                    "default": "Java",
-                    "description": "Specifies the target language for the generated code, overriding what is specified in the grammar"
-                },
-                "antlr4.generation.listeners": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Also create listeners on code generation"
-                },
-                "antlr4.generation.visitors": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Also create visitors on code generation"
-                },
-                "antlr4.format.alignTrailingComments": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "If true, aligns trailing comments"
-                },
-                "antlr4.format.allowShortBlocksOnASingleLine": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Allows contracting short blocks to a single line"
-                },
-                "antlr4.format.breakBeforeBraces": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "When true start predicates and actions on a new line"
-                },
-                "antlr4.format.columnLimit": {
-                    "type": "number",
-                    "default": 100,
-                    "description": "The character count after which automatic line breaking takes place"
-                },
-                "antlr4.format.continuationIndentWidth": {
-                    "type": "number",
-                    "default": 4,
-                    "description": "Indentation for line continuation (only used if useTab is false)"
-                },
-                "antlr4.format.indentWidth": {
-                    "type": "number",
-                    "default": 4,
-                    "description": "Character count for indentation (if useTab is false)"
-                },
-                "antlr4.format.keepEmptyLinesAtTheStartOfBlocks": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "If true, empty lines at the start of blocks is kept"
-                },
-                "antlr4.format.maxEmptyLinesToKeep": {
-                    "type": "number",
-                    "default": 1,
-                    "description": "The maximum number of consecutive empty lines to keep"
-                },
-                "antlr4.format.reflowComments": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Reformat comments to fit the column limit"
-                },
-                "antlr4.format.spaceBeforeAssignmentOperators": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enables spaces around operators"
-                },
-                "antlr4.format.tabWidth": {
-                    "type": "number",
-                    "default": 4,
-                    "description": "Multiples of this value determine tab stops in a document"
-                },
-                "antlr4.format.useTab": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Use tabs for indentation"
-                },
-                "antlr4.format.alignColons": {
-                    "type": "string",
-                    "default": "none",
-                    "enum": [
-                        "none",
-                        "trailing",
-                        "hanging"
-                    ],
-                    "description": "Align colons among rules (scope depends on groupedAlignments)"
-                },
-                "antlr4.format.singleLineOverrulesHangingColon": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Single line mode overrides hanging colon setting (applies also to alignSemicolons)"
-                },
-                "antlr4.format.allowShortRulesOnASingleLine": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Allows contracting short rules on a single line (short: < 2/3 of columnLimit)"
-                },
-                "antlr4.format.alignSemicolons": {
-                    "type": "string",
-                    "default": "none",
-                    "enum": [
-                        "none",
-                        "ownLine",
-                        "hanging"
-                    ],
-                    "description": "Determines the alignment of semicolons in rules (no alignment, first column on an own line or aligned to pipe chars on an own line)"
-                },
-                "antlr4.format.breakBeforeParens": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "For blocks: if true puts opening parentheses on an own line"
-                },
-                "antlr4.format.ruleInternalsOnSingleLine": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Place rule internals (return value, local variables, @init, @after) all on a single line"
-                },
-                "antlr4.format.minEmptyLines": {
-                    "type": "number",
-                    "default": 0,
-                    "description": "Determines the number of empty lines that must exist (between rules or other full statements)"
-                },
-                "antlr4.format.groupedAlignments": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "When true only consecutive lines are considered for alignments"
-                },
-                "antlr4.format.alignFirstTokens": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Align the first token after the colon among rules"
-                },
-                "antlr4.format.alignLexerCommands": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Align lexer commands (starting with ->) among rule"
-                },
-                "antlr4.format.alignActions": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Align action blocks + predicates among rules and alternatives"
-                },
-                "antlr4.format.alignLabels": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Align alt labels (only when a rule is not on a single line)"
-                },
-                "antlr4.format.alignTrailers": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Combine all alignments (align whatever comes first: colons, comments etc.)"
+                "antlr4.format": {
+                    "type": "object",
+                    "default": {
+                        "alignTrailingComments": false,
+                        "allowShortBlocksOnASingleLine": true,
+                        "breakBeforeBraces": false,
+                        "columnLimit": 100,
+                        "continuationIndentWidth": 4,
+                        "indentWidth": 4,
+                        "keepEmptyLinesAtTheStartOfBlocks": false,
+                        "maxEmptyLinesToKeep": 1,
+                        "reflowComments": true,
+                        "spaceBeforeAssignmentOperators": true,
+                        "tabWidth": 4,
+                        "useTab": true,
+                        "alignColons": "none",
+                        "singleLineOverrulesHangingColon": true,
+                        "allowShortRulesOnASingleLine": true,
+                        "alignSemicolons": "none",
+                        "breakBeforeParens": false,
+                        "ruleInternalsOnSingleLine": false,
+                        "minEmptyLines": 0,
+                        "groupedAlignments": true,
+                        "alignFirstTokens": false,
+                        "alignLexerCommands": false,
+                        "alignActions": false,
+                        "alignLabels": true,
+                        "alignTrailers": false
+                    },
+                    "description": "Settings related to parser generation",
+                    "properties": {
+                        "alignTrailingComments": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "If true, aligns trailing comments"
+                        },
+                        "allowShortBlocksOnASingleLine": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Allows contracting short blocks to a single line"
+                        },
+                        "breakBeforeBraces": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "When true start predicates and actions on a new line"
+                        },
+                        "columnLimit": {
+                            "type": "number",
+                            "default": 100,
+                            "description": "The character count after which automatic line breaking takes place"
+                        },
+                        "continuationIndentWidth": {
+                            "type": "number",
+                            "default": 4,
+                            "description": "Indentation for line continuation (only used if useTab is false)"
+                        },
+                        "indentWidth": {
+                            "type": "number",
+                            "default": 4,
+                            "description": "Character count for indentation (if useTab is false)"
+                        },
+                        "keepEmptyLinesAtTheStartOfBlocks": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "If true, empty lines at the start of blocks are kept"
+                        },
+                        "maxEmptyLinesToKeep": {
+                            "type": "number",
+                            "default": 1,
+                            "description": "The maximum number of consecutive empty lines to keep"
+                        },
+                        "reflowComments": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Reformat comments to fit the column limit"
+                        },
+                        "spaceBeforeAssignmentOperators": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Enables spaces around operators"
+                        },
+                        "tabWidth": {
+                            "type": "number",
+                            "default": 4,
+                            "description": "Multiples of this value determine tab stops in a document"
+                        },
+                        "useTab": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Use tabs for indentation"
+                        },
+                        "alignColons": {
+                            "type": "string",
+                            "default": "none",
+                            "enum": [
+                                "none",
+                                "trailing",
+                                "hanging"
+                            ],
+                            "description": "Align colons among rules (scope depends on groupedAlignments)"
+                        },
+                        "singleLineOverrulesHangingColon": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Single line mode overrides hanging colon setting (applies also to alignSemicolons)"
+                        },
+                        "allowShortRulesOnASingleLine": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Allows contracting short rules on a single line (short: < 2/3 of columnLimit)"
+                        },
+                        "alignSemicolons": {
+                            "type": "string",
+                            "default": "none",
+                            "enum": [
+                                "none",
+                                "ownLine",
+                                "hanging"
+                            ],
+                            "description": "Determines the alignment of semicolons in rules (no alignment, first column on an own line or aligned to pipe chars on an own line)"
+                        },
+                        "breakBeforeParens": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "For blocks: if true puts opening parentheses on an own line"
+                        },
+                        "ruleInternalsOnSingleLine": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Place rule internals (return value, local variables, @init, @after) all on a single line"
+                        },
+                        "minEmptyLines": {
+                            "type": "number",
+                            "default": 0,
+                            "description": "Determines the number of empty lines that must exist (between rules or other full statements)"
+                        },
+                        "groupedAlignments": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "When true only consecutive lines are considered for alignments"
+                        },
+                        "alignFirstTokens": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Align the first token after the colon among rules"
+                        },
+                        "alignLexerCommands": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Align lexer commands (starting with ->) among rule"
+                        },
+                        "alignActions": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Align action blocks + predicates among rules and alternatives"
+                        },
+                        "alignLabels": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Align alt labels (only when a rule is not on a single line)"
+                        },
+                        "alignTrailers": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Combine all alignments (align whatever comes first: colons, comments etc.)"
+                        }
+                    }
                 },
                 "antlr4.debug": {
                     "type": "object",

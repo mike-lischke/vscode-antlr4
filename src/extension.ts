@@ -67,7 +67,7 @@ export function activate(context: ExtensionContext) {
     DiagnosticTypeMap.set(DiagnosticType.Warning, DiagnosticSeverity.Warning);
     DiagnosticTypeMap.set(DiagnosticType.Error, DiagnosticSeverity.Error);
 
-    backend = new AntlrLanguageSupport(workspace.getConfiguration("antlr4.generation")["importDir"]);
+    backend = new AntlrLanguageSupport(workspace.getConfiguration("antlr4.generation")["importDir"] || "");
     progress = new ProgressIndicator();
     outputChannel = window.createOutputChannel("ANTLR Exceptions");
 
