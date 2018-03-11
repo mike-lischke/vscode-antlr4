@@ -22,7 +22,7 @@ Additionally, certain extension settings have been reorganized to be easier to c
 
 * Complete syntax coloring for ANTLR grammars (.g and .g4 files).
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-5.png)
-    
+
 * Comes with an own beautiful color theme, which not only includes all the [recommended groups](http://manual.macromates.com/en/language_grammars), but also some special rules for grammar elements that you don't find in other themes (e.g. alt labels and options).
 
 ### Code Completion + Symbol Information
@@ -69,7 +69,7 @@ As with all graphs in this extension, you can export it to an svg file, along wi
 
 #### Breakpoints
 
-Breakpoints can be set for rule enter and rule exit. Currently no intermediate lines are supported. Breakpoints set within a rule are moved automatically to the rule name line and act as rule enter breakpoints. 
+Breakpoints can be set for rule enter and rule exit. Currently no intermediate lines are supported. Breakpoints set within a rule are moved automatically to the rule name line and act as rule enter breakpoints.
 
 #### Debug Informations
 During debugging a number of standard and extra views give you grammar details:
@@ -230,6 +230,9 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 * Refactoring (rename symbols, remove left recursion etc.)
 
 ## Release Notes
+
+### 2.0.0
+- The extion and its backend module (formerly known as antlr4-graps) have now been combined. This went along with a reorganization of the code.
 
 ### 1.3.0
 - Added grammar debugger.

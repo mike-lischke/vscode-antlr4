@@ -28,8 +28,8 @@ import {
     AntlrFacade
 } from "../backend/facade";
 import {
-    AlternativeSymbol, GrapsSymbolTable, RuleReferenceSymbol, EbnfSuffixSymbol, RuleSymbol
-} from "./GrapsSymbolTable";
+    AlternativeSymbol, ContextSymbolTable, RuleReferenceSymbol, EbnfSuffixSymbol, RuleSymbol, ActionSymbol
+} from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 
 export interface GrapsBreakPoint {
@@ -435,6 +435,14 @@ export class GrapsDebugger extends EventEmitter {
                 if (next) {
                     next = next.nextSibling;
                 }
+            } else if (next instanceof ActionSymbol) {
+                // Also skip over action blocks.
+                next = next.nextSibling;
+
+                // If the next symbol is a question mark, this block is actually a predicate.
+                if (next instanceof EbnfSuffixSymbol) {
+                    next = next.nextSibling;
+                }
             }
 
             if (!next) {
@@ -498,6 +506,11 @@ export class GrapsDebugger extends EventEmitter {
             if (next instanceof VariableSymbol) { // Jump over variable assignments.
                 next = next.nextSibling;
                 if (next) {
+                    next = next.nextSibling;
+                }
+            } else if (next instanceof ActionSymbol) { // Actions/predicates.
+                next = next.nextSibling;
+                if (next instanceof EbnfSuffixSymbol) {
                     next = next.nextSibling;
                 }
             }
@@ -723,7 +736,7 @@ class GrapsParserInterpreter extends ParserInterpreter {
                         if (ruleSymbol) {
                             // Get the source name from the symbol's symbol table (which doesn't
                             // necessarily correspond to the one we have set for the debugger).
-                            let st = ruleSymbol.symbolTable as GrapsSymbolTable;
+                            let st = ruleSymbol.symbolTable as ContextSymbolTable;
                             if (st.owner) {
                                 frame.source = st.owner.fileName;
                             }

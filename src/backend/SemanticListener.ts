@@ -8,7 +8,7 @@
 "use strict";
 
 import { SymbolGroupKind, SymbolKind, DiagnosticEntry, DiagnosticType } from './facade';
-import { GrapsSymbolTable, TokenSymbol, RuleSymbol } from './GrapsSymbolTable';
+import { ContextSymbolTable, TokenSymbol, RuleSymbol } from './ContextSymbolTable';
 import { ANTLRv4ParserListener } from '../parser/ANTLRv4ParserListener';
 import {
     TerminalRuleContext, RulerefContext, SetElementContext, LexerCommandContext, LexerRuleSpecContext,
@@ -19,7 +19,7 @@ import { Token, ParserRuleContext } from 'antlr4ts';
 import { TerminalNode } from 'antlr4ts/tree';
 
 export class SemanticListener implements ANTLRv4ParserListener {
-    constructor(private diagnostics: DiagnosticEntry[], private symbolTable: GrapsSymbolTable) { }
+    constructor(private diagnostics: DiagnosticEntry[], private symbolTable: ContextSymbolTable) { }
 
     // Check references to other lexer tokens.
     exitTerminalRule = function(ctx: TerminalRuleContext) {

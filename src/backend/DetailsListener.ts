@@ -16,16 +16,16 @@ import {
 } from '../parser/ANTLRv4Parser';
 
 import {
-    GrapsSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
+    ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
     VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, TokenVocabSymbol, definitionForContext,
     AlternativeSymbol, EbnfSuffixSymbol, OptionsSymbol, ActionSymbol, ArgumentSymbol, OperatorSymbol
-} from './GrapsSymbolTable';
+} from './ContextSymbolTable';
 
 import { ScopedSymbol, LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
 import { TerminalNode, ParseTree } from 'antlr4ts/tree';
 
 export class DetailsListener implements ANTLRv4ParserListener {
-    constructor(private symbolTable: GrapsSymbolTable, private imports: string[]) { }
+    constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
 
     enterLexerRuleSpec(ctx: LexerRuleSpecContext) {
         let tokenRef = ctx.TOKEN_REF();

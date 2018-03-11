@@ -18,7 +18,7 @@ import { ParseTree, TerminalNode } from 'antlr4ts/tree';
 
 type SymbolStore = Map<SymbolKind, Map<string, ParserRuleContext | undefined>>;
 
-export class GrapsSymbolTable extends SymbolTable {
+export class ContextSymbolTable extends SymbolTable {
     public tree: ParserRuleContext; // Set by the owning source context after each parse run.
 
     constructor(name: string, options: SymbolTableOptions, public owner?: SourceContext) {
@@ -29,8 +29,8 @@ export class GrapsSymbolTable extends SymbolTable {
         // Before clearing the dependencies make sure the owners are updated.
         if (this.owner) {
             for (let dep of this.dependencies) {
-                if ((dep as GrapsSymbolTable).owner) {
-                    this.owner.removeDependency((dep as GrapsSymbolTable).owner!);
+                if ((dep as ContextSymbolTable).owner) {
+                    this.owner.removeDependency((dep as ContextSymbolTable).owner!);
                 }
             }
         }
@@ -140,7 +140,7 @@ export class GrapsSymbolTable extends SymbolTable {
         // Special handling for imports.
         if (kind == SymbolKind.TokenVocab || kind == SymbolKind.Import) {
             // Get the source id from a dependent module.
-            this.dependencies.forEach((table: GrapsSymbolTable) => {
+            this.dependencies.forEach((table: ContextSymbolTable) => {
                 if (table.owner && table.owner.sourceId.includes(name)) {
                     return { // TODO: implement a best match search.
                         kind: kind,
@@ -152,7 +152,7 @@ export class GrapsSymbolTable extends SymbolTable {
             });
         }
 
-        let symbolTable = symbol.symbolTable as GrapsSymbolTable;
+        let symbolTable = symbol.symbolTable as ContextSymbolTable;
         return {
             kind: kind,
             name: symbol.name,
@@ -168,7 +168,7 @@ export class GrapsSymbolTable extends SymbolTable {
 
         let symbols = this.getAllSymbols(t, localOnly);
         for (let symbol of symbols) {
-            let root = symbol.root as GrapsSymbolTable;
+            let root = symbol.root as ContextSymbolTable;
             result.push({
                 kind: this.getKindFromSymbol(symbol),
                 name: symbol.name,

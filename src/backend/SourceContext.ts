@@ -47,9 +47,9 @@ import { InterpreterDataReader, InterpreterData } from "./InterpreterDataReader"
 import { ErrorParser } from "./ErrorParser";
 
 import {
-    GrapsSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
+    ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
     VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, AlternativeSymbol, RuleReferenceSymbol, TokenReferenceSymbol
-} from "./GrapsSymbolTable";
+} from "./ContextSymbolTable";
 
 import { LexicalRange } from "../backend/facade";
 import { SentenceGenerator } from "./SentenceGenerator";
@@ -60,7 +60,7 @@ enum GrammarType { Unknown, Parser, Lexer, Combined };
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
-    public symbolTable: GrapsSymbolTable;
+    public symbolTable: ContextSymbolTable;
     public references: SourceContext[] = []; // Contexts referencing us.
     public sourceId: string;
 
@@ -69,7 +69,7 @@ export class SourceContext {
 
     constructor(public fileName: string) {
         this.sourceId = path.basename(fileName, path.extname(fileName));
-        this.symbolTable =  new GrapsSymbolTable(this.sourceId, { allowDuplicateSymbols: true }, this);
+        this.symbolTable =  new ContextSymbolTable(this.sourceId, { allowDuplicateSymbols: true }, this);
 
         // Initialize static global symbol table, if not yet done.
         if (!SourceContext.globalSymbols.resolve("EOF")) {
@@ -1004,7 +1004,7 @@ export class SourceContext {
         return result;
     }
 
-    private static globalSymbols = new GrapsSymbolTable("Global Symbols", { allowDuplicateSymbols: false });
+    private static globalSymbols = new ContextSymbolTable("Global Symbols", { allowDuplicateSymbols: false });
 
     // Result related fields.
     //private diagnostics: DiagnosticEntry[] = [];
