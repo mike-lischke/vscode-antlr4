@@ -1,0 +1,29 @@
+PERSIST_SYMBOL: P E R S I S T {serverVersion >= 80000}?;
+ROLE_SYMBOL: R O L E {serverVersion >= 80000}?; // SQL-1999-R
+ADMIN_SYMBOL: A D M I N {serverVersion >= 80000}?; // SQL-1999-R
+INVISIBLE_SYMBOL: I N V I S I B L E {serverVersion >= 80000}?;
+VISIBLE_SYMBOL: V I S I B L E {serverVersion >= 80000}?;
+EXCEPT_SYMBOL:
+	E X C E P T {serverVersion >= 80000}?
+; // SQL-1999-R
+COMPONENT_SYMBOL:
+	C O M P O N E N T {serverVersion >= 80000}?
+; // MYSQL
+RECURSIVE_SYMBOL:
+	R E C U R S I V E {serverVersion >= 80001}?
+; // SQL-1999-R
+//GRAMMAR_SELECTOR_EXPR:; // synthetic token: starts single expr. GRAMMAR_SELECTOR_GCOL:; //
+// synthetic token: starts generated col. GRAMMAR_SELECTOR_PART:; // synthetic token: starts
+// partition expr. GRAMMAR_SELECTOR_CTE:; // synthetic token: starts CTE expr.
+JSON_OBJECTAGG_SYMBOL:
+	J S O N '_' O B J E C T A G G {serverVersion >= 80000}?
+; // SQL-2015-R
+JSON_ARRAYAGG_SYMBOL:
+	J S O N '_' A R R A Y A G G {serverVersion >= 80000}?
+; // SQL-2015-R
+OF_SYMBOL: O F {serverVersion >= 80001}?; // SQL-1999-R
+SKIP_SYMBOL: S K I P {serverVersion >= 80001}?; // MYSQL
+LOCKED_SYMBOL: L O C K E D {serverVersion >= 80001}?; // MYSQL
+NOWAIT_SYMBOL: N O W A I T {serverVersion >= 80001}?; // MYSQL
+GROUPING_SYMBOL:
+	G R O U P I N G {serverVersi

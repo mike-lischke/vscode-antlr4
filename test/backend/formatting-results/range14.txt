@@ -1,0 +1,11 @@
+	= /* Multiple lines of a single command with embedded comments is combined to a single line. */
+		Base4
+	/* inline comment */;
+	// Single line comment, non-trailing. Stays as is without separator line.
+	/*Standalone comment (indentation needs correction)*/
+}
+
+channels {
+	CommentsChannel,
+	DirectiveChannel
+} 

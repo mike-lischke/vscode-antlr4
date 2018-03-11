@@ -1,0 +1,3 @@
+options { // Trailing comment, that moves behind the opening brace.
+	/*Inline comment that stays before the non-comment content.*/ superClass = Base1;
+	superClass = Base2;

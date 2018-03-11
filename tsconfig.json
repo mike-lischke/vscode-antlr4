@@ -15,7 +15,10 @@
         "rootDir": "src"
     },
     "include": [
-        "src/*.ts"
+        "src/*.ts",
+        "src/backend/*.ts",
+        "src/frontend/*.ts",
+        "src/parser/*.ts"
     ],
     "exclude": [
         "node_modules",

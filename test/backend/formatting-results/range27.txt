@@ -1,0 +1,10 @@
+} unused2:
+	(unused[1] .)+ (Colon | Semicolon | Plus)? ~Semicolon
+;
+
+stat: expr Equal expr Semicolon | expr Semicolon;
+
+expr:
+	expr Star expr
+	| expr Plus expr
+	| OpenPar

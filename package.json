@@ -503,15 +503,15 @@
         ]
     },
     "scripts": {
-        "vscode:prepublish": "npm run cleanup && tsc --outDir ./out/src",
+        "vscode:prepublish": "tsc --outDir ./out/src",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "publish": "vsce publish",
         "test": "node ./node_modules/vscode/bin/test",
-        "compile": "tsc --outDir ./out/src",
-        "cleanup": "npm unlink antlr4-graps --no-save && npm update && npm install"
+        "compile": "tsc --outDir ./out/src"
     },
     "dependencies": {
-        "antlr4-graps": "^1.4.0",
+        "antlr4-c3": "^1.1.7",
+        "antlr4ts": "^ 0.4.1-alpha.0",
         "d3": "^4.13.0",
         "fs-extra": "^5.0.0",
         "vscode-debugadapter": "^1.27.0",
@@ -522,10 +522,10 @@
         "@types/d3": "^4.13.0",
         "@types/fs-extra": "^5.0.1",
         "@types/mocha": "^2.2.48",
-        "@types/node": "^8.9.4",
+        "@types/node": "^8.9.5",
         "chai": "^4.1.2",
         "mocha": "^4.1.0",
         "typescript": "^2.7.2",
-        "vscode": "^1.1.10"
+        "vscode": "^1.1.13"
     }
 }

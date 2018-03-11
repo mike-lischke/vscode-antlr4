@@ -1,0 +1,17 @@
+	| MODIFY_SYMBOL COLUMN_SYMBOL? columnInternalRef fieldDefinition place?
+	| DROP_SYMBOL (
+		(INDEX_SYMBOL | KEY_SYMBOL) indexRef
+		| COLUMN_SYMBOL? columnInternalRef restrict?
+		| PRIMARY_SYMBOL KEY_SYMBOL
+		| FOREIGN_SYMBOL KEY_SYMBOL (
+			// This part is no longer optional starting with 5.7.
+			{serverVersion >= 50700}? columnRef
+			| {serverVersion < 50700}? columnRef?
+		)
+	)
+	| DISABLE_SYMBOL KEYS_SYMBOL
+	| ENABLE_SYMBOL KEYS_SYMBOL
+	| ALTER_SYMBOL COLUMN_SYMBOL? columnInternalRef SET_SYMBOL DEFAULT_SYMBOL signedLiteral
+	| {serverVersion >= 80000}? ALTER_SYMBOL INDEX_SYMBOL indexRef visibility
+	| ALTER_SYMBOL COLUMN_SYMBOL? columnInternalRef DROP_SYMBOL DEFAULT_SYMBOL
+	| RENAME_SYMBOL (TO_SYMBOL

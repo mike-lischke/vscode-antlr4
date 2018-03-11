@@ -1,0 +1,2 @@
+rule1: rule2 (COMMA rule2)*;
+rule2: TOKEN1;

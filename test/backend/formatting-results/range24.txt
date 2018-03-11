@@ -1,0 +1,5 @@
+conquer: // Comment comment
+	// a description
+	divide+
+	| {doesItBlend()}? and_ { myAction(); } // trailing description
+	// another description

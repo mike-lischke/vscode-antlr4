@@ -1,0 +1,119 @@
+/*
+ * This file is released under the MIT license.
+ * Copyright (c) 2016, 2017 Mike Lischke
+ *
+ * See LICENSE file for more info.
+ */
+
+'use strict'
+
+import * as vscode from 'vscode';
+import { SymbolKind } from '../backend/facade';
+
+/**
+ * Provides a textual expression for a native symbol kind.
+ */
+export function symbolDescriptionFromEnum(kind: SymbolKind): string {
+  // Could be localized.
+  switch (kind) {
+    case SymbolKind.LexerToken:
+      return "Lexer Token";
+    case SymbolKind.VirtualLexerToken:
+      return "Virtual Lexer Token";
+    case SymbolKind.FragmentLexerToken:
+      return "Fragment Lexer Token";
+    case SymbolKind.BuiltInLexerToken:
+      return "Predefined Lexer Token";
+    case SymbolKind.ParserRule:
+      return "Parser Rule";
+    case SymbolKind.LexerMode:
+      return "Lexer Mode";
+    case SymbolKind.BuiltInMode:
+      return "Predefined Lexer Mode";
+    case SymbolKind.TokenChannel:
+      return "Token Channel";
+    case SymbolKind.BuiltInChannel:
+      return "Predefined Token Channel";
+    case SymbolKind.Import:
+      return "Grammar Import";
+    case SymbolKind.TokenVocab:
+      return "Token Vocabulary";
+
+    default:
+      return "Unknown type";
+  }
+}
+
+/**
+ * Converts the native symbol kind to a vscode symbol kind.
+ */
+export function translateSymbolKind(kind: SymbolKind): vscode.SymbolKind {
+  switch (kind) {
+    case SymbolKind.LexerToken:
+      return vscode.SymbolKind.Function;
+    case SymbolKind.VirtualLexerToken:
+      return vscode.SymbolKind.Enum;
+    case SymbolKind.FragmentLexerToken:
+      return vscode.SymbolKind.Function;
+    case SymbolKind.BuiltInLexerToken:
+      return vscode.SymbolKind.Property;
+    case SymbolKind.ParserRule:
+      return vscode.SymbolKind.Method;
+    case SymbolKind.LexerMode:
+      return vscode.SymbolKind.Variable;
+    case SymbolKind.BuiltInMode:
+      return vscode.SymbolKind.Variable;
+    case SymbolKind.TokenChannel:
+      return vscode.SymbolKind.Variable;
+    case SymbolKind.BuiltInChannel:
+      return vscode.SymbolKind.Variable;
+    case SymbolKind.Import:
+      return vscode.SymbolKind.Module;
+    case SymbolKind.TokenVocab:
+      return vscode.SymbolKind.Module;
+
+    default:
+      return vscode.SymbolKind.Null;
+  }
+}
+
+/**
+ * Converts the native symbol kind to a vscode symbol kind.
+ */
+export function translateCompletionKind(kind: SymbolKind): vscode.CompletionItemKind {
+  switch (kind) {
+    case SymbolKind.Keyword:
+      return vscode.CompletionItemKind.Keyword;
+
+    case SymbolKind.LexerToken:
+      return vscode.CompletionItemKind.Text;
+    case SymbolKind.VirtualLexerToken:
+      return vscode.CompletionItemKind.Text;
+    case SymbolKind.FragmentLexerToken:
+      return vscode.CompletionItemKind.Text;
+    case SymbolKind.BuiltInLexerToken:
+      return vscode.CompletionItemKind.Constant;
+
+    case SymbolKind.ParserRule:
+      return vscode.CompletionItemKind.Method;
+    case SymbolKind.LexerMode:
+      return vscode.CompletionItemKind.Enum;
+    case SymbolKind.BuiltInMode:
+      return vscode.CompletionItemKind.Constant;
+    case SymbolKind.TokenChannel:
+      return vscode.CompletionItemKind.Property;
+    case SymbolKind.BuiltInChannel:
+      return vscode.CompletionItemKind.Constant;
+    case SymbolKind.Import:
+      return vscode.CompletionItemKind.Module;
+    case SymbolKind.TokenVocab:
+      return vscode.CompletionItemKind.Module;
+
+    case SymbolKind.Action:
+    case SymbolKind.Predicate:
+      return vscode.CompletionItemKind.Snippet;
+
+    default:
+      return vscode.CompletionItemKind.Text;
+  }
+}

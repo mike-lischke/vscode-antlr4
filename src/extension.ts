@@ -17,29 +17,28 @@ import {
     debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult
 } from 'vscode';
 
-import { AntlrLanguageSupport, DiagnosticType, GenerationOptions } from "antlr4-graps";
+import { getTextProviderUri } from "./frontend/TextContentProvider";
 
-import { getTextProviderUri } from "./TextContentProvider";
+import { HoverProvider } from './frontend/HoverProvider';
+import { DefinitionProvider } from './frontend//DefinitionProvider';
+import { SymbolProvider } from './frontend/SymbolProvider';
+import { AntlrCodeLensProvider } from './frontend/CodeLensProvider';
+import { AntlrCompletionItemProvider } from './frontend/CompletionItemProvider';
+import { AntlrRailroadDiagramProvider } from './frontend/RailroadDiagramProvider';
+import { AntlrATNGraphProvider, ATNStateEntry } from "./frontend/ATNGraphProvider";
+import { AntlrFormattingProvider } from "./frontend/FormattingProvider";
+import { ImportsProvider } from "./frontend/ImportsProvider";
+import { AntlrCallGraphProvider } from "./frontend/CallGraphProvider";
+import { LexerSymbolsProvider } from "./frontend/LexerSymbolsProvider";
+import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
+import { ChannelsProvider } from "./frontend/ChannelsProvider";
+import { ModesProvider } from "./frontend/ModesProvider";
+import { AntlrParseTreeProvider } from "./frontend/ParseTreeProvider";
 
-import { HoverProvider } from './HoverProvider';
-import { DefinitionProvider } from './DefinitionProvider';
-import { SymbolProvider } from './SymbolProvider';
-import { AntlrCodeLensProvider } from './CodeLensProvider';
-import { AntlrCompletionItemProvider } from './CompletionItemProvider';
-import { AntlrRailroadDiagramProvider } from './RailroadDiagramProvider';
-import { AntlrATNGraphProvider, ATNStateEntry } from "./ATNGraphProvider";
-import { AntlrFormattingProvider } from "./FormattingProvider";
-import { ImportsProvider } from "./ImportsProvider";
-import { AntlrCallGraphProvider } from "./CallGraphProvider";
-import { LexerSymbolsProvider } from "./LexerSymbolsProvider";
-import { ParserSymbolsProvider } from "./ParserSymbolsProvider";
-import { ChannelsProvider } from "./ChannelsProvider";
-import { ModesProvider } from "./ModesProvider";
-import { AntlrParseTreeProvider } from "./ParseTreeProvider";
-
-import { ProgressIndicator } from "./ProgressIndicator";
-import { Utils } from "./Utils";
-import { AntlrDebugSession } from "./AntlrDebugger";
+import { ProgressIndicator } from "./frontend/ProgressIndicator";
+import { Utils } from "./frontend/Utils";
+import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
+import { DiagnosticType, AntlrFacade, GenerationOptions } from "./backend/facade";
 
 const ANTLR = { language: 'antlr', scheme: 'file' };
 
@@ -49,7 +48,7 @@ let DiagnosticTypeMap: Map<DiagnosticType, DiagnosticSeverity> = new Map();
 // All ATN state entries per file, per rule.
 let atnStates: Map<string, Map<string, ATNStateEntry>> = new Map();
 
-let backend: AntlrLanguageSupport;
+let backend: AntlrFacade;
 let progress: ProgressIndicator;
 let outputChannel: OutputChannel;
 
@@ -67,7 +66,7 @@ export function activate(context: ExtensionContext) {
     DiagnosticTypeMap.set(DiagnosticType.Warning, DiagnosticSeverity.Warning);
     DiagnosticTypeMap.set(DiagnosticType.Error, DiagnosticSeverity.Error);
 
-    backend = new AntlrLanguageSupport(workspace.getConfiguration("antlr4.generation")["importDir"] || "");
+    backend = new AntlrFacade(workspace.getConfiguration("antlr4.generation")["importDir"] || "");
     progress = new ProgressIndicator();
     outputChannel = window.createOutputChannel("ANTLR Exceptions");
 

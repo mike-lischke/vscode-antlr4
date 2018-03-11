@@ -1,0 +1,16 @@
+// $antlr-format maxEmptyLinesToKeep: 8, minEmptyLines 0
+@parser::listenerpreinclude {/* listener preinclude section */}
+@parser::listenerpostinclude {/* listener postinclude section */}
+@parser::listenerdeclarations {/* listener public declarations/members section */}
+@parser::listenermembers {/* listener private declarations/members section */}
+@parser::listenerdefinitions {/* listener definitions section */}
+
+
+
+
+
+
+
+
+@parser::baselistenerpreinclude {/* base listener preinclude section */}
+@parser::baselistenerpostinclude {/* base listener postinclude section */

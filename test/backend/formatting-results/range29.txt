@@ -1,0 +1,10 @@
+Semicolon: ';';
+Plus: '+';
+Minus: '-';
+Star: '*';
+OpenPar: '(';
+ClosePar: ')';
+OpenCurly: '{';
+CloseCurly: '}';
+QuestionMark: '?';
+Comma: ',' -> skip

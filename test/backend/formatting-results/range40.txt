@@ -1,0 +1,14 @@
+		fieldIdentifier fieldDefinition checkOrReferences? place?
+		| OPEN_PAR_SYMBOL tableElementList CLOSE_PAR_SYMBOL
+	)
+	| ADD_SYMBOL tableConstraintDef
+	| CHANGE_SYMBOL COLUMN_SYMBOL? columnInternalRef fieldIdentifier fieldDefinition place?
+	| MODIFY_SYMBOL COLUMN_SYMBOL? columnInternalRef fieldDefinition place?
+	| DROP_SYMBOL (
+		(INDEX_SYMBOL | KEY_SYMBOL) indexRef
+		| COLUMN_SYMBOL? columnInternalRef restrict?
+		| PRIMARY_SYMBOL KEY_SYMBOL
+		| FOREIGN_SYMBOL KEY_SYMBOL (
+			// This part is no longer optional starting with 5.7.
+			{serverVersion >= 50700}? columnRef
+			| {serverV

@@ -1,0 +1,4 @@
+Foo: {canTestFoo()}? 'foo' {isItFoo()}? { myFooLexerAction(); };
+// $antlr-format alignColons: hanging, singleLineOverrulesHangingColon: true
+Foo: {canTestFoo()}? 'foo' {isItFoo()}? { myFooLexerAction(); };
+Bar: 'bar' {isItBar()}? { myBarLexe
