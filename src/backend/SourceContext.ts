@@ -674,7 +674,8 @@ export class SourceContext {
 
             let spawnOptions = { cwd: options.baseDir ? options.baseDir : undefined };
             let java = child_process.spawn("java", parameters, spawnOptions);
-            let exception = "";
+
+            let buffer = "";
             java.stderr.on("data", (data) => {
                 let text = data.toString();
                 if (text.startsWith("Picked up _JAVA_OPTIONS:")) {
@@ -687,29 +688,18 @@ export class SourceContext {
                 }
 
                 if (text.length > 0) {
-                    if (exception.length > 0) {
-                        // We got a Java execution exception. Return it as is, so the caller can show that
-                        // to the user, instead of interpreting it as a grammar error.
-                        exception += text;
-                    } else {
-                        let parser = new ErrorParser(dependencies);
-                        if (parser.convertErrorsToDiagnostics(text)) {
-                            resolve(fileList);
-                        } else {
-                            exception += text;
-                        }
-                    }
+                    buffer += "\n" + text;
                 }
             });
 
             java.on("close", (code) => {
-                if (exception.length > 0) {
-                    // Report an execution exception as is, if there's any.
-                    reject(exception);
+                let parser = new ErrorParser(dependencies);
+                if (parser.convertErrorsToDiagnostics(buffer)) {
+                    thisRef.setupInterpreters(options.outputDir);
+                    resolve(fileList);
+                } else {
+                    reject(buffer); // Treat this as non-grammar error (e.g. Java exception).
                 }
-
-                thisRef.setupInterpreters(options.outputDir);
-                resolve(fileList);
             });
         });
     }
