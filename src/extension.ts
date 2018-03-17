@@ -436,7 +436,7 @@ export function activate(context: ExtensionContext) {
         }).catch(error => {
             progress.stopAnimation();
             outputChannel.appendLine(error);
-            outputChannel.show();
+            outputChannel.show(true);
         });
     }
 } // activate() function
