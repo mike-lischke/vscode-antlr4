@@ -928,11 +928,13 @@ export class SourceContext {
             case GrammarType.Combined: {
                 // In a combined grammar the lexer is implicitly extracted and treated as a separate file.
                 // We have no own source context for this case and hence load both lexer and parser data here.
+                parserFile = path.join(grammarPath, baseName) + ".interp"
                 if (baseName.endsWith("Parser")) {
                     baseName = baseName.substr(0, baseName.length - "Parser".length);
+                    lexerFile = path.join(grammarPath, baseName) + "Lexer.interp"
+                } else {
+                    lexerFile = path.join(grammarPath, baseName) + ".interp"
                 }
-                parserFile = path.join(grammarPath, baseName) + "Parser.interp"
-                lexerFile = path.join(grammarPath, baseName) + "Lexer.interp"
                 break;
             }
 
