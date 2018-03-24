@@ -931,10 +931,8 @@ export class SourceContext {
                 parserFile = path.join(grammarPath, baseName) + ".interp"
                 if (baseName.endsWith("Parser")) {
                     baseName = baseName.substr(0, baseName.length - "Parser".length);
-                    lexerFile = path.join(grammarPath, baseName) + "Lexer.interp"
-                } else {
-                    lexerFile = path.join(grammarPath, baseName) + ".interp"
                 }
+                lexerFile = path.join(grammarPath, baseName) + "Lexer.interp"
                 break;
             }
 

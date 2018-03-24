@@ -45,16 +45,14 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
 
             html = html.replace("##header##", `
                 ${this.getStyles(uri)}
-                <base target="_blank" />
-            </head>
-            `.replace(/\$/g, "$$"));
+                <base target="_blank" />`.replace(/\$/g, "$$"));
 
             html = html.replace(/##objectName##/g, this.currentRule.replace(/\$/g, "$$"));
             html = html.replace(/##index##/g, this.currentRuleIndex ? "" + this.currentRuleIndex : "?");
 
             let maxLabelCount = workspace.getConfiguration("antlr4.atn")["maxLabelCount"];
             html = html.replace("##maxLabelCount##", maxLabelCount > 1 ? maxLabelCount : 5);
-            html += `var width = 1000, height = 1000\n\n`;
+            html += `  var width = 1000, height = 1000\n\n`;
 
             let data = this.backend.getATNGraph(document.fileName, this.currentRule);
             if (data) {
@@ -106,7 +104,7 @@ export class AntlrATNGraphProvider extends AntlrTextContentProvider {
                 html += `  var initialTranslateX = 0;\n`;
                 html += `  var initialTranslateY = 0;\n`;
 
-                html += `</script><span style="color: #808080; font-size: 16pt;">No ATN data found
+                html += `</script><br/><span style="color: #808080; font-size: 16pt;">No ATN data found
                     (code generation must run at least once in internal or external mode)</span></div></body>`;
             }
 
