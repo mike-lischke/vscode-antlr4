@@ -45,7 +45,7 @@ Additionally, certain extension settings have been reorganized to be easier to c
 
 ### Parser Generation
 
-* When enabled the extension creates parser and lexer files on each save of your grammar. This can either be used for internal operations only (e.g. to find detailed error information or to generate railroad diagrams and debugger data) or to generate these files for your own use. Furthermore, interpreter data is generated which is used to generate the ATN graphs or run the debugger. This generation process can be finetuned by a number of settings (see below).
+* When enabled the extension creates parser and lexer files on each save of your grammar. This can either be used for internal operations only (e.g. to find detailed error information or to generate railroad diagrams and debugger data) or to generate these files for your own use. Furthermore, interpreter data is generated which is used to generate the ATN graphs or run the debugger. This generation process can be fine tuned by a number of settings (see below).
 
 ### Debugging
 
@@ -65,7 +65,7 @@ Once the entire input is parsed, the parse tree can be visualized, either in the
 
 The graphical parse tree is interactive. You can collapse/expand parser rule nodes to hide/show tree parts. Both a horizontal and a vertical graph layout is supported and you can switch between the standard (compact) tree layout or the cluster layout, where all terminals are aligned at the bottom or on the right hand side (depending on the layout).
 
-As with all graphs in this extension, you can export it to an svg file, along with custom or built-in CSS code to style the parse tree.
+As with all graphs in this extension, you can export it to an SVG file, along with custom or built-in CSS code to style the parse tree.
 
 #### Breakpoints
 
@@ -87,7 +87,7 @@ Everything needed for debugging is included (except Java, which must be installe
 
 ```json
 {
-    "version": "0.2.0",
+    "version": "2.0.0",
     "configurations": [
         {
             "name": "antlr4-mysql",
@@ -104,7 +104,7 @@ Everything needed for debugging is included (except Java, which must be installe
 }
 ```
 
-As usual, the configuration has a name and a type, as well as a request type. Debugging a parser requires some sample input. This is provided from an external file. You can either specify the name of the file in the `input` parameter or let vscode ask you for it (by using the outcommented variant). Everything else is optional. If no grammar is specified, the file in the currently active editor is used (provided it is an ANTLR4 grammar). The start rule allows to specify any parser rule by name and allows so to parse full input as well as just a subpart of a grammar. If not given the rule at index 0 is used as starting point (which is the first rule found in your parser grammar). The parse tree settings determine the output after the debugger has ended (both are `false` by default).
+As usual, the configuration has a name and a type, as well as a request type. Debugging a parser requires some sample input. This is provided from an external file. You can either specify the name of the file in the `input` parameter or let vscode ask you for it (by using the out-commented variant). Everything else is optional. If no grammar is specified, the file in the currently active editor is used (provided it is an ANTLR4 grammar). The start rule allows to specify any parser rule by name and allows so to parse full input as well as just a subpart of a grammar. If not given the rule at index 0 is used as starting point (which is the first rule found in your parser grammar). The parse tree settings determine the output after the debugger has ended (both are `false` by default).
 
 #### Limitations
 The debugger uses the lexer and parser interpreters found in the ANTLR4 runtime. These interpreters use the same prediction engine as the standard classes, but cannot execute any target runtime code. Hence it is not possible to execute actions or semantic predicates. If your parser depends on that, you will have to modify your grammar(s) to avoid the need for such code. There are however considerations about using an answer file or similar to fake the output of predicates.
@@ -218,7 +218,7 @@ This is a settings object named **antlr4.format** with the following members:
 * **alignLabels**: boolean (default: true), align alt labels (only when a rule is not on a single line)
 * **alignTrailers**: boolean (default: false), combine all alignments (align whatever comes first: colons, comments etc.)
 
-These settings have been modelled after clang-format.
+These settings have been modeled after clang-format.
 
 ## Known Issues
 
@@ -226,13 +226,13 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 
 ## What's next?
 
-* Show reference list for a symobl
-* Refactoring (rename symbols, remove left recursion etc.)
+* No further plans so far
 
 ## Release Notes
 
 ### 2.0.0
-- The extion and its backend module (formerly known as antlr4-graps) have now been combined. This went along with a reorganization of the code.
+- The extension and its backend module (formerly known as antlr4-graps) have now been combined. This went along with a reorganization of the code.
+- A rename provider has been added to allow renaming symbols across files.
 
 ### 1.3.0
 - Added grammar debugger.
@@ -265,7 +265,7 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 * Updated prebuilt antlr4-graps binaries for all platforms.
 * Quick navigation has been extended to imports/tokenvocabs and lexer modes.
 * The symbols list now contains some markup to show where a section with a specific lexer mode starts.
-* Fixed also a little mishighlighting in the language syntax file.
+* Fixed also a little mis-highlighting in the language syntax file.
 * Added a license file.
 
 ### 0.3.4

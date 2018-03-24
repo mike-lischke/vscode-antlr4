@@ -118,8 +118,8 @@ export class ContextSymbolTable extends SymbolTable {
         return false;
     }
 
-    public contextForSymbol(name: string, kind: SymbolKind, localOnly: boolean): ParseTree | undefined {
-        let symbol = this.getSymbolOfType(name, kind, localOnly);
+    public contextForSymbol(symbolName: string, kind: SymbolKind, localOnly: boolean): ParseTree | undefined {
+        let symbol = this.getSymbolOfType(symbolName, kind, localOnly);
         if (!symbol) {
             return undefined;
         }
@@ -135,7 +135,7 @@ export class ContextSymbolTable extends SymbolTable {
             symbol = temp;
         }
 
-        let kind = this.getKindFromSymbol(symbol);
+        let kind = SourceContext.getKindFromSymbol(symbol);
 
         // Special handling for imports.
         if (kind == SymbolKind.TokenVocab || kind == SymbolKind.Import) {
@@ -146,7 +146,7 @@ export class ContextSymbolTable extends SymbolTable {
                         kind: kind,
                         name: (symbol as Symbol).name,
                         source: table.owner.fileName,
-                        definition: definitionForContext(table.tree, true)
+                        definition: SourceContext.definitionForContext(table.tree, true)
                     };
                 }
             });
@@ -157,7 +157,7 @@ export class ContextSymbolTable extends SymbolTable {
             kind: kind,
             name: symbol.name,
             source: (symbol.context && symbolTable && symbolTable.owner) ? symbolTable.owner.fileName : "ANTLR runtime",
-            definition: definitionForContext(symbol.context, true),
+            definition: SourceContext.definitionForContext(symbol.context, true),
             description: undefined
         };
 
@@ -170,10 +170,10 @@ export class ContextSymbolTable extends SymbolTable {
         for (let symbol of symbols) {
             let root = symbol.root as ContextSymbolTable;
             result.push({
-                kind: this.getKindFromSymbol(symbol),
+                kind: SourceContext.getKindFromSymbol(symbol),
                 name: symbol.name,
                 source: root.owner ? root.owner.fileName : "ANTLR runtime",
-                definition: definitionForContext(symbol.context, true),
+                definition: SourceContext.definitionForContext(symbol.context, true),
                 description: undefined
             });
         }
@@ -181,7 +181,7 @@ export class ContextSymbolTable extends SymbolTable {
     }
 
     public listSymbols(localOnly: boolean): SymbolInfo[] {
-        var result: SymbolInfo[] = [];
+        let result: SymbolInfo[] = [];
 
         result.push(...this.symbolsOfType(TokenVocabSymbol, localOnly));
         result.push(...this.symbolsOfType(ImportSymbol, localOnly));
@@ -198,8 +198,8 @@ export class ContextSymbolTable extends SymbolTable {
         return result;
     }
 
-    public getReferenceCount(symbol: string): number {
-        let reference = this.symbolReferences.get(symbol);
+    public getReferenceCount(symbolName: string): number {
+        let reference = this.symbolReferences.get(symbolName);
         if (reference) {
             return reference;
         } else {
@@ -217,13 +217,56 @@ export class ContextSymbolTable extends SymbolTable {
         return result;
     }
 
-    public countReference(symbol: string) {
-        let reference = this.symbolReferences.get(symbol);
+    public countReference(symbolName: string) {
+        let reference = this.symbolReferences.get(symbolName);
         if (reference) {
-            this.symbolReferences.set(symbol, reference + 1);
+            this.symbolReferences.set(symbolName, reference + 1);
         } else {
-            this.symbolReferences.set(symbol, 1);
+            this.symbolReferences.set(symbolName, 1);
         }
+    }
+
+    public getSymbolOccurences(symbolName: string, localOnly: boolean): SymbolInfo[] {
+        let result: SymbolInfo[] = [];
+
+        let symbols = this.getAllSymbols(Symbol, localOnly);
+        for (let symbol of symbols) {
+            let owner = (symbol.root as ContextSymbolTable).owner;
+
+            if (owner) {
+                if (symbol.context && symbol.name == symbolName) {
+                    let context = symbol.context;
+                    if (symbol instanceof FragmentTokenSymbol) {
+                        context = (symbol.context as ParserRuleContext).children![1];
+                    } else if (symbol instanceof TokenSymbol || symbol instanceof RuleSymbol) {
+                        context = (symbol.context as ParserRuleContext).children![0];
+                    }
+
+                    result.push({
+                        kind: SourceContext.getKindFromSymbol(symbol),
+                        name: symbolName,
+                        source: owner.fileName,
+                        definition: SourceContext.definitionForContext(context, true),
+                        description: undefined
+                    });
+                }
+
+                if (symbol instanceof ScopedSymbol) {
+                    let references = symbol.getAllNestedSymbols(symbolName);
+                    for (let reference of references) {
+                        result.push({
+                            kind: SourceContext.getKindFromSymbol(reference),
+                            name: symbolName,
+                            source: owner.fileName,
+                            definition: SourceContext.definitionForContext(reference.context, true),
+                            description: undefined
+                        });
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     private getSymbolOfType(name: string, kind: SymbolKind, localOnly: boolean): Symbol | undefined {
@@ -255,105 +298,9 @@ export class ContextSymbolTable extends SymbolTable {
         return undefined;
     }
 
-    private getKindFromSymbol(symbol: Symbol): SymbolKind {
-        if (symbol instanceof TokenVocabSymbol) {
-            return SymbolKind.TokenVocab;
-        }
-        if (symbol instanceof ImportSymbol) {
-            return SymbolKind.Import;
-        }
-        if (symbol instanceof BuiltInTokenSymbol) {
-            return SymbolKind.BuiltInLexerToken;
-        }
-        if (symbol instanceof VirtualTokenSymbol) {
-            return SymbolKind.VirtualLexerToken;
-        }
-        if (symbol instanceof FragmentTokenSymbol) {
-            return SymbolKind.FragmentLexerToken;
-        }
-        if (symbol instanceof TokenSymbol) {
-            return SymbolKind.LexerToken;
-        }
-        if (symbol instanceof BuiltInModeSymbol) {
-            return SymbolKind.BuiltInMode;
-        }
-        if (symbol instanceof LexerModeSymbol) {
-            return SymbolKind.LexerMode;
-        }
-        if (symbol instanceof BuiltInChannelSymbol) {
-            return SymbolKind.BuiltInChannel;
-        }
-        if (symbol instanceof TokenChannelSymbol) {
-            return SymbolKind.TokenChannel;
-        }
-        return SymbolKind.ParserRule;
-    }
-
     private symbolReferences: Map<string, number> = new Map();
+
 };
-
-/**
- * Returns the definition info for the given rule context. Exported as required by listeners.
- */
-export function definitionForContext(ctx: ParseTree | undefined, keepQuotes: boolean): Definition | undefined {
-    if (!ctx) {
-        return undefined;
-    }
-
-    var result: Definition = {
-        text: "",
-        range: {
-            start: { column: 0, row: 0 },
-            end: { column: 0, row: 0 }
-        }
-    };
-
-    if (ctx instanceof ParserRuleContext) {
-        let range = <Interval> { a: ctx.start.startIndex, b: ctx.stop!.stopIndex };
-
-        result.range.start.column = ctx.start.charPositionInLine;
-        result.range.start.row = ctx.start.line;
-        result.range.end.column = ctx.stop!.charPositionInLine;
-        result.range.end.row = ctx.stop!.line;
-
-        // For mode definitions we only need the init line, not all the lexer rules following it.
-        if (ctx.ruleIndex == ANTLRv4Parser.RULE_modeSpec) {
-            let modeSpec: ModeSpecContext = <ModeSpecContext>ctx;
-            range.b = modeSpec.SEMI().symbol.stopIndex;
-            result.range.end.column = modeSpec.SEMI().symbol.charPositionInLine;
-            result.range.end.row = modeSpec.SEMI().symbol.line;
-        } else if (ctx.ruleIndex == ANTLRv4Parser.RULE_grammarSpec) {
-            // Similar for entire grammars. We only need the introducer line here.
-            let grammarSpec: GrammarSpecContext = <GrammarSpecContext>ctx;
-            range.b = grammarSpec.SEMI().symbol.stopIndex;
-            result.range.end.column = grammarSpec.SEMI().symbol.charPositionInLine;
-            result.range.end.row = grammarSpec.SEMI().symbol.line;
-
-            range.a = grammarSpec.grammarType().start.startIndex;
-            result.range.start.column = grammarSpec.grammarType().start.charPositionInLine;
-            result.range.start.row = grammarSpec.grammarType().start.line;
-        }
-
-        let cs = ctx.start.tokenSource!.inputStream;
-        result.text = cs!.getText(range);
-    } else if (ctx instanceof TerminalNode) {
-        result.text = ctx.text;
-
-        result.range.start.column = ctx.symbol.charPositionInLine;
-        result.range.start.row = ctx.symbol.line;
-        result.range.end.column = ctx.symbol.charPositionInLine + result.text.length;
-        result.range.end.row = ctx.symbol.line;
-    }
-
-    if (keepQuotes || result.text.length < 2)
-        return result;
-
-    let quoteChar = result.text[0];
-    if ((quoteChar == '"' || quoteChar == '`' || quoteChar == '\'') && quoteChar == result.text[result.text.length - 1])
-        result.text = result.text.substr(1, result.text.length - 2);
-
-    return result;
-}
 
 export class TokenVocabSymbol extends Symbol { }
 export class ImportSymbol extends Symbol { }

@@ -22,20 +22,21 @@ import {
     PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, BlockStartState, DecisionState,
     RuleStopState, PlusBlockStartState, StarLoopEntryState, RuleStartState
 } from 'antlr4ts/atn';
-import { ParseCancellationException, IntervalSet } from 'antlr4ts/misc';
+import { ParseCancellationException, IntervalSet, Interval } from 'antlr4ts/misc';
 import { ParseTreeWalker, TerminalNode, ParseTree, ParseTreeListener } from 'antlr4ts/tree';
 
 import { CodeCompletionCore, Symbol, ScopedSymbol, LiteralSymbol } from "antlr4-c3";
 
 import {
     ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, RuleSpecContext, OptionsSpecContext,
-    TokensSpecContext
+    TokensSpecContext,
+    ModeSpecContext
 } from '../parser/ANTLRv4Parser';
 import { ANTLRv4Lexer } from '../parser/ANTLRv4Lexer';
 
 import {
     SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
-    SentenceGenerationOptions, FormattingOptions
+    SentenceGenerationOptions, FormattingOptions, Definition
 } from './facade';
 
 import { ContextErrorListener, ContextLexerErrorListener } from './ContextErrorListener';
@@ -48,7 +49,7 @@ import { ErrorParser } from "./ErrorParser";
 
 import {
     ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
-    VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, AlternativeSymbol, RuleReferenceSymbol, TokenReferenceSymbol
+    VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, AlternativeSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol, TokenVocabSymbol, LexerModeSymbol, TokenChannelSymbol
 } from "./ContextSymbolTable";
 
 import { LexicalRange } from "../backend/facade";
@@ -61,7 +62,6 @@ enum GrammarType { Unknown, Parser, Lexer, Combined };
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
     public symbolTable: ContextSymbolTable;
-    public references: SourceContext[] = []; // Contexts referencing us.
     public sourceId: string;
 
     /* @internal */
@@ -540,9 +540,11 @@ export class SourceContext {
         return this.rrdScripts.get(ruleName)!;
     }
 
-    public addDependency(context: SourceContext) {
-        // Check for mutual inclusion. Since dependencies are organized like a mesh
-        // we use a work pipeline to check all relevant referencing contexts.
+    /**
+     * Add this to the list of referencing contexts in the given context.
+     */
+    public addAsReferenceTo(context: SourceContext) {
+        // Check for mutual inclusion. References are organized like a mesh.
         var pipeline: SourceContext[] = [context];
         while (pipeline.length > 0) {
             let current = pipeline.shift();
@@ -552,12 +554,11 @@ export class SourceContext {
 
             if (current.references.indexOf(this) > -1) {
                 return; // Already in the list.
-                // TODO: add diagnostic entry for this case.
             }
 
             pipeline.push(...current.references);
         }
-        this.references.push(context);
+        context.references.push(this);
         this.symbolTable.addDependencies(context.symbolTable);
     }
 
@@ -573,7 +574,26 @@ export class SourceContext {
     }
 
     public getReferenceCount(symbol: string): number {
-        return this.symbolTable.getReferenceCount(symbol);
+        let result = this.symbolTable.getReferenceCount(symbol);
+
+        for (let reference of this.references) {
+            result += reference.getReferenceCount(symbol);
+        }
+
+        return result;
+    }
+
+    public getSymbolOccurences(symbol: string, recursive: boolean): Set<Symbol> {
+        // The symbol table returns symbols of itself and those it depends on (if recursive is true).
+        let result = this.symbolTable.getAllSymbols(Symbol, !recursive);
+
+        // Add also occurences from contexts referencing us, this time not recursive
+        // as we have added the occurences from this context already.
+        for (let reference of this.references) {
+            reference.symbolTable.getAllSymbols(Symbol, true).forEach(result.add, result);
+        }
+
+        return result;
     }
 
     /**
@@ -994,6 +1014,104 @@ export class SourceContext {
         return result;
     }
 
+    public static getKindFromSymbol(symbol: Symbol): SymbolKind {
+        if (symbol instanceof TokenVocabSymbol) {
+            return SymbolKind.TokenVocab;
+        }
+        if (symbol instanceof ImportSymbol) {
+            return SymbolKind.Import;
+        }
+        if (symbol instanceof BuiltInTokenSymbol) {
+            return SymbolKind.BuiltInLexerToken;
+        }
+        if (symbol instanceof VirtualTokenSymbol) {
+            return SymbolKind.VirtualLexerToken;
+        }
+        if (symbol instanceof FragmentTokenSymbol) {
+            return SymbolKind.FragmentLexerToken;
+        }
+        if (symbol instanceof TokenSymbol) {
+            return SymbolKind.LexerToken;
+        }
+        if (symbol instanceof BuiltInModeSymbol) {
+            return SymbolKind.BuiltInMode;
+        }
+        if (symbol instanceof LexerModeSymbol) {
+            return SymbolKind.LexerMode;
+        }
+        if (symbol instanceof BuiltInChannelSymbol) {
+            return SymbolKind.BuiltInChannel;
+        }
+        if (symbol instanceof TokenChannelSymbol) {
+            return SymbolKind.TokenChannel;
+        }
+        return SymbolKind.ParserRule;
+    }
+
+    /**
+     * Returns the definition info for the given rule context. Exported as required by listeners.
+     */
+    public static definitionForContext(ctx: ParseTree | undefined, keepQuotes: boolean): Definition | undefined {
+        if (!ctx) {
+            return undefined;
+        }
+
+        var result: Definition = {
+            text: "",
+            range: {
+                start: { column: 0, row: 0 },
+                end: { column: 0, row: 0 }
+            }
+        };
+
+        if (ctx instanceof ParserRuleContext) {
+            let range = <Interval> { a: ctx.start.startIndex, b: ctx.stop!.stopIndex };
+
+            result.range.start.column = ctx.start.charPositionInLine;
+            result.range.start.row = ctx.start.line;
+            result.range.end.column = ctx.stop!.charPositionInLine;
+            result.range.end.row = ctx.stop!.line;
+
+            // For mode definitions we only need the init line, not all the lexer rules following it.
+            if (ctx.ruleIndex == ANTLRv4Parser.RULE_modeSpec) {
+                let modeSpec: ModeSpecContext = <ModeSpecContext>ctx;
+                range.b = modeSpec.SEMI().symbol.stopIndex;
+                result.range.end.column = modeSpec.SEMI().symbol.charPositionInLine;
+                result.range.end.row = modeSpec.SEMI().symbol.line;
+            } else if (ctx.ruleIndex == ANTLRv4Parser.RULE_grammarSpec) {
+                // Similar for entire grammars. We only need the introducer line here.
+                let grammarSpec: GrammarSpecContext = <GrammarSpecContext>ctx;
+                range.b = grammarSpec.SEMI().symbol.stopIndex;
+                result.range.end.column = grammarSpec.SEMI().symbol.charPositionInLine;
+                result.range.end.row = grammarSpec.SEMI().symbol.line;
+
+                range.a = grammarSpec.grammarType().start.startIndex;
+                result.range.start.column = grammarSpec.grammarType().start.charPositionInLine;
+                result.range.start.row = grammarSpec.grammarType().start.line;
+            }
+
+            let cs = ctx.start.tokenSource!.inputStream;
+            result.text = cs!.getText(range);
+        } else if (ctx instanceof TerminalNode) {
+            result.text = ctx.text;
+
+            result.range.start.column = ctx.symbol.charPositionInLine;
+            result.range.start.row = ctx.symbol.line;
+            result.range.end.column = ctx.symbol.charPositionInLine + result.text.length;
+            result.range.end.row = ctx.symbol.line;
+        }
+
+        if (keepQuotes || result.text.length < 2)
+            return result;
+
+        let quoteChar = result.text[0];
+        if ((quoteChar == '"' || quoteChar == '`' || quoteChar == '\'') && quoteChar == result.text[result.text.length - 1])
+            result.text = result.text.substr(1, result.text.length - 2);
+
+        return result;
+    }
+
+    private references: SourceContext[] = []; // Contexts referencing us.
     private static globalSymbols = new ContextSymbolTable("Global Symbols", { allowDuplicateSymbols: false });
 
     // Result related fields.

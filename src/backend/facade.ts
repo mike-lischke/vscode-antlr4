@@ -14,6 +14,9 @@ import { ATNStateType, TransitionType } from "antlr4ts/atn";
 
 import { SourceContext } from './SourceContext';
 import { GrapsDebugger } from "./GrapsDebugger";
+import { ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, RuleSymbol } from "./ContextSymbolTable";
+import { ParserRuleContext } from "antlr4ts";
+import { ScopedSymbol } from "antlr4-c3";
 
 export enum SymbolGroupKind { // Multiple symbol kinds can be involved in a symbol lookup.
     TokenRef,
@@ -306,14 +309,14 @@ export class AntlrFacade {
     }
 
     private parseGrammar(contextEntry: ContextEntry) {
-        let oldDependencies = contextEntry.dependencies.slice();
-        contextEntry.dependencies.length = 0;
+        let oldDependencies = contextEntry.dependencies;
+        contextEntry.dependencies = [];
         let newDependencies = contextEntry.context.parse();
 
         for (let dep of newDependencies) {
             let depContext = this.loadDependency(contextEntry, dep);
             if (depContext)
-                contextEntry.context.addDependency(depContext);
+                contextEntry.context.addAsReferenceTo(depContext);
         }
 
         // Release all old dependencies. This will only unload grammars which have
@@ -438,11 +441,59 @@ export class AntlrFacade {
      */
     public countReferences(fileName: string, symbol: string): number {
         let context = this.getContext(fileName);
-        var result: number = context.getReferenceCount(symbol);
-        for (let reference of context.references) {
-            result += reference.getReferenceCount(symbol);
+        return context.getReferenceCount(symbol);
+    }
+
+    /**
+     * Determines source file and position of all occurences of the given symbol. The search includes
+     * also all referencing and referenced contexts.
+     */
+    public getSymbolOccurences(fileName: string, symbolName: string): SymbolInfo[] {
+        let context = this.getContext(fileName);
+        let symbols = context.getSymbolOccurences(symbolName, true);
+
+        let result: SymbolInfo[] = [];
+
+        for (let symbol of symbols) {
+            let owner = (symbol.root as ContextSymbolTable).owner;
+
+            if (owner) {
+                if (symbol.context && symbol.name == symbolName) {
+                    let context = symbol.context;
+                    if (symbol instanceof FragmentTokenSymbol) {
+                        context = (symbol.context as ParserRuleContext).children![1];
+                    } else if (symbol instanceof TokenSymbol || symbol instanceof RuleSymbol) {
+                        context = (symbol.context as ParserRuleContext).children![0];
+                    }
+
+                    result.push({
+                        kind: SourceContext.getKindFromSymbol(symbol),
+                        name: symbolName,
+                        source: owner.fileName,
+                        definition: SourceContext.definitionForContext(context, true),
+                        description: undefined
+                    });
+                }
+
+                if (symbol instanceof ScopedSymbol) {
+                    let references = symbol.getAllNestedSymbols(symbolName);
+                    for (let reference of references) {
+                        result.push({
+                            kind: SourceContext.getKindFromSymbol(reference),
+                            name: symbolName,
+                            source: owner.fileName,
+                            definition: SourceContext.definitionForContext(reference.context, true),
+                            description: undefined
+                        });
+                    }
+                }
+            }
         }
-        return result;
+
+        // Sort result by kind. This way rule definitions appear before rule references and are re-parsed first.
+        return result.sort((lhs: SymbolInfo, rhs: SymbolInfo) => {
+            return lhs.kind - rhs.kind;
+        });
     }
 
     public getDependencies(fileName: string): string[] {
@@ -467,8 +518,8 @@ export class AntlrFacade {
 
     public getRRDScript(fileName: string, rule: string): string {
         let context = this.getContext(fileName);
-
         let result = context.getRRDScript(rule);
+        /*
         if (!result) {
             for (let reference of context.references) {
                 result = reference.getRRDScript(rule);
@@ -478,6 +529,7 @@ export class AntlrFacade {
             }
             return "";
         }
+        */
         return result!;
     };
 

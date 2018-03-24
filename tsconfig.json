@@ -16,9 +16,8 @@
     },
     "include": [
         "src/*.ts",
-        "src/backend/*.ts",
-        "src/frontend/*.ts",
-        "src/parser/*.ts"
+        "src/**/*.ts",
+        //"test/**/*.ts",
     ],
     "exclude": [
         "node_modules",

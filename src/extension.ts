@@ -34,6 +34,7 @@ import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
 import { ChannelsProvider } from "./frontend/ChannelsProvider";
 import { ModesProvider } from "./frontend/ModesProvider";
 import { AntlrParseTreeProvider } from "./frontend/ParseTreeProvider";
+import { RenameProvider } from "./frontend/RenameProvider";
 
 import { ProgressIndicator } from "./frontend/ProgressIndicator";
 import { Utils } from "./frontend/Utils";
@@ -93,6 +94,7 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend),
         " ", ":", "@", "<", "{", "["));
     context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider(ANTLR, new AntlrFormattingProvider(backend)));
+    context.subscriptions.push(languages.registerRenameProvider(ANTLR, new RenameProvider(backend)));
 
     let diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
     context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
@@ -276,6 +278,7 @@ export function activate(context: ExtensionContext) {
     ));
 
     //----- Events -----
+
     workspace.onDidOpenTextDocument((doc: TextDocument) => {
         if (doc.languageId == "antlr" && doc.uri.scheme === "file") {
             backend.loadGrammar(doc.fileName);
@@ -290,25 +293,26 @@ export function activate(context: ExtensionContext) {
         }
     })
 
-    let changeTimer: any;
-    workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
-        if (!window.activeTextEditor) {
-            return;
-        }
+    let changeTimers: Map<string, any> = new Map(); // Keyed by file name.
 
-        if (event.document.languageId === "antlr" && event.document === window.activeTextEditor.document) {
-            backend.setText(event.document.fileName, event.document.getText());
-            if (changeTimer) {
-                clearTimeout(changeTimer);
+    workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
+        if (event.contentChanges.length > 0
+            && event.document.languageId === "antlr"
+            && event.document.uri.scheme === "file") {
+
+            let fileName = event.document.fileName;
+            backend.setText(fileName, event.document.getText());
+            if (changeTimers.has(fileName)) {
+                clearTimeout(changeTimers.get(fileName));
             }
-            changeTimer = setTimeout(() => {
-                changeTimer = null;
-                backend.reparse(event.document.fileName);
+            changeTimers.set(fileName, setTimeout(() => {
+                changeTimers.delete(fileName);
+                backend.reparse(fileName);
                 diagramProvider.update(getTextProviderUri(event.document.uri, "rrd", "single"));
                 importsProvider.refresh();
                 callGraphProvider.update(getTextProviderUri(event.document.uri, "call-graph", ""));
                 processDiagnostic(event.document);
-            }, 300);
+            }, 300));
         }
     })
 

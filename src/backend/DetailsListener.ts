@@ -12,14 +12,18 @@ import {
     LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,
     ModeSpecContext, DelegateGrammarContext, OptionContext, TerminalRuleContext, RulerefContext,
     OptionValueContext, BlockContext, AlternativeContext, RuleBlockContext, EbnfSuffixContext,
-    OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledAltContext, LabeledElementContext
+    OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledAltContext, LabeledElementContext,
+    LexerRuleBlockContext,
+    LexerAltContext
 } from '../parser/ANTLRv4Parser';
 
 import {
     ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
-    VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, TokenVocabSymbol, definitionForContext,
+    VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, TokenVocabSymbol,
     AlternativeSymbol, EbnfSuffixSymbol, OptionsSymbol, ActionSymbol, ArgumentSymbol, OperatorSymbol
 } from './ContextSymbolTable';
+
+import { SourceContext } from './SourceContext';
 
 import { ScopedSymbol, LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
 import { TerminalNode, ParseTree } from 'antlr4ts/tree';
@@ -67,6 +71,16 @@ export class DetailsListener implements ANTLRv4ParserListener {
         }
     }
 
+    enterLexerRuleBlock(ctx: LexerRuleBlockContext) {
+        this.currentSymbol = this.symbolTable.addNewSymbolOfType(BlockSymbol, this.currentSymbol as ScopedSymbol, "");
+    }
+
+    exitLexerRuleBlock(ctx: LexerRuleBlockContext) {
+        if (this.currentSymbol) {
+            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
+        }
+    }
+
     enterBlock(ctx: BlockContext) {
         this.currentSymbol = this.symbolTable.addNewSymbolOfType(BlockSymbol, this.currentSymbol as ScopedSymbol, "");
         this.currentSymbol.context = ctx;
@@ -89,6 +103,17 @@ export class DetailsListener implements ANTLRv4ParserListener {
         }
     }
 
+    enterLexerAlt(ctx: LexerAltContext) {
+        this.currentSymbol = this.symbolTable.addNewSymbolOfType(AlternativeSymbol, this.currentSymbol as ScopedSymbol, "");
+        this.currentSymbol.context = ctx;
+    }
+
+    exitLexerAlt(ctx: LexerAltContext) {
+        if (this.currentSymbol) {
+            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
+        }
+    }
+
     enterTokensSpec(ctx: TokensSpecContext) {
         let idList = ctx.idList();
         if (idList) {
@@ -103,20 +128,14 @@ export class DetailsListener implements ANTLRv4ParserListener {
         if (this.currentSymbol) {
             if (ctx.TOKEN_REF()) {
                 let refName = ctx.TOKEN_REF()!.text;
-                if (!this.currentSymbol.resolve(refName, true)) { // A rule can be referenced more than once.
-                    let symbol = this.symbolTable.addNewSymbolOfType(TokenReferenceSymbol,
-                        this.currentSymbol as ScopedSymbol, refName);
-                    symbol.context = ctx.TOKEN_REF();
-                }
+                let symbol = this.symbolTable.addNewSymbolOfType(TokenReferenceSymbol,
+                    this.currentSymbol as ScopedSymbol, refName);
+                symbol.context = ctx.TOKEN_REF();
             } else {
                 // Must be a string literal then.
                 let refName = ctx.STRING_LITERAL()!.text;
-                refName = refName.substring(1, refName.length - 1);
-                if (!this.currentSymbol.resolve(refName, true)) {
-                    let symbol = this.symbolTable.addNewSymbolOfType(LiteralSymbol, this.currentSymbol as ScopedSymbol,
-                        refName);
-                    symbol.context = ctx.STRING_LITERAL();
-                }
+                let symbol = this.symbolTable.addNewSymbolOfType(LiteralSymbol, this.currentSymbol as ScopedSymbol, "");
+                symbol.context = ctx.STRING_LITERAL();
             }
         }
     }
@@ -124,11 +143,9 @@ export class DetailsListener implements ANTLRv4ParserListener {
     enterRuleref(ctx: RulerefContext) {
         if (ctx.RULE_REF() && this.currentSymbol) {
             let refName = ctx.RULE_REF()!.text;
-            if (!this.currentSymbol.resolve(refName, true)) {
-                let symbol = this.symbolTable.addNewSymbolOfType(RuleReferenceSymbol, this.currentSymbol as ScopedSymbol,
-                    refName);
-                symbol.context = ctx.RULE_REF();
-            }
+            let symbol = this.symbolTable.addNewSymbolOfType(RuleReferenceSymbol, this.currentSymbol as ScopedSymbol,
+                refName);
+            symbol.context = ctx.RULE_REF();
         }
     }
 
@@ -150,7 +167,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
     exitDelegateGrammar(ctx: DelegateGrammarContext) {
         let context = ctx.identifier()[ctx.identifier().length - 1];
         if (context) {
-            let name = definitionForContext(context, false)!.text;
+            let name = SourceContext.definitionForContext(context, false)!.text;
             let symbol = this.symbolTable.addNewSymbolOfType(ImportSymbol, undefined, name);
             symbol.context = ctx;
             this.imports.push(name);
