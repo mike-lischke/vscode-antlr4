@@ -351,7 +351,6 @@ export class GrammarFormatter {
                     if (canAlignSemicolon && !inBraces && inRule) {
                         switch (this.options.alignSemicolons) {
                             case "none":
-                                this.add(i);
                                 break;
                             case "ownLine": {
                                 let forceNewLine = !this.options.singleLineOverrulesHangingColon
@@ -364,11 +363,9 @@ export class GrammarFormatter {
                                 this.pushCurrentIndentation();
                                 break;
                         }
-
-                        this.add(i);
-                    } else {
-                        this.add(i);
                     }
+                    this.add(i);
+
 
                     if (!inBraces && this.currentIndentation > 0) {
                         --this.currentIndentation;
