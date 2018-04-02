@@ -257,6 +257,14 @@ export class GrapsDebugger extends EventEmitter {
             }
         }
 
+        // Implicit literals don't have a symbolic name.
+        // Therefor we do another search run here for the literal "name".
+        for (let i = 0; i <= vocab.maxTokenType; ++i) {
+            if (vocab.getLiteralName(i) == tokenName) {
+                return i;
+            }
+        }
+
         return -1;
     }
 
@@ -583,7 +591,8 @@ export class GrapsDebugger extends EventEmitter {
         return {
             text: token.text ? token.text : "",
             type: token.type,
-            name: this.lexer.vocabulary.getSymbolicName(token.type) || token.type.toString(),
+            // For implicit tokens we use the same approach like ANTLR4 does for the naming.
+            name: this.lexer.vocabulary.getSymbolicName(token.type) || "T__" + (token.type - 1),
             line: token.line,
             offset: token.charPositionInLine,
             channel: token.channel,

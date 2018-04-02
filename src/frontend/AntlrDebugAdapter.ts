@@ -297,7 +297,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 for (let i = 0; i < length; ++i) {
                     let index = start + i;
                     variables.push({
-                        name: this.tokens[index].name + " (index: " + index + ")",
+                        name: index + ": " + this.tokens[index].name,
                         type: "Token",
                         value: "",
                         variablesReference: VarRef.Token + index,
