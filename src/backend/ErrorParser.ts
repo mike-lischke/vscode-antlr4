@@ -99,7 +99,7 @@ export class ErrorParser {
 		[177, /(\w+) is not/],
 		[178, /command (\w+)/],
 		[179, /commands (\w+)/],
-		[180, /in set (\w+)/],
+		[180, /used multiple times in set (.+)/],
 		[181, /parser: ('[^']+'\.\.'[^']+')/],
 		[182, /range: (\w+)/],
 	]);
@@ -352,6 +352,13 @@ export class ErrorParser {
 									let symbols = matches[1].split(",");
 									this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error, context);
 								}
+								break;
+							}
+
+							case 180: {
+								// Charset collision testing is currently buggy. It reports each problem twice, once from the optimizer
+								// (w/o token position info, which is why we land here) and once with (handled above).
+								// We ignore the duplicate w/o code position.
 								break;
 							}
 

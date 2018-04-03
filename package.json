@@ -7,7 +7,7 @@
         "color": "#2789e1",
         "theme": "dark"
     },
-    "version": "2.0.0",
+    "version": "2.0.3",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -178,7 +178,7 @@
                         "alignLabels": true,
                         "alignTrailers": false
                     },
-                    "description": "Settings related to parser generation",
+                    "description": "Settings related to code formatting",
                     "properties": {
                         "alignTrailingComments": {
                             "type": "boolean",
@@ -507,7 +507,6 @@
         ]
     },
     "scripts": {
-        "vscode:prepublish": "tsc --outDir ./out/src",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "publish": "vsce publish",
         "compile": "tsc --outDir ./out/src"

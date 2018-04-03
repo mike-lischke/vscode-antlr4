@@ -355,7 +355,8 @@ export class GrapsDebugger extends EventEmitter {
                 variables.add(symbol.name);
             }
             for (let variable of variables) {
-
+                // TODO: there are no variables stored in the interpreter.
+                // Possible solution: handle that manually with the help of the symbol table.
             }
         }
 
@@ -702,7 +703,7 @@ class GrapsParserInterpreter extends ParserInterpreter {
             }
 
             if (this.breakPoints.has(p) && p.stateType != ATNStateType.RULE_STOP) {
-                // Don't mark a pending break point here. The rule end bp has already been handled.
+                // Don't mark a pending rule end break point here. That has already been handled.
                 breakPointPending = true;
                 runMode = RunMode.StepIn;
             }

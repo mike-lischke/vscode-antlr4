@@ -8,16 +8,12 @@
         "sourceMap": true,
         "inlineSources": true,
         "isolatedModules": false,
-		"allowSyntheticDefaultImports": true,
 		"experimentalDecorators": true,
-		"strictNullChecks": true,
-        "allowJs": true,
         "rootDir": "src"
     },
     "include": [
         "src/*.ts",
-        "src/**/*.ts",
-        //"test/**/*.ts",
+        "src/**/*.ts"
     ],
     "exclude": [
         "node_modules",

@@ -13,14 +13,15 @@ import path = require("path");
 import util = require("util");
 
 import { expect, should, assert } from 'chai';
-import { AntlrLanguageSupport, SourceContext, SymbolKind, ATNGraphData, LexicalRange, GrapsDebugger } from "../index";
+import { AntlrFacade, SymbolKind, ATNGraphData } from "../../src/backend/facade";
+import { SourceContext } from "../../src/backend/SourceContext";
 
-var backend: AntlrLanguageSupport;
+var backend: AntlrFacade;
 
 describe('antlr4-graps:', function () {
     this.slow(10000);
 
-    backend = new AntlrLanguageSupport("."); // Search path is cwd for this test.
+    backend = new AntlrFacade("."); // Search path is cwd for this test.
 
     describe('Base Handling:', function () {
         it("Create Backend", function () {
