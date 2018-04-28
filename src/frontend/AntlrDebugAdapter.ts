@@ -49,7 +49,6 @@ export class AntlrDebugSession extends LoggingDebugSession {
     constructor(
         private folder: WorkspaceFolder,
         private backend: AntlrFacade,
-        private grammar: string,
         private consumers: DebuggerConsumer[]) {
         super("antlr4-vscode-trace.txt");
 
@@ -62,80 +61,6 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
     protected initializeRequest(response: DebugProtocol.InitializeResponse,
         args: DebugProtocol.InitializeRequestArguments): void {
-
-        let basePath = path.dirname(this.grammar);
-        let d = this.backend.createDebugger(this.grammar, path.join(basePath, ".antlr"));
-        if (!d) {
-            throw Error("Debugger creation failed. There are grammar errors.");
-        }
-
-        if (!d.isValid) {
-            throw Error("Debugger creation failed. You are either trying to debug an unsupported file type or " +
-                "no interpreter data has been generated yet for the given grammar.");
-        }
-
-        d.on('stopOnStep', () => {
-            this.notifyConsumers();
-            this.sendEvent(new StoppedEvent('step', AntlrDebugSession.THREAD_ID));
-        });
-
-        d.on('stopOnPause', () => {
-            this.notifyConsumers();
-            this.sendEvent(new StoppedEvent('pause', AntlrDebugSession.THREAD_ID));
-        });
-
-        d.on('stopOnBreakpoint', () => {
-            this.notifyConsumers();
-            this.sendEvent(new StoppedEvent('breakpoint', AntlrDebugSession.THREAD_ID));
-        });
-
-        d.on('stopOnException', () => {
-            this.notifyConsumers();
-            this.sendEvent(new StoppedEvent('exception', AntlrDebugSession.THREAD_ID));
-        });
-
-        d.on('breakpointValidated', (bp: GrapsBreakPoint) => {
-            this.sendEvent(new BreakpointEvent('changed', <DebugProtocol.Breakpoint>{ verified: bp.validated, id: bp.id }));
-        });
-
-        d.on('output', (text, filePath, line, column, isError) => {
-            const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
-            e.body.source = this.createSource(filePath);
-            e.body.line = line;
-            e.body.column = column;
-            e.body.category = isError ? "stderr" : "stdout";
-            this.sendEvent(e);
-        });
-
-        d.on('end', () => {
-            this.notifyConsumers();
-            if (this.showTextualParseTree) {
-                let tree = this.debugger.currentParseTree;
-                if (tree) {
-                    let text = this.parseNodeToString(tree);
-                    this.sendEvent(new OutputEvent("Parse Tree:\n" + text + "\n"));
-                } else {
-                    this.sendEvent(new OutputEvent("No Parse Tree\n"));
-                }
-            }
-
-            if (this.showGraphicalParseTree) {
-                commands.executeCommand('vscode.previewHtml',
-                    getTextProviderUri(Uri.parse("http://debugger.net"), "parse-tree", ""), 1,
-                    "Parse Tree").then((success: boolean) => {
-                    }, (reason) => {
-                        window.showErrorMessage(reason);
-                    });
-            }
-
-            this.sendEvent(new TerminatedEvent());
-        });
-
-        this.debugger = d;
-        for (let consumer of this.consumers) {
-            consumer.debugger = d;
-            consumer.refresh();
-        }
 
         // Send initialized event as early as possible to get our breakpoints before the launch request.
         // Otherwise the breakpoints are not ready in time.
@@ -155,6 +80,12 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
+
+        this.setup(args.grammar);
+        for (let consumer of this.consumers) {
+            consumer.debugger = this.debugger;
+            consumer.refresh();
+        }
 
         this.showTextualParseTree = args.printParseTree || false;
         this.showGraphicalParseTree = args.visualParseTree || false;
@@ -365,6 +296,76 @@ export class AntlrDebugSession extends LoggingDebugSession {
             variablesReference: 0
         };
         this.sendResponse(response);
+    }
+
+    private setup(grammar: string) {
+        let basePath = path.dirname(grammar);
+        this.debugger = this.backend.createDebugger(grammar, path.join(basePath, ".antlr"));
+        if (!this.debugger) {
+            throw Error("Debugger creation failed. There are grammar errors.");
+        }
+
+        if (!this.debugger.isValid) {
+            throw Error("Debugger creation failed. You are either trying to debug an unsupported file type or " +
+                "no interpreter data has been generated yet for the given grammar.");
+        }
+
+        this.debugger.on('stopOnStep', () => {
+            this.notifyConsumers();
+            this.sendEvent(new StoppedEvent('step', AntlrDebugSession.THREAD_ID));
+        });
+
+        this.debugger.on('stopOnPause', () => {
+            this.notifyConsumers();
+            this.sendEvent(new StoppedEvent('pause', AntlrDebugSession.THREAD_ID));
+        });
+
+        this.debugger.on('stopOnBreakpoint', () => {
+            this.notifyConsumers();
+            this.sendEvent(new StoppedEvent('breakpoint', AntlrDebugSession.THREAD_ID));
+        });
+
+        this.debugger.on('stopOnException', () => {
+            this.notifyConsumers();
+            this.sendEvent(new StoppedEvent('exception', AntlrDebugSession.THREAD_ID));
+        });
+
+        this.debugger.on('breakpointValidated', (bp: GrapsBreakPoint) => {
+            this.sendEvent(new BreakpointEvent('changed', <DebugProtocol.Breakpoint>{ verified: bp.validated, id: bp.id }));
+        });
+
+        this.debugger.on('output', (text, filePath, line, column, isError) => {
+            const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
+            e.body.source = this.createSource(filePath);
+            e.body.line = line;
+            e.body.column = column;
+            e.body.category = isError ? "stderr" : "stdout";
+            this.sendEvent(e);
+        });
+
+        this.debugger.on('end', () => {
+            this.notifyConsumers();
+            if (this.showTextualParseTree) {
+                let tree = this.debugger.currentParseTree;
+                if (tree) {
+                    let text = this.parseNodeToString(tree);
+                    this.sendEvent(new OutputEvent("Parse Tree:\n" + text + "\n"));
+                } else {
+                    this.sendEvent(new OutputEvent("No Parse Tree\n"));
+                }
+            }
+
+            if (this.showGraphicalParseTree) {
+                commands.executeCommand('vscode.previewHtml',
+                    getTextProviderUri(Uri.parse("http://debugger.net"), "parse-tree", ""), 1,
+                    "Parse Tree").then((success: boolean) => {
+                    }, (reason) => {
+                        window.showErrorMessage(reason);
+                    });
+            }
+
+            this.sendEvent(new TerminatedEvent());
+        });
     }
 
     //---- helpers

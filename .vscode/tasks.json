@@ -3,7 +3,7 @@
     "command": "tsc",
     "isShellCommand": true,
     "args": ["-w", "-p", ".", "--outDir", "./out/src"],
-    "showOutput": "silent",
+    "showOutput": "always",
     "isBackground": true,
     "problemMatcher": "$tsc-watch"
 }

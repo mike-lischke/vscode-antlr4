@@ -12,9 +12,7 @@
 
 ## What's New
 
-This release comes with a grammar debugger + graphical and textual parse tree display. Under the hood a very recent ANTLR4 4.7.2 snapshot is used for parser generation (built from source, this is not a public release yet).
-
-Additionally, certain extension settings have been reorganized to be easier to consume. Especially with the alignment settings, the list grew pretty large and it make sense to group entries for better handling. However, existing settings are not automatically converted to the new structure, hence you will need to manually update what you have set for this extension.
+Bug fixes
 
 ## Features
 
@@ -127,7 +125,8 @@ All these graphs also allow to export them to an SVG file (or in the case of the
 * **ATN Graphs**: Also available from the editor context menu are the ATN graphs. They are a visualization of the internal ATN that drives lexers + parsers. This graph uses a dynamic layout to find good positions for the nodes without overlapping. However, this is rarely satisfying. Therefor you can move nodes around to make the graph prettier. Moved nodes stick to their position, even if you close and reopen the graph. Double click a node to make it float again or click `Reset display` to remove all cached positions.
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-4.png)
 
-* **Call Graph**: In order to get an impression about the complexity of your grammar and visually find rule relationships there's a call graph (a dendrogram), also available from the editor context menu. It draws connections between rules (parser, lexer + fragment rules), for the current grammar as well as those used by it. The more lines you see, the higher the rules interact with each other. You can hover with the mouse over a rule name and it will highlight all relationships for that rule (while the rest is faded out). Red lines are drawn to callers of that rule, green lines for those called by it. Hence many red lines means this is a rule used by many others and hence a good candidate for optimization. Many green lines however indicate a high complexity and you should perhaps refactor this rule into multiple smaller ones.>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-11.png)
+* **Call Graph**: In order to get an impression about the complexity of your grammar and visually find rule relationships there's a call graph (a dendrogram), also available from the editor context menu. It draws connections between rules (parser, lexer + fragment rules), for the current grammar as well as those used by it. The more lines you see, the higher the rules interact with each other. You can hover with the mouse over a rule name and it will highlight all relationships for that rule (while the rest is faded out). Red lines are drawn to callers of that rule, green lines for those called by it. Hence many red lines means this is a rule used by many others and hence a good candidate for optimization. Many green lines however indicate a high complexity and you should perhaps refactor this rule into multiple smaller ones.
+>![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-11.png)
 
 ### Formatting
 
@@ -222,21 +221,19 @@ This is a settings object named **antlr4.format** with the following members:
 
 See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues).
 
-## What's next?
+## What's planned next?
 
-* Conditional breakpoints
-* Find a symbol in the entire workspace
-* List all symbol
-* List all predicates/actions with their position
-* Refactorings:
-  * Remove actions/predicates.
-  * Extract rule.
-  * Remove left recursion (direct, maybe indirect).
-  * Optimize token sets.
-  * Conversion of ANTLR3 to ANTLR4 grammars.
 * Bug fixing
 
 ## Release Notes
+
+### 2.0.3
+- Updated tests to compile with the latest backend changes.
+- Fixed a bug when setting up a debugger, after switching grammars. Only the first used grammar did work.
+
+### 2.0.2
+- Fixed Bug #28 ATN graph cannot be drawn even after code generation.
+- Fixed another bug in interpreter data file names construction.
 
 ### 2.0.1
 - Bug fix for wrong interpreter data paths.

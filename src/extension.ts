@@ -521,7 +521,7 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                     //console.error('>> ANTLR debugging client connection closed\n');
                 });
 
-                const session = new AntlrDebugSession(folder!, backend, config.grammar, [
+                const session = new AntlrDebugSession(folder!, backend, [
                     lexerSymbolsProvider,
                     parserSymbolsProvider,
                     channelsProvider,
