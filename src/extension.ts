@@ -14,10 +14,11 @@ import * as Net from 'net';
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
     commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, StatusBarAlignment, OutputChannel,
-    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult
+    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult,
+    ViewColumn
 } from 'vscode';
 
-import { getTextProviderUri } from "./frontend/TextContentProvider";
+import { getTextProviderUri } from "./frontend/WebviewProvider";
 
 import { HoverProvider } from './frontend/HoverProvider';
 import { DefinitionProvider } from './frontend//DefinitionProvider';
@@ -97,24 +98,22 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerRenameProvider(ANTLR, new RenameProvider(backend)));
 
     let diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
-    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
+    //context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
 
     // The single RRD diagram command.
     context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.singleRule', (editor: TextEditor, edit: TextEditorEdit) => {
-        return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "rrd", "single"), 2,
-            "ANTLR RRD: " + path.basename(editor.document.fileName)).then((success: boolean) => {
-            }, (reason) => {
-                window.showErrorMessage(reason);
-            });
+        diagramProvider.showWebview(editor, {
+            title: "ANTLR RRD: " + path.basename(editor.document.fileName),
+            fullList: false
+        });
     }));
 
     // The full RRD diagram command.
     context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.allRules', (editor: TextEditor, edit: TextEditorEdit) => {
-        return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "rrd", "full"), 2,
-            "ANTLR RRD: " + path.basename(editor.document.fileName)).then((success: boolean) => {
-            }, (reason) => {
-                window.showErrorMessage(reason);
-            });
+        diagramProvider.showWebview(editor, {
+            title: "ANTLR RRD: " + path.basename(editor.document.fileName),
+            fullList: true
+        });
     }));
 
     // The ATN graph command.
@@ -190,7 +189,7 @@ export function activate(context: ExtensionContext) {
     // The export to SVG command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveSVG", (args: { name: string, type: string, svg: string }) => {
         let css: string[] = [];
-        css.push(Utils.getMiscPath("light.css", context, false));
+        css.push(Utils.getMiscPath("light.css", context));
         let customStyles = workspace.getConfiguration("antlr4")['customcss'];
         if (customStyles && Array.isArray(customStyles)) {
             for (let style of customStyles) {
@@ -217,8 +216,8 @@ export function activate(context: ExtensionContext) {
     // The export to html command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveHTML", (args: { name: string, type: string, html: string }) => {
         let css: string[] = [];
-        css.push(Utils.getMiscPath("light.css", context, false));
-        css.push(Utils.getMiscPath("dark.css", context, false));
+        css.push(Utils.getMiscPath("light.css", context));
+        css.push(Utils.getMiscPath("dark.css", context));
         let customStyles = workspace.getConfiguration("antlr4")['customcss'];
         if (customStyles && Array.isArray(customStyles)) {
             for (let style of customStyles) {
@@ -460,8 +459,8 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
         if (workspace.getConfiguration("antlr4.generation")["mode"] === "none") {
             return window.showErrorMessage("Interpreter data generation is disabled in the preferences (see " +
                 "'antlr4.generation'). Set this at least to 'internal' to enable debugging.").then(_ => {
-                return undefined;
-            });
+                    return undefined;
+                });
         }
 
         // launch.json missing or empty?

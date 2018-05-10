@@ -11,12 +11,12 @@ const path = require("path");
 import * as vscode from "vscode";
 
 import { AntlrFacade, SymbolKind } from "../backend/facade";
-import { AntlrTextContentProvider } from "./TextContentProvider";
+import { WebviewProvider } from "./WebviewProvider";
 import { Utils } from "./Utils";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
 import { GrapsDebugger } from "../backend/GrapsDebugger";
 
-export class AntlrParseTreeProvider extends AntlrTextContentProvider implements DebuggerConsumer {
+export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerConsumer {
 
     public debugger: GrapsDebugger;
 

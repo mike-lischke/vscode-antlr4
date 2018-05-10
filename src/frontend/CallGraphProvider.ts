@@ -10,10 +10,10 @@
 const path = require("path");
 import * as vscode from "vscode";
 
-import { AntlrTextContentProvider } from "./TextContentProvider";
+import { WebviewProvider } from "./WebviewProvider";
 import { Utils } from "./Utils";
 
-export class AntlrCallGraphProvider extends AntlrTextContentProvider {
+export class AntlrCallGraphProvider extends WebviewProvider {
 
     public provideTextDocumentContent(uri: vscode.Uri): Thenable<string> {
         const sourceUri = vscode.Uri.parse(uri.query);

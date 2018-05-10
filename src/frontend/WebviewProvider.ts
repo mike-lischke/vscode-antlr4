@@ -13,10 +13,19 @@ import * as vscode from "vscode";
 import { AntlrFacade, SymbolKind } from "../backend/facade";
 import { Utils } from "./Utils";
 
+export interface WebviewShowOptions {
+    title: string;
+    [key: string]: boolean | number | string;
+}
+
 /**
  * The base class for all text document content providers, holding a number of support members needed them.
  */
-export class AntlrTextContentProvider implements vscode.TextDocumentContentProvider {
+export class WebviewProvider implements vscode.TextDocumentContentProvider {
+    provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): vscode.ProviderResult<string> {
+        return "";
+    }
+
     private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
     protected positionCache: Map<string, vscode.Position> = new Map();
     protected currentRule: string | undefined;
@@ -28,10 +37,31 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
         protected context: vscode.ExtensionContext
     ) { }
 
-    public provideTextDocumentContent(uri: vscode.Uri): Thenable<string> {
-        return new Promise(function (resolve, reject) {
-            resolve("");
-        });
+    public showWebview(editor: vscode.TextEditor, options: WebviewShowOptions) {
+        if (this.webViewMap.has(editor.document.uri)) {
+            let panel = this.webViewMap.get(editor.document.uri);
+            panel.title = options.title;
+            panel.reveal();
+            return;
+        }
+
+        let panel = vscode.window.createWebviewPanel(
+            'antlr4-vscode-webview', options.title, vscode.ViewColumn.Three,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
+        );
+        this.webViewMap.set(editor.document.uri, panel);
+
+        panel.webview.html = this.generateContent(editor, options);
+        panel.onDidDispose(() => {
+            this.webViewMap.delete(editor.document.uri);
+        }, null, this.context.subscriptions);
+    }
+
+    public generateContent(editor: vscode.TextEditor, options: WebviewShowOptions): string {
+        return "";
     }
 
     get onDidChange(): vscode.Event<vscode.Uri> {
@@ -40,7 +70,7 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
 
     public update(uri: vscode.Uri) {
         if (uri) {
-            this._onDidChange.fire(uri);
+            //this._onDidChange.fire(uri);
         }
     }
 
@@ -57,17 +87,17 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
 
         // Use href as file URI if it is absolute.
         if (Utils.isAbsolute(href)) {
-            return vscode.Uri.file(href).toString();
+            return vscode.Uri.file(href).with({ scheme: 'vscode-resource' }).toString();
         }
 
         // Use a workspace relative path if there is a workspace.
         let rootPath = vscode.workspace.rootPath;
         if (rootPath) {
-            return vscode.Uri.file(path.join(rootPath, href)).toString();
+            return vscode.Uri.file(path.join(rootPath, href)).with({ scheme: 'vscode-resource' }).toString();
         }
 
         // Otherwise look relative to the grammar file.
-        return vscode.Uri.file(path.join(path.dirname(resource.fsPath), href)).toString();
+        return vscode.Uri.file(path.join(path.dirname(resource.fsPath), href)).with({ scheme: 'vscode-resource' }).toString();
     }
 
     protected computeCustomStyleSheetIncludes(uri: vscode.Uri): string {
@@ -122,6 +152,10 @@ export class AntlrTextContentProvider implements vscode.TextDocumentContentProvi
             return [undefined, undefined];
         return result;
     }
+
+
+    // Keep track of all created panels, to avoid duplicates.
+    private webViewMap: Map<vscode.Uri, vscode.WebviewPanel> = new Map();
 }
 
 export function getTextProviderUri(uri: vscode.Uri, section: string, command: string): vscode.Uri {

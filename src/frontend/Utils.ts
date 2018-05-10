@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, Mike Lischke
+ * Copyright (c) 2017, 2018, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -22,11 +22,8 @@ export class Utils {
      * @param file The base file name.
      * @param context The context of this extension to get its path regardless where it is installed.
      */
-    public static getMiscPath(file: string, context: ExtensionContext, asUri = false): string {
-        if (asUri) {
-            return Uri.file(context.asAbsolutePath(path.join('misc', file))).toString();
-        }
-        return Uri.file(context.asAbsolutePath(path.join('misc', file))).fsPath;
+    public static getMiscPath(file: string, context: ExtensionContext): string {
+        return Uri.file(context.asAbsolutePath(path.join('misc', file))).with({ scheme: 'vscode-resource' }).toString();
     }
 
     public static isAbsolute(p: string): boolean {

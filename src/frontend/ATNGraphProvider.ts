@@ -9,7 +9,7 @@
 
 import * as fs from "fs-extra";
 
-import { AntlrTextContentProvider } from "./TextContentProvider";
+import { WebviewProvider } from "./WebviewProvider";
 import { Utils } from "./Utils";
 import { window, workspace, Uri, commands } from "vscode";
 
@@ -20,7 +20,7 @@ export class ATNStateEntry {
     states: { id: number, fx: number, fy: number }[];
 };
 
-export class AntlrATNGraphProvider extends AntlrTextContentProvider {
+export class AntlrATNGraphProvider extends WebviewProvider {
 
     // Set by the update method if there's cached state data for the current rule.
     private cachedRuleStates: ATNStateEntry | undefined;

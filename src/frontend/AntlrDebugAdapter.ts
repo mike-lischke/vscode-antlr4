@@ -16,8 +16,9 @@ import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { window, workspace, WorkspaceFolder, commands, Uri } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
+const { Subject } = require('await-notify');
 
-import { getTextProviderUri } from './TextContentProvider';
+import { getTextProviderUri } from './WebviewProvider';
 import { GrapsDebugger, GrapsBreakPoint } from '../backend/GrapsDebugger';
 import { AntlrFacade, ParseTreeNode, ParseTreeNodeType, LexerToken } from '../backend/facade';
 
@@ -62,23 +63,22 @@ export class AntlrDebugSession extends LoggingDebugSession {
     protected initializeRequest(response: DebugProtocol.InitializeResponse,
         args: DebugProtocol.InitializeRequestArguments): void {
 
-        // Send initialized event as early as possible to get our breakpoints before the launch request.
-        // Otherwise the breakpoints are not ready in time.
-        this.sendEvent(new InitializedEvent());
-
         response.body = response.body || {};
         response.body.supportsConfigurationDoneRequest = true;
         response.body.supportsStepInTargetsRequest = true;
 
         this.sendResponse(response);
+        this.sendEvent(new InitializedEvent());
     }
 
     protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse,
         args: DebugProtocol.ConfigurationDoneArguments) {
 
+        super.configurationDoneRequest(response, args);
+        this.configurationDone.notify();
     }
 
-    protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
+    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
         this.setup(args.grammar);
@@ -86,6 +86,10 @@ export class AntlrDebugSession extends LoggingDebugSession {
             consumer.debugger = this.debugger;
             consumer.refresh();
         }
+
+        // The launch request comes in before the breakpoints are set (which depends on the debugger
+        // backend anyway). So we wait here for the configuration request end before we continue.
+        await this.configurationDone.wait(1000);
 
         this.showTextualParseTree = args.printParseTree || false;
         this.showGraphicalParseTree = args.visualParseTree || false;
@@ -448,6 +452,8 @@ export class AntlrDebugSession extends LoggingDebugSession {
     private static THREAD_ID = 1;
 
     private debugger: GrapsDebugger;
+    private configurationDone = new Subject();
+
     private showTextualParseTree = false;
     private showGraphicalParseTree = false;
     private testInput = "";
