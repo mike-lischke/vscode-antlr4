@@ -21,27 +21,24 @@ export interface WebviewShowOptions {
 /**
  * The base class for all text document content providers, holding a number of support members needed them.
  */
-export class WebviewProvider implements vscode.TextDocumentContentProvider {
-    provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): vscode.ProviderResult<string> {
-        return "";
-    }
-
-    private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
-    protected positionCache: Map<string, vscode.Position> = new Map();
+export class WebviewProvider {
     protected currentRule: string | undefined;
     protected currentRuleIndex: number | undefined;
-    protected lastUri: vscode.Uri | undefined; // Vscode doesn't tell us which editor lost activation on switch.
+    protected lastEditor: vscode.TextEditor | undefined; // Vscode doesn't tell us which editor lost activation on switch.
 
     constructor(
         protected backend: AntlrFacade,
         protected context: vscode.ExtensionContext
     ) { }
 
-    public showWebview(editor: vscode.TextEditor, options: WebviewShowOptions) {
-        if (this.webViewMap.has(editor.document.uri)) {
-            let panel = this.webViewMap.get(editor.document.uri);
+    public showWebview(source: vscode.TextEditor | vscode.Uri, options: WebviewShowOptions) {
+        this.lastEditor = (source instanceof vscode.Uri) ? undefined : source;
+        let uri = (source instanceof vscode.Uri) ? source : source.document.uri;
+        if (this.webViewMap.has(uri)) {
+            let [panel, _] = this.webViewMap.get(uri);
             panel.title = options.title;
-            panel.reveal();
+            panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
+            //panel.reveal(); Steals focus.
             return;
         }
 
@@ -52,25 +49,23 @@ export class WebviewProvider implements vscode.TextDocumentContentProvider {
                 retainContextWhenHidden: true
             }
         );
-        this.webViewMap.set(editor.document.uri, panel);
+        this.webViewMap.set(uri, [panel, options]);
 
-        panel.webview.html = this.generateContent(editor, options);
+        panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
         panel.onDidDispose(() => {
-            this.webViewMap.delete(editor.document.uri);
+            this.webViewMap.delete(uri);
         }, null, this.context.subscriptions);
     }
 
-    public generateContent(editor: vscode.TextEditor, options: WebviewShowOptions): string {
+    public generateContent(source: vscode.TextEditor | vscode.Uri, options: WebviewShowOptions): string {
         return "";
     }
 
-    get onDidChange(): vscode.Event<vscode.Uri> {
-        return this._onDidChange.event;
-    }
-
-    public update(uri: vscode.Uri) {
-        if (uri) {
-            //this._onDidChange.fire(uri);
+    public update(editor: vscode.TextEditor) {
+        if (this.webViewMap.has(editor.document.uri)) {
+            let [panel, options] = this.webViewMap.get(editor.document.uri);
+            panel.webview.html = this.generateContent(editor, options);
+            //panel.reveal();
         }
     }
 
@@ -112,8 +107,8 @@ export class WebviewProvider implements vscode.TextDocumentContentProvider {
 
     protected getStyles(uri: vscode.Uri): string {
         const baseStyles = [
-            Utils.getMiscPath("light.css", this.context),
-            Utils.getMiscPath("dark.css", this.context)
+            Utils.getMiscPath("light.css", this.context, true),
+            Utils.getMiscPath("dark.css", this.context, true)
         ];
 
         return `${baseStyles.map(href => `<link rel="stylesheet" type="text/css" href="${href}">`).join('\n')}
@@ -129,23 +124,10 @@ export class WebviewProvider implements vscode.TextDocumentContentProvider {
      * Queries the current text editor for a caret position (or loads that from the position cache)
      * and tries to get a rule from the backend.
      */
-    protected findCurrentRule(editorUri: vscode.Uri): [string | undefined, number | undefined] {
-        // We need the currently active editor for the caret position.
-        // If there is one we were triggered (or activated) from that.
-        // If not the user probably switched preview windows. In that case we use
-        // the last position stored when we had an active editor.
-        let fileName = editorUri.fsPath;
+    protected findCurrentRule(editor: vscode.TextEditor): [string | undefined, number | undefined] {
+        let fileName = editor.document.uri.fsPath;
         let caret: vscode.Position | undefined;
-        let editor = vscode.window.activeTextEditor;
-        if (editor && editor.document.uri.fsPath === editorUri.fsPath) {
-            caret = editor.selection.active;
-            this.positionCache.set(fileName, caret);
-        } else if (this.positionCache.has(fileName)) {
-            caret = this.positionCache.get(fileName);
-        }
-        if (!caret) {
-            return [undefined, undefined];
-        }
+        caret = editor.selection.active;
 
         let result = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
         if (!result)
@@ -155,9 +137,5 @@ export class WebviewProvider implements vscode.TextDocumentContentProvider {
 
 
     // Keep track of all created panels, to avoid duplicates.
-    private webViewMap: Map<vscode.Uri, vscode.WebviewPanel> = new Map();
-}
-
-export function getTextProviderUri(uri: vscode.Uri, section: string, command: string): vscode.Uri {
-    return uri.with({ scheme: "antlr." + section, path: uri.fsPath, fragment: command, query: uri.toString() });
+    private webViewMap: Map<vscode.Uri, [vscode.WebviewPanel, WebviewShowOptions]> = new Map();
 }

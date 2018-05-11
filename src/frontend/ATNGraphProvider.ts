@@ -9,9 +9,9 @@
 
 import * as fs from "fs-extra";
 
-import { WebviewProvider } from "./WebviewProvider";
+import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
-import { window, workspace, Uri, commands } from "vscode";
+import { window, workspace, Uri, commands, TextEditor } from "vscode";
 
 // ATN graph state info for a single rule.
 export class ATNStateEntry {
@@ -25,97 +25,90 @@ export class AntlrATNGraphProvider extends WebviewProvider {
     // Set by the update method if there's cached state data for the current rule.
     private cachedRuleStates: ATNStateEntry | undefined;
 
-    public provideTextDocumentContent(uri: Uri): Thenable<string> {
-        const sourceUri = Uri.parse(uri.query);
-        const command = uri.fragment;
+    public generateContent(source: TextEditor | Uri, options: WebviewShowOptions): string {
+        if (!this.currentRule) {
+            return `<html><body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body><html>`;
+        }
 
-        return workspace.openTextDocument(sourceUri).then(document => {
-            window.showTextDocument(document);
+        let html = fs.readFileSync(Utils.getMiscPath("atngraph-head.html", this.context, false), { encoding: "utf-8" });
+        let code = fs.readFileSync(Utils.getMiscPath("atngraph.js", this.context, false), { encoding: "utf-8" });
 
-            if (!this.currentRule) {
-                return `<html><body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body><html>`;
-            }
+        const scripts = [
+            Utils.getMiscPath('utils.js', this.context, true),
+        ];
 
-            let html = fs.readFileSync(this.context.asAbsolutePath("misc/atngraph-head.html"), { encoding: "utf-8" });
-            let code = fs.readFileSync(this.context.asAbsolutePath("misc/atngraph.js"), { encoding: "utf-8" });
-
-            const scripts = [
-                Utils.getMiscPath('utils.js', this.context),
-            ];
-
-            html = html.replace("##header##", `
+        let uri = (source instanceof Uri) ? source : source.document.uri;
+        html = html.replace("##header##", `
                 ${this.getStyles(uri)}
                 <base target="_blank" />`.replace(/\$/g, "$$"));
 
-            html = html.replace(/##objectName##/g, this.currentRule.replace(/\$/g, "$$"));
-            html = html.replace(/##index##/g, this.currentRuleIndex ? "" + this.currentRuleIndex : "?");
+        html = html.replace(/##objectName##/g, this.currentRule.replace(/\$/g, "$$"));
+        html = html.replace(/##index##/g, this.currentRuleIndex ? "" + this.currentRuleIndex : "?");
 
-            let maxLabelCount = workspace.getConfiguration("antlr4.atn")["maxLabelCount"];
-            html = html.replace("##maxLabelCount##", maxLabelCount > 1 ? maxLabelCount : 5);
-            html += `  var width = 1000, height = 1000\n\n`;
+        let maxLabelCount = workspace.getConfiguration("antlr4.atn")["maxLabelCount"];
+        html = html.replace("##maxLabelCount##", maxLabelCount > 1 ? maxLabelCount : 5);
+        html += `  var width = 1000, height = 1000\n\n`;
 
-            let data = this.backend.getATNGraph(document.fileName, this.currentRule);
-            if (data) {
-                let scale = !this.cachedRuleStates || Number.isNaN(this.cachedRuleStates.scale)
-                    ? "0.5 * Math.exp(-nodes.length / 50) + 0.1"
-                    : this.cachedRuleStates.scale;
+        let data = this.backend.getATNGraph(uri.fsPath, this.currentRule);
+        if (data) {
+            let scale = !this.cachedRuleStates || Number.isNaN(this.cachedRuleStates.scale)
+                ? "0.5 * Math.exp(-nodes.length / 50) + 0.1"
+                : this.cachedRuleStates.scale;
 
-                let transX = !this.cachedRuleStates || !this.cachedRuleStates.translation.x || Number.isNaN(this.cachedRuleStates.translation.x)
-                    ? "width * (1 - initialScale)"
-                    : this.cachedRuleStates.translation.x.toString();
+            let transX = !this.cachedRuleStates || !this.cachedRuleStates.translation.x || Number.isNaN(this.cachedRuleStates.translation.x)
+                ? "width * (1 - initialScale)"
+                : this.cachedRuleStates.translation.x.toString();
 
-                let transY = !this.cachedRuleStates || !this.cachedRuleStates.translation.y || Number.isNaN(this.cachedRuleStates.translation.y)
-                    ? "height * (1 - initialScale)"
-                    : this.cachedRuleStates.translation.y.toString();
+            let transY = !this.cachedRuleStates || !this.cachedRuleStates.translation.y || Number.isNaN(this.cachedRuleStates.translation.y)
+                ? "height * (1 - initialScale)"
+                : this.cachedRuleStates.translation.y.toString();
 
-                if (this.cachedRuleStates) {
-                    for (let node of data.nodes) {
-                        let state = this.cachedRuleStates.states.find(function(element): boolean {
-                            return element.id === node.id;
-                        });
+            if (this.cachedRuleStates) {
+                for (let node of data.nodes) {
+                    let state = this.cachedRuleStates.states.find(function (element): boolean {
+                        return element.id === node.id;
+                    });
 
-                        if (state) {
-                            if (state.fx) {
-                                node["fx"] = state.fx;
-                            }
-                            if (state.fy) {
-                                node["fy"] = state.fy;
-                            }
+                    if (state) {
+                        if (state.fx) {
+                            node["fx"] = state.fx;
+                        }
+                        if (state.fy) {
+                            node["fy"] = state.fy;
                         }
                     }
-
                 }
 
-                html += "  var nodes = " + JSON.stringify(data.nodes) + "\n";
-                html += "  var links = " + JSON.stringify(data.links) + "\n\n";
-
-                html += `  var initialScale = ${scale};\n`;
-                html += `  var initialTranslateX = ${transX};\n`;
-                html += `  var initialTranslateY = ${transY};\n`;
-
-                const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
-                html += `${code}\n</script>\n${this.getScripts(nonce, scripts)}</div></body>`;
-
-            } else {
-                html += "  var nodes = []\n";
-                html += "  var links = []\n\n";
-
-                html += `  var initialScale = 1;\n`;
-                html += `  var initialTranslateX = 0;\n`;
-                html += `  var initialTranslateY = 0;\n`;
-
-                html += `</script><br/><span style="color: #808080; font-size: 16pt;">No ATN data found
-                    (code generation must run at least once in internal or external mode)</span></div></body>`;
             }
 
-            return html;
-        });
+            html += "  var nodes = " + JSON.stringify(data.nodes) + "\n";
+            html += "  var links = " + JSON.stringify(data.links) + "\n\n";
 
+            html += `  var initialScale = ${scale};\n`;
+            html += `  var initialTranslateX = ${transX};\n`;
+            html += `  var initialTranslateY = ${transY};\n`;
+
+            const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
+            html += `${code}\n</script>\n${this.getScripts(nonce, scripts)}</div></body>`;
+
+        } else {
+            html += "  var nodes = []\n";
+            html += "  var links = []\n\n";
+
+            html += `  var initialScale = 1;\n`;
+            html += `  var initialTranslateX = 0;\n`;
+            html += `  var initialTranslateY = 0;\n`;
+
+            html += `</script><br/><span style="color: #808080; font-size: 16pt;">No ATN data found
+                    (code generation must run at least once in internal or external mode)</span></div></body>`;
+        }
+
+        return html;
     };
 
-    public update(uri: Uri, forced: boolean = false, cachedStates?: Map<string, ATNStateEntry>) {
-        let [currentRule, ruleIndex] = this.findCurrentRule(uri);
-        if (!this.lastUri || this.lastUri.fsPath !== uri.fsPath || this.currentRule !== currentRule || forced) {
+    public update(editor: TextEditor, forced: boolean = false, cachedStates?: Map<string, ATNStateEntry>) {
+        let [currentRule, ruleIndex] = this.findCurrentRule(editor);
+        if (!this.lastEditor || this.lastEditor !== editor || this.currentRule !== currentRule || forced) {
             if (!cachedStates || !currentRule) {
                 this.cachedRuleStates = undefined;
             } else {
@@ -124,22 +117,25 @@ export class AntlrATNGraphProvider extends WebviewProvider {
 
             // Update content only if this is the first invocation, editors were switched or
             // the currently selected rule changed.
-            if (this.lastUri) {
+            if (this.lastEditor) {
                 commands.executeCommand('_workbench.htmlPreview.postMessage',
-                    this.lastUri, { action: "saveATNState", file: this.lastUri.fsPath, rule: this.currentRule }
+                    this.lastEditor.document.uri, {
+                        action: "saveATNState",
+                        file: this.lastEditor.document.uri.fsPath,
+                        rule: this.currentRule
+                    }
                 ).then((value) => {
-                    this.lastUri = uri;
+                    this.lastEditor = editor;
                     this.currentRule = currentRule;
                     this.currentRuleIndex = ruleIndex;
-                    super.update(uri);
+                    super.update(editor);
                 });
             } else {
-                this.lastUri = uri;
+                this.lastEditor = editor;
                 this.currentRule = currentRule;
                 this.currentRuleIndex = ruleIndex;
-                super.update(uri);
+                super.update(editor);
             }
         }
     }
-
 };

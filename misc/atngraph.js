@@ -46,7 +46,7 @@ var svg = d3.select("svg")
 
 let topGroup = svg.append("g");
 
-// The initialXX values + svg size are set by the extension previewHTML provider (see ATNGraphProvider.ts).
+// The initialXX values + svg size are set by the extension webview provider (see ATNGraphProvider.ts).
 svg
   .call(zoom)
   .call(zoom.transform, d3.zoomIdentity

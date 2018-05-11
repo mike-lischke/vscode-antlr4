@@ -11,7 +11,7 @@ const path = require("path");
 import * as vscode from "vscode";
 
 import { AntlrFacade, SymbolKind } from "../backend/facade";
-import { WebviewProvider } from "./WebviewProvider";
+import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
 import { GrapsDebugger } from "../backend/GrapsDebugger";
@@ -20,26 +20,24 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
 
     public debugger: GrapsDebugger;
 
-    private uri: vscode.Uri;
-
     refresh(): void {
-        this.update(this.uri);
+        if (this.lastEditor) {
+            this.update(this.lastEditor);
+        }
     }
 
     debuggerStopped(): void {
         // no-op
     }
 
-    public provideTextDocumentContent(uri: vscode.Uri): Thenable<string> {
-        this.uri = uri;
-
+    public generateContent(uri: vscode.Uri, options: WebviewShowOptions): string {
         let graph = this.debugger.currentParseTree;
 
         // Content Security Policy
         const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
         const scripts = [
-            Utils.getMiscPath('utils.js', this.context),
-            Utils.getMiscPath("parse-tree.js", this.context)
+            Utils.getMiscPath('utils.js', this.context, true),
+            Utils.getMiscPath("parse-tree.js", this.context, true)
         ];
 
         let diagram = `<!DOCTYPE html>
@@ -84,7 +82,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
                         <a onClick="changeNodeSize(0.9);"><span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">-</span></a>
                         Node Size
                         <a onClick="changeNodeSize(1.1);"><span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">+</span></a>&nbsp;&nbsp;
-                        Save to file<a onClick="exportToSVG('parse-tree', '${path.basename(this.uri.fsPath)}');"><span class="parse-tree-save-image" /></a>
+                        Save to file<a onClick="exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');"><span class="parse-tree-save-image" /></a>
                     </span>
                 </div>
 
@@ -94,6 +92,6 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             </body>
         </html>`;
 
-        return new Promise(resolve => { resolve(diagram); });
+        return diagram;
     };
 };

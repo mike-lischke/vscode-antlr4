@@ -18,8 +18,6 @@ import {
     ViewColumn
 } from 'vscode';
 
-import { getTextProviderUri } from "./frontend/WebviewProvider";
-
 import { HoverProvider } from './frontend/HoverProvider';
 import { DefinitionProvider } from './frontend//DefinitionProvider';
 import { SymbolProvider } from './frontend/SymbolProvider';
@@ -118,25 +116,18 @@ export function activate(context: ExtensionContext) {
 
     // The ATN graph command.
     let atnGraphProvider = new AntlrATNGraphProvider(backend, context);
-    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.atn", atnGraphProvider));
-
     context.subscriptions.push(commands.registerTextEditorCommand("antlr.atn.singleRule", (editor: TextEditor, edit: TextEditorEdit) => {
-        return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "atn", "single"), 2,
-            "ANTLR ATN Graph: " + path.basename(editor.document.fileName)).then((success: boolean) => {
-            }, (reason) => {
-                window.showErrorMessage(reason);
-            });
+        atnGraphProvider.showWebview(editor, {
+            title: "ANTLR ATN: " + path.basename(editor.document.fileName)
+        });
     }));
 
     // The call graph command.
     let callGraphProvider = new AntlrCallGraphProvider(backend, context);
-    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.call-graph", callGraphProvider));
     context.subscriptions.push(commands.registerTextEditorCommand('antlr.call-graph', (editor: TextEditor, edit: TextEditorEdit) => {
-        return commands.executeCommand('vscode.previewHtml', getTextProviderUri(editor.document.uri, "call-graph", ""), 2,
-            "Call Graph: " + path.basename(editor.document.fileName)).then((success: boolean) => {
-            }, (reason) => {
-                window.showErrorMessage(reason);
-            });
+        callGraphProvider.showWebview(editor, {
+            title: "Call Graph: " + path.basename(editor.document.fileName)
+        });
     }));
 
     // Sentence generation.
@@ -172,7 +163,6 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(window.registerTreeDataProvider("antlr4.modes", modesProvider));
 
     parseTreeProvider = new AntlrParseTreeProvider(backend, context);
-    context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.parse-tree", parseTreeProvider));
 
     // Helper commands.
     context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
@@ -189,7 +179,7 @@ export function activate(context: ExtensionContext) {
     // The export to SVG command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveSVG", (args: { name: string, type: string, svg: string }) => {
         let css: string[] = [];
-        css.push(Utils.getMiscPath("light.css", context));
+        css.push(Utils.getMiscPath("light.css", context, true));
         let customStyles = workspace.getConfiguration("antlr4")['customcss'];
         if (customStyles && Array.isArray(customStyles)) {
             for (let style of customStyles) {
@@ -216,8 +206,8 @@ export function activate(context: ExtensionContext) {
     // The export to html command.
     context.subscriptions.push(commands.registerCommand("_antlr.saveHTML", (args: { name: string, type: string, html: string }) => {
         let css: string[] = [];
-        css.push(Utils.getMiscPath("light.css", context));
-        css.push(Utils.getMiscPath("dark.css", context));
+        css.push(Utils.getMiscPath("light.css", context, true));
+        css.push(Utils.getMiscPath("dark.css", context, true));
         let customStyles = workspace.getConfiguration("antlr4")['customcss'];
         if (customStyles && Array.isArray(customStyles)) {
             for (let style of customStyles) {
@@ -307,9 +297,9 @@ export function activate(context: ExtensionContext) {
             changeTimers.set(fileName, setTimeout(() => {
                 changeTimers.delete(fileName);
                 backend.reparse(fileName);
-                diagramProvider.update(getTextProviderUri(event.document.uri, "rrd", "single"));
+                diagramProvider.update(window.activeTextEditor);
                 importsProvider.refresh();
-                callGraphProvider.update(getTextProviderUri(event.document.uri, "call-graph", ""));
+                callGraphProvider.update(window.activeTextEditor);
                 processDiagnostic(event.document);
             }, 300));
         }
@@ -323,10 +313,10 @@ export function activate(context: ExtensionContext) {
 
     window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
         if (event.textEditor.document.languageId === "antlr" && event.textEditor.document.uri.scheme === "file") {
-            diagramProvider.update(getTextProviderUri(event.textEditor.document.uri, "rrd", "single"));
+            diagramProvider.update(event.textEditor);
 
             let hash = Utils.hashFromPath(event.textEditor.document.uri.fsPath);
-            atnGraphProvider.update(getTextProviderUri(event.textEditor.document.uri, "atn", "single"), false, atnStates.get(hash));
+            atnGraphProvider.update(event.textEditor, false, atnStates.get(hash));
         }
     });
 
@@ -431,7 +421,7 @@ export function activate(context: ExtensionContext) {
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true }).then(() => {
 
                 let hash = Utils.hashFromPath(document.uri.fsPath);
-                atnGraphProvider.update(getTextProviderUri(document.uri, "atn", "single"), true, atnStates.get(hash));
+                atnGraphProvider.update(window.activeTextEditor, true, atnStates.get(hash));
 
                 progress.stopAnimation();
             });
@@ -521,11 +511,11 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                 });
 
                 const session = new AntlrDebugSession(folder!, backend, [
+                    parseTreeProvider,
                     lexerSymbolsProvider,
                     parserSymbolsProvider,
                     channelsProvider,
-                    modesProvider,
-                    parseTreeProvider
+                    modesProvider
                 ]);
                 session.setRunAsServer(true);
                 session.start(<NodeJS.ReadableStream>socket, socket);

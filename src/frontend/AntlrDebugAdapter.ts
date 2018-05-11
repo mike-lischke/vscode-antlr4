@@ -18,8 +18,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 const { Subject } = require('await-notify');
 
-import { getTextProviderUri } from './WebviewProvider';
 import { GrapsDebugger, GrapsBreakPoint } from '../backend/GrapsDebugger';
+import { AntlrParseTreeProvider } from "./ParseTreeProvider";
 import { AntlrFacade, ParseTreeNode, ParseTreeNodeType, LexerToken } from '../backend/facade';
 
 /**
@@ -55,6 +55,8 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
         this.setDebuggerLinesStartAt1(true);
         this.setDebuggerColumnsStartAt1(false);
+
+        this.parseTreeProvider = consumers[0] as AntlrParseTreeProvider;
     }
 
     shutdown(): void {
@@ -360,12 +362,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
             }
 
             if (this.showGraphicalParseTree) {
-                commands.executeCommand('vscode.previewHtml',
-                    getTextProviderUri(Uri.parse("http://debugger.net"), "parse-tree", ""), 1,
-                    "Parse Tree").then((success: boolean) => {
-                    }, (reason) => {
-                        window.showErrorMessage(reason);
-                    });
+                this.parseTreeProvider.showWebview(Uri.file(grammar), { title: "Parse Tree" });
             }
 
             this.sendEvent(new TerminatedEvent());
@@ -452,6 +449,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
     private static THREAD_ID = 1;
 
     private debugger: GrapsDebugger;
+    private parseTreeProvider: AntlrParseTreeProvider;
     private configurationDone = new Subject();
 
     private showTextualParseTree = false;

@@ -22,8 +22,11 @@ export class Utils {
      * @param file The base file name.
      * @param context The context of this extension to get its path regardless where it is installed.
      */
-    public static getMiscPath(file: string, context: ExtensionContext): string {
-        return Uri.file(context.asAbsolutePath(path.join('misc', file))).with({ scheme: 'vscode-resource' }).toString();
+    public static getMiscPath(file: string, context: ExtensionContext, asResource: boolean): string {
+        if (asResource) {
+            return Uri.file(context.asAbsolutePath(path.join('misc', file))).with({ scheme: 'vscode-resource' }).toString();
+        }
+        return context.asAbsolutePath(path.join('misc', file));
     }
 
     public static isAbsolute(p: string): boolean {

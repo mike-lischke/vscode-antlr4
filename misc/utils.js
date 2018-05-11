@@ -36,7 +36,7 @@ function exportToHTML(type, name) {
 	// When exporting the HTML content we have to remove our scripts (e.g. to avoid running image
 	// generation again which happend already in vscode) and other internal elements.
 	// Additionally we have to make all style sheet references relative.
-	// That requires a deep copy of the entire DOM to avoid messing with the previewHTML display.
+	// That requires a deep copy of the entire DOM to avoid messing with the webview display.
 	try {
 		var workDocument = document.cloneNode(true);
 		[].forEach.call(workDocument.querySelectorAll('script'), function (e) {
@@ -63,7 +63,7 @@ function exportToHTML(type, name) {
 
 (function () {
 
-	// Used to send messages from the extension to this previewHTML webview.
+	// Used to send messages from the extension to this webview.
 	window.addEventListener('message', function (event) {
 		switch (event.data.action) {
 			case "saveATNState":
