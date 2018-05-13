@@ -24,7 +24,7 @@ import { SymbolProvider } from './frontend/SymbolProvider';
 import { AntlrCodeLensProvider } from './frontend/CodeLensProvider';
 import { AntlrCompletionItemProvider } from './frontend/CompletionItemProvider';
 import { AntlrRailroadDiagramProvider } from './frontend/RailroadDiagramProvider';
-import { AntlrATNGraphProvider, ATNStateEntry } from "./frontend/ATNGraphProvider";
+import { AntlrATNGraphProvider } from "./frontend/ATNGraphProvider";
 import { AntlrFormattingProvider } from "./frontend/FormattingProvider";
 import { ImportsProvider } from "./frontend/ImportsProvider";
 import { AntlrCallGraphProvider } from "./frontend/CallGraphProvider";
@@ -44,9 +44,6 @@ const ANTLR = { language: 'antlr', scheme: 'file' };
 
 let diagnosticCollection = languages.createDiagnosticCollection('antlr');
 let DiagnosticTypeMap: Map<DiagnosticType, DiagnosticSeverity> = new Map();
-
-// All ATN state entries per file, per rule.
-let atnStates: Map<string, Map<string, ATNStateEntry>> = new Map();
 
 let backend: AntlrFacade;
 let progress: ProgressIndicator;
@@ -75,14 +72,7 @@ export function activate(context: ExtensionContext) {
         if (document.languageId === "antlr") {
             let antlrPath = path.join(path.dirname(document.fileName), ".antlr");
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
-
-            let hash = Utils.hashFromPath(document.fileName);
-            let atnCacheFile = path.join(antlrPath, "cache", hash + ".atn");
-            if (fs.existsSync(atnCacheFile)) {
-                let data = fs.readFileSync(atnCacheFile, { encoding: "utf-8" });
-                let fileEntry = new Map(JSON.parse(data));
-                atnStates.set(hash, <Map<string, ATNStateEntry>>fileEntry);
-            }
+            AntlrATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
         }
     }
 
@@ -171,101 +161,6 @@ export function activate(context: ExtensionContext) {
         });
     }));
 
-    // Used for debugging in JS files (console.log doesn't have any effect).
-    context.subscriptions.push(commands.registerCommand("_antlr.showMessage", (args: { message: string }) => {
-        window.showInformationMessage(args.message, { modal: true });
-    }));
-
-    // The export to SVG command.
-    context.subscriptions.push(commands.registerCommand("_antlr.saveSVG", (args: { name: string, type: string, svg: string }) => {
-        let css: string[] = [];
-        css.push(Utils.getMiscPath("light.css", context, true));
-        let customStyles = workspace.getConfiguration("antlr4")['customcss'];
-        if (customStyles && Array.isArray(customStyles)) {
-            for (let style of customStyles) {
-                css.push(style);
-            }
-        }
-
-        let svg = '<?xml version="1.0" standalone="no"?>\n'
-        for (let stylesheet of css) {
-            svg += `<?xml-stylesheet href="${path.basename(stylesheet)}" type="text/css"?>\n`;
-        }
-
-        svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
-            '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + args.svg;
-
-        try {
-            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
-                args.name + "." + args.type), { "SVG": ["svg"] }, svg, css);
-        } catch (error) {
-            window.showErrorMessage("Couldn't write SVG file: " + error);
-        }
-    }));
-
-    // The export to html command.
-    context.subscriptions.push(commands.registerCommand("_antlr.saveHTML", (args: { name: string, type: string, html: string }) => {
-        let css: string[] = [];
-        css.push(Utils.getMiscPath("light.css", context, true));
-        css.push(Utils.getMiscPath("dark.css", context, true));
-        let customStyles = workspace.getConfiguration("antlr4")['customcss'];
-        if (customStyles && Array.isArray(customStyles)) {
-            for (let style of customStyles) {
-                css.push(style);
-            }
-        }
-        try {
-            Utils.exportDataWithConfirmation(path.join(workspace.getConfiguration("antlr4." + args.type)["saveDir"] || "",
-                args.name + "." + args.type), { "HTML": ["html"] }, args.html, css);
-        } catch (error) {
-            window.showErrorMessage("Couldn't write HTML file: " + error);
-        }
-    }));
-
-    // The "save ATN state" notification.
-    context.subscriptions.push(commands.registerCommand('_antlr.saveATNState',
-        (args: { nodes: any, file: string, rule: string, transform: string }) => {
-
-            let hash = Utils.hashFromPath(args.file);
-            let basePath = path.dirname(args.file);
-            let atnCachePath = path.join(basePath, ".antlr/cache");
-
-            let fileEntry = atnStates.get(hash);
-            if (!fileEntry) {
-                fileEntry = new Map();
-            }
-
-            let scale = 1;
-            let translateX = 0;
-            let translateY = 0;
-            let temp = args.transform.split(/[(), ]/);
-            for (let i = 0; i < temp.length; ++i) {
-                if (temp[i] === "translate") {
-                    translateX = Number(temp[++i]);
-                    translateY = Number(temp[++i]);
-                } else if (temp[i] === "scale") {
-                    scale = Number(temp[++i]);
-                }
-            }
-
-            // Convert the given translation back to what it was before applying the scaling, as that is what we need
-            // to specify when we restore the translation.
-            let ruleEntry: ATNStateEntry = { scale: scale, translation: { x: translateX / scale, y: translateY / scale }, states: [] };
-            for (let node of args.nodes) {
-                ruleEntry.states.push({ id: node.id, fx: node.fx, fy: node.fy });
-            }
-            fileEntry.set(args.rule, ruleEntry);
-            atnStates.set(hash, fileEntry);
-
-            fs.ensureDirSync(atnCachePath);
-            try {
-                fs.writeFileSync(path.join(atnCachePath, hash + ".atn"), JSON.stringify(Array.from(fileEntry)), { encoding: "utf-8" });
-            } catch (error) {
-                window.showErrorMessage("Couldn't write ATN state data for: " + args.file + "(" + hash + ")");
-            }
-        }
-    ));
-
     //----- Events -----
 
     workspace.onDidOpenTextDocument((doc: TextDocument) => {
@@ -314,9 +209,7 @@ export function activate(context: ExtensionContext) {
     window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
         if (event.textEditor.document.languageId === "antlr" && event.textEditor.document.uri.scheme === "file") {
             diagramProvider.update(event.textEditor);
-
-            let hash = Utils.hashFromPath(event.textEditor.document.uri.fsPath);
-            atnGraphProvider.update(event.textEditor, false, atnStates.get(hash));
+            atnGraphProvider.update(event.textEditor, false);
         }
     });
 
@@ -419,9 +312,7 @@ export function activate(context: ExtensionContext) {
             }
 
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true }).then(() => {
-
-                let hash = Utils.hashFromPath(document.uri.fsPath);
-                atnGraphProvider.update(window.activeTextEditor, true, atnStates.get(hash));
+                atnGraphProvider.update(window.activeTextEditor, true);
 
                 progress.stopAnimation();
             });

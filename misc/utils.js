@@ -7,29 +7,23 @@
 
 "use strict";
 
+const vscode = acquireVsCodeApi();
+
 function showMessage(message) {
-	const args = { message: message };
-	window.parent.postMessage({
-		command: "did-click-link",
-		data: `command:_antlr.showMessage?${encodeURIComponent(JSON.stringify(args))}`
-	}, "file://");
+	vscode.postMessage({ command: "alert", text: message });
 }
 
 function exportToSVG(type, name) {
-	// Doesn't save actually, but sends a command to our vscode extension.
-	// Only very few HTML messages are handled in the vscode webclient (and forwarded to registered listeners).
-	// We choose "did-click-link" (like the markdown preview extension does).
+	// Saving the SVG is delegated to the extension to allow asking the user for a target file.
 	const svg = document.querySelectorAll('svg')[0];
 	const args = {
+        command: "saveSVG",
         name: name,
         type: type,
         svg: svg.outerHTML
     };
 
-	window.parent.postMessage({
-		command: "did-click-link",
-		data: `command:_antlr.saveSVG?${encodeURIComponent(JSON.stringify(args))}`
-	}, "file://");
+    vscode.postMessage(args);
 }
 
 function exportToHTML(type, name) {
@@ -50,12 +44,9 @@ function exportToHTML(type, name) {
 		});
 
 		const html = workDocument.querySelectorAll('html')[0];
-		const args = { name: name, type: type, html: html.outerHTML };
+		const args = { command: "saveHTML", name: name, type: type, html: html.outerHTML };
 
-		window.parent.postMessage({
-			command: "did-click-link",
-			data: `command:_antlr.saveHTML?${encodeURIComponent(JSON.stringify(args))}`
-		}, "file://");
+		vscode.postMessage(args);
 	} catch (error) {
 		showMessage("JS Error: " + e);
 	}
@@ -65,19 +56,19 @@ function exportToHTML(type, name) {
 
 	// Used to send messages from the extension to this webview.
 	window.addEventListener('message', function (event) {
-		switch (event.data.action) {
-			case "saveATNState":
+		switch (event.data.command) {
+			case "cacheATNLayout": {
 				const args = {
+                    command: "saveATNState",
                     nodes: nodes,
                     file: event.data.file,
                     rule: event.data.rule,
                     transform: topGroup.attr("transform")
                 };
-				window.parent.postMessage({
-					command: "did-click-link",
-					data: `command:_antlr.saveATNState?${encodeURIComponent(JSON.stringify(args))}`
-				}, "file://");
-				break;
+
+                vscode.postMessage(args);
+                break;
+            }
 		}
 	});
 }());

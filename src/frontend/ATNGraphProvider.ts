@@ -8,6 +8,7 @@
 'use strict';
 
 import * as fs from "fs-extra";
+import * as path from "path";
 
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
@@ -22,8 +23,18 @@ export class ATNStateEntry {
 
 export class AntlrATNGraphProvider extends WebviewProvider {
 
-    // Set by the update method if there's cached state data for the current rule.
-    private cachedRuleStates: ATNStateEntry | undefined;
+    // All ATN state entries per file, per rule. Initially filled from the extension code.
+    public static atnStates: Map<string, Map<string, ATNStateEntry>> = new Map();
+
+    public static addStatesForGrammar(root: string, grammar: string) {
+        let hash = Utils.hashFromPath(grammar);
+        let atnCacheFile = path.join(root, "cache", hash + ".atn");
+        if (fs.existsSync(atnCacheFile)) {
+            let data = fs.readFileSync(atnCacheFile, { encoding: "utf-8" });
+            let fileEntry = new Map(JSON.parse(data));
+            AntlrATNGraphProvider.atnStates.set(hash, <Map<string, ATNStateEntry>>fileEntry);
+        }
+    }
 
     public generateContent(source: TextEditor | Uri, options: WebviewShowOptions): string {
         if (!this.currentRule) {
@@ -106,9 +117,12 @@ export class AntlrATNGraphProvider extends WebviewProvider {
         return html;
     };
 
-    public update(editor: TextEditor, forced: boolean = false, cachedStates?: Map<string, ATNStateEntry>) {
+    public update(editor: TextEditor, forced: boolean = false) {
         let [currentRule, ruleIndex] = this.findCurrentRule(editor);
         if (!this.lastEditor || this.lastEditor !== editor || this.currentRule !== currentRule || forced) {
+            let hash = Utils.hashFromPath(editor.document.fileName);
+            let cachedStates = AntlrATNGraphProvider.atnStates.get(hash);
+
             if (!cachedStates || !currentRule) {
                 this.cachedRuleStates = undefined;
             } else {
@@ -118,18 +132,16 @@ export class AntlrATNGraphProvider extends WebviewProvider {
             // Update content only if this is the first invocation, editors were switched or
             // the currently selected rule changed.
             if (this.lastEditor) {
-                commands.executeCommand('_workbench.htmlPreview.postMessage',
-                    this.lastEditor.document.uri, {
-                        action: "saveATNState",
-                        file: this.lastEditor.document.uri.fsPath,
-                        rule: this.currentRule
-                    }
-                ).then((value) => {
+                if (this.sendMessage(editor, {
+                    command: "cacheATNLayout",
+                    file: editor.document.fileName,
+                    rule: this.currentRule
+                })) {
                     this.lastEditor = editor;
                     this.currentRule = currentRule;
                     this.currentRuleIndex = ruleIndex;
                     super.update(editor);
-                });
+                };
             } else {
                 this.lastEditor = editor;
                 this.currentRule = currentRule;
@@ -138,4 +150,54 @@ export class AntlrATNGraphProvider extends WebviewProvider {
             }
         }
     }
+
+    protected handleMessage(message: any): boolean {
+        if (message.command == "saveATNState") {
+            // This is the bounce back from the script code for our call to `cacheATNState` triggered from
+            // the `update()` function.
+            let hash = Utils.hashFromPath(message.file);
+            let basePath = path.dirname(message.file);
+            let atnCachePath = path.join(basePath, ".antlr/cache");
+
+            let fileEntry = AntlrATNGraphProvider.atnStates.get(hash);
+            if (!fileEntry) {
+                fileEntry = new Map();
+            }
+
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            let temp = message.transform.split(/[(), ]/);
+            for (let i = 0; i < temp.length; ++i) {
+                if (temp[i] === "translate") {
+                    translateX = Number(temp[++i]);
+                    translateY = Number(temp[++i]);
+                } else if (temp[i] === "scale") {
+                    scale = Number(temp[++i]);
+                }
+            }
+
+            // Convert the given translation back to what it was before applying the scaling, as that is what we need
+            // to specify when we restore the translation.
+            let ruleEntry: ATNStateEntry = { scale: scale, translation: { x: translateX / scale, y: translateY / scale }, states: [] };
+            for (let node of message.nodes) {
+                ruleEntry.states.push({ id: node.id, fx: node.fx, fy: node.fy });
+            }
+            fileEntry.set(message.rule, ruleEntry);
+            AntlrATNGraphProvider.atnStates.set(hash, fileEntry);
+
+            fs.ensureDirSync(atnCachePath);
+            try {
+                fs.writeFileSync(path.join(atnCachePath, hash + ".atn"), JSON.stringify(Array.from(fileEntry)), { encoding: "utf-8" });
+            } catch (error) {
+                window.showErrorMessage("Couldn't write ATN state data for: " + message.file + "(" + hash + ")");
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    // Set by the update method if there's cached state data for the current rule.
+    private cachedRuleStates: ATNStateEntry | undefined;
 };
