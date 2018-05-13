@@ -301,9 +301,8 @@ export function activate(context: ExtensionContext) {
                     let files = fs.readdirSync(outputDir);
                     for (let file of files) {
                         if (file.endsWith(".interp")) {
-                            let targetFile = path.join(antlrPath, file);
-                            fs.copySync(path.join(outputDir, file), targetFile, { overwrite: true });
-                            fs.removeSync(targetFile);
+                            let sourceFile = path.join(outputDir, file);
+                            fs.moveSync(sourceFile, path.join(antlrPath, file), { overwrite: true });
                         }
                     }
                 } catch (error) {
@@ -378,7 +377,7 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
 
                 config.grammar = editor.document.fileName;
             } else {
-                window.showInformationMessage("Then ANTLR debugger can only be started for ANTLR4 grammars.");
+                window.showInformationMessage("The ANTLR4 debugger can only be started for ANTLR4 grammars.");
             }
         } else {
             if (!path.isAbsolute(config.grammar) && folder) {
