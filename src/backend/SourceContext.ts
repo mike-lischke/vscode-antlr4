@@ -537,11 +537,11 @@ export class SourceContext {
     public getRRDScript(ruleName: string): string | undefined {
         this.runSemanticAnalysisIfNeeded();
 
-        return this.rrdScripts.get(ruleName)!;
+        return this.rrdScripts.get(ruleName);
     }
 
     /**
-     * Add this to the list of referencing contexts in the given context.
+     * Add this context to the list of referencing contexts in the given context.
      */
     public addAsReferenceTo(context: SourceContext) {
         // Check for mutual inclusion. References are organized like a mesh.

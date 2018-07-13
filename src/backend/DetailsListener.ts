@@ -26,7 +26,6 @@ import {
 import { SourceContext } from './SourceContext';
 
 import { ScopedSymbol, LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
-import { TerminalNode, ParseTree } from 'antlr4ts/tree';
 
 export class DetailsListener implements ANTLRv4ParserListener {
     constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
@@ -133,8 +132,9 @@ export class DetailsListener implements ANTLRv4ParserListener {
                 symbol.context = ctx.TOKEN_REF();
             } else {
                 // Must be a string literal then.
-                let refName = ctx.STRING_LITERAL()!.text;
-                let symbol = this.symbolTable.addNewSymbolOfType(LiteralSymbol, this.currentSymbol as ScopedSymbol, "");
+                let refName = unquote(ctx.STRING_LITERAL()!.text, "'");
+                let symbol = this.symbolTable.addNewSymbolOfType(LiteralSymbol, this.currentSymbol as ScopedSymbol,
+                    refName, refName);
                 symbol.context = ctx.STRING_LITERAL();
             }
         }
@@ -219,4 +219,12 @@ export class DetailsListener implements ANTLRv4ParserListener {
     }
 
     private currentSymbol: Symbol | undefined;
+};
+
+function unquote(input: string, quoteChar?: string) {
+    quoteChar = quoteChar || '\"';
+    if (input[0] === quoteChar && input[input.length - 1] === quoteChar)
+      return input.slice(1, input.length - 1);
+
+    return input;
 };

@@ -12,7 +12,7 @@
 
 ## What's New
 
-Bug fixes
+This release includes fixes for latest Visual Studio Code changes and comes with fixed backend tests.
 
 ## Features
 
@@ -226,6 +226,10 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 * Bug fixing
 
 ## Release Notes
+
+### 2.0.4
+- Fixed Bug #36 "$antlr-format off" removes remaining lines in file
+- Fixed Bug #37 Debugging gets stuck with visualParseTree set to true
 
 ### 2.0.3
 - Updated tests to compile with the latest backend changes.

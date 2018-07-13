@@ -974,6 +974,12 @@ export class GrammarFormatter {
             this.removeTrailingWhitespaces();
         }
 
+        // If formatting was disabled and never enabled again we have to add the raw text to
+        // output pipeline as well.
+        if (this.formattingDisabled && this.rangeStart > -1) {
+            this.addRaw(this.rangeStart, endIndex);
+        }
+
         // Output phase: compose all collected entries into a result string.
         // Start with computing all alignments.
         this.computeAlignments();

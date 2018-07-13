@@ -754,6 +754,8 @@ class GrapsParserInterpreter extends ParserInterpreter {
                             frame.current = [ruleSymbol];
                             frame.next = [ruleSymbol];
                             this.callStack.push(frame);
+                        } else {
+                            throw new Error("Cannot find rule \"" + ruleName + "\" - debugging aborted.");
                         }
                     }
                     // fall through

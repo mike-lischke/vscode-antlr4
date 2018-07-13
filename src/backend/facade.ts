@@ -518,19 +518,7 @@ export class AntlrFacade {
 
     public getRRDScript(fileName: string, rule: string): string {
         let context = this.getContext(fileName);
-        let result = context.getRRDScript(rule);
-        /*
-        if (!result) {
-            for (let reference of context.references) {
-                result = reference.getRRDScript(rule);
-                if (result) {
-                    return result;
-                }
-            }
-            return "";
-        }
-        */
-        return result!;
+        return context.getRRDScript(rule) || "";
     };
 
     private pushDependencyFiles(entry: ContextEntry, contexts: Set<SourceContext>) {

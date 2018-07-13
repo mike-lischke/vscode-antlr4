@@ -2,6 +2,30 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Mocha Tests",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "tsc",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "tdd",
+                "--no-timeouts",
+                "--colors",
+                "${workspaceFolder}/out/test/backend/test.js"
+            ],
+            "stopOnEntry": false,
+            "runtimeExecutable": null,
+            "env": {
+                "NODE_ENV": "testing"
+             },
+             "outFiles": [
+                "${workspaceRoot}/out/**/*.js"
+            ],
+             "sourceMaps": true,
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
             "type": "extensionHost",
             "request": "launch",
             "name": "Extension starten",

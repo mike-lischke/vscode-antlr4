@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "mapRoot": "./out",
         "module": "commonjs",
         "target": "es6",
         "outDir": "out",
@@ -8,16 +9,17 @@
         "sourceMap": true,
         "inlineSources": true,
         "isolatedModules": false,
-		"experimentalDecorators": true,
-        "rootDir": "src"
+		"experimentalDecorators": true
     },
     "include": [
         "src/*.ts",
-        "src/**/*.ts"
+        "src/**/*.ts",
+        "test/**/*.ts"
     ],
     "exclude": [
         "node_modules",
         ".vscode-test",
-        "images"
+        "images",
+        "generated"
     ]
 }
