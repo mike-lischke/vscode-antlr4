@@ -30,25 +30,30 @@
   ],
   "main": "./out/src/extension",
   "contributes": {
-    "languages": [{
-      "id": "antlr",
-      "aliases": [
-        "ANTLR",
-        "antlr"
-      ],
-      "extensions": [
-        ".g",
-        ".g4"
-      ],
-      "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
-      "configuration": "./antlr.configuration.json"
-    }],
-    "grammars": [{
-      "language": "antlr",
-      "scopeName": "source.antlr",
-      "path": "./syntaxes/antlr.json"
-    }],
-    "themes": [{
+    "languages": [
+      {
+        "id": "antlr",
+        "aliases": [
+          "ANTLR",
+          "antlr"
+        ],
+        "extensions": [
+          ".g",
+          ".g4"
+        ],
+        "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
+        "configuration": "./antlr.configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "antlr",
+        "scopeName": "source.antlr",
+        "path": "./syntaxes/antlr.json"
+      }
+    ],
+    "themes": [
+      {
         "label": "Complete Dark",
         "uiTheme": "vs-dark",
         "path": "./themes/complete_dark.json"
@@ -320,7 +325,8 @@
         }
       }
     },
-    "commands": [{
+    "commands": [
+      {
         "command": "antlr.atn.singleRule",
         "title": "Show ATN Graph for Rule"
       },
@@ -347,17 +353,22 @@
     ],
     "menus": {
       "explorer/context": [],
-      "editor/title/context": [{
-        "when": "resourceLangId == antlr",
-        "command": "antlr.rrd.allRules",
-        "group": "antlr@1"
-      }],
-      "editor/title": [{
-        "when": "resourceLangId == antlr",
-        "command": "antlr.rrd.allRules",
-        "group": "antlr@1"
-      }],
-      "editor/context": [{
+      "editor/title/context": [
+        {
+          "when": "resourceLangId == antlr",
+          "command": "antlr.rrd.allRules",
+          "group": "antlr@1"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceLangId == antlr",
+          "command": "antlr.rrd.allRules",
+          "group": "antlr@1"
+        }
+      ],
+      "editor/context": [
+        {
           "when": "resourceLangId == antlr",
           "command": "antlr.rrd.singleRule",
           "group": "antlr@1"
@@ -385,12 +396,15 @@
       ]
     },
     "views": {
-      "explorer": [{
-        "id": "antlr4.imports",
-        "name": "Grammar Dependencies",
-        "when": "resourceLangId == 'antlr'"
-      }],
-      "debug": [{
+      "explorer": [
+        {
+          "id": "antlr4.imports",
+          "name": "Grammar Dependencies",
+          "when": "resourceLangId == 'antlr'"
+        }
+      ],
+      "debug": [
+        {
           "id": "antlr4.lexerSymbols",
           "name": "Lexer Tokens"
         },
@@ -408,67 +422,73 @@
         }
       ]
     },
-    "breakpoints": [{
-      "language": "antlr"
-    }],
-    "debuggers": [{
-      "type": "antlr-debug",
-      "label": "ANTLR4 Debug",
-      "runtime": "node",
-      "configurationAttributes": {
-        "launch": {
-          "required": [
-            "input"
-          ],
-          "properties": {
-            "input": {
-              "type": "string",
-              "description": "Absolute path to a text file containing test input to parse.",
-              "default": "${workspaceFolder}/${command:AskForTestInput}"
-            },
-            "startRule": {
-              "type": "string",
-              "description": "The name of the rule to be used as entry point. If none is given the rule with index 0 is used.",
-              "default": ""
-            },
-            "grammar": {
-              "type": "string",
-              "description": "The path to a grammar to debug. Leave empty to debug the grammar in the active editor.",
-              "default": null
-            },
-            "trace": {
-              "type": "boolean",
-              "description": "Log internal debugger messages to debug console.",
-              "default": false
-            },
-            "printParseTree": {
-              "type": "boolean",
-              "description": "Print the textual parse tree in the debug console",
-              "default": true
-            },
-            "visualParseTree": {
-              "type": "boolean",
-              "description": "Show a visual parse tree during debug",
-              "default": true
+    "breakpoints": [
+      {
+        "language": "antlr"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "antlr-debug",
+        "label": "ANTLR4 Debug",
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "input"
+            ],
+            "properties": {
+              "input": {
+                "type": "string",
+                "description": "Absolute path to a text file containing test input to parse.",
+                "default": "${workspaceFolder}/${command:AskForTestInput}"
+              },
+              "startRule": {
+                "type": "string",
+                "description": "The name of the rule to be used as entry point. If none is given the rule with index 0 is used.",
+                "default": ""
+              },
+              "grammar": {
+                "type": "string",
+                "description": "The path to a grammar to debug. Leave empty to debug the grammar in the active editor.",
+                "default": null
+              },
+              "trace": {
+                "type": "boolean",
+                "description": "Log internal debugger messages to debug console.",
+                "default": false
+              },
+              "printParseTree": {
+                "type": "boolean",
+                "description": "Print the textual parse tree in the debug console",
+                "default": true
+              },
+              "visualParseTree": {
+                "type": "boolean",
+                "description": "Show a visual parse tree during debug",
+                "default": true
+              }
             }
           }
+        },
+        "configurationSnippets": [
+          {
+            "label": "ANTLR: Parse",
+            "description": "A new configuration for parsing with a grammar.",
+            "body": {
+              "type": "antlr-debug",
+              "request": "launch",
+              "name": "${2:Run Parser}",
+              "input": "^\"\\${workspaceFolder}/${1:Input}\"",
+              "visualParseTree": true
+            }
+          }
+        ],
+        "variables": {
+          "AskForTestInput": "antlr.getTestInputName"
         }
-      },
-      "configurationSnippets": [{
-        "label": "ANTLR: Parse",
-        "description": "A new configuration for parsing with a grammar.",
-        "body": {
-          "type": "antlr-debug",
-          "request": "launch",
-          "name": "${2:Run Parser}",
-          "input": "^\"\\${workspaceFolder}/${1:Input}\"",
-          "visualParseTree": true
-        }
-      }],
-      "variables": {
-        "AskForTestInput": "antlr.getTestInputName"
       }
-    }]
+    ]
   },
   "scripts": {
     "postinstall": "node ./node_modules/vscode/bin/install",
@@ -479,8 +499,8 @@
     "antlr4-c3": "^1.1.8",
     "antlr4ts": "^0.4.1-alpha.0",
     "await-notify": "^1.0.1",
-    "d3": "^4.13.0",
-    "fs-extra": "^5.0.0",
+    "d3": "^5.5.0",
+    "fs-extra": "^6.0.1",
     "vscode-debugadapter": "^1.29.0",
     "vscode-debugprotocol": "^1.29.0"
   },
@@ -493,7 +513,7 @@
     "@types/node": "^8.10.12",
     "chai": "^4.1.2",
     "mocha": "^4.1.0",
-    "typescript": "^2.8.3",
-    "vscode": "^1.1.17"
+    "typescript": "^2.9.2",
+    "vscode": "^1.1.18"
   }
 }
