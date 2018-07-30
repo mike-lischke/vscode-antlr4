@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "mapRoot": "./out",
+		"declaration": true,
         "module": "commonjs",
         "target": "es6",
         "outDir": "out",
@@ -9,8 +9,11 @@
         "sourceMap": true,
         "inlineSources": true,
         "isolatedModules": false,
-		"experimentalDecorators": true
+		"allowSyntheticDefaultImports": true,
+		"experimentalDecorators": true,
+		"strictNullChecks": true
     },
+	"compileOnSave": true,
     "include": [
         "src/*.ts",
         "src/**/*.ts",

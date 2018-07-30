@@ -183,7 +183,7 @@ describe('vscode-antlr4-backend:', function () {
 
         it('Editing', function () {
             // Change the source. This will release the lexer reference and reload it.
-            // If that doesn't work we'll get a lot of unknown-symbol errors (for all lexer symbols).
+            // If that does not work we'll get a lot of unknown-symbol errors (for all lexer symbols).
             let source = fs.readFileSync("test/backend/TParser.g4", 'utf8');
             backend.setText("test/backend/TParser.g4", source + "\nblah: any idarray;");
             backend.reparse("test/backend/TParser.g4");

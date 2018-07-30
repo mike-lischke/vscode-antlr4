@@ -35,7 +35,7 @@ export class WebviewProvider {
         this.lastEditor = (source instanceof Uri) ? undefined : source;
         let uri = (source instanceof Uri) ? source : source.document.uri;
         if (this.webViewMap.has(uri)) {
-            let [panel, _] = this.webViewMap.get(uri);
+            let [panel, _] = this.webViewMap.get(uri)!;
             panel.title = options.title;
             panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
             //panel.reveal(); Steals focus.
@@ -124,7 +124,7 @@ export class WebviewProvider {
 
     public update(editor: TextEditor) {
         if (this.webViewMap.has(editor.document.uri)) {
-            let [panel, options] = this.webViewMap.get(editor.document.uri);
+            let [panel, options] = this.webViewMap.get(editor.document.uri)!;
             panel.webview.html = this.generateContent(editor, options);
             //panel.reveal();
         }
@@ -132,7 +132,7 @@ export class WebviewProvider {
 
     protected sendMessage(editor: TextEditor, args: any): boolean {
         if (this.webViewMap.has(editor.document.uri)) {
-            let [panel, options] = this.webViewMap.get(editor.document.uri);
+            let [panel, options] = this.webViewMap.get(editor.document.uri)!;
             panel.webview.postMessage(args);
             return true;
         }

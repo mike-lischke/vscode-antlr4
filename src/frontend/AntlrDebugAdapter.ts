@@ -85,7 +85,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
         this.setup(args.grammar);
         for (let consumer of this.consumers) {
-            consumer.debugger = this.debugger;
+            consumer.debugger = this.debugger!;
             consumer.refresh();
         }
 
@@ -100,7 +100,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         try {
             let testInput = fs.readFileSync(args.input, { encoding: "utf8" });
 
-            let startRuleIndex = this.debugger.ruleIndexFromName(args.startRule);
+            let startRuleIndex = this.debugger!.ruleIndexFromName(args.startRule);
             if (startRuleIndex < 0) {
                 this.sendErrorResponse(response, {
                     id: 1,
@@ -108,7 +108,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 });
                 return;
             }
-            this.debugger.start(startRuleIndex, testInput, args.noDebug ? true : false);
+            this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
         } catch (e) {
             this.sendErrorResponse(response, { id: 1, format: "Error while launching debug session: " + e });
             return;
@@ -118,10 +118,10 @@ export class AntlrDebugSession extends LoggingDebugSession {
     }
 
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
-        this.debugger.clearBreakPoints();
+        this.debugger!.clearBreakPoints();
         if (args.breakpoints && args.source.path) {
             const actualBreakpoints = args.breakpoints.map(sourceBreakPoint => {
-                let { validated, line, id } = this.debugger.addBreakPoint(args.source.path!,
+                let { validated, line, id } = this.debugger!.addBreakPoint(args.source.path!,
                     this.convertDebuggerLineToClient(sourceBreakPoint.line));
                 const targetBreakPoint = <DebugProtocol.Breakpoint>new Breakpoint(validated,
                     this.convertClientLineToDebugger(line));
@@ -152,7 +152,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         const startFrame = typeof args.startFrame === 'number' ? args.startFrame : 0;
         const maxLevels = typeof args.levels === 'number' ? args.levels : 1000;
 
-        const stack = this.debugger.currentStackTrace;
+        const stack = this.debugger!.currentStackTrace;
         let frames: StackFrame[] = [];
         for (let i = 0; i < stack.length; ++i) {
             let entry = stack[i];
@@ -181,8 +181,8 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
         // Cache a few values that stay the same during a single request for scopes and variables.
-        this.tokens = this.debugger.tokenList;
-        this.variables = this.debugger.getVariables(args.frameId);
+        this.tokens = this.debugger!.tokenList;
+        this.variables = this.debugger!.getVariables(args.frameId);
 
 		let scopes: Scope[] = [];
 		scopes.push(new Scope("Globals", VarRef.Globals, true));
@@ -206,20 +206,20 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 variables.push({
                     name: "Input Size",
                     type: "number",
-                    value: this.debugger.inputSize.toString(),
+                    value: this.debugger!.inputSize.toString(),
                     variablesReference: 0
                 });
                 variables.push({
                     name: "Error Count",
                     type: "number",
-                    value: this.debugger.errorCount.toString(),
+                    value: this.debugger!.errorCount.toString(),
                     variablesReference: 0
                 });
                 variables.push({
                     name: "Input Tokens",
-                    value: (this.tokens.length - this.debugger.currentTokenIndex).toString(),
+                    value: (this.tokens.length - this.debugger!.currentTokenIndex).toString(),
                     variablesReference: VarRef.Tokens,
-                    indexedVariables: this.tokens.length - this.debugger.currentTokenIndex
+                    indexedVariables: this.tokens.length - this.debugger!.currentTokenIndex
                 });
                 break;
             }
@@ -229,7 +229,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
             }
 
             case VarRef.Tokens: {
-                let start =  this.debugger.currentTokenIndex + (args.start ? args.start : 0);
+                let start =  this.debugger!.currentTokenIndex + (args.start ? args.start : 0);
                 let length = args.count ? args.count : this.tokens.length;
                 for (let i = 0; i < length; ++i) {
                     let index = start + i;
@@ -270,27 +270,27 @@ export class AntlrDebugSession extends LoggingDebugSession {
     }
 
     protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
-        this.debugger.pause();
+        this.debugger!.pause();
         this.sendResponse(response);
     }
 
     protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-        this.debugger.continue();
+        this.debugger!.continue();
         this.sendResponse(response);
     }
 
     protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
-        this.debugger.stepOver();
+        this.debugger!.stepOver();
         this.sendResponse(response);
     }
 
     protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): void {
-        this.debugger.stepIn();
+        this.debugger!.stepIn();
         this.sendResponse(response);
     }
 
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
-        this.debugger.stepOut();
+        this.debugger!.stepOut();
         this.sendResponse(response);
     }
 
@@ -352,7 +352,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         this.debugger.on('end', () => {
             this.notifyConsumers();
             if (this.showTextualParseTree) {
-                let tree = this.debugger.currentParseTree;
+                let tree = this.debugger!.currentParseTree;
                 if (tree) {
                     let text = this.parseNodeToString(tree);
                     this.sendEvent(new OutputEvent("Parse Tree:\n" + text + "\n"));
@@ -379,7 +379,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         let result = " ".repeat(level);
         switch (node.type) {
             case ParseTreeNodeType.Rule: {
-                let name = this.debugger.ruleNameFromIndex(node.ruleIndex!);
+                let name = this.debugger!.ruleNameFromIndex(node.ruleIndex!);
                 result += name ? name : "<unknown rule>";
 
                 if (node.children.length > 0) {
@@ -448,7 +448,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
     private static THREAD_ID = 1;
 
-    private debugger: GrapsDebugger;
+    private debugger: GrapsDebugger | undefined;
     private parseTreeProvider: AntlrParseTreeProvider;
     private configurationDone = new Subject();
 

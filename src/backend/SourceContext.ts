@@ -587,8 +587,8 @@ export class SourceContext {
         // The symbol table returns symbols of itself and those it depends on (if recursive is true).
         let result = this.symbolTable.getAllSymbols(Symbol, !recursive);
 
-        // Add also occurences from contexts referencing us, this time not recursive
-        // as we have added the occurences from this context already.
+        // Add also occurrences from contexts referencing us, this time not recursive
+        // as we have added the occurrences from this context already.
         for (let reference of this.references) {
             reference.symbolTable.getAllSymbols(Symbol, true).forEach(result.add, result);
         }

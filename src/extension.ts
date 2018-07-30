@@ -192,9 +192,9 @@ export function activate(context: ExtensionContext) {
             changeTimers.set(fileName, setTimeout(() => {
                 changeTimers.delete(fileName);
                 backend.reparse(fileName);
-                diagramProvider.update(window.activeTextEditor);
+                diagramProvider.update(window.activeTextEditor!);
                 importsProvider.refresh();
-                callGraphProvider.update(window.activeTextEditor);
+                callGraphProvider.update(window.activeTextEditor!);
                 processDiagnostic(event.document);
             }, 300));
         }
@@ -311,7 +311,7 @@ export function activate(context: ExtensionContext) {
             }
 
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true }).then(() => {
-                atnGraphProvider.update(window.activeTextEditor, true);
+                atnGraphProvider.update(window.activeTextEditor!, true);
 
                 progress.stopAnimation();
             });
