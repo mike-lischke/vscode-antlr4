@@ -19,7 +19,7 @@ export interface WebviewShowOptions {
 }
 
 /**
- * The base class for all text document content providers, holding a number of support members needed them.
+ * The base class for all text document content providers, holding a number of support members needed by them.
  */
 export class WebviewProvider {
     protected currentRule: string | undefined;

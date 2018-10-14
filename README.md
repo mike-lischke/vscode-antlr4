@@ -93,8 +93,7 @@ Everything needed for debugging is included (except Java, which must be installe
             "name": "antlr4-mysql",
             "type": "antlr-debug",
             "request": "launch",
-            //"input": "${workspaceFolder}/${command:AskForTestInput}",
-            "input": "input.sql",
+            "input": "input.txt",
             "grammar": "grammars/MySQLParser.g4",
             "startRule": "query",
             "printParseTree": true,
@@ -104,7 +103,7 @@ Everything needed for debugging is included (except Java, which must be installe
 }
 ```
 
-As usual, the configuration has a name and a type, as well as a request type. Debugging a parser requires some sample input. This is provided from an external file. You can either specify the name of the file in the `input` parameter or let vscode ask you for it (by using the out-commented variant). Everything else is optional. If no grammar is specified, the file in the currently active editor is used (provided it is an ANTLR4 grammar). The start rule allows to specify any parser rule by name and allows so to parse full input as well as just a subpart of a grammar. If not given the rule at index 0 is used as starting point (which is the first rule found in your parser grammar). The parse tree settings determine the output after the debugger has ended (both are `false` by default).
+As usual, the configuration has a name and a type, as well as a request type. Debugging a parser requires some sample input. This is provided from an external file. Specify path + name of the file in the `input` parameter. These 4 values are mandatory, everything else is optional. If no grammar is specified, the file in the currently active editor is used (provided it is an ANTLR4 grammar). The start rule allows to specify any parser rule by name and allows so to parse full input as well as just a subpart of a grammar. If not given the first defined parser rule is used as starting point. The parse tree settings determine the output after the debugger has ended (both are `false` by default).
 
 #### Limitations
 The debugger uses the lexer and parser interpreters found in the ANTLR4 runtime. These interpreters use the same prediction engine as the standard classes, but cannot execute any target runtime code. Hence it is not possible to execute actions or semantic predicates. If your parser depends on that, you will have to modify your grammar(s) to avoid the need for such code. There are however considerations about using an answer file or similar to fake the output of predicates.

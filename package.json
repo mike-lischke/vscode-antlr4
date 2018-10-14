@@ -440,12 +440,12 @@
             "properties": {
               "input": {
                 "type": "string",
-                "description": "Absolute path to a text file containing test input to parse.",
-                "default": "${workspaceFolder}/${command:AskForTestInput}"
+                "description": "Path to a text file containing test input to parse.",
+                "default": "input.txt"
               },
               "startRule": {
                 "type": "string",
-                "description": "The name of the rule to be used as entry point. If none is given the rule with index 0 is used.",
+                "description": "The name of the rule to be used as entry point. If omitted the first parser rule in the grammar is used instead.",
                 "default": ""
               },
               "grammar": {
@@ -478,15 +478,12 @@
             "body": {
               "type": "antlr-debug",
               "request": "launch",
-              "name": "${2:Run Parser}",
-              "input": "^\"\\${workspaceFolder}/${1:Input}\"",
+              "name": "Debug Current Grammar",
+              "input": "input.txt",
               "visualParseTree": true
             }
           }
-        ],
-        "variables": {
-          "AskForTestInput": "antlr.getTestInputName"
-        }
+        ]
       }
     ]
   },
@@ -499,21 +496,21 @@
     "antlr4-c3": "^1.1.8",
     "antlr4ts": "^0.4.1-alpha.0",
     "await-notify": "^1.0.1",
-    "d3": "^5.5.0",
+    "d3": "^5.7.0",
     "fs-extra": "^6.0.1",
-    "vscode-debugadapter": "^1.29.0",
-    "vscode-debugprotocol": "^1.29.0"
+    "vscode-debugadapter": "^1.32.1",
+    "vscode-debugprotocol": "^1.32.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.3",
+    "@types/chai": "^4.1.6",
     "@types/d3": "^4.13.0",
     "@types/fs-extra": "^5.0.2",
-    "@types/glob": "^5.0.35",
+    "@types/glob": "^5.0.36",
     "@types/mocha": "^2.2.48",
-    "@types/node": "^8.10.12",
-    "chai": "^4.1.2",
+    "@types/node": "^8.10.36",
+    "chai": "^4.2.0",
     "mocha": "^4.1.0",
     "typescript": "^2.9.2",
-    "vscode": "^1.1.18"
+    "vscode": "^1.1.21"
   }
 }

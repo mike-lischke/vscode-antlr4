@@ -128,13 +128,6 @@ export function activate(context: ExtensionContext) {
     }));
 
     // Debugging support.
-    context.subscriptions.push(commands.registerCommand("antlr.getTestInputName", config => {
-        return window.showInputBox({
-            placeHolder: "Please enter the name of a text file containing parse test input",
-            value: "input.txt"
-        });
-    }));
-
     context.subscriptions.push(debug.registerDebugConfigurationProvider('antlr-debug', new AntlrDebugConfigurationProvider()));
 
     importsProvider = new ImportsProvider(backend);
