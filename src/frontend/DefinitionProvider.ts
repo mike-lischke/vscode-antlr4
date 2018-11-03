@@ -15,7 +15,7 @@ export class DefinitionProvider {
     constructor(private backend: AntlrFacade) { }
 
     public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Location> {
-        let info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1, true);
+        let info = this.backend.infoForSymbolFast(document.fileName, document.getText(), position.character, position.line + 1, true);
 
         if (!info) {
             return undefined;

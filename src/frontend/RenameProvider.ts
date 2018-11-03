@@ -16,14 +16,14 @@ export class RenameProvider {
 
     public provideRenameEdits(document: TextDocument, position: Position, newName: string,
         token: CancellationToken): ProviderResult<WorkspaceEdit> {
-            let info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1, false);
+            let info = this.backend.infoForSymbolFast(document.fileName, document.getText(), position.character, position.line + 1, false);
 
             if (!info) {
                 return undefined;
             }
 
             let result = new WorkspaceEdit();
-            let occurences = this.backend.getSymbolOccurences(document.fileName, info.name);
+            let occurences = this.backend.getSymbolOccurencesFast(document.fileName, document.getText(), info.name);
             for (let symbol of occurences) {
                 if (symbol.definition) {
                     let range = new Range(

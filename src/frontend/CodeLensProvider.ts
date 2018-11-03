@@ -26,7 +26,8 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
         }
 
         this.documentName = document.fileName;
-        let symbols = this.backend.listSymbols(document.fileName, false);
+        this.documentText = document.getText();
+        let symbols = this.backend.listSymbolsFast(this.documentName, this.documentText, false);
         var lenses = [];
         for (let symbol of symbols) {
             if (!symbol.definition) {
@@ -50,7 +51,8 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
     }
 
     public resolveCodeLens(codeLens: CodeLens, token: CancellationToken): CodeLens | Thenable<CodeLens> {
-        let refs = this.backend.countReferences(this.documentName, (codeLens as SymbolCodeLens).symbol.name);
+        // TODO does sharing document object work?
+        let refs = this.backend.countReferencesFast(this.documentName, this.documentText, (codeLens as SymbolCodeLens).symbol.name);
         codeLens.command = {
             title: refs + " references",
             command: "",
@@ -60,4 +62,5 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
     }
 
     private documentName: string;
+    private documentText: string;
 };

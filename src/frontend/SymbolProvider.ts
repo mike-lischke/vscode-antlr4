@@ -19,7 +19,7 @@ export class SymbolProvider {
     constructor(private backend: AntlrFacade) {}
 
     provideDocumentSymbols (document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[]> {
-        var symbols = this.backend.listSymbols(document.fileName, false);
+        var symbols = this.backend.listSymbolsFast(document.fileName, document.getText(), false);
 
         let basePath = path.dirname(document.fileName);
         var symbolsList = [];

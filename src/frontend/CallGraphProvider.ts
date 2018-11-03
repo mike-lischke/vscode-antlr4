@@ -22,7 +22,7 @@ export class AntlrCallGraphProvider extends WebviewProvider {
         let fileName = uri.fsPath;
         let baseName = path.basename(fileName, path.extname(fileName));
 
-        let graph = this.backend.getReferenceGraph(fileName);
+        let graph = (source instanceof Uri) ? this.backend.getReferenceGraph(fileName) : this.backend.getReferenceGraphFast(fileName, source.document.getText());
         let data = [];
         for (let entry of graph) {
             let references: string[] = [];

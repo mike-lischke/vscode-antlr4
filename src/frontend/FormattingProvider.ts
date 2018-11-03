@@ -24,7 +24,7 @@ export class AntlrFormattingProvider implements DocumentRangeFormattingEditProvi
 
         let formatOptions = workspace.getConfiguration("antlr4.format");
         let text = "";
-        [text, start, end] = this.backend.formatGrammar(document.fileName, Object.assign({}, formatOptions), start, end);
+        [text, start, end] = this.backend.formatGrammarFast(document.fileName, document.getText(), Object.assign({}, formatOptions), start, end);
         let resultRange = range.with(document.positionAt(start), document.positionAt(end + 1));
 
         return [TextEdit.replace(resultRange, text)];

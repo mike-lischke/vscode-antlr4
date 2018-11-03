@@ -56,7 +56,7 @@ export class AntlrCompletionItemProvider {
 
     public provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<CompletionList> {
 
-        let candidates = this.backend.getCodeCompletionCandidates(document.fileName, position.character, position.line + 1);
+        let candidates = this.backend.getCodeCompletionCandidatesFast(document.fileName, document.getText(), position.character, position.line + 1);
         let completionList: CompletionItem[] = [];
 
         candidates.forEach(info => {

@@ -60,7 +60,12 @@ export class AntlrATNGraphProvider extends WebviewProvider {
         html = html.replace("##maxLabelCount##", maxLabelCount > 1 ? maxLabelCount : 5);
         html += `  var width = 1000, height = 1000\n\n`;
 
-        let data = this.backend.getATNGraph(uri.fsPath, this.currentRule);
+        let data;
+        if (source instanceof Uri) {
+            data = this.backend.getATNGraph(uri.fsPath, this.currentRule);
+        } else {
+            data = this.backend.getATNGraphFast(uri.fsPath, source.document.getText(), this.currentRule)
+        }
         if (data) {
             let scale = !this.cachedRuleStates || Number.isNaN(this.cachedRuleStates.scale)
                 ? "0.5 * Math.exp(-nodes.length / 50) + 0.1"

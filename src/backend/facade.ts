@@ -334,6 +334,7 @@ export class AntlrFacade {
         return contextEntry.context;
     }
 
+
     /**
      * Call this to refresh the internal input stream as a preparation to a reparse call
      * or for code completion.
@@ -400,47 +401,36 @@ export class AntlrFacade {
             }
         }
     }
-
-    public releaseGrammar(fileName: string) {
-        this.internalReleaseGrammar(fileName);
-    }
-
-    public infoForSymbol(fileName: string, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
-        let context = this.getContext(fileName);
+    
+    public internalInfoForSymbol(context: SourceContext, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
         return context.symbolAtPosition(column, row, limitToChildren);
     };
 
-    public enclosingSymbolAtPosition(fileName: string, column: number, row: number,
+    public internalEnclosingSymbolAtPosition(context: SourceContext, column: number, row: number,
         ruleScope: boolean = false): SymbolInfo | undefined {
-        let context = this.getContext(fileName);
         return context.enclosingSymbolAtPosition(column, row, ruleScope);
     }
 
-    public listSymbols(fileName: string, fullList: boolean): SymbolInfo[] {
-        let context = this.getContext(fileName);
+    public internalListSymbols(context: SourceContext, fullList: boolean): SymbolInfo[] {
         return context.listSymbols(!fullList);
     };
 
-    public getCodeCompletionCandidates(fileName: string, column: number, row: number): SymbolInfo[] {
-        let context = this.getContext(fileName);
+    public internalGetCodeCompletionCandidates(context: SourceContext, column: number, row: number): SymbolInfo[] {
         return context.getCodeCompletionCandidates(column, row);
     };
 
-    public getDiagnostics(fileName: string): DiagnosticEntry[] {
-        let context = this.getContext(fileName);
+    public internalGetDiagnostics(context: SourceContext): DiagnosticEntry[] {
         return context.getDiagnostics();
     };
 
-    public ruleFromPosition(fileName: string, column: number, row: number): [string | undefined, number | undefined ]{
-        let context = this.getContext(fileName);
+    public internalRuleFromPosition(context: SourceContext, column: number, row: number): [string | undefined, number | undefined ]{
         return context.ruleFromPosition(column, row);
     }
 
     /**
      * Count how many times a symbol has been referenced. The given file must contain the definition of this symbol.
      */
-    public countReferences(fileName: string, symbol: string): number {
-        let context = this.getContext(fileName);
+    public internalCountReferences(context: SourceContext, symbol: string): number {
         return context.getReferenceCount(symbol);
     }
 
@@ -448,8 +438,7 @@ export class AntlrFacade {
      * Determines source file and position of all occurences of the given symbol. The search includes
      * also all referencing and referenced contexts.
      */
-    public getSymbolOccurences(fileName: string, symbolName: string): SymbolInfo[] {
-        let context = this.getContext(fileName);
+    public internalGetSymbolOccurences(context: SourceContext, symbolName: string): SymbolInfo[] {
         let symbols = context.getSymbolOccurences(symbolName, true);
 
         let result: SymbolInfo[] = [];
@@ -495,6 +484,219 @@ export class AntlrFacade {
             return lhs.kind - rhs.kind;
         });
     }
+    
+    public internalGenerate(context: SourceContext, options: GenerationOptions): Promise<string[]> {
+        let dependencies: Set<SourceContext> = new Set();
+        this.pushDependencyFiles(this.sourceContexts.get(context.fileName)!, dependencies);
+
+        return context.generate(dependencies, options);
+    }
+
+    public internalGetATNGraph(context: SourceContext, rule: string): ATNGraphData | undefined {
+        return context.getATNGraph(rule);
+    }
+
+    public internalGenerateSentences(context: SourceContext, options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
+        return context.generateSentences(options, definitions);
+    }
+
+    public internalFormatGrammar(context: SourceContext, options: FormattingOptions, start: number, stop: number): [string, number, number] {
+        return context.formatGrammar(options, start, stop);
+    }
+
+    public internalHasErrors(context: SourceContext): boolean {
+        return context.hasErrors;
+    }
+
+    public internalCreateDebugger(context: SourceContext, dataDir: string): GrapsDebugger | undefined {
+        if (!context) {
+            return;
+        }
+
+        let contexts: Set<SourceContext> = new Set();
+        contexts.add(context);
+        this.pushDependencyFiles(this.sourceContexts.get(context.fileName)!, contexts);
+
+        for (let dependency of contexts) {
+            if (dependency.hasErrors) {
+                return;
+            }
+
+            if (!dependency.isInterpreterDataLoaded) {
+                dependency.setupInterpreters(dataDir);
+            }
+        }
+
+        return new GrapsDebugger([...contexts]);
+    }
+
+    public internalGetReferenceGraph(context: SourceContext): Map<string, ReferenceNode> {
+        return context.getReferenceGraph();
+    }
+
+    public internalGetRRDScript(context: SourceContext, rule: string): string {
+        return context.getRRDScript(rule) || "";
+    };
+
+    /*
+     * fast methods
+     */
+
+    public infoForSymbolFast(fileName: string, fileContents: string, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
+        return this.internalInfoForSymbol(this.getContext(fileName, fileContents), column, row, limitToChildren);
+    };
+
+    public enclosingSymbolAtPositionFast(fileName: string, fileContents: string, column: number, row: number,
+        ruleScope: boolean = false): SymbolInfo | undefined {
+        return this.internalEnclosingSymbolAtPosition(this.getContext(fileName, fileContents), column, row, ruleScope);
+    }
+
+    public listSymbolsFast(fileName: string, fileContents: string, fullList: boolean): SymbolInfo[] {
+        return this.internalListSymbols(this.getContext(fileName, fileContents), fullList);
+    };
+
+    public getCodeCompletionCandidatesFast(fileName: string, fileContents: string, column: number, row: number): SymbolInfo[] {
+        return this.internalGetCodeCompletionCandidates(this.getContext(fileName, fileContents), column, row);
+    };
+
+    public getDiagnosticsFast(fileName: string, fileContents: string): DiagnosticEntry[] {
+        return this.internalGetDiagnostics(this.getContext(fileName, fileContents));
+    };
+
+    public ruleFromPositionFast(fileName: string, fileContents: string, column: number, row: number): [string | undefined, number | undefined ]{
+        return this.internalRuleFromPosition(this.getContext(fileName, fileContents), column, row);
+    }
+
+    /**
+     * Count how many times a symbol has been referenced. The given file must contain the definition of this symbol.
+     */
+    public countReferencesFast(fileName: string, fileContents: string, symbol: string): number {
+        return this.internalCountReferences(this.getContext(fileName, fileContents), symbol);
+    }
+
+    /**
+     * Determines source file and position of all occurences of the given symbol. The search includes
+     * also all referencing and referenced contexts.
+     */
+    public getSymbolOccurencesFast(fileName: string, fileContents: string, symbolName: string): SymbolInfo[] {
+        return this.internalGetSymbolOccurences(this.getContext(fileName, fileContents), symbolName);
+    }
+    
+    public generateFast(fileName: string, fileContents: string, options: GenerationOptions): Promise<string[]> {
+        return this.internalGenerate(this.getContext(fileName, fileContents), options);
+    }
+    
+    public getATNGraphFast(fileName: string, fileContents: string, rule: string): ATNGraphData | undefined {
+        return this.internalGetATNGraph(this.getContext(fileName, fileContents), rule);
+    }
+
+    public generateSentencesFast(fileName: string, fileContents: string, options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
+        return this.internalGenerateSentences(this.getContext(fileName, fileContents), options, definitions);
+    }
+
+    public formatGrammarFast(fileName: string, fileContents: string, options: FormattingOptions, start: number, stop: number): [string, number, number] {
+        return this.internalFormatGrammar(this.getContext(fileName, fileContents), options, start, stop);
+    }
+
+    public hasErrorsFast(fileName: string, fileContents: string): boolean {
+        return this.internalHasErrors(this.getContext(fileName, fileContents));
+    }
+
+    public createDebuggerFast(fileName: string, fileContents: string, dataDir: string): GrapsDebugger | undefined {
+        return this.internalCreateDebugger(this.getContext(fileName, fileContents), dataDir);
+    }
+
+    public getReferenceGraphFast(fileName: string, fileContents: string): Map<string, ReferenceNode> {
+        return this.internalGetReferenceGraph(this.getContext(fileName, fileContents));
+    }
+
+    public getRRDScriptFast(fileName: string, fileContents: string, rule: string): string {
+        return this.internalGetRRDScript(this.getContext(fileName, fileContents), rule);
+    }
+
+    /*
+     * slow methods
+     */
+
+    public infoForSymbol(fileName: string, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
+        return this.internalInfoForSymbol(this.getContext(fileName), column, row, limitToChildren);
+    };
+
+    public enclosingSymbolAtPosition(fileName: string, column: number, row: number,
+        ruleScope: boolean = false): SymbolInfo | undefined {
+        return this.internalEnclosingSymbolAtPosition(this.getContext(fileName), column, row, ruleScope);
+    }
+
+    public listSymbols(fileName: string, fullList: boolean): SymbolInfo[] {
+        return this.internalListSymbols(this.getContext(fileName), fullList);
+    };
+
+    public getCodeCompletionCandidates(fileName: string, column: number, row: number): SymbolInfo[] {
+        return this.internalGetCodeCompletionCandidates(this.getContext(fileName), column, row);
+    };
+
+    public getDiagnostics(fileName: string): DiagnosticEntry[] {
+        return this.internalGetDiagnostics(this.getContext(fileName));
+    };
+
+    public ruleFromPosition(fileName: string, column: number, row: number): [string | undefined, number | undefined ]{
+        return this.internalRuleFromPosition(this.getContext(fileName), column, row);
+    }
+
+    /**
+     * Count how many times a symbol has been referenced. The given file must contain the definition of this symbol.
+     */
+    public countReferences(fileName: string, symbol: string): number {
+        return this.internalCountReferences(this.getContext(fileName), symbol);
+    }
+
+    /**
+     * Determines source file and position of all occurences of the given symbol. The search includes
+     * also all referencing and referenced contexts.
+     */
+    public getSymbolOccurences(fileName: string, symbolName: string): SymbolInfo[] {
+        return this.internalGetSymbolOccurences(this.getContext(fileName), symbolName);
+    }
+    
+    public generate(fileName: string, options: GenerationOptions): Promise<string[]> {
+        return this.internalGenerate(this.getContext(fileName), options);
+    }
+    
+    public getATNGraph(fileName: string, rule: string): ATNGraphData | undefined {
+        return this.internalGetATNGraph(this.getContext(fileName), rule);
+    }
+
+    public generateSentences(fileName: string, options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
+        return this.internalGenerateSentences(this.getContext(fileName), options, definitions);
+    }
+
+    public formatGrammar(fileName: string, options: FormattingOptions, start: number, stop: number): [string, number, number] {
+        return this.internalFormatGrammar(this.getContext(fileName), options, start, stop);
+    }
+
+    public hasErrors(fileName: string): boolean {
+        return this.internalHasErrors(this.getContext(fileName));
+    }
+
+    public createDebugger(fileName: string, dataDir: string): GrapsDebugger | undefined {
+        return this.internalCreateDebugger(this.getContext(fileName), dataDir);
+    }
+
+    public getReferenceGraph(fileName: string): Map<string, ReferenceNode> {
+        return this.internalGetReferenceGraph(this.getContext(fileName));
+    }
+
+    public getRRDScript(fileName: string, rule: string): string {
+        return this.internalGetRRDScript(this.getContext(fileName), rule);
+    }
+
+    /*
+     * fastslow methods
+     */
+
+    public releaseGrammar(fileName: string) {
+        this.internalReleaseGrammar(fileName); // name is confusing here
+    }
 
     public getDependencies(fileName: string): string[] {
         let entry = this.sourceContexts.get(fileName);
@@ -511,16 +713,6 @@ export class AntlrFacade {
         return result;
     }
 
-    public getReferenceGraph(fileName: string): Map<string, ReferenceNode> {
-        let context = this.getContext(fileName);
-        return context.getReferenceGraph();
-    }
-
-    public getRRDScript(fileName: string, rule: string): string {
-        let context = this.getContext(fileName);
-        return context.getRRDScript(rule) || "";
-    };
-
     private pushDependencyFiles(entry: ContextEntry, contexts: Set<SourceContext>) {
         // Using a set for the context list here, to automatically exclude duplicates.
         for (let dep of entry.dependencies) {
@@ -530,56 +722,5 @@ export class AntlrFacade {
                 contexts.add(depEntry.context);
             }
         }
-    }
-
-    public generate(fileName: string, options: GenerationOptions): Promise<string[]> {
-        let context = this.getContext(fileName);
-        let dependencies: Set<SourceContext> = new Set();
-        this.pushDependencyFiles(this.sourceContexts.get(fileName)!, dependencies);
-
-        return context.generate(dependencies, options);
-    }
-
-    public getATNGraph(fileName: string, rule: string): ATNGraphData | undefined {
-        let context = this.getContext(fileName);
-        return context.getATNGraph(rule);
-    }
-
-    public generateSentences(fileName: string, options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
-        let context = this.getContext(fileName);
-        return context.generateSentences(options, definitions);
-    }
-
-    public formatGrammar(fileName: string, options: FormattingOptions, start: number, stop: number): [string, number, number] {
-        let context = this.getContext(fileName);
-        return context.formatGrammar(options, start, stop);
-    }
-
-    public hasErrors(fileName: string): boolean {
-        let context = this.getContext(fileName);
-        return context.hasErrors;
-    }
-
-    public createDebugger(fileName: string, dataDir: string): GrapsDebugger | undefined {
-        let context = this.getContext(fileName);
-        if (!context) {
-            return;
-        }
-
-        let contexts: Set<SourceContext> = new Set();
-        contexts.add(context);
-        this.pushDependencyFiles(this.sourceContexts.get(fileName)!, contexts);
-
-        for (let dependency of contexts) {
-            if (dependency.hasErrors) {
-                return;
-            }
-
-            if (!dependency.isInterpreterDataLoaded) {
-                dependency.setupInterpreters(dataDir);
-            }
-        }
-
-        return new GrapsDebugger([...contexts]);
     }
 }

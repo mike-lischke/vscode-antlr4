@@ -19,7 +19,7 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
         let caret = editor.selection.active;
 
         let fileName = editor.document.fileName;
-        let [ruleName, ruleIndex] = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+        let [ruleName, ruleIndex] = this.backend.ruleFromPositionFast(fileName, editor.document.getText(), caret.character, caret.line + 1);
         if (!ruleName) {
             return "";
         }
@@ -57,12 +57,12 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
                     </span>
                 </div>
                 <div id="container">`;
-            var symbols = this.backend.listSymbols(fileName, false);
+            var symbols = this.backend.listSymbolsFast(fileName, editor.document.getText(), false);
             for (let symbol of symbols) {
                 if (symbol.kind == SymbolKind.LexerToken
                     || symbol.kind == SymbolKind.ParserRule
                     || symbol.kind == SymbolKind.FragmentLexerToken) {
-                    let script = this.backend.getRRDScript(fileName, symbol.name);
+                    let script = this.backend.getRRDScriptFast(fileName, editor.document.getText(), symbol.name);
                     diagram += `<h3>${symbol.name}</h3>\n<script>${script}</script>\n\n`;
                 }
             }
@@ -75,7 +75,7 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
                     </span>
                 </div>
                 <div id="container">
-                    <script>${this.backend.getRRDScript(fileName, ruleName)}</script>
+                    <script>${this.backend.getRRDScriptFast(fileName, editor.document.getText(), ruleName)}</script>
                 </div>
             `;
         }

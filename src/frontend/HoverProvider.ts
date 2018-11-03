@@ -19,7 +19,7 @@ export class HoverProvider {
     constructor(private backend: AntlrFacade) { }
 
     public provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
-        let info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1, true);
+        let info = this.backend.infoForSymbolFast(document.fileName, document.getText(), position.character, position.line + 1, true);
         if (!info) {
             return undefined;
         }

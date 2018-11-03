@@ -205,7 +205,7 @@ export class WebviewProvider {
         let caret: Position | undefined;
         caret = editor.selection.active;
 
-        let result = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+        let result = this.backend.ruleFromPositionFast(fileName, editor.document.getText(), caret.character, caret.line + 1);
         if (!result)
             return [undefined, undefined];
         return result;
