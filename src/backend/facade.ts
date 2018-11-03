@@ -402,35 +402,67 @@ export class AntlrFacade {
         }
     }
     
+    public releaseGrammar(fileName: string) {
+        this.internalReleaseGrammar(fileName); // name is confusing here
+    }
+
+    public getDependencies(fileName: string): string[] {
+        let entry = this.sourceContexts.get(fileName);
+        if (!entry) {
+            return [];
+        }
+        let dependencies: Set<SourceContext> = new Set();
+        this.pushDependencyFiles(entry, dependencies);
+
+        let result: string[] = [];
+        for (let dep of dependencies) {
+            result.push(dep.fileName);
+        }
+        return result;
+    }
+
+    private pushDependencyFiles(entry: ContextEntry, contexts: Set<SourceContext>) {
+        // Using a set for the context list here, to automatically exclude duplicates.
+        for (let dep of entry.dependencies) {
+            let depEntry = this.sourceContexts.get(dep);
+            if (depEntry) {
+                this.pushDependencyFiles(depEntry, contexts);
+                contexts.add(depEntry.context);
+            }
+        }
+    }
+
+    // methods that could request a new context
+    
     public internalInfoForSymbol(context: SourceContext, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
         return context.symbolAtPosition(column, row, limitToChildren);
     };
 
-    public internalEnclosingSymbolAtPosition(context: SourceContext, column: number, row: number,
+    private internalEnclosingSymbolAtPosition(context: SourceContext, column: number, row: number,
         ruleScope: boolean = false): SymbolInfo | undefined {
         return context.enclosingSymbolAtPosition(column, row, ruleScope);
     }
 
-    public internalListSymbols(context: SourceContext, fullList: boolean): SymbolInfo[] {
+    private internalListSymbols(context: SourceContext, fullList: boolean): SymbolInfo[] {
         return context.listSymbols(!fullList);
     };
 
-    public internalGetCodeCompletionCandidates(context: SourceContext, column: number, row: number): SymbolInfo[] {
+    private internalGetCodeCompletionCandidates(context: SourceContext, column: number, row: number): SymbolInfo[] {
         return context.getCodeCompletionCandidates(column, row);
     };
 
-    public internalGetDiagnostics(context: SourceContext): DiagnosticEntry[] {
+    private internalGetDiagnostics(context: SourceContext): DiagnosticEntry[] {
         return context.getDiagnostics();
     };
 
-    public internalRuleFromPosition(context: SourceContext, column: number, row: number): [string | undefined, number | undefined ]{
+    private internalRuleFromPosition(context: SourceContext, column: number, row: number): [string | undefined, number | undefined ]{
         return context.ruleFromPosition(column, row);
     }
 
     /**
      * Count how many times a symbol has been referenced. The given file must contain the definition of this symbol.
      */
-    public internalCountReferences(context: SourceContext, symbol: string): number {
+    private internalCountReferences(context: SourceContext, symbol: string): number {
         return context.getReferenceCount(symbol);
     }
 
@@ -438,7 +470,7 @@ export class AntlrFacade {
      * Determines source file and position of all occurences of the given symbol. The search includes
      * also all referencing and referenced contexts.
      */
-    public internalGetSymbolOccurences(context: SourceContext, symbolName: string): SymbolInfo[] {
+    private internalGetSymbolOccurences(context: SourceContext, symbolName: string): SymbolInfo[] {
         let symbols = context.getSymbolOccurences(symbolName, true);
 
         let result: SymbolInfo[] = [];
@@ -485,30 +517,30 @@ export class AntlrFacade {
         });
     }
     
-    public internalGenerate(context: SourceContext, options: GenerationOptions): Promise<string[]> {
+    private internalGenerate(context: SourceContext, options: GenerationOptions): Promise<string[]> {
         let dependencies: Set<SourceContext> = new Set();
         this.pushDependencyFiles(this.sourceContexts.get(context.fileName)!, dependencies);
 
         return context.generate(dependencies, options);
     }
 
-    public internalGetATNGraph(context: SourceContext, rule: string): ATNGraphData | undefined {
+    private internalGetATNGraph(context: SourceContext, rule: string): ATNGraphData | undefined {
         return context.getATNGraph(rule);
     }
 
-    public internalGenerateSentences(context: SourceContext, options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
+    private internalGenerateSentences(context: SourceContext, options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
         return context.generateSentences(options, definitions);
     }
 
-    public internalFormatGrammar(context: SourceContext, options: FormattingOptions, start: number, stop: number): [string, number, number] {
+    private internalFormatGrammar(context: SourceContext, options: FormattingOptions, start: number, stop: number): [string, number, number] {
         return context.formatGrammar(options, start, stop);
     }
 
-    public internalHasErrors(context: SourceContext): boolean {
+    private internalHasErrors(context: SourceContext): boolean {
         return context.hasErrors;
     }
 
-    public internalCreateDebugger(context: SourceContext, dataDir: string): GrapsDebugger | undefined {
+    private internalCreateDebugger(context: SourceContext, dataDir: string): GrapsDebugger | undefined {
         if (!context) {
             return;
         }
@@ -530,17 +562,15 @@ export class AntlrFacade {
         return new GrapsDebugger([...contexts]);
     }
 
-    public internalGetReferenceGraph(context: SourceContext): Map<string, ReferenceNode> {
+    private internalGetReferenceGraph(context: SourceContext): Map<string, ReferenceNode> {
         return context.getReferenceGraph();
     }
 
-    public internalGetRRDScript(context: SourceContext, rule: string): string {
+    private internalGetRRDScript(context: SourceContext, rule: string): string {
         return context.getRRDScript(rule) || "";
     };
 
-    /*
-     * fast methods
-     */
+    // fast (direct) implementations of the context methods
 
     public infoForSymbolFast(fileName: string, fileContents: string, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
         return this.internalInfoForSymbol(this.getContext(fileName, fileContents), column, row, limitToChildren);
@@ -614,9 +644,7 @@ export class AntlrFacade {
         return this.internalGetRRDScript(this.getContext(fileName, fileContents), rule);
     }
 
-    /*
-     * slow methods
-     */
+    // slow (loading by filename) implementations of the context methods
 
     public infoForSymbol(fileName: string, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
         return this.internalInfoForSymbol(this.getContext(fileName), column, row, limitToChildren);
@@ -688,39 +716,5 @@ export class AntlrFacade {
 
     public getRRDScript(fileName: string, rule: string): string {
         return this.internalGetRRDScript(this.getContext(fileName), rule);
-    }
-
-    /*
-     * fastslow methods
-     */
-
-    public releaseGrammar(fileName: string) {
-        this.internalReleaseGrammar(fileName); // name is confusing here
-    }
-
-    public getDependencies(fileName: string): string[] {
-        let entry = this.sourceContexts.get(fileName);
-        if (!entry) {
-            return [];
-        }
-        let dependencies: Set<SourceContext> = new Set();
-        this.pushDependencyFiles(entry, dependencies);
-
-        let result: string[] = [];
-        for (let dep of dependencies) {
-            result.push(dep.fileName);
-        }
-        return result;
-    }
-
-    private pushDependencyFiles(entry: ContextEntry, contexts: Set<SourceContext>) {
-        // Using a set for the context list here, to automatically exclude duplicates.
-        for (let dep of entry.dependencies) {
-            let depEntry = this.sourceContexts.get(dep);
-            if (depEntry) {
-                this.pushDependencyFiles(depEntry, contexts);
-                contexts.add(depEntry.context);
-            }
-        }
     }
 }
