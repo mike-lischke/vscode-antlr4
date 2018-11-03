@@ -56,6 +56,8 @@ let channelsProvider: ChannelsProvider;
 let modesProvider: ModesProvider;
 let parseTreeProvider: AntlrParseTreeProvider;
 
+let codeLensProvider: AntlrCodeLensProvider;
+
 export function activate(context: ExtensionContext) {
 
     DiagnosticTypeMap.set(DiagnosticType.Hint, DiagnosticSeverity.Hint);
@@ -79,7 +81,8 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerHoverProvider(ANTLR, new HoverProvider(backend)));
     context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new DefinitionProvider(backend)));
     context.subscriptions.push(languages.registerDocumentSymbolProvider(ANTLR, new SymbolProvider(backend)));
-    context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, new AntlrCodeLensProvider(backend)));
+    codeLensProvider = new AntlrCodeLensProvider(backend);
+    context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, codeLensProvider));
     context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend),
         " ", ":", "@", "<", "{", "["));
     context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider(ANTLR, new AntlrFormattingProvider(backend)));
@@ -189,6 +192,7 @@ export function activate(context: ExtensionContext) {
                 importsProvider.refresh();
                 callGraphProvider.update(window.activeTextEditor!);
                 processDiagnostic(event.document);
+                codeLensProvider.reset();
             }, 300));
         }
     })
