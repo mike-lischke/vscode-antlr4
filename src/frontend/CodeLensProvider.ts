@@ -67,7 +67,7 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
             title: refs + " references",
             command: "",
             arguments: undefined
-        }
+        };
         return codeLens;
     }
 
