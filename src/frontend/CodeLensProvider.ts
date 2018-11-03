@@ -61,7 +61,6 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
     }
 
     public resolveCodeLens(codeLens: CodeLens, token: CancellationToken): CodeLens | Thenable<CodeLens> {
-        // TODO does sharing document object work?
         let refs = this.backend.countReferencesFast(this.documentName, this.documentText, (codeLens as SymbolCodeLens).symbol.name);
         codeLens.command = {
             title: refs + " references",
