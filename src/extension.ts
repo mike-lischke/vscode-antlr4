@@ -73,7 +73,7 @@ export function activate(context: ExtensionContext) {
     for (let document of workspace.textDocuments) {
         if (document.languageId === "antlr") {
             let antlrPath = path.join(path.dirname(document.fileName), ".antlr");
-            backend.generateFast(document.fileName, document.getText(), { outputDir: antlrPath, loadOnly: true });
+            backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
             AntlrATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
         }
     }
@@ -216,7 +216,7 @@ export function activate(context: ExtensionContext) {
 
     function processDiagnostic(document: TextDocument) {
         var diagnostics = [];
-        let entries = backend.getDiagnosticsFast(document.fileName, document.getText());
+        let entries = backend.getDiagnostics(document.fileName);
         for (let entry of entries) {
             let startRow = entry.range.start.row == 0 ? 0 : entry.range.start.row - 1;
             let endRow = entry.range.end.row == 0 ? 0 : entry.range.end.row - 1;
@@ -281,7 +281,7 @@ export function activate(context: ExtensionContext) {
             options.visitors = workspace.getConfiguration("antlr4.generation")["visitors"];
         }
 
-        let result = backend.generateFast(document.fileName, document.getText(), options);
+        let result = backend.generate(document.fileName, options);
         result.then((affectedFiles: string[]) => {
             for (let file of affectedFiles) {
                 let fullPath = path.resolve(basePath, file);
@@ -307,7 +307,7 @@ export function activate(context: ExtensionContext) {
                 }
             }
 
-            backend.generateFast(document.fileName, document.getText(), { outputDir: antlrPath, loadOnly: true }).then(() => {
+            backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true }).then(() => {
                 atnGraphProvider.update(window.activeTextEditor!, true);
 
                 progress.stopAnimation();
