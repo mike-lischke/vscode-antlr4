@@ -192,7 +192,7 @@ export function activate(context: ExtensionContext) {
                 importsProvider.refresh();
                 callGraphProvider.update(window.activeTextEditor!);
                 processDiagnostic(event.document);
-                codeLensProvider.reset();
+                codeLensProvider.refresh();
             }, 300));
         }
     })

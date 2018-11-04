@@ -26,7 +26,7 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
     
     constructor(private backend: AntlrFacade) { }
 
-    public reset(reason?: 'idle' | 'saved') {
+    public refresh(reason?: 'idle' | 'saved') {
         this._onDidChangeCodeLenses.fire();
     }
 
