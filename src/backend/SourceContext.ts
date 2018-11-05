@@ -574,6 +574,8 @@ export class SourceContext {
     }
 
     public getReferenceCount(symbol: string): number {
+        this.runSemanticAnalysisIfNeeded();
+
         let result = this.symbolTable.getReferenceCount(symbol);
 
         for (let reference of this.references) {
