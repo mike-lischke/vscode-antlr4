@@ -978,7 +978,7 @@ export class SourceContext {
     }
 
     /**
-     * Convert an interval set in a list of ranges, consumable by a human.
+     * Convert an interval set to a list of ranges, consumable by a human.
      * @param set The set to convert.
      * @return A list of strings, one for each defined interval.
      */
@@ -992,7 +992,7 @@ export class SourceContext {
          */
         function characterRepresentation(char: number): string {
             // Unfortunately JS/TS has no means to determine the Unicode class of a character,
-            // so we are very limited here. For now we return a quoted character for a code point if
+            // so we are very limited here. For now we return a quoted character for a code point if it is
             // in the printable ANSI char range (but not latin extended A + B), otherwise a Unicode escape code.
             if (char < 0) {
                 return "EOF";
@@ -1051,7 +1051,7 @@ export class SourceContext {
     }
 
     /**
-     * Returns the definition info for the given rule context. Exported as required by listeners.
+     * Returns the definition info for the given rule context. Public, as it is required by listeners.
      */
     public static definitionForContext(ctx: ParseTree | undefined, keepQuotes: boolean): Definition | undefined {
         if (!ctx) {
