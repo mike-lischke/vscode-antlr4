@@ -34,8 +34,9 @@ export class WebviewProvider {
     public showWebview(source: TextEditor | Uri, options: WebviewShowOptions) {
         this.lastEditor = (source instanceof Uri) ? undefined : source;
         let uri = (source instanceof Uri) ? source : source.document.uri;
-        if (this.webViewMap.has(uri)) {
-            let [panel, _] = this.webViewMap.get(uri)!;
+        let uriString = uri.toString();
+        if (this.webViewMap.has(uriString)) {
+            let [panel, _] = this.webViewMap.get(uriString)!;
             panel.title = options.title;
             panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
             //panel.reveal(); Steals focus.
@@ -49,11 +50,11 @@ export class WebviewProvider {
                 retainContextWhenHidden: true
             }
         );
-        this.webViewMap.set(uri, [panel, options]);
+        this.webViewMap.set(uriString, [panel, options]);
 
         panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
         panel.onDidDispose(() => {
-            this.webViewMap.delete(uri);
+            this.webViewMap.delete(uriString);
         }, null, this.context.subscriptions);
 
         panel.webview.onDidReceiveMessage(message => {
@@ -123,16 +124,16 @@ export class WebviewProvider {
     }
 
     public update(editor: TextEditor) {
-        if (this.webViewMap.has(editor.document.uri)) {
-            let [panel, options] = this.webViewMap.get(editor.document.uri)!;
+        if (this.webViewMap.has(editor.document.uri.toString())) {
+            let [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
             panel.webview.html = this.generateContent(editor, options);
             //panel.reveal();
         }
     }
 
     protected sendMessage(editor: TextEditor, args: any): boolean {
-        if (this.webViewMap.has(editor.document.uri)) {
-            let [panel, options] = this.webViewMap.get(editor.document.uri)!;
+        if (this.webViewMap.has(editor.document.uri.toString())) {
+            let [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
             panel.webview.postMessage(args);
             return true;
         }
@@ -213,5 +214,5 @@ export class WebviewProvider {
 
 
     // Keep track of all created panels, to avoid duplicates.
-    private webViewMap: Map<Uri, [WebviewPanel, WebviewShowOptions]> = new Map();
+    private webViewMap: Map<String, [WebviewPanel, WebviewShowOptions]> = new Map();
 }
