@@ -63,7 +63,7 @@ export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, Debugge
 
 }
 
-class ChannelEntry extends TreeItem {
+export class ChannelEntry extends TreeItem {
 
     constructor(
         public readonly label: string,

@@ -498,19 +498,19 @@
     "await-notify": "^1.0.1",
     "d3": "^5.7.0",
     "fs-extra": "^6.0.1",
-    "vscode-debugadapter": "^1.32.1",
-    "vscode-debugprotocol": "^1.32.0"
+    "vscode-debugadapter": "^1.33.0",
+    "vscode-debugprotocol": "^1.33.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.6",
-    "@types/d3": "^4.13.0",
+    "@types/chai": "^4.1.7",
+    "@types/d3": "^4.13.1",
     "@types/fs-extra": "^5.0.2",
     "@types/glob": "^5.0.36",
     "@types/mocha": "^2.2.48",
-    "@types/node": "^8.10.36",
+    "@types/node": "^8.10.38",
     "chai": "^4.2.0",
     "mocha": "^4.1.0",
     "typescript": "^2.9.2",
-    "vscode": "^1.1.21"
+    "vscode": "^1.1.26"
   }
 }

@@ -71,7 +71,7 @@ export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol>, Debu
 
 }
 
-class LexerSymbol extends TreeItem {
+export class LexerSymbol extends TreeItem {
 
     constructor(
         public readonly label: string,

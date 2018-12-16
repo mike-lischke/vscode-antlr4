@@ -60,7 +60,7 @@ export class ModesProvider implements TreeDataProvider<ModeEntry>, DebuggerConsu
 
 }
 
-class ModeEntry extends TreeItem {
+export class ModeEntry extends TreeItem {
 
     constructor(
         public readonly label: string,

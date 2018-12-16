@@ -8,9 +8,10 @@
 'use strict';
 
 const path = require("path");
+const fs = require("fs");
+
 import * as vscode from "vscode";
 
-import { AntlrFacade, SymbolKind } from "../backend/facade";
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
@@ -92,6 +93,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             </body>
         </html>`;
 
+        //fs.writeFileSync("~/Downloads/tree.html", diagram);
         return diagram;
     };
 };

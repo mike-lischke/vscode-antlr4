@@ -31,7 +31,8 @@
             "outFiles": [
                 "${workspaceRoot}/out/src/**/*.js"
             ],
-            "preLaunchTask": "tsc"
+            "preLaunchTask": "tsc",
+            "trace": false
         }
     ]
 }

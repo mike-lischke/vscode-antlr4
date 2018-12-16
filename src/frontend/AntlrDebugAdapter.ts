@@ -25,7 +25,7 @@ import { AntlrFacade, ParseTreeNode, ParseTreeNodeType, LexerToken } from '../ba
 /**
  * Interface that reflects the arguments as specified in package.json.
  */
-interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
+export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     input: string;
     startRule: string;
     grammar: string;

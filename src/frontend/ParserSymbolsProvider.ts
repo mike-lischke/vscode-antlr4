@@ -61,7 +61,7 @@ export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol>, De
     }
 }
 
-class ParserSymbol extends TreeItem {
+export class ParserSymbol extends TreeItem {
 
     constructor(
         public readonly label: string,

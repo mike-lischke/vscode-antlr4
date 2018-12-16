@@ -53,7 +53,7 @@ export class ImportsProvider implements TreeDataProvider<Import> {
 
 }
 
-class Import extends TreeItem {
+export class Import extends TreeItem {
 
     constructor(
         public readonly label: string,
