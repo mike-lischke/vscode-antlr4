@@ -153,7 +153,7 @@ export class AntlrATNGraphProvider extends WebviewProvider {
 
     protected handleMessage(message: any): boolean {
         if (message.command == "saveATNState") {
-            // This is the bounce back from the script code for our call to `cacheATNState` triggered from
+            // This is the bounce back from the script code for our call to `cacheATNLayout` triggered from
             // the `update()` function.
             let hash = Utils.hashFromPath(message.file);
             let basePath = path.dirname(message.file);

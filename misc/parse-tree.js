@@ -12,7 +12,7 @@ const rectH = 25;
 var nodeSizeFactor = 1;
 
 var zoom = d3.zoom()
-    .scaleExtent([0.1, 3])
+    .scaleExtent([0.01, 3])
     .on("zoom", zoomed);
 
 var svg = d3.select("svg")
@@ -92,17 +92,20 @@ function update(parent) {
         .style("opacity", 0)
         .on("click", click);
 
-    nodeEnter.append("rect")
+    var rects = nodeEnter.append("rect")
         .attr("width", rectW)
         .attr("height", rectH)
         .attr("rx", function (d) {
-            return (d.children || d._children) ? 0 : 10;
+            return (d.data.type == 0) ? 0 : 10;
         })
         .attr("ry", function (d) {
-            return (d.children || d._children) ? 0 : 10;
+            return (d.data.type == 0) ? 0 : 10;
         });
 
     createText(nodeEnter);
+
+    // This would resize the rect to tightly wrap the text, but unfortunately the tree/cluster layout relies on a fixed node size.
+    //rects.attr("width", d => this.parentNode.childNodes[1].getComputedTextLength() + 20);
 
     var t = d3.transition().duration(duration);
 
@@ -235,14 +238,14 @@ function createText(nodeEnter) {
             return d.data.name;
         });
     nodeText // The bounding box is valid not before the node addition happened actually.
-        .attr("x", function (d) { return (rectW - this.getBBox().width) / 2; });
+        .attr("x", function (d) { return (rectW - this.getComputedTextLength()) / 2; });
 
-    // The node's token index/rang info.
+    // The node's token index/range info.
     nodeEnter.append("text")
         .attr("class", "token-range")
-        .attr("x", d => horizontal ? 0 : rectW)
+        .attr("x", 0)
         .attr("y", rectH / 2)
-        .attr("dx", d => horizontal ? 0 : "-1em")
+        .attr("dx", 0)
         .attr("dy", "-1.8em")
         .text(function (d) {
             if (d.data.type != 0) {
@@ -251,10 +254,14 @@ function createText(nodeEnter) {
                 }
                 return "\u2A33 " + d.data.symbol.tokenIndex;
             }
-            if (d.data.start.tokenIndex == d.data.stop.tokenIndex) {
-                return "\u2A33 " + d.data.start.tokenIndex;
+
+            if (d.data.range.length == 0) {
+                return "\u2A33 --";
             }
-            return "\u2A33 " + d.data.start.tokenIndex + "-" + d.data.stop.tokenIndex;
+            if (d.data.range.length == 1) {
+                return "\u2A33 " + d.data.range.startIndex;
+            }
+            return "\u2A33 " + d.data.range.startIndex + "-" + d.data.range.stopIndex;
         });
 
     // The node's content if this it is a terminal.
@@ -262,7 +269,7 @@ function createText(nodeEnter) {
         .attr("class", "token-value")
         .attr("x", 0)
         .attr("y", rectH / 2)
-        .attr("dy", d => horizontal ? "0.25em" : "2.5em")
+        .attr("dy", horizontal ? "0.25em" : "2.5em")
         .text(function (d) {
             if (d.data.type == 0) {
                 return "";
@@ -278,7 +285,9 @@ function createText(nodeEnter) {
             return d.data.symbol.text;
         });
     nodeText
-        .attr("dx", function (d) { return horizontal ? rectW + 20: (rectW - this.getBBox().width) / 2; });
+        .attr("dx", function (d) {
+            return horizontal ? rectW + 20 : (rectW - this.getComputedTextLength()) / 2;
+        });
 }
 
 function updateExistingNodes(t) {
@@ -286,12 +295,9 @@ function updateExistingNodes(t) {
     nodeSelection.selectAll("rect").transition(t)
         .attr("width", rectW);
     nodeSelection.selectAll(".node-text").transition(t)
-        .attr("x", function (d) { return (rectW - this.getBBox().width) / 2; });
-    nodeSelection.selectAll(".token-range").transition(t)
-        .attr("x", 0)
-        .attr("dx", function (d) { return horizontal ? 0 : rectW - this.getBBox().width; })
+        .attr("x", function (d) { return (rectW - this.getComputedTextLength()) / 2; });
     nodeSelection.selectAll(".token-value").transition(t)
-        .attr("dx", function (d) { return horizontal ? rectW + 20: (rectW - this.getBBox().width) / 2; })
+        .attr("dx", function (d) { return horizontal ? rectW + 20: (rectW - this.getComputedTextLength()) / 2; })
         .attr("dy", d => horizontal ? "0.25em" : "2.5em")
 }
 

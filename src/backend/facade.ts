@@ -103,6 +103,16 @@ export enum ParseTreeNodeType {
 };
 
 /**
+ * Describes the a range in an input stream (character indexes in a char stream or token indexes in a token stream).
+ * Indexes can be < 0 if there's no input representation for a tree node (e.g. when it did not match anything).
+ */
+export class IndexRange {
+    startIndex: number;
+    stopIndex: number;
+    length: number;
+};
+
+/**
  * This node class is what exported parse trees are made of, which are created by the debugger interface.
  * Each node stands either for an invoked rule, a terminal node or an error node.
  */
@@ -113,6 +123,7 @@ export class ParseTreeNode {
     name: string;
     start?: LexerToken;  // ditto
     stop?: LexerToken;   // ditto
+    range: IndexRange;   // ditto
 
     symbol?: LexerToken; // Only valid for non-rule nodes.
 

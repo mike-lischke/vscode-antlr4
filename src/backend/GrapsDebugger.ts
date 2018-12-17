@@ -25,7 +25,8 @@ import { Symbol, ScopedSymbol, BlockSymbol, VariableSymbol } from "antlr4-c3";
 import { InterpreterData } from "./InterpreterDataReader";
 import {
     LexerToken, ParseTreeNode, ParseTreeNodeType, SymbolInfo, LexicalRange,
-    AntlrFacade
+    AntlrFacade,
+    IndexRange
 } from "../backend/facade";
 import {
     AlternativeSymbol, ContextSymbolTable, RuleReferenceSymbol, EbnfSuffixSymbol, RuleSymbol, ActionSymbol
@@ -554,6 +555,12 @@ export class GrapsDebugger extends EventEmitter {
             result.name = this.parser!.ruleNames[tree.ruleIndex];
             result.start = this.convertToken(tree.start as CommonToken);
             result.stop = this.convertToken(tree.stop as CommonToken);
+
+            result.range = new IndexRange();
+            result.range.startIndex = tree.sourceInterval.a;
+            result.range.stopIndex = tree.sourceInterval.b;
+            result.range.length = tree.sourceInterval.length;
+
             if (tree.children) {
                 for (let child of tree.children) {
                     if ((child instanceof TerminalNode) && (child.symbol.type == Token.EOF)) {
