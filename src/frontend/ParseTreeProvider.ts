@@ -26,8 +26,8 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
         }
     }
 
-    debuggerStopped(): void {
-        // no-op
+    debuggerStopped(uri: vscode.Uri): void {
+        this.updateContent(uri);
     }
 
     public generateContent(uri: vscode.Uri, options: WebviewShowOptions): string {

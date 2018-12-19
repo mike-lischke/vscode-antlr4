@@ -39,7 +39,7 @@ export interface DebuggerConsumer {
     debugger: GrapsDebugger;
 
     refresh(): void; // A full reload, e.g. after a grammar change.
-    debuggerStopped(): void; // Called after each stop of the debugger (step, pause, breakpoint).
+    debuggerStopped(uri: Uri): void; // Called after each stop of the debugger (step, pause, breakpoint).
 }
 
 export class AntlrDebugSession extends LoggingDebugSession {
@@ -109,6 +109,10 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 return;
             }
             this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
+            if (this.showGraphicalParseTree) {
+                this.parseTreeProvider.showWebview(Uri.file(args.grammar), { title: "Parse Tree" });
+            }
+
         } catch (e) {
             this.sendErrorResponse(response, { id: 1, format: "Error while launching debug session: " + e });
             return;
@@ -317,22 +321,22 @@ export class AntlrDebugSession extends LoggingDebugSession {
         }
 
         this.debugger.on('stopOnStep', () => {
-            this.notifyConsumers();
+            this.notifyConsumers(Uri.file(grammar));
             this.sendEvent(new StoppedEvent('step', AntlrDebugSession.THREAD_ID));
         });
 
         this.debugger.on('stopOnPause', () => {
-            this.notifyConsumers();
+            this.notifyConsumers(Uri.file(grammar));
             this.sendEvent(new StoppedEvent('pause', AntlrDebugSession.THREAD_ID));
         });
 
         this.debugger.on('stopOnBreakpoint', () => {
-            this.notifyConsumers();
+            this.notifyConsumers(Uri.file(grammar));
             this.sendEvent(new StoppedEvent('breakpoint', AntlrDebugSession.THREAD_ID));
         });
 
         this.debugger.on('stopOnException', () => {
-            this.notifyConsumers();
+            this.notifyConsumers(Uri.file(grammar));
             this.sendEvent(new StoppedEvent('exception', AntlrDebugSession.THREAD_ID));
         });
 
@@ -350,7 +354,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
         });
 
         this.debugger.on('end', () => {
-            this.notifyConsumers();
+            this.notifyConsumers(Uri.file(grammar));
             if (this.showTextualParseTree) {
                 let tree = this.debugger!.currentParseTree;
                 if (tree) {
@@ -412,9 +416,9 @@ export class AntlrDebugSession extends LoggingDebugSession {
         return result;
     }
 
-    private notifyConsumers() {
+    private notifyConsumers(uri: Uri) {
         for (let consumer of this.consumers) {
-            consumer.debuggerStopped();
+            consumer.debuggerStopped(uri);
         }
     }
 

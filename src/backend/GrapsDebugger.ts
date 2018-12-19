@@ -12,7 +12,7 @@ import { EventEmitter } from "events";
 import {
     LexerInterpreter, ParserInterpreter, TokenStream, ANTLRInputStream,
     CommonTokenStream, CommonToken, ParserRuleContext, RecognitionException, ANTLRErrorListener,
-    Recognizer, Token, Lexer
+    Recognizer, Token, Lexer, BufferedTokenStream
 } from "antlr4ts";
 import {
     RuleStartState, ATNState, ATNStateType, TransitionType, Transition
@@ -600,12 +600,21 @@ export class GrapsDebugger extends EventEmitter {
     private computeHash(input: ParserRuleContext | CommonToken): number {
         var hash = 0;
         if (input instanceof ParserRuleContext) {
-            hash = (31 * hash) + input.ruleIndex >>> 0;
-            hash = (31 * hash) + input.sourceInterval.a >>> 0;
-            hash = (31 * hash) + input.sourceInterval.b >>> 0;
+            hash = (31 * hash) + input.start.inputStream!.size; // Seed with a value that for sure goes beyond any possible token index.
+            if (input.parent) {
+                // Multiple invocations of the same rule which matches nothing appear as nodes in the parse tree with the same
+                // start token, so we need an additional property to tell them apart: the child index.
+                // We tell them apart by examining their child index.
+                hash = (31 * hash) + input.parent.children!.findIndex((element) => element == input);
+            }
+            hash = (31 * hash) + input.depth();
+            hash = (31 * hash) + input.ruleIndex;
+            hash = (31 * hash) + input.start.type >>> 0;
+            hash = (31 * hash) + input.start.tokenIndex >>> 0;
+            hash = (31 * hash) + input.start.channel >>> 0;
         } else if (input instanceof CommonToken) {
-            hash = (31 * hash) + input.type >>> 0;
             hash = (31 * hash) + input.tokenIndex >>> 0;
+            hash = (31 * hash) + input.type >>> 0;
             hash = (31 * hash) + input.channel >>> 0;
         }
 

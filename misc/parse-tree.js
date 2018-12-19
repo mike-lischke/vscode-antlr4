@@ -7,7 +7,7 @@
 
 const duration = 200;
 var rectW = 180;
-const rectH = 25;
+const rectH = 23;
 var nodeSizeFactor = 1;
 
 var zoom = d3.zoom()
@@ -69,13 +69,11 @@ function update(parent) {
             }
             var result = "tree-node";
             switch (d.data.type) {
-                case 1:
-                    { // A terminal node.
+                case 1: { // A terminal node.
                         result += " tree-leaf";
                         break;
                     }
-                case 2:
-                    { // An error node.
+                case 2: { // An error node.
                         result += " tree-error";
                         break;
                     }
@@ -102,6 +100,7 @@ function update(parent) {
         });
 
     createText(nodeEnter);
+    updateText(nodeSelection);
 
     // This would resize the rect to tightly wrap the text, but unfortunately the tree/cluster layout relies on a fixed node size.
     //rects.attr("width", d => this.parentNode.childNodes[1].getComputedTextLength() + 20);
@@ -119,22 +118,20 @@ function update(parent) {
         })
         .style("opacity", 1);
 
-    nodeEnter.transition(t) // New nodes.
+    nodeEnter
         .attr("transform", function (d) {
             if (horizontal) {
                 return "translate(" + d.y + "," + d.x + ")";
             }
             return "translate(" + d.x + "," + d.y + ")";
-        })
+        });
+
+    // By using a slower transition to fade in the new elements we give the tree more time to make room for them.
+    var t2 = d3.transition().duration(duration * 2);
+    nodeEnter.transition(t2) // New nodes.
         .style("opacity", 1);
 
     nodeSelection.exit().transition(t) // Nodes to be removed.
-        .attr("transform", function (d) {
-            if (horizontal) {
-                return "translate(" + parent.y + "," + parent.x + ")";
-            }
-            return "translate(" + parent.x + "," + parent.y + ")";
-        })
         .style("opacity", 0)
         .remove();
 
@@ -146,43 +143,20 @@ function update(parent) {
     // On expand (links).
     var linkEnter = linkSelection.enter().insert("path", "g")
         .attr("class", "tree-link")
-        .attr("d", function (d) {
-            if (horizontal) {
-                return "M" + (parent.y0 + rectW / 2) + "," + parent.x0 +
-                    "C" + (parent.y0 + rectW / 2) + "," + parent.x0 +
-                    " " + (parent.y0 + rectW / 2) + "," + (parent.x0 + rectH / 2) +
-                    " " + (parent.y0 + rectW / 2) + "," + (parent.x0 + rectH / 2);
-            }
-            return "M" + (parent.x0 + rectW / 2) + "," + parent.y0 +
-                "C" + (parent.x0 + rectW / 2) + "," + parent.y0 +
-                " " + (parent.x0 + rectW / 2) + "," + (parent.y0 + rectH / 2) +
-                " " + (parent.x0 + rectW / 2) + "," + (parent.y0 + rectH / 2);
-        })
+        .attr("d", diagonal)
         .style("stroke-opacity", 0);
 
-    // Transition links to their new position.
+    // Transition existing links to their new position.
     linkSelection.transition(t)
         .attr("d", diagonal)
         .style("stroke-opacity", 1);
 
-    linkEnter.transition(t)
-        .attr("d", diagonal)
+    // Fade in new links.
+    linkEnter.transition(t2)
         .style("stroke-opacity", 1);
 
-    // Transition exiting links to the parent's new position.
+    // Fade out and remove old links.
     linkSelection.exit().transition(t)
-        .attr("d", function (d) {
-            if (horizontal) {
-                return "M" + (parent.y + rectW / 2) + "," + parent.x +
-                    "C" + (parent.y + rectW / 2) + "," + parent.x +
-                    " " + (parent.y + rectW / 2) + "," + (parent.x + rectH / 2) +
-                    " " + (parent.y + rectW / 2) + "," + (parent.x + rectH / 2);
-            }
-            return "M" + (parent.x + rectW / 2) + "," + parent.y +
-                "C" + (parent.x + rectW / 2) + "," + parent.y +
-                " " + (parent.x + rectW / 2) + "," + (parent.y + rectH / 2) +
-                " " + (parent.x + rectW / 2) + "," + (parent.y + rectH / 2);
-        })
         .style("stroke-opacity", 0)
         .remove();
 
@@ -286,6 +260,29 @@ function createText(nodeEnter) {
         .attr("dx", function (d) {
             return horizontal ? rectW + 20 : (rectW - this.getComputedTextLength()) / 2;
         });
+}
+
+function updateText(nodeSelection) {
+    // Update the node's token index/range info.
+    rangeText = nodeSelection.selectAll(".token-range");
+    rangeText
+        .text(function (d) {
+            if (d.data.type != 0) {
+                if (d.data.symbol.tokenIndex == -1) {
+                    return "no index";
+                }
+                return "\u2A33 " + d.data.symbol.tokenIndex;
+            }
+
+            if (d.data.range.length == 0) {
+                return "\u2A33 --";
+            }
+            if (d.data.range.length == 1) {
+                return "\u2A33 " + d.data.range.startIndex;
+            }
+            return "\u2A33 " + d.data.range.startIndex + "-" + d.data.range.stopIndex;
+        });
+
 }
 
 function updateExistingNodes(t) {

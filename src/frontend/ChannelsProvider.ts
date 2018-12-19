@@ -8,9 +8,8 @@
 "use strict"
 
 import * as path from "path";
-import * as fs from "fs";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, EventEmitter, Event, window } from "vscode";
+import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, EventEmitter, window, Uri } from "vscode";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
 import { AntlrFacade } from "../backend/facade";
 import { GrapsDebugger } from "../backend/GrapsDebugger";
@@ -27,7 +26,7 @@ export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, Debugge
         this._onDidChangeTreeData.fire();
     }
 
-    debuggerStopped(): void {
+    debuggerStopped(uri: Uri): void {
         // no-op
     }
 
