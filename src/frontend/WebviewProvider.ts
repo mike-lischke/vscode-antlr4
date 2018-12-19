@@ -38,8 +38,10 @@ export class WebviewProvider {
         if (this.webViewMap.has(uriString)) {
             let [panel, _] = this.webViewMap.get(uriString)!;
             panel.title = options.title;
-            panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
-            //panel.reveal(); Steals focus.
+            if (!this.updateContent(uri)) {
+                panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
+            }
+
             return;
         }
 
@@ -123,17 +125,22 @@ export class WebviewProvider {
         return "";
     }
 
+    protected updateContent(uri: Uri): boolean {
+        return false;
+    }
+
     public update(editor: TextEditor) {
         if (this.webViewMap.has(editor.document.uri.toString())) {
             let [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
-            panel.webview.html = this.generateContent(editor, options);
-            //panel.reveal();
+            if (!this.updateContent(editor.document.uri)) {
+                panel.webview.html = this.generateContent(editor, options);
+            }
         }
     }
 
-    protected sendMessage(editor: TextEditor, args: any): boolean {
-        if (this.webViewMap.has(editor.document.uri.toString())) {
-            let [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
+    protected sendMessage(uri: Uri, args: any): boolean {
+        if (this.webViewMap.has(uri.toString())) {
+            let [panel, _] = this.webViewMap.get(uri.toString())!;
             panel.webview.postMessage(args);
             return true;
         }
@@ -203,8 +210,7 @@ export class WebviewProvider {
      */
     protected findCurrentRule(editor: TextEditor): [string | undefined, number | undefined] {
         let fileName = editor.document.uri.fsPath;
-        let caret: Position | undefined;
-        caret = editor.selection.active;
+        let caret = editor.selection.active;
 
         let result = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
         if (!result)

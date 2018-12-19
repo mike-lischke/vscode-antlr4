@@ -118,6 +118,7 @@ export class IndexRange {
  */
 export class ParseTreeNode {
     type: ParseTreeNodeType;
+    id: number;          // A unique id to allow computing differences when updating a parse tree visualization in D3.js.
 
     ruleIndex?: number;  // Only valid for the rule node type.
     name: string;

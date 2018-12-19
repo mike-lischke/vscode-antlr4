@@ -10,23 +10,20 @@
 import { EventEmitter } from "events";
 
 import {
-    LexerInterpreter, ParserInterpreter, Vocabulary, TokenStream, ANTLRInputStream,
+    LexerInterpreter, ParserInterpreter, TokenStream, ANTLRInputStream,
     CommonTokenStream, CommonToken, ParserRuleContext, RecognitionException, ANTLRErrorListener,
     Recognizer, Token, Lexer
 } from "antlr4ts";
 import {
-    ATN, RuleStartState, ATNState, ATNStateType, TransitionType, Transition, RuleTransition
+    RuleStartState, ATNState, ATNStateType, TransitionType, Transition
 } from "antlr4ts/atn";
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
-import { Override } from "antlr4ts/Decorators";
 
 import { Symbol, ScopedSymbol, BlockSymbol, VariableSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
-    LexerToken, ParseTreeNode, ParseTreeNodeType, SymbolInfo, LexicalRange,
-    AntlrFacade,
-    IndexRange
+    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange
 } from "../backend/facade";
 import {
     AlternativeSymbol, ContextSymbolTable, RuleReferenceSymbol, EbnfSuffixSymbol, RuleSymbol, ActionSymbol
@@ -555,6 +552,8 @@ export class GrapsDebugger extends EventEmitter {
             result.name = this.parser!.ruleNames[tree.ruleIndex];
             result.start = this.convertToken(tree.start as CommonToken);
             result.stop = this.convertToken(tree.stop as CommonToken);
+            result.id = this.computeHash(tree);
+
 
             result.range = new IndexRange();
             result.range.startIndex = tree.sourceInterval.a;
@@ -572,6 +571,7 @@ export class GrapsDebugger extends EventEmitter {
         } else if (tree instanceof ErrorNode) {
             result.type = ParseTreeNodeType.Error;
             result.symbol = this.convertToken(tree.symbol as CommonToken);
+            result.id = this.computeHash(tree.symbol as CommonToken);
             if (result.symbol) {
                 result.name = result.symbol.name;
             } else {
@@ -580,7 +580,10 @@ export class GrapsDebugger extends EventEmitter {
         } else {
             // Must be a terminal node then.
             result.type = ParseTreeNodeType.Terminal;
-            result.symbol = this.convertToken((<TerminalNode>tree).symbol as CommonToken);
+            let token = (tree as TerminalNode).symbol as CommonToken;
+            result.symbol = this.convertToken(token);
+            result.id = this.computeHash(token);
+
             if (result.symbol) {
                 result.name = result.symbol.name;
             } else {
@@ -589,6 +592,24 @@ export class GrapsDebugger extends EventEmitter {
         }
 
         return result;
+    }
+
+    /**
+     * A simple hash function for rule contexts and common tokens.
+     */
+    private computeHash(input: ParserRuleContext | CommonToken): number {
+        var hash = 0;
+        if (input instanceof ParserRuleContext) {
+            hash = (31 * hash) + input.ruleIndex >>> 0;
+            hash = (31 * hash) + input.sourceInterval.a >>> 0;
+            hash = (31 * hash) + input.sourceInterval.b >>> 0;
+        } else if (input instanceof CommonToken) {
+            hash = (31 * hash) + input.type >>> 0;
+            hash = (31 * hash) + input.tokenIndex >>> 0;
+            hash = (31 * hash) + input.channel >>> 0;
+        }
+
+        return hash;
     }
 
     private convertToken(token: CommonToken): LexerToken | undefined {

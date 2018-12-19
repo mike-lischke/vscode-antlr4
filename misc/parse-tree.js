@@ -5,7 +5,6 @@
  * See LICENSE file for more info.
  */
 
-var nextNodeId = 0; // For automatic node ID generation.
 const duration = 200;
 var rectW = 180;
 const rectH = 25;
@@ -29,7 +28,7 @@ svg.call(zoom)
     )
     .on("dblclick.zoom", null);
 
-var root = d3.hierarchy(data, (d) => d.children);
+var root = d3.hierarchy(parseTreeData, d => d.children);
 root.x0 = width / 2;
 root.y0 = height / 2;
 
@@ -60,7 +59,7 @@ function update(parent) {
     var layoutNodes = root.descendants();
     nodeSelection = topGroup.selectAll(".tree-node")
         .data(layoutNodes, function (d) {
-            return d.id || (d.id = ++nextNodeId);
+            return d.data.id;
         });
 
     var nodeEnter = nodeSelection.enter().append("g")
@@ -108,7 +107,6 @@ function update(parent) {
     //rects.attr("width", d => this.parentNode.childNodes[1].getComputedTextLength() + 20);
 
     var t = d3.transition().duration(duration);
-
     updateExistingNodes(t);
 
     // Transition nodes to their new position.
@@ -142,7 +140,7 @@ function update(parent) {
 
     linkSelection = topGroup.selectAll(".tree-link")
         .data(layoutNodes.slice(1), function (d) {
-            return d.id;
+            return d.data.id;
         });
 
     // On expand (links).
@@ -316,7 +314,7 @@ function applyChanges(durationFactor) {
 
 function toggleTreeType(checkbox) {
     useCluster = checkbox.checked;
-    applyChanges(1);
+    applyChanges(0.5);
 }
 
 function toggleOrientation(checkbox) {
@@ -331,7 +329,7 @@ function toggleOrientation(checkbox) {
         tree.nodeSize([nodeWidth * nodeSizeFactor, nodeHeight]);
         cluster.nodeSize([nodeWidth * nodeSizeFactor, nodeHeight]);
     }
-    applyChanges(2);
+    applyChanges(1);
 }
 
 function changeNodeSize(factor) {
@@ -347,5 +345,5 @@ function changeNodeSize(factor) {
         rectW = 0.9 * nodeWidth * nodeSizeFactor;
     }
 
-    applyChanges(1);
+    applyChanges(0.5);
 }

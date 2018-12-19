@@ -8,7 +8,6 @@
 'use strict';
 
 const path = require("path");
-const fs = require("fs");
 
 import * as vscode from "vscode";
 
@@ -49,9 +48,9 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
                     <base target="_blank">
                     <script src="https://d3js.org/d3.v4.min.js"></script>
                     <script>
-                        var data = ${JSON.stringify(graph)};
+                        var parseTreeData = ${JSON.stringify(graph)};
                         var useCluster = false;
-                        var horizontal = true;
+                        var horizontal = false;
                         const width = 1000, height = 1000;
                         const initialScale = 0.75;
                         const initialTranslateX = 500;
@@ -93,7 +92,16 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             </body>
         </html>`;
 
-        //fs.writeFileSync("~/Downloads/tree.html", diagram);
         return diagram;
     };
+
+    protected updateContent(uri: vscode.Uri): boolean {
+        let graph = this.debugger.currentParseTree;
+        this.sendMessage(uri, {
+            command: "updateParseTreeData",
+            treeData: graph
+        });
+
+        return true;
+    }
 };

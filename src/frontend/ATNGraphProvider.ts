@@ -12,7 +12,7 @@ import * as path from "path";
 
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
-import { window, workspace, Uri, commands, TextEditor } from "vscode";
+import { window, workspace, Uri, TextEditor } from "vscode";
 
 // ATN graph state info for a single rule.
 export class ATNStateEntry {
@@ -132,7 +132,7 @@ export class AntlrATNGraphProvider extends WebviewProvider {
             // Update content only if this is the first invocation, editors were switched or
             // the currently selected rule changed.
             if (this.lastEditor) {
-                if (this.sendMessage(editor, {
+                if (this.sendMessage(editor.document.uri, {
                     command: "cacheATNLayout",
                     file: editor.document.fileName,
                     rule: this.currentRule

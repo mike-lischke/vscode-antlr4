@@ -69,6 +69,19 @@ function exportToHTML(type, name) {
                 vscode.postMessage(args);
                 break;
             }
+
+            case "updateParseTreeData": {
+                var x0 = root.x0;
+                var y0 = root.y0;
+
+                parseTreeData = event.data.treeData;
+                root = d3.hierarchy(parseTreeData, d => d.children);
+                root.x0 = x0;
+                root.y0 = y0;
+
+                update(root);
+                break;
+            }
 		}
 	});
 }());
