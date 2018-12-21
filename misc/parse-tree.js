@@ -50,6 +50,15 @@ var cluster = d3.cluster()
         return a.parent == b.parent ? 1 : 1.4;
     });
 
+//---------------------------------------------------------------------------------------------------------------------
+
+function initSwitches() {
+    document.getElementById("switch1").checked = useCluster;
+    document.getElementById("switch2").checked = !horizontal;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+
 function update(parent) {
     var [nodeW, nodeH] = cluster.nodeSize();
     rectW = (horizontal ? nodeH : nodeW) * 0.9;
@@ -264,7 +273,7 @@ function createText(nodeEnter) {
 
 function updateText(nodeSelection) {
     // Update the node's token index/range info.
-    rangeText = nodeSelection.selectAll(".token-range");
+    rangeText = nodeSelection.select(".token-range");
     rangeText
         .text(function (d) {
             if (d.data.type != 0) {

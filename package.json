@@ -320,8 +320,22 @@
         "antlr4.debug": {
           "type": "object",
           "description": "Debugging related settings",
-          "default": {},
-          "properties": {}
+          "default": {
+              "visualPparseTreeHorizontal": true,
+              "visualParseTreeClustered": false
+          },
+          "properties": {
+              "visualParseTreeHorizontal": {
+                "type": "boolean",
+                "default": true,
+                "description": "Visual parse trees extend to the right (true) or down (false)"
+            },
+            "visualParseTreeClustered": {
+                "type": "boolean",
+                "default": false,
+                "description": "Use a clustered tree for visual parse trees where all terminals are aligned, or the more compact standard tree"
+            }
+          }
         }
       }
     },

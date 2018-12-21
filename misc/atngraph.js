@@ -78,28 +78,29 @@ var lines = topGroup.append("g").selectAll("line")
 var figures = topGroup.append("g");
 for (figure of nodes) {
   var element;
-  if (figure.type === 13) {
-    let recursive = figure.name === objectName;
+
+  let cssClass = "state " + stateType[figure.type].short;
+  let recursive = figure.name === objectName;
+  if (recursive)
+    cssClass += " recursive";
+
+if (figure.type === 13) {
     element = figures.append("rect")
       .attr("width", 50) // Size and offset are updated below, depending on label size.
       .attr("height", 50)
       .attr("y", -25)
       .attr("rx", 5)
       .attr("ry", recursive ? 20 : 5)
-      .attr("class", recursive ? "state RULE recursive" : "state RULE")
+      .attr("class", cssClass)
       .on("dblclick", dblclick)
       .call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
       );
   } else {
-    let cssClass = "state " + stateType[figure.type].short;
-    if (figure.name == objectName)
-      cssClass += " recursive";
-
     element = figures.append("circle")
       .attr("r", 30)
-      .attr("class", "state " + stateType[figure.type].short)
+      .attr("class", cssClass)
       .on("dblclick", dblclick)
       .call(d3.drag()
         .on("start", dragstarted)

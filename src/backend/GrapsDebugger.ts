@@ -604,7 +604,6 @@ export class GrapsDebugger extends EventEmitter {
             if (input.parent) {
                 // Multiple invocations of the same rule which matches nothing appear as nodes in the parse tree with the same
                 // start token, so we need an additional property to tell them apart: the child index.
-                // We tell them apart by examining their child index.
                 hash = (31 * hash) + input.parent.children!.findIndex((element) => element == input);
             }
             hash = (31 * hash) + input.depth();

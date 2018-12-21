@@ -40,6 +40,10 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             Utils.getMiscPath("parse-tree.js", this.context, true)
         ];
 
+        let settings = vscode.workspace.getConfiguration("antlr4.debug");
+        let horizontal = settings["visualParseTreeHorizontal"];
+        let clustered = settings["visualParseTreeClustered"];
+
         let diagram = `<!DOCTYPE html>
             <html>
                 <head>
@@ -49,12 +53,12 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
                     <script src="https://d3js.org/d3.v4.min.js"></script>
                     <script>
                         var parseTreeData = ${JSON.stringify(graph)};
-                        var useCluster = false;
-                        var horizontal = false;
+                        var useCluster = ${clustered};
+                        var horizontal = ${horizontal};
                         const width = 1000, height = 1000;
                         const initialScale = 0.75;
-                        const initialTranslateX = 500;
-                        const initialTranslateY = 250;
+                        const initialTranslateX = ${horizontal ? 100 : 500};
+                        const initialTranslateY = ${horizontal ? 300 : 50};
                     </script>
                 </head>
 
@@ -82,13 +86,13 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
                         <a onClick="changeNodeSize(0.9);"><span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">-</span></a>
                         Node Size
                         <a onClick="changeNodeSize(1.1);"><span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">+</span></a>&nbsp;&nbsp;
-                        Save to file<a onClick="exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');"><span class="parse-tree-save-image" /></a>
+                        Save to SVG<a onClick="exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');"><span class="parse-tree-save-image" /></a>
                     </span>
                 </div>
 
                 <svg></svg>
                 ${this.getScripts(nonce, scripts)}
-                <script>update(root);</script>
+                <script>initSwitches(); update(root);</script>
             </body>
         </html>`;
 

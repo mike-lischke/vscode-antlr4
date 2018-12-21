@@ -285,35 +285,33 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 
 /* Parse trees */
 .tree-node {
-    cursor: pointer;
     stroke-width: 2;
     stroke: #C0C0C0;
     fill: rgba(255, 255, 255, 1);
 }
 
 .tree-root {
-    cursor: pointer;
     stroke-width: 2;
     fill: #7db6dd;
     stroke: #7db6dd;
 }
 
 .tree-leaf {
-    cursor: move;
+    cursor: default;
     stroke-width: 2;
     fill: rgba(160, 171, 136, 1);
     stroke: rgba(117, 119, 91, 1);
 }
 
 .tree-error {
-    cursor: move;
     stroke-width: 2;
     fill: #dd8f7d;
     stroke: rgba(188, 106, 122, 1);
 }
 
 .tree-node text {
-    font: 12px "Helvetica Neue", sans-serif;
+    cursor: default;
+    font: 16px "Helvetica Neue", sans-serif;
     fill: rgba(41, 41, 41, 1);
     stroke: none;
 }
@@ -321,7 +319,7 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 .tree-leaf text,
 .tree-root text,
 .tree-error text {
-    font: 12px "Helvetica Neue", sans-serif;
+    font: 16px "Helvetica Neue", sans-serif;
     fill: #ffffff;
     stroke: none;
 }
@@ -335,7 +333,7 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 g .token-value {
     fill: #404040;
     stroke: none;
-    font: 12pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
+    font: 14pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
 }
 
 g .token-range {

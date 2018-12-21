@@ -203,28 +203,24 @@ body.vscode-dark .link-dimmed {
 
 /* Parse trees */
 body.vscode-dark .tree-node {
-    cursor: pointer;
     stroke-width: 2;
     stroke: #404040;
     fill: rgba(255, 255, 255, 1);
 }
 
 body.vscode-dark g .tree-root {
-    cursor: pointer;
     stroke-width: 2;
     fill: #3a3c37;
     stroke: #ffffff;
 }
 
 body.vscode-dark g .tree-leaf {
-    cursor: move;
     stroke-width: 2;
     fill: #828e66;
     stroke: #ffffff;
 }
 
 body.vscode-dark g .tree-error {
-    cursor: move;
     stroke-width: 2;
     fill: rgb(187, 43, 33);
     stroke: #ffffff;

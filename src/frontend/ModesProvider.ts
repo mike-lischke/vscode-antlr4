@@ -9,7 +9,7 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, EventEmitter, window, Uri } from "vscode";
+import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window, Uri } from "vscode";
 import { AntlrFacade } from "../backend/facade";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
 import { GrapsDebugger } from "../backend/GrapsDebugger";
