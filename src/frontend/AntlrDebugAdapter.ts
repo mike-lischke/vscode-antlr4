@@ -83,10 +83,15 @@ export class AntlrDebugSession extends LoggingDebugSession {
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
-        this.setup(args.grammar);
-        for (let consumer of this.consumers) {
-            consumer.debugger = this.debugger!;
-            consumer.refresh();
+        try {
+            this.setup(args.grammar);
+            for (let consumer of this.consumers) {
+                consumer.debugger = this.debugger!;
+                consumer.refresh();
+            }
+        } catch (e) {
+            this.sendErrorResponse(response, { id: 1, format: "Could not prepare debug session:\n\n" + e });
+            return;
         }
 
         // The launch request comes in before the breakpoints are set (which depends on the debugger
@@ -114,7 +119,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
             }
 
         } catch (e) {
-            this.sendErrorResponse(response, { id: 1, format: "Error while launching debug session: " + e });
+            this.sendErrorResponse(response, { id: 1, format: "Could not launch debug session:\n\n" + e });
             return;
         }
 

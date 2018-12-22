@@ -136,6 +136,7 @@ export class ContextSymbolTable extends SymbolTable {
         }
 
         let kind = SourceContext.getKindFromSymbol(symbol);
+        let name = (symbol as Symbol).name;
 
         // Special handling for imports.
         if (kind == SymbolKind.TokenVocab || kind == SymbolKind.Import) {
@@ -144,7 +145,7 @@ export class ContextSymbolTable extends SymbolTable {
                 if (table.owner && table.owner.sourceId.includes(name)) {
                     return { // TODO: implement a best match search.
                         kind: kind,
-                        name: (symbol as Symbol).name,
+                        name: name,
                         source: table.owner.fileName,
                         definition: SourceContext.definitionForContext(table.tree, true)
                     };
@@ -155,7 +156,7 @@ export class ContextSymbolTable extends SymbolTable {
         let symbolTable = symbol.symbolTable as ContextSymbolTable;
         return {
             kind: kind,
-            name: symbol.name,
+            name: name,
             source: (symbol.context && symbolTable && symbolTable.owner) ? symbolTable.owner.fileName : "ANTLR runtime",
             definition: SourceContext.definitionForContext(symbol.context, true),
             description: undefined

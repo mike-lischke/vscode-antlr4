@@ -57,8 +57,8 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
                         var horizontal = ${horizontal};
                         const width = 1000, height = 1000;
                         const initialScale = 0.75;
-                        const initialTranslateX = ${horizontal ? 100 : 500};
-                        const initialTranslateY = ${horizontal ? 300 : 50};
+                        const initialTranslateX = ${horizontal ? 200 : 500};
+                        const initialTranslateY = ${horizontal ? 400 : 50};
                     </script>
                 </head>
 

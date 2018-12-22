@@ -129,7 +129,9 @@ export class ErrorParser {
 					// Find the context this error belongs to.
 					let context: SourceContext | undefined;
 					for (let candidate of this.contexts) {
-					    if (candidate.fileName === fileName) {
+                        // Usually error messages come with the full path, but in case of grammar <-> filename conflicts
+                        // we only get the base name.
+					    if (candidate.fileName === fileName || candidate.fileName.endsWith(fileName)) {
 							context = candidate;
 							break;
 						}

@@ -15,22 +15,18 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import {
-    ANTLRInputStream, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  CharStream, RuleContext,
-    ParserRuleContext, CommonToken
+    ANTLRInputStream, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext
 } from 'antlr4ts';
 import {
-    PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, BlockStartState, DecisionState,
-    RuleStopState, PlusBlockStartState, StarLoopEntryState, RuleStartState
+    PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState
 } from 'antlr4ts/atn';
 import { ParseCancellationException, IntervalSet, Interval } from 'antlr4ts/misc';
 import { ParseTreeWalker, TerminalNode, ParseTree, ParseTreeListener } from 'antlr4ts/tree';
 
-import { CodeCompletionCore, Symbol, ScopedSymbol, LiteralSymbol } from "antlr4-c3";
+import { CodeCompletionCore, Symbol, LiteralSymbol } from "antlr4-c3";
 
 import {
-    ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, RuleSpecContext, OptionsSpecContext,
-    TokensSpecContext,
-    ModeSpecContext
+    ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, OptionsSpecContext, ModeSpecContext
 } from '../parser/ANTLRv4Parser';
 import { ANTLRv4Lexer } from '../parser/ANTLRv4Lexer';
 
@@ -49,13 +45,12 @@ import { ErrorParser } from "./ErrorParser";
 
 import {
     ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
-    VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, AlternativeSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol, TokenVocabSymbol, LexerModeSymbol, TokenChannelSymbol
+    VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol, TokenVocabSymbol,
+    LexerModeSymbol, TokenChannelSymbol
 } from "./ContextSymbolTable";
 
-import { LexicalRange } from "../backend/facade";
 import { SentenceGenerator } from "./SentenceGenerator";
 import { GrammarFormatter } from "./Formatter";
-import { GrapsDebugger } from "./GrapsDebugger";
 
 enum GrammarType { Unknown, Parser, Lexer, Combined };
 
@@ -410,7 +405,9 @@ export class SourceContext {
         lexer.removeErrorListeners();
         lexer.addErrorListener(this.lexerErrorListener);
         this.tokenStream = new CommonTokenStream(lexer);
-        this.parser = undefined;
+
+        // Keep the old parser around until the next parse run. Code completion could kick in before
+        // this.parser = undefined;
     }
 
     public parse(): string[] {
@@ -910,7 +907,7 @@ export class SourceContext {
             ParseTreeWalker.DEFAULT.walk(semanticListener as ParseTreeListener, this.tree!);
 
             let visitor = new RuleVisitor(this.rrdScripts);
-            let t = visitor.visit(this.tree!);
+            visitor.visit(this.tree!);
         }
     }
 

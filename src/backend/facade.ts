@@ -457,7 +457,7 @@ export class AntlrFacade {
     }
 
     /**
-     * Determines source file and position of all occurences of the given symbol. The search includes
+     * Determines source file and position of all occurrences of the given symbol. The search includes
      * also all referencing and referenced contexts.
      */
     public getSymbolOccurences(fileName: string, symbolName: string): SymbolInfo[] {
