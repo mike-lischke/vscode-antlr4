@@ -321,19 +321,19 @@
           "type": "object",
           "description": "Debugging related settings",
           "default": {
-              "visualParseTreeHorizontal": true,
-              "visualParseTreeClustered": false
+            "visualParseTreeHorizontal": true,
+            "visualParseTreeClustered": false
           },
           "properties": {
-              "visualParseTreeHorizontal": {
-                "type": "boolean",
-                "default": true,
-                "description": "Visual parse trees extend to the right (true) or down (false)"
+            "visualParseTreeHorizontal": {
+              "type": "boolean",
+              "default": true,
+              "description": "Visual parse trees extend to the right (true) or down (false)"
             },
             "visualParseTreeClustered": {
-                "type": "boolean",
-                "default": false,
-                "description": "Use a clustered tree for visual parse trees where all terminals are aligned, or the more compact standard tree"
+              "type": "boolean",
+              "default": false,
+              "description": "Use a clustered tree for visual parse trees where all terminals are aligned, or the more compact standard tree"
             }
           }
         }
@@ -507,8 +507,8 @@
     "test": "tsc && mocha ./out/test/backend/test.js"
   },
   "dependencies": {
-    "antlr4-c3": "^1.1.8",
-    "antlr4ts": "^0.4.1-alpha.0",
+    "antlr4-c3": "^1.1.11",
+    "antlr4ts": "^0.5.0-alpha.1",
     "await-notify": "^1.0.1",
     "d3": "^5.7.0",
     "fs-extra": "^6.0.1",
@@ -521,7 +521,7 @@
     "@types/fs-extra": "^5.0.2",
     "@types/glob": "^5.0.36",
     "@types/mocha": "^2.2.48",
-    "@types/node": "^8.10.38",
+    "@types/node": "^8.10.39",
     "chai": "^4.2.0",
     "mocha": "^4.1.0",
     "typescript": "^2.9.2",

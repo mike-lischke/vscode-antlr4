@@ -795,7 +795,7 @@ export class SourceContext {
                         // We hence return a compact form here instead of listing every character.
                         link.labels = this.intervalSetToStrings(transition.label);
                     } else {
-                        for (let label of transition.label.toList()) {
+                        for (let label of transition.label.toArray()) {
                             link.labels.push(vocabulary.getDisplayName(label));
                         }
                     }
