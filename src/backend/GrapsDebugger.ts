@@ -629,7 +629,7 @@ export class GrapsDebugger extends EventEmitter {
             text: token.text ? token.text : "",
             type: token.type,
             // For implicit tokens we use the same approach like ANTLR4 does for the naming.
-            name: this.lexer.vocabulary.getSymbolicName(token.type) || "T__" + (token.type - 1),
+            name: this.lexer.vocabulary.getSymbolicName(token.type) || "T__" + token.type,
             line: token.line,
             offset: token.charPositionInLine,
             channel: token.channel,

@@ -46,8 +46,7 @@ export class WebviewProvider {
         }
 
         let panel = window.createWebviewPanel(
-            'antlr4-vscode-webview', options.title, ViewColumn.Two,
-            {
+            'antlr4-vscode-webview', options.title, ViewColumn.Two, {
                 enableScripts: true,
                 retainContextWhenHidden: true
             }

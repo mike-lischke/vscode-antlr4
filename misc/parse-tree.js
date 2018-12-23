@@ -109,7 +109,6 @@ function update(parent) {
         });
 
     createText(nodeEnter);
-    updateText(nodeSelection);
 
     // This would resize the rect to tightly wrap the text, but unfortunately the tree/cluster layout relies on a fixed node size.
     //rects.attr("width", d => this.parentNode.childNodes[1].getComputedTextLength() + 20);
@@ -179,6 +178,8 @@ function update(parent) {
     });
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+
 // Toggle children on click.
 function click(d) {
     if (d.children) {
@@ -191,9 +192,13 @@ function click(d) {
     update(d);
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+
 function zoomed() {
     topGroup.attr("transform", d3.event.transform);
 }
+
+//---------------------------------------------------------------------------------------------------------------------
 
 function diagonal(d) {
     if (horizontal) {
@@ -208,6 +213,8 @@ function diagonal(d) {
         " " + (d.parent.x + rectW / 2) + "," + (d.parent.y + rectH / 2) +
         " " + (d.parent.x + rectW / 2) + "," + (d.parent.y + rectH / 2);
 }
+
+//---------------------------------------------------------------------------------------------------------------------
 
 function createText(nodeEnter) {
     // The node's text.
@@ -271,10 +278,56 @@ function createText(nodeEnter) {
         });
 }
 
-function updateText(nodeSelection) {
-    // Update the node's token index/range info.
-    rangeText = nodeSelection.select(".token-range");
-    rangeText
+//---------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Updates all existing nodes and their subelements.
+ */
+function updateExistingNodes(t) {
+    nodeSelection.transition(t)
+        .attr("class", function (d) {
+            if (!d.parent) {
+                return "tree-node tree-root";
+            }
+            var result = "tree-node";
+            switch (d.data.type) {
+                case 1: { // A terminal node.
+                        result += " tree-leaf";
+                        break;
+                    }
+                case 2: { // An error node.
+                        result += " tree-error";
+                        break;
+                    }
+            }
+            return result;
+        })
+
+    nodeSelection.select("rect").transition(t)
+        .attr("width", rectW);
+
+    nodeSelection.select(".node-text").transition(t)
+        .attr("x", function (d) { return (rectW - this.getComputedTextLength()) / 2; });
+
+    nodeSelection.select(".token-value").transition(t)
+        .attr("dx", function (d) { return horizontal ? rectW + 20: (rectW - this.getComputedTextLength()) / 2; })
+        .attr("dy", d => horizontal ? "0.25em" : "2.5em")
+        .text(function (d) {
+            if (d.data.type == 0) {
+                return "";
+            }
+
+            if (d.data.type == 2) { // Error node.
+                if (d.data.symbol.tokenIndex == -1) {
+                    return "<missing>";
+                }
+                return "<unexpected: " + d.data.symbol.text + ">";
+            }
+
+            return d.data.symbol.text;
+        });
+
+    nodeSelection.select(".token-range").transition(t)
         .text(function (d) {
             if (d.data.type != 0) {
                 if (d.data.symbol.tokenIndex == -1) {
@@ -294,16 +347,7 @@ function updateText(nodeSelection) {
 
 }
 
-function updateExistingNodes(t) {
-    // Update existing nodes (and their text elements) if there was a size change.
-    nodeSelection.selectAll("rect").transition(t)
-        .attr("width", rectW);
-    nodeSelection.selectAll(".node-text").transition(t)
-        .attr("x", function (d) { return (rectW - this.getComputedTextLength()) / 2; });
-    nodeSelection.selectAll(".token-value").transition(t)
-        .attr("dx", function (d) { return horizontal ? rectW + 20: (rectW - this.getComputedTextLength()) / 2; })
-        .attr("dy", d => horizontal ? "0.25em" : "2.5em")
-}
+//---------------------------------------------------------------------------------------------------------------------
 
 function applyChanges(durationFactor) {
     (useCluster ? cluster : tree)(root);
@@ -318,10 +362,14 @@ function applyChanges(durationFactor) {
     linkSelection.transition(t).attr("d", diagonal);
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+
 function toggleTreeType(checkbox) {
     useCluster = checkbox.checked;
     applyChanges(0.5);
 }
+
+//---------------------------------------------------------------------------------------------------------------------
 
 function toggleOrientation(checkbox) {
     horizontal = !checkbox.checked;
@@ -338,6 +386,8 @@ function toggleOrientation(checkbox) {
     applyChanges(1);
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+
 function changeNodeSize(factor) {
     nodeSizeFactor *= factor;
 
@@ -353,3 +403,5 @@ function changeNodeSize(factor) {
 
     applyChanges(0.5);
 }
+
+//---------------------------------------------------------------------------------------------------------------------

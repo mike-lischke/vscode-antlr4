@@ -115,7 +115,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
             }
             this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
             if (this.showGraphicalParseTree) {
-                this.parseTreeProvider.showWebview(Uri.file(args.grammar), { title: "Parse Tree" });
+                this.parseTreeProvider.showWebview(Uri.file(args.grammar), { title: "Parse Tree: " + path.basename(args.grammar) });
             }
 
         } catch (e) {
@@ -371,7 +371,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
             }
 
             if (this.showGraphicalParseTree) {
-                this.parseTreeProvider.showWebview(Uri.file(grammar), { title: "Parse Tree" });
+                this.parseTreeProvider.showWebview(Uri.file(grammar), { title: "Parse Tree: " + path.basename(grammar) });
             }
 
             this.sendEvent(new TerminatedEvent());

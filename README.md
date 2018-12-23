@@ -14,7 +14,7 @@
 
 ## What's New
 
-This release includes fixes for latest Visual Studio Code changes and comes with fixed backend tests.
+This release adds a live visual parse tree and fixes a number of bugs.
 
 ## Features
 
@@ -59,7 +59,9 @@ All of the usual operations are supported:
 * Step over lexer tokens and parser rules
 * Step out of the current parser rule
 
-Once the entire input is parsed, the parse tree can be visualized, either in the debug console as text or as graphical output in an own editor tab. This is configurable in the launch task setup.
+When enabled in the launch task setup, a live visual parse tree is shown in an own tab, which updates on each debugging step. This way you can watch your parse tree while it grows during debugging.
+
+Additionally, a textual parse tree representation can be printed to the terminal after a parse run finished. This also can be configured in the launch task settings.
 
 ![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-12.png)
 
@@ -218,6 +220,13 @@ This is a settings object named **antlr4.format** with the following members:
 * **alignLabels**: boolean (default: true), align alt labels (only when a rule is not on a single line)
 * **alignTrailers**: boolean (default: false), combine all alignments (align whatever comes first: colons, comments etc.)
 
+###Debugging
+
+This is a settings object named **antlr4.debug** with the following members:
+
+* **visualPparseTreeHorizontal**: boolean (default: true) Determines if parse trees by default use the horizontal layout (when true) or the vertical orientation (when false).
+* **visualParseTreeClustered**: boolean (default: false) When set to true parse trees will align their terminal nodes on a single row or column (depending on the orientation).
+
 ## Known Issues
 
 See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues).
@@ -228,16 +237,27 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 
 ## Release Notes
 
+### 2.1.0
+- Fixed Bug #41: Plugin Internal Error on EOF
+- Fixed Bug #48: Not possible to use ${} macros in launch.json
+- Merged PR #59: Fix CodeLens positions being off by one while editing and reference count being wrong
+- Fixed re-use of graphical tabs (web views), to avoid multiple tabs of the same type for a single grammar. Also, parse tree tabs now include the grammar's name in the title, just like it is done for all other tabs.
+- Added live visual parse trees and improved their handling + usability. No more jumping and zooming to default values on each debugger run.
+- Fixed a number of TS warnings.
+- Added two parse tree related settings (allowing to specify the inital layout + orientation).
+- Improved handling of certain ANTLR4 errors.
+- Re-enabled the accidentially disabled code completion feature.
+
 ### 2.0.4
-- Fixed Bug #36 "$antlr-format off" removes remaining lines in file
-- Fixed Bug #37 Debugging gets stuck with visualParseTree set to true
+- Fixed Bug #36: "$antlr-format off" removes remaining lines in file
+- Fixed Bug #37: Debugging gets stuck with visualParseTree set to true
 
 ### 2.0.3
 - Updated tests to compile with the latest backend changes.
 - Fixed a bug when setting up a debugger, after switching grammars. Only the first used grammar did work.
 
 ### 2.0.2
-- Fixed Bug #28 ATN graph cannot be drawn even after code generation.
+- Fixed Bug #28: ATN graph cannot be drawn even after code generation.
 - Fixed another bug in interpreter data file names construction.
 
 ### 2.0.1

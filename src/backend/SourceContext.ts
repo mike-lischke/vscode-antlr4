@@ -406,7 +406,7 @@ export class SourceContext {
         lexer.addErrorListener(this.lexerErrorListener);
         this.tokenStream = new CommonTokenStream(lexer);
 
-        // Keep the old parser around until the next parse run. Code completion could kick in before
+        // Keep the old parser around until the next parse run. Code completion could kick in before that.
         // this.parser = undefined;
     }
 
