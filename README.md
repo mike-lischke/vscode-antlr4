@@ -224,7 +224,7 @@ This is a settings object named **antlr4.format** with the following members:
 
 This is a settings object named **antlr4.debug** with the following members:
 
-* **visualPparseTreeHorizontal**: boolean (default: true) Determines if parse trees by default use the horizontal layout (when true) or the vertical orientation (when false).
+* **visualParseTreeHorizontal**: boolean (default: true) Determines if parse trees by default use the horizontal layout (when true) or the vertical orientation (when false).
 * **visualParseTreeClustered**: boolean (default: false) When set to true parse trees will align their terminal nodes on a single row or column (depending on the orientation).
 
 ## Known Issues
