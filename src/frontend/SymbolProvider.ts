@@ -7,7 +7,7 @@
 
 'use strict';
 
-import { TextDocument, Position, CancellationToken, Range, Location, Uri, SymbolInformation } from 'vscode';
+import { TextDocument, Position, CancellationToken, Range, Location, Uri, SymbolInformation, DocumentSymbolProvider } from 'vscode';
 import { SymbolKind as vscSymbolKind, ProviderResult } from 'vscode';
 import * as path from "path";
 
@@ -15,7 +15,7 @@ import { AntlrFacade, SymbolKind } from "../backend/facade";
 
 import { symbolDescriptionFromEnum, translateSymbolKind } from './Symbol';
 
-export class SymbolProvider {
+export class AntlrSymbolProvider implements DocumentSymbolProvider {
     constructor(private backend: AntlrFacade) {}
 
     provideDocumentSymbols (document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[]> {

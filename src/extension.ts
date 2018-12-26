@@ -14,13 +14,12 @@ import * as Net from 'net';
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
     commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, StatusBarAlignment, OutputChannel,
-    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult,
-    ViewColumn
+    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult
 } from 'vscode';
 
-import { HoverProvider } from './frontend/HoverProvider';
-import { DefinitionProvider } from './frontend//DefinitionProvider';
-import { SymbolProvider } from './frontend/SymbolProvider';
+import { AntlrHoverProvider } from './frontend/HoverProvider';
+import { AntlrDefinitionProvider } from './frontend/DefinitionProvider';
+import { AntlrSymbolProvider } from './frontend/SymbolProvider';
 import { AntlrCodeLensProvider } from './frontend/CodeLensProvider';
 import { AntlrCompletionItemProvider } from './frontend/CompletionItemProvider';
 import { AntlrRailroadDiagramProvider } from './frontend/RailroadDiagramProvider';
@@ -33,10 +32,9 @@ import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
 import { ChannelsProvider } from "./frontend/ChannelsProvider";
 import { ModesProvider } from "./frontend/ModesProvider";
 import { AntlrParseTreeProvider } from "./frontend/ParseTreeProvider";
-import { RenameProvider } from "./frontend/RenameProvider";
+import { AntlrRenameProvider } from "./frontend/RenameProvider";
 
 import { ProgressIndicator } from "./frontend/ProgressIndicator";
-import { Utils } from "./frontend/Utils";
 import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
 import { DiagnosticType, AntlrFacade, GenerationOptions } from "./backend/facade";
 
@@ -78,15 +76,15 @@ export function activate(context: ExtensionContext) {
         }
     }
 
-    context.subscriptions.push(languages.registerHoverProvider(ANTLR, new HoverProvider(backend)));
-    context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new DefinitionProvider(backend)));
-    context.subscriptions.push(languages.registerDocumentSymbolProvider(ANTLR, new SymbolProvider(backend)));
+    context.subscriptions.push(languages.registerHoverProvider(ANTLR, new AntlrHoverProvider(backend)));
+    context.subscriptions.push(languages.registerDefinitionProvider(ANTLR, new AntlrDefinitionProvider(backend)));
+    context.subscriptions.push(languages.registerDocumentSymbolProvider(ANTLR, new AntlrSymbolProvider(backend)));
     codeLensProvider = new AntlrCodeLensProvider(backend);
     context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, codeLensProvider));
     context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend),
         " ", ":", "@", "<", "{", "["));
     context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider(ANTLR, new AntlrFormattingProvider(backend)));
-    context.subscriptions.push(languages.registerRenameProvider(ANTLR, new RenameProvider(backend)));
+    context.subscriptions.push(languages.registerRenameProvider(ANTLR, new AntlrRenameProvider(backend)));
 
     let diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
     //context.subscriptions.push(workspace.registerTextDocumentContentProvider("antlr.rrd", diagramProvider));
@@ -94,7 +92,7 @@ export function activate(context: ExtensionContext) {
     // The single RRD diagram command.
     context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.singleRule', (editor: TextEditor, edit: TextEditorEdit) => {
         diagramProvider.showWebview(editor, {
-            title: "ANTLR RRD: " + path.basename(editor.document.fileName),
+            title: "RRD: " + path.basename(editor.document.fileName),
             fullList: false
         });
     }));
@@ -102,7 +100,7 @@ export function activate(context: ExtensionContext) {
     // The full RRD diagram command.
     context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.allRules', (editor: TextEditor, edit: TextEditorEdit) => {
         diagramProvider.showWebview(editor, {
-            title: "ANTLR RRD: " + path.basename(editor.document.fileName),
+            title: "RRD: " + path.basename(editor.document.fileName),
             fullList: true
         });
     }));
@@ -111,7 +109,7 @@ export function activate(context: ExtensionContext) {
     let atnGraphProvider = new AntlrATNGraphProvider(backend, context);
     context.subscriptions.push(commands.registerTextEditorCommand("antlr.atn.singleRule", (editor: TextEditor, edit: TextEditorEdit) => {
         atnGraphProvider.showWebview(editor, {
-            title: "ANTLR ATN: " + path.basename(editor.document.fileName)
+            title: "ATN: " + path.basename(editor.document.fileName)
         });
     }));
 
@@ -149,6 +147,13 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(window.registerTreeDataProvider("antlr4.modes", modesProvider));
 
     parseTreeProvider = new AntlrParseTreeProvider(backend, context);
+
+    // Initialize certain providers.
+    let editor = window.activeTextEditor;
+    if (editor && editor.document.languageId == "antlr" && editor.document.uri.scheme === "file") {
+        lexerSymbolsProvider.refresh(editor.document.fileName);
+        parserSymbolsProvider.refresh(editor.document.fileName);
+    }
 
     // Helper commands.
     context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
@@ -188,6 +193,7 @@ export function activate(context: ExtensionContext) {
             changeTimers.set(fileName, setTimeout(() => {
                 changeTimers.delete(fileName);
                 backend.reparse(fileName);
+
                 diagramProvider.update(window.activeTextEditor!);
                 importsProvider.refresh();
                 callGraphProvider.update(window.activeTextEditor!);
@@ -212,6 +218,8 @@ export function activate(context: ExtensionContext) {
 
     window.onDidChangeActiveTextEditor((editor: TextEditor) => {
         importsProvider.refresh();
+        lexerSymbolsProvider.refresh(editor.document.fileName);
+        parserSymbolsProvider.refresh(editor.document.fileName);
     });
 
     function processDiagnostic(document: TextDocument) {
@@ -309,6 +317,8 @@ export function activate(context: ExtensionContext) {
 
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true }).then(() => {
                 atnGraphProvider.update(window.activeTextEditor!, true);
+                lexerSymbolsProvider.refresh(document.fileName);
+                parserSymbolsProvider.refresh(document.fileName);
 
                 progress.stopAnimation();
             });
@@ -398,11 +408,7 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                 });
 
                 const session = new AntlrDebugSession(folder!, backend, [
-                    parseTreeProvider,
-                    lexerSymbolsProvider,
-                    parserSymbolsProvider,
-                    channelsProvider,
-                    modesProvider
+                    parseTreeProvider
                 ]);
                 session.setRunAsServer(true);
                 session.start(<NodeJS.ReadableStream>socket, socket);

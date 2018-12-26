@@ -12,9 +12,8 @@ import {
     LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,
     ModeSpecContext, DelegateGrammarContext, OptionContext, TerminalRuleContext, RulerefContext,
     OptionValueContext, BlockContext, AlternativeContext, RuleBlockContext, EbnfSuffixContext,
-    OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledAltContext, LabeledElementContext,
-    LexerRuleBlockContext,
-    LexerAltContext
+    OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledElementContext,
+    LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext
 } from '../parser/ANTLRv4Parser';
 
 import {
@@ -26,6 +25,7 @@ import {
 import { SourceContext } from './SourceContext';
 
 import { ScopedSymbol, LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
+import { ParserRuleContext } from 'antlr4ts';
 
 export class DetailsListener implements ANTLRv4ParserListener {
     constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
@@ -215,6 +215,24 @@ export class DetailsListener implements ANTLRv4ParserListener {
             let operator = this.symbolTable.addNewSymbolOfType(OperatorSymbol, this.currentSymbol as ScopedSymbol,
                 ctx.getChild(1).text);
             operator.context = ctx.getChild(1);
+        }
+    }
+
+    exitElement(ctx: ElementContext) {
+        if (ctx.QUESTION() && this.currentSymbol) {
+            let child = (this.currentSymbol as ScopedSymbol).lastChild;
+            if (child instanceof ActionSymbol) {
+                child.isPredicate = true;
+            }
+        }
+    }
+
+    exitLexerElement(ctx: LexerElementContext) {
+        if (ctx.QUESTION() && this.currentSymbol) {
+            let child = (this.currentSymbol as ScopedSymbol).lastChild;
+            if (child instanceof ActionSymbol) {
+                child.isPredicate = true;
+            }
         }
     }
 

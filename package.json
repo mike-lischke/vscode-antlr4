@@ -1,530 +1,512 @@
 {
-  "name": "vscode-antlr4",
-  "displayName": "ANTLR4 grammar syntax support",
-  "description": "Language support for ANTLR4 grammar files",
-  "icon": "misc/antlr-logo.png",
-  "galleryBanner": {
-    "color": "#2789e1",
-    "theme": "dark"
-  },
-  "version": "2.1.1",
-  "publisher": "mike-lischke",
-  "license": "SEE LICENSE IN LICENSE.txt",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mike-lischke/vscode-antlr4"
-  },
-  "bugs": {
-    "url": "https://github.com/mike-lischke/vscode-antlr4/issues"
-  },
-  "homepage": "http://www.soft-gems.net",
-  "engines": {
-    "vscode": "^1.23.0"
-  },
-  "categories": [
-    "Programming Languages",
-    "Debuggers"
-  ],
-  "activationEvents": [
-    "onLanguage:antlr"
-  ],
-  "main": "./out/src/extension",
-  "contributes": {
-    "languages": [
-      {
-        "id": "antlr",
-        "aliases": [
-          "ANTLR",
-          "antlr"
-        ],
-        "extensions": [
-          ".g",
-          ".g4"
-        ],
-        "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
-        "configuration": "./antlr.configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "antlr",
-        "scopeName": "source.antlr",
-        "path": "./syntaxes/antlr.json"
-      }
-    ],
-    "themes": [
-      {
-        "label": "Complete Dark",
-        "uiTheme": "vs-dark",
-        "path": "./themes/complete_dark.json"
-      },
-      {
-        "label": "Complete Light",
-        "uiTheme": "vs",
-        "path": "./themes/complete_light.json"
-      }
-    ],
-    "configuration": {
-      "title": "ANTLR4 configuration",
-      "properties": {
-        "antlr4.referencesCodeLens.enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable/disable the references code lens"
-        },
-        "antlr4.customcss": {
-          "type": [],
-          "default": [],
-          "description": "List of custom CSS URIs for diagram SVG files"
-        },
-        "antlr4.rrd.saveDir": {
-          "type": "string",
-          "default": "",
-          "description": "Default export target folder for railroad diagrams"
-        },
-        "antlr4.atn.saveDir": {
-          "type": "string",
-          "default": "",
-          "description": "Default export target folder for ATN SVG files"
-        },
-        "antlr4.atn.maxLabelCount": {
-          "type": "number",
-          "default": 3,
-          "description": "Max number of labels displayed on a transition in an ATN graph"
-        },
-        "antlr4.call-graph.saveDir": {
-          "type": "string",
-          "default": "",
-          "description": "Default export target folder for call graphs"
-        },
-        "antlr4.generation": {
-          "type": "object",
-          "default": {
-            "mode": "internal",
-            "language": "Java",
-            "listeners": true,
-            "visitors": false
-          },
-          "description": "Settings related to parser generation",
-          "properties": {
-            "mode": {
-              "type": "string",
-              "default": "internal",
-              "description": "Determines the mode for code generation (none at all, only for internal use, also for external use)",
-              "enum": [
-                "none",
-                "internal",
-                "external"
-              ]
-            },
-            "outputDir": {
-              "type": "string",
-              "default": "",
-              "description": "Output dir where all output is generated (relative to grammar or absolute path)"
-            },
-            "importDir": {
-              "type": "string",
-              "default": "",
-              "description": "Location to import grammars from (relative to a grammar or absolute path)"
-            },
-            "package": {
-              "type": "string",
-              "default": "",
-              "description": "Package/namespace for generated code"
-            },
-            "language": {
-              "type": "string",
-              "default": "Java",
-              "description": "Specifies the target language for the generated code, overriding what is specified in the grammar"
-            },
-            "listeners": {
-              "type": "boolean",
-              "default": true,
-              "description": "Also create listeners on code generation"
-            },
-            "visitors": {
-              "type": "boolean",
-              "default": false,
-              "description": "Also create visitors on code generation"
-            }
-          }
-        },
-        "antlr4.format": {
-          "type": "object",
-          "default": {
-            "alignTrailingComments": false,
-            "allowShortBlocksOnASingleLine": true,
-            "breakBeforeBraces": false,
-            "columnLimit": 100,
-            "continuationIndentWidth": 4,
-            "indentWidth": 4,
-            "keepEmptyLinesAtTheStartOfBlocks": false,
-            "maxEmptyLinesToKeep": 1,
-            "reflowComments": true,
-            "spaceBeforeAssignmentOperators": true,
-            "tabWidth": 4,
-            "useTab": true,
-            "alignColons": "none",
-            "singleLineOverrulesHangingColon": true,
-            "allowShortRulesOnASingleLine": true,
-            "alignSemicolons": "none",
-            "breakBeforeParens": false,
-            "ruleInternalsOnSingleLine": false,
-            "minEmptyLines": 0,
-            "groupedAlignments": true,
-            "alignFirstTokens": false,
-            "alignLexerCommands": false,
-            "alignActions": false,
-            "alignLabels": true,
-            "alignTrailers": false
-          },
-          "description": "Settings related to code formatting",
-          "properties": {
-            "alignTrailingComments": {
-              "type": "boolean",
-              "default": false,
-              "description": "If true, aligns trailing comments"
-            },
-            "allowShortBlocksOnASingleLine": {
-              "type": "boolean",
-              "default": true,
-              "description": "Allows contracting short blocks to a single line"
-            },
-            "breakBeforeBraces": {
-              "type": "boolean",
-              "default": false,
-              "description": "When true start predicates and actions on a new line"
-            },
-            "columnLimit": {
-              "type": "number",
-              "default": 100,
-              "description": "The character count after which automatic line breaking takes place"
-            },
-            "continuationIndentWidth": {
-              "type": "number",
-              "default": 4,
-              "description": "Indentation for line continuation (only used if useTab is false)"
-            },
-            "indentWidth": {
-              "type": "number",
-              "default": 4,
-              "description": "Character count for indentation (if useTab is false)"
-            },
-            "keepEmptyLinesAtTheStartOfBlocks": {
-              "type": "boolean",
-              "default": false,
-              "description": "If true, empty lines at the start of blocks are kept"
-            },
-            "maxEmptyLinesToKeep": {
-              "type": "number",
-              "default": 1,
-              "description": "The maximum number of consecutive empty lines to keep"
-            },
-            "reflowComments": {
-              "type": "boolean",
-              "default": true,
-              "description": "Reformat comments to fit the column limit"
-            },
-            "spaceBeforeAssignmentOperators": {
-              "type": "boolean",
-              "default": true,
-              "description": "Enables spaces around operators"
-            },
-            "tabWidth": {
-              "type": "number",
-              "default": 4,
-              "description": "Multiples of this value determine tab stops in a document"
-            },
-            "useTab": {
-              "type": "boolean",
-              "default": true,
-              "description": "Use tabs for indentation"
-            },
-            "alignColons": {
-              "type": "string",
-              "default": "none",
-              "enum": [
-                "none",
-                "trailing",
-                "hanging"
-              ],
-              "description": "Align colons among rules (scope depends on groupedAlignments)"
-            },
-            "singleLineOverrulesHangingColon": {
-              "type": "boolean",
-              "default": true,
-              "description": "Single line mode overrides hanging colon setting (applies also to alignSemicolons)"
-            },
-            "allowShortRulesOnASingleLine": {
-              "type": "boolean",
-              "default": true,
-              "description": "Allows contracting short rules on a single line (short: < 2/3 of columnLimit)"
-            },
-            "alignSemicolons": {
-              "type": "string",
-              "default": "none",
-              "enum": [
-                "none",
-                "ownLine",
-                "hanging"
-              ],
-              "description": "Determines the alignment of semicolons in rules (no alignment, first column on an own line or aligned to pipe chars on an own line)"
-            },
-            "breakBeforeParens": {
-              "type": "boolean",
-              "default": false,
-              "description": "For blocks: if true puts opening parentheses on an own line"
-            },
-            "ruleInternalsOnSingleLine": {
-              "type": "boolean",
-              "default": false,
-              "description": "Place rule internals (return value, local variables, @init, @after) all on a single line"
-            },
-            "minEmptyLines": {
-              "type": "number",
-              "default": 0,
-              "description": "Determines the number of empty lines that must exist (between rules or other full statements)"
-            },
-            "groupedAlignments": {
-              "type": "boolean",
-              "default": true,
-              "description": "When true only consecutive lines are considered for alignments"
-            },
-            "alignFirstTokens": {
-              "type": "boolean",
-              "default": false,
-              "description": "Align the first token after the colon among rules"
-            },
-            "alignLexerCommands": {
-              "type": "boolean",
-              "default": false,
-              "description": "Align lexer commands (starting with ->) among rule"
-            },
-            "alignActions": {
-              "type": "boolean",
-              "default": false,
-              "description": "Align action blocks + predicates among rules and alternatives"
-            },
-            "alignLabels": {
-              "type": "boolean",
-              "default": true,
-              "description": "Align alt labels (only when a rule is not on a single line)"
-            },
-            "alignTrailers": {
-              "type": "boolean",
-              "default": false,
-              "description": "Combine all alignments (align whatever comes first: colons, comments etc.)"
-            }
-          }
-        },
-        "antlr4.debug": {
-          "type": "object",
-          "description": "Debugging related settings",
-          "default": {
-            "visualParseTreeHorizontal": true,
-            "visualParseTreeClustered": false
-          },
-          "properties": {
-            "visualParseTreeHorizontal": {
-              "type": "boolean",
-              "default": true,
-              "description": "Visual parse trees extend to the right (true) or down (false)"
-            },
-            "visualParseTreeClustered": {
-              "type": "boolean",
-              "default": false,
-              "description": "Use a clustered tree for visual parse trees where all terminals are aligned, or the more compact standard tree"
-            }
-          }
-        }
-      }
+    "name": "vscode-antlr4",
+    "displayName": "ANTLR4 grammar syntax support",
+    "description": "Language support for ANTLR4 grammar files",
+    "icon": "misc/antlr-logo.png",
+    "galleryBanner": {
+        "color": "#2789e1",
+        "theme": "dark"
     },
-    "commands": [
-      {
-        "command": "antlr.atn.singleRule",
-        "title": "Show ATN Graph for Rule"
-      },
-      {
-        "command": "antlr.rrd.singleRule",
-        "title": "Show Railroad Diagram for Rule"
-      },
-      {
-        "command": "antlr.rrd.allRules",
-        "title": "Show Railroad Diagram for all Rules"
-      },
-      {
-        "command": "antlr.call-graph",
-        "title": "Show Grammar Call Graph"
-      },
-      {
-        "command": "antlr.tools.generateSentences",
-        "title": "Generate Sentences From Grammar"
-      },
-      {
-        "command": "antlr.tools.startGREPL",
-        "title": "Open Grammar REPL console "
-      }
-    ],
-    "menus": {
-      "explorer/context": [],
-      "editor/title/context": [
-        {
-          "when": "resourceLangId == antlr",
-          "command": "antlr.rrd.allRules",
-          "group": "antlr@1"
-        }
-      ],
-      "editor/title": [
-        {
-          "when": "resourceLangId == antlr",
-          "command": "antlr.rrd.allRules",
-          "group": "antlr@1"
-        }
-      ],
-      "editor/context": [
-        {
-          "when": "resourceLangId == antlr",
-          "command": "antlr.rrd.singleRule",
-          "group": "antlr@1"
-        },
-        {
-          "when": "resourceLangId == antlr",
-          "command": "antlr.rrd.allRules",
-          "group": "antlr@2"
-        },
-        {
-          "when": "resourceLangId == antlr",
-          "command": "antlr.atn.singleRule",
-          "group": "antlr@3"
-        },
-        {
-          "when": "resourceLangId == antlr",
-          "command": "antlr.call-graph",
-          "group": "antlr@4"
-        },
-        {
-          "when": "resourceLangId == antlr",
-          "command": "antlr.tools.startGREPL",
-          "group": "antlr@5"
-        }
-      ]
+    "version": "2.1.1",
+    "publisher": "mike-lischke",
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mike-lischke/vscode-antlr4"
     },
-    "views": {
-      "explorer": [
-        {
-          "id": "antlr4.imports",
-          "name": "Grammar Dependencies",
-          "when": "resourceLangId == 'antlr'"
-        }
-      ],
-      "debug": [
-        {
-          "id": "antlr4.lexerSymbols",
-          "name": "Lexer Tokens"
-        },
-        {
-          "id": "antlr4.parserSymbols",
-          "name": "Parser Rules"
-        },
-        {
-          "id": "antlr4.channels",
-          "name": "Token channels"
-        },
-        {
-          "id": "antlr4.modes",
-          "name": "Lexer modes"
-        }
-      ]
+    "bugs": {
+        "url": "https://github.com/mike-lischke/vscode-antlr4/issues"
     },
-    "breakpoints": [
-      {
-        "language": "antlr"
-      }
+    "homepage": "http://www.soft-gems.net",
+    "engines": {
+        "vscode": "^1.23.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Debuggers"
     ],
-    "debuggers": [
-      {
-        "type": "antlr-debug",
-        "label": "ANTLR4 Debug",
-        "runtime": "node",
-        "configurationAttributes": {
-          "launch": {
-            "required": [
-              "input"
+    "activationEvents": [
+        "onLanguage:antlr"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "languages": [{
+            "id": "antlr",
+            "aliases": [
+                "ANTLR",
+                "antlr"
             ],
+            "extensions": [
+                ".g",
+                ".g4"
+            ],
+            "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
+            "configuration": "./antlr.configuration.json"
+        }],
+        "grammars": [{
+            "language": "antlr",
+            "scopeName": "source.antlr",
+            "path": "./syntaxes/antlr.json"
+        }],
+        "themes": [{
+                "label": "Complete Dark",
+                "uiTheme": "vs-dark",
+                "path": "./themes/complete_dark.json"
+            },
+            {
+                "label": "Complete Light",
+                "uiTheme": "vs",
+                "path": "./themes/complete_light.json"
+            }
+        ],
+        "configuration": {
+            "title": "ANTLR4 configuration",
             "properties": {
-              "input": {
-                "type": "string",
-                "description": "Path to a text file containing test input to parse.",
-                "default": "input.txt"
-              },
-              "startRule": {
-                "type": "string",
-                "description": "The name of the rule to be used as entry point. If omitted the first parser rule in the grammar is used instead.",
-                "default": ""
-              },
-              "grammar": {
-                "type": "string",
-                "description": "The path to a grammar to debug. Leave empty to debug the grammar in the active editor.",
-                "default": null
-              },
-              "trace": {
-                "type": "boolean",
-                "description": "Log internal debugger messages to debug console.",
-                "default": false
-              },
-              "printParseTree": {
-                "type": "boolean",
-                "description": "Print the textual parse tree in the debug console",
-                "default": true
-              },
-              "visualParseTree": {
-                "type": "boolean",
-                "description": "Show a visual parse tree during debug",
-                "default": true
-              }
+                "antlr4.referencesCodeLens.enabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable/disable the references code lens"
+                },
+                "antlr4.customcss": {
+                    "type": [],
+                    "default": [],
+                    "description": "List of custom CSS URIs for diagram SVG files"
+                },
+                "antlr4.rrd.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default export target folder for railroad diagrams"
+                },
+                "antlr4.atn.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default export target folder for ATN SVG files"
+                },
+                "antlr4.atn.maxLabelCount": {
+                    "type": "number",
+                    "default": 3,
+                    "description": "Max number of labels displayed on a transition in an ATN graph"
+                },
+                "antlr4.call-graph.saveDir": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default export target folder for call graphs"
+                },
+                "antlr4.generation": {
+                    "type": "object",
+                    "default": {
+                        "mode": "internal",
+                        "language": "Java",
+                        "listeners": true,
+                        "visitors": false
+                    },
+                    "description": "Settings related to parser generation",
+                    "properties": {
+                        "mode": {
+                            "type": "string",
+                            "default": "internal",
+                            "description": "Determines the mode for code generation (none at all, only for internal use, also for external use)",
+                            "enum": [
+                                "none",
+                                "internal",
+                                "external"
+                            ]
+                        },
+                        "outputDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Output dir where all output is generated (relative to grammar or absolute path)"
+                        },
+                        "importDir": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Location to import grammars from (relative to a grammar or absolute path)"
+                        },
+                        "package": {
+                            "type": "string",
+                            "default": "",
+                            "description": "Package/namespace for generated code"
+                        },
+                        "language": {
+                            "type": "string",
+                            "default": "Java",
+                            "description": "Specifies the target language for the generated code, overriding what is specified in the grammar"
+                        },
+                        "listeners": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Also create listeners on code generation"
+                        },
+                        "visitors": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Also create visitors on code generation"
+                        }
+                    }
+                },
+                "antlr4.format": {
+                    "type": "object",
+                    "default": {
+                        "alignTrailingComments": false,
+                        "allowShortBlocksOnASingleLine": true,
+                        "breakBeforeBraces": false,
+                        "columnLimit": 100,
+                        "continuationIndentWidth": 4,
+                        "indentWidth": 4,
+                        "keepEmptyLinesAtTheStartOfBlocks": false,
+                        "maxEmptyLinesToKeep": 1,
+                        "reflowComments": true,
+                        "spaceBeforeAssignmentOperators": true,
+                        "tabWidth": 4,
+                        "useTab": true,
+                        "alignColons": "none",
+                        "singleLineOverrulesHangingColon": true,
+                        "allowShortRulesOnASingleLine": true,
+                        "alignSemicolons": "none",
+                        "breakBeforeParens": false,
+                        "ruleInternalsOnSingleLine": false,
+                        "minEmptyLines": 0,
+                        "groupedAlignments": true,
+                        "alignFirstTokens": false,
+                        "alignLexerCommands": false,
+                        "alignActions": false,
+                        "alignLabels": true,
+                        "alignTrailers": false
+                    },
+                    "description": "Settings related to code formatting",
+                    "properties": {
+                        "alignTrailingComments": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "If true, aligns trailing comments"
+                        },
+                        "allowShortBlocksOnASingleLine": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Allows contracting short blocks to a single line"
+                        },
+                        "breakBeforeBraces": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "When true start predicates and actions on a new line"
+                        },
+                        "columnLimit": {
+                            "type": "number",
+                            "default": 100,
+                            "description": "The character count after which automatic line breaking takes place"
+                        },
+                        "continuationIndentWidth": {
+                            "type": "number",
+                            "default": 4,
+                            "description": "Indentation for line continuation (only used if useTab is false)"
+                        },
+                        "indentWidth": {
+                            "type": "number",
+                            "default": 4,
+                            "description": "Character count for indentation (if useTab is false)"
+                        },
+                        "keepEmptyLinesAtTheStartOfBlocks": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "If true, empty lines at the start of blocks are kept"
+                        },
+                        "maxEmptyLinesToKeep": {
+                            "type": "number",
+                            "default": 1,
+                            "description": "The maximum number of consecutive empty lines to keep"
+                        },
+                        "reflowComments": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Reformat comments to fit the column limit"
+                        },
+                        "spaceBeforeAssignmentOperators": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Enables spaces around operators"
+                        },
+                        "tabWidth": {
+                            "type": "number",
+                            "default": 4,
+                            "description": "Multiples of this value determine tab stops in a document"
+                        },
+                        "useTab": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Use tabs for indentation"
+                        },
+                        "alignColons": {
+                            "type": "string",
+                            "default": "none",
+                            "enum": [
+                                "none",
+                                "trailing",
+                                "hanging"
+                            ],
+                            "description": "Align colons among rules (scope depends on groupedAlignments)"
+                        },
+                        "singleLineOverrulesHangingColon": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Single line mode overrides hanging colon setting (applies also to alignSemicolons)"
+                        },
+                        "allowShortRulesOnASingleLine": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Allows contracting short rules on a single line (short: < 2/3 of columnLimit)"
+                        },
+                        "alignSemicolons": {
+                            "type": "string",
+                            "default": "none",
+                            "enum": [
+                                "none",
+                                "ownLine",
+                                "hanging"
+                            ],
+                            "description": "Determines the alignment of semicolons in rules (no alignment, first column on an own line or aligned to pipe chars on an own line)"
+                        },
+                        "breakBeforeParens": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "For blocks: if true puts opening parentheses on an own line"
+                        },
+                        "ruleInternalsOnSingleLine": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Place rule internals (return value, local variables, @init, @after) all on a single line"
+                        },
+                        "minEmptyLines": {
+                            "type": "number",
+                            "default": 0,
+                            "description": "Determines the number of empty lines that must exist (between rules or other full statements)"
+                        },
+                        "groupedAlignments": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "When true only consecutive lines are considered for alignments"
+                        },
+                        "alignFirstTokens": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Align the first token after the colon among rules"
+                        },
+                        "alignLexerCommands": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Align lexer commands (starting with ->) among rule"
+                        },
+                        "alignActions": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Align action blocks + predicates among rules and alternatives"
+                        },
+                        "alignLabels": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Align alt labels (only when a rule is not on a single line)"
+                        },
+                        "alignTrailers": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Combine all alignments (align whatever comes first: colons, comments etc.)"
+                        }
+                    }
+                },
+                "antlr4.debug": {
+                    "type": "object",
+                    "description": "Debugging related settings",
+                    "default": {
+                        "visualParseTreeHorizontal": true,
+                        "visualParseTreeClustered": false
+                    },
+                    "properties": {
+                        "visualParseTreeHorizontal": {
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Visual parse trees extend to the right (true) or down (false)"
+                        },
+                        "visualParseTreeClustered": {
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Use a clustered tree for visual parse trees where all terminals are aligned, or the more compact standard tree"
+                        }
+                    }
+                }
             }
-          }
         },
-        "configurationSnippets": [
-          {
-            "label": "ANTLR: Parse",
-            "description": "A new configuration for parsing with a grammar.",
-            "body": {
-              "type": "antlr-debug",
-              "request": "launch",
-              "name": "Debug Current Grammar",
-              "input": "input.txt",
-              "visualParseTree": true
+        "commands": [{
+                "command": "antlr.atn.singleRule",
+                "title": "Show ATN Graph for Rule"
+            },
+            {
+                "command": "antlr.rrd.singleRule",
+                "title": "Show Railroad Diagram for Rule"
+            },
+            {
+                "command": "antlr.rrd.allRules",
+                "title": "Show Railroad Diagram for all Rules"
+            },
+            {
+                "command": "antlr.call-graph",
+                "title": "Show Grammar Call Graph"
+            },
+            {
+                "command": "antlr.tools.generateSentences",
+                "title": "Generate Sentences From Grammar"
+            },
+            {
+                "command": "antlr.tools.startGREPL",
+                "title": "Open Grammar REPL console "
             }
-          }
-        ]
-      }
-    ]
-  },
-  "scripts": {
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "publish": "vsce publish",
-    "test": "tsc && mocha ./out/test/backend/test.js"
-  },
-  "dependencies": {
-    "antlr4-c3": "^1.1.11",
-    "antlr4ts": "^0.5.0-alpha.1",
-    "await-notify": "^1.0.1",
-    "d3": "^5.7.0",
-    "fs-extra": "^6.0.1",
-    "vscode-debugadapter": "^1.33.0",
-    "vscode-debugprotocol": "^1.33.0"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/d3": "^4.13.1",
-    "@types/fs-extra": "^5.0.2",
-    "@types/glob": "^5.0.36",
-    "@types/mocha": "^2.2.48",
-    "@types/node": "^8.10.39",
-    "chai": "^4.2.0",
-    "mocha": "^4.1.0",
-    "typescript": "^2.9.2",
-    "vscode": "^1.1.26"
-  }
+        ],
+        "menus": {
+            "explorer/context": [],
+            "editor/title/context": [{
+                "when": "resourceLangId == antlr",
+                "command": "antlr.rrd.allRules",
+                "group": "antlr@1"
+            }],
+            "editor/title": [{
+                "when": "resourceLangId == antlr",
+                "command": "antlr.rrd.allRules",
+                "group": "antlr@1"
+            }],
+            "editor/context": [{
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.rrd.singleRule",
+                    "group": "antlr@1"
+                },
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.rrd.allRules",
+                    "group": "antlr@2"
+                },
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.atn.singleRule",
+                    "group": "antlr@3"
+                },
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.call-graph",
+                    "group": "antlr@4"
+                }
+            ]
+        },
+        "viewsContainers": {
+            "activitybar": [{
+                "id": "antlr4-ide",
+                "title": "ANTLR4 IDE",
+                "icon": "misc/antlr-logo.svg"
+            }]
+        },
+        "views": {
+            "explorer": [{
+                "id": "antlr4.imports",
+                "name": "Grammar Dependencies",
+                "when": "resourceLangId == 'antlr'"
+            }],
+            "antlr4-ide": [{
+                    "id": "antlr4.lexerSymbols",
+                    "name": "Lexer Tokens"
+                },
+                {
+                    "id": "antlr4.parserSymbols",
+                    "name": "Parser Rules"
+                },
+                {
+                    "id": "antlr4.channels",
+                    "name": "Token channels"
+                },
+                {
+                    "id": "antlr4.modes",
+                    "name": "Lexer modes"
+                }
+            ]
+        },
+        "breakpoints": [{
+            "language": "antlr"
+        }],
+        "debuggers": [{
+            "type": "antlr-debug",
+            "label": "ANTLR4 Debug",
+            "runtime": "node",
+            "configurationAttributes": {
+                "launch": {
+                    "required": [
+                        "input"
+                    ],
+                    "properties": {
+                        "input": {
+                            "type": "string",
+                            "description": "Path to a text file containing test input to parse.",
+                            "default": "input.txt"
+                        },
+                        "startRule": {
+                            "type": "string",
+                            "description": "The name of the rule to be used as entry point. If omitted the first parser rule in the grammar is used instead.",
+                            "default": ""
+                        },
+                        "grammar": {
+                            "type": "string",
+                            "description": "The path to a grammar to debug. Leave empty to debug the grammar in the active editor.",
+                            "default": null
+                        },
+                        "trace": {
+                            "type": "boolean",
+                            "description": "Log internal debugger messages to debug console.",
+                            "default": false
+                        },
+                        "printParseTree": {
+                            "type": "boolean",
+                            "description": "Print the textual parse tree in the debug console",
+                            "default": true
+                        },
+                        "visualParseTree": {
+                            "type": "boolean",
+                            "description": "Show a visual parse tree during debug",
+                            "default": true
+                        }
+                    }
+                }
+            },
+            "configurationSnippets": [{
+                "label": "ANTLR: Parse",
+                "description": "A new configuration for parsing with a grammar.",
+                "body": {
+                    "type": "antlr-debug",
+                    "request": "launch",
+                    "name": "Debug Current Grammar",
+                    "input": "input.txt",
+                    "visualParseTree": true
+                }
+            }]
+        }]
+    },
+    "scripts": {
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "publish": "vsce publish",
+        "test": "tsc && mocha ./out/test/backend/test.js"
+    },
+    "dependencies": {
+        "antlr4-c3": "^1.1.11",
+        "antlr4ts": "^0.5.0-alpha.1",
+        "await-notify": "^1.0.1",
+        "d3": "^5.7.0",
+        "fs-extra": "^6.0.1",
+        "vscode-debugadapter": "^1.33.0",
+        "vscode-debugprotocol": "^1.33.0"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.1.7",
+        "@types/d3": "^4.13.1",
+        "@types/fs-extra": "^5.0.2",
+        "@types/glob": "^5.0.36",
+        "@types/mocha": "^2.2.48",
+        "@types/node": "^8.10.39",
+        "chai": "^4.2.0",
+        "mocha": "^4.1.0",
+        "typescript": "^2.9.2",
+        "vscode": "^1.1.26"
+    }
 }

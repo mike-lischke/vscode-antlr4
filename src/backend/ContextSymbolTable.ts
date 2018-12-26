@@ -7,14 +7,12 @@
 
 "use strict";
 
-import { ParserRuleContext, CharStream } from 'antlr4ts';
-import { Interval } from 'antlr4ts/misc';
+import { ParserRuleContext } from 'antlr4ts';
 import { SymbolTable, Symbol, ScopedSymbol, SymbolTableOptions } from "antlr4-c3";
 
-import { SymbolKind, SymbolGroupKind, SymbolInfo, Definition } from '../backend/facade';
+import { SymbolKind, SymbolGroupKind, SymbolInfo } from '../backend/facade';
 import { SourceContext } from './SourceContext';
-import { ANTLRv4Parser, ModeSpecContext, GrammarSpecContext } from '../parser/ANTLRv4Parser';
-import { ParseTree, TerminalNode } from 'antlr4ts/tree';
+import { ParseTree } from 'antlr4ts/tree';
 
 type SymbolStore = Map<SymbolKind, Map<string, ParserRuleContext | undefined>>;
 
@@ -218,7 +216,7 @@ export class ContextSymbolTable extends SymbolTable {
         return result;
     }
 
-    public countReference(symbolName: string) {
+    public incrementSymbolRefCount(symbolName: string) {
         let reference = this.symbolReferences.get(symbolName);
         if (reference) {
             this.symbolReferences.set(symbolName, reference + 1);
@@ -319,6 +317,9 @@ export class RuleReferenceSymbol extends Symbol { }
 export class AlternativeSymbol extends ScopedSymbol { }
 export class EbnfSuffixSymbol extends Symbol { }
 export class OptionsSymbol extends ScopedSymbol { }
-export class ActionSymbol extends ScopedSymbol { }
 export class ArgumentSymbol extends ScopedSymbol { }
 export class OperatorSymbol extends Symbol { }
+
+export class ActionSymbol extends ScopedSymbol {
+    public isPredicate: boolean = false;
+}

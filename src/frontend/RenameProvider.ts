@@ -7,16 +7,16 @@
 
 'use strict';
 
-import { TextDocument, Position, CancellationToken, Range, Location, Uri, ProviderResult, WorkspaceEdit } from 'vscode';
+import { TextDocument, Position, CancellationToken, Range, Location, Uri, ProviderResult, WorkspaceEdit, RenameProvider } from 'vscode';
 import * as path from "path";
 import { AntlrFacade } from '../backend/facade';
 
-export class RenameProvider {
+export class AntlrRenameProvider implements RenameProvider {
     constructor(private backend: AntlrFacade) { }
 
     public provideRenameEdits(document: TextDocument, position: Position, newName: string,
         token: CancellationToken): ProviderResult<WorkspaceEdit> {
-            let info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1, false);
+            let info = this.backend.symbolInfoAtPosition(document.fileName, position.character, position.line + 1, false);
 
             if (!info) {
                 return undefined;

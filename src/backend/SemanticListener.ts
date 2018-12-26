@@ -12,7 +12,7 @@ import { ContextSymbolTable, TokenSymbol, RuleSymbol } from './ContextSymbolTabl
 import { ANTLRv4ParserListener } from '../parser/ANTLRv4ParserListener';
 import {
     TerminalRuleContext, RulerefContext, SetElementContext, LexerCommandContext, LexerRuleSpecContext,
-    ParserRuleSpecContext
+    ParserRuleSpecContext, ActionBlockContext
 } from '../parser/ANTLRv4Parser';
 
 import { Token, ParserRuleContext } from 'antlr4ts';
@@ -27,7 +27,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         if (tokenRef) {
             let symbol = tokenRef.text;
             this.checkSymbolExistance(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference", tokenRef.symbol);
-            this.symbolTable.countReference(symbol);
+            this.symbolTable.incrementSymbolRefCount(symbol);
         }
     }
 
@@ -37,7 +37,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         if (ruleRef) {
             let symbol = ruleRef.text;
             this.checkSymbolExistance(true, SymbolGroupKind.RuleRef, symbol, "Unknown parser rule", ruleRef.symbol);
-            this.symbolTable.countReference(symbol);
+            this.symbolTable.incrementSymbolRefCount(symbol);
         }
     }
 
@@ -47,7 +47,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         if (tokenRef) {
             let symbol = tokenRef.text;
             this.checkSymbolExistance(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference", tokenRef.symbol);
-            this.symbolTable.countReference(symbol);
+            this.symbolTable.incrementSymbolRefCount(symbol);
         }
     }
 
@@ -68,7 +68,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
             }
             let symbol = lexerCommandExprId.text;
             this.checkSymbolExistance(true, kind, symbol, "Unknown " + name, lexerCommandExprId.start);
-            this.symbolTable.countReference(symbol);
+            this.symbolTable.incrementSymbolRefCount(symbol);
         }
     }
 

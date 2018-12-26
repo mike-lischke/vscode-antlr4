@@ -15,7 +15,7 @@ import { ATNStateType, TransitionType } from "antlr4ts/atn";
 import { SourceContext } from './SourceContext';
 import { GrapsDebugger } from "./GrapsDebugger";
 import { ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, RuleSymbol } from "./ContextSymbolTable";
-import { ParserRuleContext } from "antlr4ts";
+import { ParserRuleContext, Vocabulary } from "antlr4ts";
 import { ScopedSymbol } from "antlr4-c3";
 
 export enum SymbolGroupKind { // Multiple symbol kinds can be involved in a symbol lookup.
@@ -417,10 +417,15 @@ export class AntlrFacade {
         this.internalReleaseGrammar(fileName);
     }
 
-    public infoForSymbol(fileName: string, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
+    public symbolInfoAtPosition(fileName: string, column: number, row: number, limitToChildren: boolean = true): SymbolInfo | undefined {
         let context = this.getContext(fileName);
         return context.symbolAtPosition(column, row, limitToChildren);
     };
+
+    public infoForSymbol(fileName: string, symbol: string): SymbolInfo | undefined {
+        let context = this.getContext(fileName);
+        return context.getSymbolInfo(symbol);
+    }
 
     public enclosingSymbolAtPosition(fileName: string, column: number, row: number,
         ruleScope: boolean = false): SymbolInfo | undefined {
@@ -428,10 +433,25 @@ export class AntlrFacade {
         return context.enclosingSymbolAtPosition(column, row, ruleScope);
     }
 
+    /**
+     * A list of symbols as collected in the symbol table.
+     * @param fileName The grammar file.
+     * @param fullList If true, includes symbols from all dependencies as well.
+     */
     public listSymbols(fileName: string, fullList: boolean): SymbolInfo[] {
         let context = this.getContext(fileName);
         return context.listSymbols(!fullList);
     };
+
+    public getLexerVocabulary(fileName: string): Vocabulary | undefined{
+        let context = this.getContext(fileName);
+        return context.getVocabulary();
+    }
+
+    public getRuleList(fileName: string): string[] | undefined {
+        let context = this.getContext(fileName);
+        return context.getRuleList();
+    }
 
     public getCodeCompletionCandidates(fileName: string, column: number, row: number): SymbolInfo[] {
         let context = this.getContext(fileName);

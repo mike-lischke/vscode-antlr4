@@ -58,7 +58,7 @@ describe('vscode-antlr4-backend:', function () {
     describe('Symbol Info Retrieval (t.g4):', function () {
         it('infoForSymbol', function () {
             let dir = process.cwd();
-            var info = backend.infoForSymbol("test/backend/t.g4", 7, 2, true);
+            var info = backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
             assert(info);
             expect(info!.name, "Test 1").to.equal("B");
             expect(info!.source, "Test 2").to.equal("test/backend/t.g4");
@@ -537,7 +537,7 @@ describe('vscode-antlr4-backend:', function () {
 
     describe('Test for Bugs:', function () {
         it("Lexer token in a set-element context", function () {
-            var info = backend.infoForSymbol("test/backend/TParser.g4", 48, 93, true);
+            var info = backend.symbolInfoAtPosition("test/backend/TParser.g4", 48, 93, true);
             assert(info, "Test 1");
             expect(info!.name, "Test 2").to.equal("Semicolon");
             expect(info!.source, "Test 3").to.equal("test/backend/TLexer.g4");

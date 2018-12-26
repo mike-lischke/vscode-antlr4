@@ -9,25 +9,18 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window, Uri } from "vscode";
+import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window } from "vscode";
 import { AntlrFacade } from "../backend/facade";
-import { DebuggerConsumer } from "./AntlrDebugAdapter";
-import { GrapsDebugger } from "../backend/GrapsDebugger";
 
-export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol>, DebuggerConsumer {
+export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol> {
     private _onDidChangeTreeData = new EventEmitter<ParserSymbol | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     constructor(private backend: AntlrFacade) { }
 
-    public debugger: GrapsDebugger;
-
-    refresh(): void {
+    refresh(fileName: string): void {
+        this.currentFile = fileName;
         this._onDidChangeTreeData.fire();
-    }
-
-    debuggerStopped(uri: Uri): void {
-        // no-op
     }
 
     getTreeItem(element: ParserSymbol): TreeItem {
@@ -36,17 +29,25 @@ export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol>, De
 
     getChildren(element?: ParserSymbol): Thenable<ParserSymbol[]> {
         if (!element) {
-            let editor = window.activeTextEditor;
-            if (this.debugger) {
-                let symbols = this.debugger.parserSymbols;
+            let rules;
+            if (this.currentFile) {
+                rules = this.backend.getRuleList(this.currentFile);
+            }
+
+            if (rules) {
                 let list: ParserSymbol[] = [];
-                for (let i = 0; i < symbols.length; ++i) {
-                    let caption = i + ": " + symbols[i];
-                    list.push(new ParserSymbol(caption, TreeItemCollapsibleState.None, {
-                        title: "<unused>",
-                        command: "",
-                        arguments: []
-                    }));
+                for (let i = 0; i < rules.length; ++i) {
+                    let caption = i + ": " + rules[i];
+                    let info = this.backend.infoForSymbol(this.currentFile!, rules[i]);
+                    let parameters: Command = { title: "", command: "" };
+                    if (info && info.definition) {
+                        parameters.title = ""
+                        parameters.command = "revealLine";
+                        parameters.arguments = [];
+                        parameters.arguments.push({ lineNumber: info.definition.range.start.row - 1, at: "top" });
+                    }
+
+                    list.push(new ParserSymbol(caption, TreeItemCollapsibleState.None, parameters));
                 }
                 return new Promise(resolve => {
                     resolve(list);
@@ -58,6 +59,8 @@ export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol>, De
             resolve([]);
         });
     }
+
+    private currentFile: string | undefined;
 }
 
 export class ParserSymbol extends TreeItem {

@@ -7,15 +7,15 @@
 
 'use strict';
 
-import { TextDocument, Position, CancellationToken, Range, Location, Uri, ProviderResult } from 'vscode';
+import { TextDocument, Position, CancellationToken, Range, Location, Uri, ProviderResult, DefinitionProvider } from 'vscode';
 import * as path from "path";
 import { AntlrFacade } from '../backend/facade';
 
-export class DefinitionProvider {
+export class AntlrDefinitionProvider implements DefinitionProvider {
     constructor(private backend: AntlrFacade) { }
 
     public provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Location> {
-        let info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1, true);
+        let info = this.backend.symbolInfoAtPosition(document.fileName, position.character, position.line + 1, true);
 
         if (!info) {
             return undefined;

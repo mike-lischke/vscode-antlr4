@@ -7,7 +7,7 @@
 
 'use strict';
 
-import { TextDocument, Position, CancellationToken, Range, Location, Uri, Hover, ProviderResult } from 'vscode';
+import { TextDocument, Position, CancellationToken, Range, Location, Uri, Hover, ProviderResult, HoverProvider } from 'vscode';
 
 import { AntlrFacade } from "../backend/facade";
 
@@ -15,11 +15,11 @@ import { symbolDescriptionFromEnum } from './Symbol';
 
 import * as path from 'path';
 
-export class HoverProvider {
+export class AntlrHoverProvider implements HoverProvider {
     constructor(private backend: AntlrFacade) { }
 
     public provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
-        let info = this.backend.infoForSymbol(document.fileName, position.character, position.line + 1, true);
+        let info = this.backend.symbolInfoAtPosition(document.fileName, position.character, position.line + 1, true);
         if (!info) {
             return undefined;
         }

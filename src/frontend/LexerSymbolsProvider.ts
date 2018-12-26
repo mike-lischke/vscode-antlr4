@@ -9,25 +9,18 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window, Uri } from "vscode";
+import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window } from "vscode";
 import { AntlrFacade } from "../backend/facade";
-import { DebuggerConsumer } from "./AntlrDebugAdapter";
-import { GrapsDebugger } from "../backend/GrapsDebugger";
 
-export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol>, DebuggerConsumer {
+export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol> {
     private _onDidChangeTreeData = new EventEmitter<LexerSymbol | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     constructor(private backend: AntlrFacade) { }
 
-    public debugger: GrapsDebugger;
-
-    refresh(): void {
+    refresh(fileName: string): void {
+        this.currentFile = fileName;
         this._onDidChangeTreeData.fire();
-    }
-
-    debuggerStopped(uri: Uri): void {
-        // no-op
     }
 
     getTreeItem(element: LexerSymbol): TreeItem {
@@ -36,26 +29,47 @@ export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol>, Debu
 
     getChildren(element?: LexerSymbol): Thenable<LexerSymbol[]> {
         if (!element) {
-            let editor = window.activeTextEditor;
-            if (this.debugger) {
-                let symbols = this.debugger.lexerSymbols;
+            let vocabulary;
+            if (this.currentFile) {
+                vocabulary = this.backend.getLexerVocabulary(this.currentFile);
+            }
+
+            if (vocabulary) {
                 let list: LexerSymbol[] = [];
-                for (let i = 0; i < symbols.length; ++i) {
-                    let [literal, symbolicName] = symbols[i];
+                list.push(new LexerSymbol("-1: EOF", TreeItemCollapsibleState.None, {
+                    title: "<unused>",
+                    command: "",
+                    arguments: []
+                }));
+
+                for (let i = 0; i <= vocabulary.maxTokenType; ++i) {
+                    let literal = vocabulary.getLiteralName(i);
+                    let symbolic = vocabulary.getSymbolicName(i);
                     let caption = "";
-                    if (!literal && !symbolicName) {
+                    if (!literal && !symbolic) {
                         caption = "<unused>";
                     } else {
-                        caption = i + ": " + symbolicName;
-                        if (literal)  {
-                            caption += ", " + literal;
+                        caption = i + ": ";
+                        if (symbolic) {
+                            caption += symbolic;
+                        } else {
+                            caption += "<implic token>"
+                        }
+
+                        if (literal) {
+                            caption += " (" + literal + ")";
                         }
                     }
-                    list.push(new LexerSymbol(caption, TreeItemCollapsibleState.None, {
-                        title: "<unused>",
-                        command: "",
-                        arguments: []
-                    }));
+
+                    let info = this.backend.infoForSymbol(this.currentFile!, symbolic ? symbolic : literal!.substr(1, literal!.length - 2));
+                    let parameters: Command = { title: "", command: "" };
+                    if (info && info.definition) {
+                        parameters.title = ""
+                        parameters.command = "revealLine";
+                        parameters.arguments = [];
+                        parameters.arguments.push({ lineNumber: info.definition.range.start.row - 1, at: "top" });
+                    }
+                    list.push(new LexerSymbol(caption, TreeItemCollapsibleState.None, parameters));
                 }
                 return new Promise(resolve => {
                     resolve(list);
@@ -68,6 +82,7 @@ export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol>, Debu
         });
     }
 
+    private currentFile: string | undefined;
 }
 
 export class LexerSymbol extends TreeItem {

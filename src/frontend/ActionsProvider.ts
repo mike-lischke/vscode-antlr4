@@ -14,30 +14,24 @@ import { DebuggerConsumer } from "./AntlrDebugAdapter";
 import { AntlrFacade } from "../backend/facade";
 import { GrapsDebugger } from "../backend/GrapsDebugger";
 
-export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, DebuggerConsumer {
-    private _onDidChangeTreeData = new EventEmitter<ChannelEntry | undefined>();
+export class ActionsProvider implements TreeDataProvider<ActionEntry> {
+    private _onDidChangeTreeData = new EventEmitter<ActionEntry | undefined>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     constructor(private backend: AntlrFacade) { }
-
-    public debugger: GrapsDebugger;
 
     refresh(): void {
         this._onDidChangeTreeData.fire();
     }
 
-    debuggerStopped(uri: Uri): void {
-        // no-op
-    }
-
-    getTreeItem(element: ChannelEntry): TreeItem {
+    getTreeItem(element: ActionEntry): TreeItem {
         return element;
     }
 
-    getChildren(element?: ChannelEntry): Thenable<ChannelEntry[]> {
-        if (!element) {
+    getChildren(element?: ActionEntry): Thenable<ActionEntry[]> {
+        if (!element) {/*
             if (this.debugger) {
-                let list: ChannelEntry[] = [];
+                let list: ActionEntry[] = [];
                 for (let channel of this.debugger.channels) {
                     if (!channel || channel == "null") {
                         continue;
@@ -51,7 +45,7 @@ export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, Debugge
                 return new Promise(resolve => {
                     resolve(list);
                 });
-            }
+            }*/
         }
 
         return new Promise(resolve => {
@@ -61,7 +55,7 @@ export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, Debugge
 
 }
 
-export class ChannelEntry extends TreeItem {
+export class ActionEntry extends TreeItem {
 
     constructor(
         public readonly label: string,
@@ -77,5 +71,5 @@ export class ChannelEntry extends TreeItem {
         dark: path.join(__dirname, '..', '..', '..', 'misc', 'channel.svg')
     };
 
-    contextValue = 'channels';
+    contextValue = 'actions';
 }

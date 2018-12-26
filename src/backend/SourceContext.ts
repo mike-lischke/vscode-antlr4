@@ -15,7 +15,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import {
-    ANTLRInputStream, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext
+    ANTLRInputStream, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext, Vocabulary
 } from 'antlr4ts';
 import {
     PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState
@@ -142,6 +142,18 @@ export class SourceContext {
 
     public listSymbols(includeDependencies: boolean): SymbolInfo[] {
         return this.symbolTable.listSymbols(includeDependencies);
+    }
+
+    public getVocabulary(): Vocabulary | undefined {
+        if (this.grammarLexerData) {
+            return this.grammarLexerData.vocabulary;
+        }
+    }
+
+    public getRuleList(): string[] | undefined {
+        if (this.grammarParserData) {
+            return this.grammarParserData.ruleNames;
+        }
     }
 
     public getCodeCompletionCandidates(column: number, row: number): SymbolInfo[] {
