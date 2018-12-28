@@ -223,6 +223,8 @@ export class DetailsListener implements ANTLRv4ParserListener {
             let child = (this.currentSymbol as ScopedSymbol).lastChild;
             if (child instanceof ActionSymbol) {
                 child.isPredicate = true;
+                let questionMark = this.symbolTable.addNewSymbolOfType(TokenReferenceSymbol, this.currentSymbol as ScopedSymbol, '?');
+                questionMark.context = ctx.QUESTION();
             }
         }
     }
@@ -232,6 +234,8 @@ export class DetailsListener implements ANTLRv4ParserListener {
             let child = (this.currentSymbol as ScopedSymbol).lastChild;
             if (child instanceof ActionSymbol) {
                 child.isPredicate = true;
+                let questionMark = this.symbolTable.addNewSymbolOfType(TokenReferenceSymbol, this.currentSymbol as ScopedSymbol, '?');
+                questionMark.context = ctx.QUESTION();
             }
         }
     }

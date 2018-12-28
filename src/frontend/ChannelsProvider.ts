@@ -9,36 +9,21 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window, Uri } from "vscode";
-import { DebuggerConsumer } from "./AntlrDebugAdapter";
-import { AntlrFacade } from "../backend/facade";
-import { GrapsDebugger } from "../backend/GrapsDebugger";
+import { TreeItem, TreeItemCollapsibleState, Command, Event } from "vscode";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
-export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, DebuggerConsumer {
-    private _onDidChangeTreeData = new EventEmitter<ChannelEntry | undefined>();
-    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-    constructor(private backend: AntlrFacade) { }
-
-    public debugger: GrapsDebugger;
-
-    refresh(): void {
-        this._onDidChangeTreeData.fire();
-    }
-
-    debuggerStopped(uri: Uri): void {
-        // no-op
-    }
-
-    getTreeItem(element: ChannelEntry): TreeItem {
-        return element;
-    }
+export class ChannelsProvider extends AntlrTreeDataProvider<ChannelEntry> {
 
     getChildren(element?: ChannelEntry): Thenable<ChannelEntry[]> {
         if (!element) {
-            if (this.debugger) {
+            var channels;
+            if (this.currentFile) {
+                channels = this.backend.getChannels(this.currentFile);
+            }
+
+            if (channels) {
                 let list: ChannelEntry[] = [];
-                for (let channel of this.debugger.channels) {
+                for (let channel of channels) {
                     if (!channel || channel == "null") {
                         continue;
                     }
@@ -58,7 +43,6 @@ export class ChannelsProvider implements TreeDataProvider<ChannelEntry>, Debugge
             resolve([]);
         });
     }
-
 }
 
 export class ChannelEntry extends TreeItem {

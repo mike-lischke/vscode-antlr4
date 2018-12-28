@@ -9,23 +9,10 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window } from "vscode";
-import { AntlrFacade } from "../backend/facade";
+import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
-export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol> {
-    private _onDidChangeTreeData = new EventEmitter<LexerSymbol | undefined>();
-    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-    constructor(private backend: AntlrFacade) { }
-
-    refresh(fileName: string): void {
-        this.currentFile = fileName;
-        this._onDidChangeTreeData.fire();
-    }
-
-    getTreeItem(element: LexerSymbol): TreeItem {
-        return element;
-    }
+export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
 
     getChildren(element?: LexerSymbol): Thenable<LexerSymbol[]> {
         if (!element) {
@@ -65,9 +52,8 @@ export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol> {
                     let parameters: Command = { title: "", command: "" };
                     if (info && info.definition) {
                         parameters.title = ""
-                        parameters.command = "revealLine";
-                        parameters.arguments = [];
-                        parameters.arguments.push({ lineNumber: info.definition.range.start.row - 1, at: "top" });
+                        parameters.command = "antlr.selectGrammarRange";
+                        parameters.arguments = [ info.definition!.range ];
                     }
                     list.push(new LexerSymbol(caption, TreeItemCollapsibleState.None, parameters));
                 }
@@ -81,8 +67,6 @@ export class LexerSymbolsProvider implements TreeDataProvider<LexerSymbol> {
             resolve([]);
         });
     }
-
-    private currentFile: string | undefined;
 }
 
 export class LexerSymbol extends TreeItem {

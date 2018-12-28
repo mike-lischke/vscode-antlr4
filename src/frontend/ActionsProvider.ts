@@ -9,43 +9,34 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window, Uri } from "vscode";
-import { DebuggerConsumer } from "./AntlrDebugAdapter";
-import { AntlrFacade } from "../backend/facade";
-import { GrapsDebugger } from "../backend/GrapsDebugger";
+import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
+import { SymbolInfo } from "../backend/facade";
 
-export class ActionsProvider implements TreeDataProvider<ActionEntry> {
-    private _onDidChangeTreeData = new EventEmitter<ActionEntry | undefined>();
-    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-    constructor(private backend: AntlrFacade) { }
-
-    refresh(): void {
-        this._onDidChangeTreeData.fire();
-    }
-
-    getTreeItem(element: ActionEntry): TreeItem {
-        return element;
-    }
+export class ActionsProvider extends AntlrTreeDataProvider<ActionEntry> {
 
     getChildren(element?: ActionEntry): Thenable<ActionEntry[]> {
-        if (!element) {/*
-            if (this.debugger) {
-                let list: ActionEntry[] = [];
-                for (let channel of this.debugger.channels) {
-                    if (!channel || channel == "null") {
-                        continue;
-                    }
-                    list.push(new ChannelEntry(channel, TreeItemCollapsibleState.None, {
-                        title: "<unused>",
-                        command: "",
-                        arguments: []
-                    }));
+        if (!element) {
+            let actions: SymbolInfo[] = [];
+            if (this.currentFile) {
+                actions = this.backend.listActions(this.currentFile);
+            }
+
+            let list: ActionEntry[] = [];
+            for (let action of actions) {
+                let caption = action.description!.substr(1, action.description!.length - 2);
+                if (caption.includes("\n")) {
+                    caption = "<multi line block>";
                 }
-                return new Promise(resolve => {
-                    resolve(list);
-                });
-            }*/
+                list.push(new ActionEntry(caption.trim(), action.isPredicate || false, TreeItemCollapsibleState.None, {
+                    title: "",
+                    command: "antlr.selectGrammarRange",
+                    arguments: [ action.definition!.range ]
+                }));
+            }
+            return new Promise(resolve => {
+                resolve(list);
+            });
         }
 
         return new Promise(resolve => {
@@ -57,19 +48,16 @@ export class ActionsProvider implements TreeDataProvider<ActionEntry> {
 
 export class ActionEntry extends TreeItem {
 
-    constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
-        command_?: Command
-    ) {
-        super(label, collapsibleState);
+    constructor(label: string, isPredicate: boolean, state: TreeItemCollapsibleState, command_?: Command) {
+        super(label, state);
         this.command = command_;
-    }
 
-    iconPath = {
-        light: path.join(__dirname, '..', '..', '..', 'misc', 'channel.svg'),
-        dark: path.join(__dirname, '..', '..', '..', 'misc', 'channel.svg')
-    };
+        this.iconPath = {
+            light: path.join(__dirname, '..', '..', '..', 'misc', (isPredicate ? 'predicate' : 'action') + '.svg'),
+            dark: path.join(__dirname, '..', '..', '..', 'misc', (isPredicate ? 'predicate' : 'action') + '.svg')
+        };
+
+    }
 
     contextValue = 'actions';
 }

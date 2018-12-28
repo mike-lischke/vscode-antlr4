@@ -181,39 +181,6 @@ export class GrapsDebugger extends EventEmitter {
         return result;
     }
 
-    public get lexerSymbols(): [string | undefined, string | undefined][] {
-        let result: [string | undefined, string | undefined][] = [];
-        let vocab = this.lexer.vocabulary;
-        for (let i = 0; i <= vocab.maxTokenType; ++i) {
-            result.push([vocab.getLiteralName(i), vocab.getSymbolicName(i)]);
-        }
-
-        return result;
-    }
-
-    public get parserSymbols(): string[] {
-        if (!this.parser) {
-            return [];
-        }
-        return this.parser.ruleNames;
-    }
-
-    public get channels(): string[] {
-        if (!this.lexerData) {
-            return [];
-        }
-
-        return this.lexerData.channels;
-    }
-
-    public get modes(): string[] {
-        if (!this.lexerData) {
-            return [];
-        }
-
-        return this.lexerData.modes;
-    }
-
     public get errorCount(): number {
         if (!this.parser) {
             return 0;

@@ -9,23 +9,10 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window } from "vscode";
-import { AntlrFacade } from "../backend/facade";
+import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
-export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol> {
-    private _onDidChangeTreeData = new EventEmitter<ParserSymbol | undefined>();
-    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-    constructor(private backend: AntlrFacade) { }
-
-    refresh(fileName: string): void {
-        this.currentFile = fileName;
-        this._onDidChangeTreeData.fire();
-    }
-
-    getTreeItem(element: ParserSymbol): TreeItem {
-        return element;
-    }
+export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbol> {
 
     getChildren(element?: ParserSymbol): Thenable<ParserSymbol[]> {
         if (!element) {
@@ -42,9 +29,8 @@ export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol> {
                     let parameters: Command = { title: "", command: "" };
                     if (info && info.definition) {
                         parameters.title = ""
-                        parameters.command = "revealLine";
-                        parameters.arguments = [];
-                        parameters.arguments.push({ lineNumber: info.definition.range.start.row - 1, at: "top" });
+                        parameters.command = "antlr.selectGrammarRange";
+                        parameters.arguments = [ info.definition!.range ];
                     }
 
                     list.push(new ParserSymbol(caption, TreeItemCollapsibleState.None, parameters));
@@ -59,8 +45,6 @@ export class ParserSymbolsProvider implements TreeDataProvider<ParserSymbol> {
             resolve([]);
         });
     }
-
-    private currentFile: string | undefined;
 }
 
 export class ParserSymbol extends TreeItem {

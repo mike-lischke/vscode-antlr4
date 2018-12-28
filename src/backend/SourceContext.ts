@@ -141,7 +141,7 @@ export class SourceContext {
     }
 
     public listSymbols(includeDependencies: boolean): SymbolInfo[] {
-        return this.symbolTable.listSymbols(includeDependencies);
+        return this.symbolTable.listTopLevelSymbols(includeDependencies);
     }
 
     public getVocabulary(): Vocabulary | undefined {
@@ -154,6 +154,22 @@ export class SourceContext {
         if (this.grammarParserData) {
             return this.grammarParserData.ruleNames;
         }
+    }
+
+    public getChannels(): string[] | undefined {
+        if (this.grammarLexerData) {
+            return this.grammarLexerData.channels;
+        }
+    }
+
+    public getModes(): string[] | undefined {
+        if (this.grammarLexerData) {
+            return this.grammarLexerData.modes;
+        }
+    }
+
+    public listActions(): SymbolInfo[] {
+        return this.symbolTable.listActions();
     }
 
     public getCodeCompletionCandidates(column: number, row: number): SymbolInfo[] {

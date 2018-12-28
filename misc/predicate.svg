@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0" y="0" width="16" height="16" viewBox="0, 0, 16, 16">
+  <g id="Ebene_1">
+    <path d="M3.062,10 C1.958,10 1.063,9.105 1.063,8 C1.063,6.895 1.958,6 3.062,6 C4.167,6 5.062,6.895 5.062,8 C5.062,9.105 4.167,10 3.062,10 z" fill="#1FD6DA"/>
+    <path d="M3.188,8.062 L12.25,13.562" fill-opacity="0" stroke="#1FD6DA" stroke-width="1"/>
+    <path d="M3.188,8.062 L12.25,2.688" fill-opacity="0" stroke="#1FD6DA" stroke-width="1" stroke-dasharray="1,3,3,2,2,1"/>
+    <path d="M12,15.312 C10.895,15.312 10,14.417 10,13.312 C10,12.208 10.895,11.312 12,11.312 C13.105,11.312 14,12.208 14,13.312 C14,14.417 13.105,15.312 12,15.312 z" fill="#1FD6DA"/>
+    <path d="M12,4.688 C10.895,4.688 10,3.792 10,2.688 C10,1.583 10.895,0.688 12,0.688 C13.105,0.688 14,1.583 14,2.688 C14,3.792 13.105,4.688 12,4.688 z" fill="#1FD6DA"/>
+  </g>
+</svg>

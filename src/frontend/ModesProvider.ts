@@ -9,26 +9,10 @@
 
 import * as path from "path";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, Event, EventEmitter, window, Uri } from "vscode";
-import { AntlrFacade } from "../backend/facade";
-import { DebuggerConsumer } from "./AntlrDebugAdapter";
-import { GrapsDebugger } from "../backend/GrapsDebugger";
+import { TreeItem, TreeItemCollapsibleState, Command, Event } from "vscode";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
-export class ModesProvider implements TreeDataProvider<ModeEntry>, DebuggerConsumer {
-    private _onDidChangeTreeData = new EventEmitter<ModeEntry | undefined>();
-    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-    constructor(private backend: AntlrFacade) { }
-
-    public debugger: GrapsDebugger;
-
-    refresh(): void {
-        this._onDidChangeTreeData.fire();
-    }
-
-    debuggerStopped(uri: Uri): void {
-        // no-op
-    }
+export class ModesProvider extends AntlrTreeDataProvider<ModeEntry> {
 
     getTreeItem(element: ModeEntry): TreeItem {
         return element;
@@ -36,10 +20,14 @@ export class ModesProvider implements TreeDataProvider<ModeEntry>, DebuggerConsu
 
     getChildren(element?: ModeEntry): Thenable<ModeEntry[]> {
         if (!element) {
-            let editor = window.activeTextEditor;
-            if (this.debugger) {
+            var modes;
+            if (this.currentFile) {
+                modes = this.backend.getModes(this.currentFile);
+            }
+
+            if (modes) {
                 let list: ModeEntry[] = [];
-                for (let mode of this.debugger.modes) {
+                for (let mode of modes) {
                     list.push(new ModeEntry(mode, TreeItemCollapsibleState.None, {
                         title: "<unused>",
                         command: "",

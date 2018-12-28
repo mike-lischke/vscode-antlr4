@@ -13,8 +13,8 @@ import * as Net from 'net';
 
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
-    commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, StatusBarAlignment, OutputChannel,
-    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult
+    commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, OutputChannel, Selection,
+    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult, TextEditorRevealType
 } from 'vscode';
 
 import { AntlrHoverProvider } from './frontend/HoverProvider';
@@ -25,18 +25,22 @@ import { AntlrCompletionItemProvider } from './frontend/CompletionItemProvider';
 import { AntlrRailroadDiagramProvider } from './frontend/RailroadDiagramProvider';
 import { AntlrATNGraphProvider } from "./frontend/ATNGraphProvider";
 import { AntlrFormattingProvider } from "./frontend/FormattingProvider";
-import { ImportsProvider } from "./frontend/ImportsProvider";
 import { AntlrCallGraphProvider } from "./frontend/CallGraphProvider";
+
+import { ImportsProvider } from "./frontend/ImportsProvider";
 import { LexerSymbolsProvider } from "./frontend/LexerSymbolsProvider";
 import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
 import { ChannelsProvider } from "./frontend/ChannelsProvider";
 import { ModesProvider } from "./frontend/ModesProvider";
+import { ActionsProvider } from "./frontend/ActionsProvider";
+
 import { AntlrParseTreeProvider } from "./frontend/ParseTreeProvider";
 import { AntlrRenameProvider } from "./frontend/RenameProvider";
 
 import { ProgressIndicator } from "./frontend/ProgressIndicator";
 import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
-import { DiagnosticType, AntlrFacade, GenerationOptions } from "./backend/facade";
+
+import { DiagnosticType, AntlrFacade, GenerationOptions, LexicalRange } from "./backend/facade";
 
 const ANTLR = { language: 'antlr', scheme: 'file' };
 
@@ -52,8 +56,9 @@ let lexerSymbolsProvider: LexerSymbolsProvider;
 let parserSymbolsProvider: ParserSymbolsProvider;
 let channelsProvider: ChannelsProvider;
 let modesProvider: ModesProvider;
-let parseTreeProvider: AntlrParseTreeProvider;
+let actionsProvider: ActionsProvider;
 
+let parseTreeProvider: AntlrParseTreeProvider;
 let codeLensProvider: AntlrCodeLensProvider;
 
 export function activate(context: ExtensionContext) {
@@ -146,13 +151,15 @@ export function activate(context: ExtensionContext) {
     modesProvider = new ModesProvider(backend);
     context.subscriptions.push(window.registerTreeDataProvider("antlr4.modes", modesProvider));
 
+    actionsProvider = new ActionsProvider(backend);
+    context.subscriptions.push(window.registerTreeDataProvider("antlr4.actions", actionsProvider));
+
     parseTreeProvider = new AntlrParseTreeProvider(backend, context);
 
     // Initialize certain providers.
     let editor = window.activeTextEditor;
     if (editor && editor.document.languageId == "antlr" && editor.document.uri.scheme === "file") {
-        lexerSymbolsProvider.refresh(editor.document.fileName);
-        parserSymbolsProvider.refresh(editor.document.fileName);
+        updateTreeProviders(editor.document);
     }
 
     // Helper commands.
@@ -160,6 +167,19 @@ export function activate(context: ExtensionContext) {
         workspace.openTextDocument(grammar).then((document) => {
             window.showTextDocument(document, 0, false);
         });
+    }));
+
+    context.subscriptions.push(commands.registerCommand("antlr.selectGrammarRange", (range: LexicalRange) => {
+        if (window.activeTextEditor) {
+            window.activeTextEditor.selection = new Selection(
+                range.start.row - 1, range.start.column,
+                range.end.row - 1, range.end.column + 1
+            );
+            window.activeTextEditor.revealRange(
+                new Range(range.start.row - 1, range.start.column, range.end.row - 1, range.end.column + 1),
+                TextEditorRevealType.InCenterIfOutsideViewport
+            );
+        }
     }));
 
     //----- Events -----
@@ -195,7 +215,6 @@ export function activate(context: ExtensionContext) {
                 backend.reparse(fileName);
 
                 diagramProvider.update(window.activeTextEditor!);
-                importsProvider.refresh();
                 callGraphProvider.update(window.activeTextEditor!);
                 processDiagnostic(event.document);
                 codeLensProvider.refresh();
@@ -217,9 +236,7 @@ export function activate(context: ExtensionContext) {
     });
 
     window.onDidChangeActiveTextEditor((editor: TextEditor) => {
-        importsProvider.refresh();
-        lexerSymbolsProvider.refresh(editor.document.fileName);
-        parserSymbolsProvider.refresh(editor.document.fileName);
+        updateTreeProviders(editor.document);
     });
 
     function processDiagnostic(document: TextDocument) {
@@ -317,8 +334,7 @@ export function activate(context: ExtensionContext) {
 
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true }).then(() => {
                 atnGraphProvider.update(window.activeTextEditor!, true);
-                lexerSymbolsProvider.refresh(document.fileName);
-                parserSymbolsProvider.refresh(document.fileName);
+                updateTreeProviders(document);
 
                 progress.stopAnimation();
             });
@@ -328,6 +344,15 @@ export function activate(context: ExtensionContext) {
             outputChannel.appendLine(error);
             outputChannel.show(true);
         });
+    }
+
+    function updateTreeProviders(document: TextDocument) {
+        lexerSymbolsProvider.refresh(document);
+        parserSymbolsProvider.refresh(document);
+        importsProvider.refresh(document);
+        channelsProvider.refresh(document);
+        modesProvider.refresh(document);
+        actionsProvider.refresh(document);
     }
 } // activate() function
 

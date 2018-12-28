@@ -8,30 +8,20 @@
 "use strict"
 
 import * as path from "path";
-import * as fs from "fs";
 
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState, Command, EventEmitter, Event, window } from "vscode";
-import { AntlrFacade } from "../backend/facade";
+import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
-export class ImportsProvider implements TreeDataProvider<Import> {
-    private _onDidChangeTreeData = new EventEmitter<Import | undefined>();
-    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-    constructor(private backend: AntlrFacade) { }
-
-    refresh(): void {
-        this._onDidChangeTreeData.fire();
-    }
-
-    getTreeItem(element: Import): TreeItem {
-        return element;
-    }
+export class ImportsProvider extends AntlrTreeDataProvider<Import> {
 
     getChildren(element?: Import): Thenable<Import[]> {
         if (!element) {
-            let editor = window.activeTextEditor;
-            if (editor && editor.document.languageId === "antlr") {
-                let dependencies = this.backend.getDependencies(editor.document.fileName);
+            let dependencies;
+            if (this.currentFile) {
+                dependencies = this.backend.getDependencies(this.currentFile);
+            }
+
+            if (dependencies) {
                 let imports: Import[] = [];
                 for (let dep of dependencies) {
                     imports.push(new Import(path.basename(dep), TreeItemCollapsibleState.None, {
@@ -50,7 +40,6 @@ export class ImportsProvider implements TreeDataProvider<Import> {
             resolve([]);
         });
     }
-
 }
 
 export class Import extends TreeItem {

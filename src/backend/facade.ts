@@ -63,8 +63,9 @@ export class SymbolInfo {
     kind: SymbolKind;
     name: string;
     source: string;
-    definition: Definition | undefined;
-    description: string | undefined; // Used for code completion. Provides a small description for certain symbols.
+    definition?: Definition;
+    description?: string;  // Used for code completion. Provides a small description for certain symbols.
+    isPredicate?: boolean; // Used only for actions.
 };
 
 export enum DiagnosticType {
@@ -434,7 +435,8 @@ export class AntlrFacade {
     }
 
     /**
-     * A list of symbols as collected in the symbol table.
+     * Returns a list of symbols from a file (and optionally its depdencies).
+     *
      * @param fileName The grammar file.
      * @param fullList If true, includes symbols from all dependencies as well.
      */
@@ -443,14 +445,54 @@ export class AntlrFacade {
         return context.listSymbols(!fullList);
     };
 
+    /**
+     * Returns the vocabulary for the given file (if it contains lexer rules).
+     *
+     * @param fileName The grammar file.
+     */
     public getLexerVocabulary(fileName: string): Vocabulary | undefined{
         let context = this.getContext(fileName);
         return context.getVocabulary();
     }
 
+    /**
+     * Returns a list of rule names for the given file (if it contains parser rules).
+     *
+     * @param fileName The grammar file.
+     */
     public getRuleList(fileName: string): string[] | undefined {
         let context = this.getContext(fileName);
         return context.getRuleList();
+    }
+
+    /**
+     * Returns a list of channel names for the given file (if it contains lexer rules).
+     *
+     * @param fileName The grammar file.
+     */
+    public getChannels(fileName: string): string[] | undefined {
+        let context = this.getContext(fileName);
+        return context.getChannels();
+    }
+
+    /**
+     * Returns a list of lexer modes for the given file (if it contains lexer rules).
+     *
+     * @param fileName The grammar file.
+     */
+    public getModes(fileName: string): string[] | undefined {
+        let context = this.getContext(fileName);
+        return context.getModes();
+    }
+
+    /**
+     * Returns a list of actions + predicates found in the given file.
+     *
+     * @param fileName The grammar file.
+     */
+    public listActions(fileName: string): SymbolInfo[] {
+        let context = this.getContext(fileName);
+        return context.listActions();
     }
 
     public getCodeCompletionCandidates(fileName: string, column: number, row: number): SymbolInfo[] {

@@ -7,7 +7,7 @@
 
 "use strict"
 
-import { workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, Command, EventEmitter, Event } from "vscode";
+import { workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, EventEmitter, Event } from "vscode";
 import { SymbolInfo, AntlrFacade, SymbolKind } from "../backend/facade";
 
 class SymbolCodeLens extends CodeLens {
@@ -16,17 +16,13 @@ class SymbolCodeLens extends CodeLens {
     }
 };
 
-
-export class AntlrCodeLensProvider implements CodeLensProvider {    
-    // from https://github.com/eamodio/vscode-gitlens/blob/806a9f312be3f034ba052a573ed400709a9b6cb3/src/codelens/gitCodeLensProvider.ts#L81-L100
+export class AntlrCodeLensProvider implements CodeLensProvider {
     private _onDidChangeCodeLenses = new EventEmitter<void>();
-    public get onDidChangeCodeLenses(): Event<void> {
-        return this._onDidChangeCodeLenses.event;
-    }
-    
+    readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
+
     constructor(private backend: AntlrFacade) { }
 
-    public refresh(reason?: 'idle' | 'saved') {
+    public refresh() {
         this._onDidChangeCodeLenses.fire();
     }
 

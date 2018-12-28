@@ -395,18 +395,13 @@
         },
         "viewsContainers": {
             "activitybar": [{
-                "id": "antlr4-ide",
-                "title": "ANTLR4 IDE",
+                "id": "antlr4-view",
+                "title": "ANTLR4 View",
                 "icon": "misc/antlr-logo.svg"
             }]
         },
         "views": {
-            "explorer": [{
-                "id": "antlr4.imports",
-                "name": "Grammar Dependencies",
-                "when": "resourceLangId == 'antlr'"
-            }],
-            "antlr4-ide": [{
+            "antlr4-view": [{
                     "id": "antlr4.lexerSymbols",
                     "name": "Lexer Tokens"
                 },
@@ -415,12 +410,20 @@
                     "name": "Parser Rules"
                 },
                 {
+                    "id": "antlr4.imports",
+                    "name": "Grammar Dependencies"
+                },
+                {
                     "id": "antlr4.channels",
-                    "name": "Token channels"
+                    "name": "Token Channels"
                 },
                 {
                     "id": "antlr4.modes",
-                    "name": "Lexer modes"
+                    "name": "Lexer Modes"
+                },
+                {
+                    "id": "antlr4.actions",
+                    "name": "Actions & Semantic Predicates"
                 }
             ]
         },

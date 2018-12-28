@@ -12,7 +12,7 @@ import { SymbolTable, Symbol, ScopedSymbol, SymbolTableOptions } from "antlr4-c3
 
 import { SymbolKind, SymbolGroupKind, SymbolInfo } from '../backend/facade';
 import { SourceContext } from './SourceContext';
-import { ParseTree } from 'antlr4ts/tree';
+import { ParseTree, TerminalNode } from 'antlr4ts/tree';
 
 type SymbolStore = Map<SymbolKind, Map<string, ParserRuleContext | undefined>>;
 
@@ -179,7 +179,7 @@ export class ContextSymbolTable extends SymbolTable {
         return result;
     }
 
-    public listSymbols(localOnly: boolean): SymbolInfo[] {
+    public listTopLevelSymbols(localOnly: boolean): SymbolInfo[] {
         let result: SymbolInfo[] = [];
 
         result.push(...this.symbolsOfType(TokenVocabSymbol, localOnly));
@@ -193,6 +193,34 @@ export class ContextSymbolTable extends SymbolTable {
         result.push(...this.symbolsOfType(BuiltInChannelSymbol, localOnly));
         result.push(...this.symbolsOfType(TokenChannelSymbol, localOnly));
         result.push(...this.symbolsOfType(RuleSymbol, localOnly));
+
+        return result;
+    }
+
+    public listActions(): SymbolInfo[] {
+        let result: SymbolInfo[] = [];
+        let actions = this.getNestedSymbolsOfType(ActionSymbol);
+        for (let action of actions) {
+            let definition = SourceContext.definitionForContext(action.context, true);
+            if (action.isPredicate) {
+                // Extend the range to the following QUESTION token, if this action is actually a predicate.
+                let questionMark = action.nextSibling;
+                if (questionMark) {
+                    let context = questionMark.context as TerminalNode;
+                    definition!.range.end.row = context.symbol.line;
+                    definition!.range.end.column = context.symbol.charPositionInLine;
+                }
+            }
+
+            result.push({
+                kind: SourceContext.getKindFromSymbol(action),
+                name: action.name,
+                source: this.owner ? this.owner.fileName : "",
+                definition: definition,
+                isPredicate: action.isPredicate,
+                description: action.context!.text
+            });
+        }
 
         return result;
     }
