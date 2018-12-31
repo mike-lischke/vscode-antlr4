@@ -47,9 +47,9 @@ This release adds a live visual parse tree and fixes a number of bugs. See also 
 ### More Informations
 There are a number documentation files for specific topics:
 
-* [Extension Settings](extension-settings.md)
+* [Extension Settings](doc/extension-settings.md)
 * [Parser generation](doc/parser-generation.md)
-* [Grammar Debugging](docs/grammars-debugging.md)
+* [Grammar Debugging](doc/grammars-debugging.md)
 * [Graphical Visualizations](doc/graphical-visualizations.md)
 * [Grammar Formatting](doc/formatting.md)
 
