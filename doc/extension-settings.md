@@ -1,11 +1,11 @@
 # Extension Settings
-The vscode-antlr4 extension can be configured in many ways support your preferred working style. Below is a grouped list of all currently supported settings.
+The vscode-antlr4 extension can be configured in many ways to support your preferred working style. Below is a grouped list of all currently supported settings.
 
 ## General
 
 * **antlr4.referencesCodeLens.enabled**, boolean (default: false), if true enables the reference count display via Code Lens
 * **antlr4.customcss**, array of string (no default), list of custom css URIs for diagrams/graphs
-* **antlr4.rrd.saveDir**, string (no default), default export target folder for railroad diagrams
+* **antlr4.rrd.saveDir**, string (no default), default export target folder for railroad (syntax) diagrams
 * **antlr4.call-graph.saveDir**, string (no default), default export target folder for call graphs
 * **antlr4.atn.saveDir**, string (no default), default export target folder for atn graph
 * **antlr4.atn.maxLabelCount**, number (default: 3), max number of labels displayed on a transition in an ATN graph
@@ -15,7 +15,7 @@ The vscode-antlr4 extension can be configured in many ways support your preferre
 This is a settings object named **antl4.generation** with the following members:
 
 * **mode**, string enum (default: "internal"), determines what code generation pattern should be followed:
-    * **none**: don't generate any code, not even for internal use
+    * **none**: don't generate any code, not even for internal use (note: this value will disable grammar debugging)
     * **internal**: allow code generation for internal use (e.g. for full error detection and interpreter data)
     * **external**: generate code also for external use, depending on the other generation options
 * **outputDir**, string (default: empty/undefined), determines the output folder where to place generated code (used only if **mode** is set to `external`)

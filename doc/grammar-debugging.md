@@ -1,7 +1,7 @@
 # Debugging ANTLR4 grammars
 
 ## Introduction
-Debugging a grammar requires a few preparations. You can debug either a currently loaded grammar (which must be the active tab while starting the debug process) or use any grammar on disk. In either case you must have created interpreter data at least once, by saving the grammar in Visual Studio Code. See also [Parser Generation](parser-generation.md) for more details about generating a lexer/parser from your grammar.
+Debugging a grammar requires a few preparations, but most of the prerequisites are included already. Only a valid Java installation is required, which can be reached without an explicit path. You can debug either a currently loaded grammar (which must be the active tab while starting the debug process) or use any grammar on disk. In either case you must have created interpreter data at least once, by saving the grammar in Visual Studio Code. See also [Parser Generation](parser-generation.md) for more details about generating a lexer/parser from your grammar.
 
 The extension supports debugging of grammar files (parser rules only). At least internal code generation must be enabled to allow debugging (which is the default and requires a usable Java installation). This implementation depends on the interpreter data export introduced in ANTLR4 4.7.1 (which is hence the lowest supported ANTLR4 version).
 
@@ -63,11 +63,11 @@ If the `PredicateEvaluator` class cannot be found in the module's exports the ex
 var serverVersion = 123;
 function doesItBlend() { return true; }
 
-export function evaluateLexerPredicate (lexer, ruleIndex, actionIndex, predicate) {
+module.exports.evaluateLexerPredicate = function (lexer, ruleIndex, actionIndex, predicate) {
     return eval(predicate);
 }
 
-export function evaluateParserPredicate (parser, ruleIndex, actionIndex, predicate) {
+module.exports.evaluateParserPredicate = function (parser, ruleIndex, actionIndex, predicate) {
     return eval(predicate);
 }
 ```
