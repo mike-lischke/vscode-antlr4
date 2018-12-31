@@ -12,22 +12,26 @@ import { EventEmitter } from "events";
 import {
     LexerInterpreter, ParserInterpreter, TokenStream, ANTLRInputStream,
     CommonTokenStream, CommonToken, ParserRuleContext, RecognitionException, ANTLRErrorListener,
-    Recognizer, Token, Lexer, BufferedTokenStream
+    Recognizer, Token, Lexer, RuleContext, Vocabulary, CharStream, Parser
 } from "antlr4ts";
+
 import {
-    RuleStartState, ATNState, ATNStateType, TransitionType, Transition
+    RuleStartState, ATNState, ATNStateType, TransitionType, Transition, ATN
 } from "antlr4ts/atn";
+
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 
 import { Symbol, ScopedSymbol, BlockSymbol, VariableSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
-    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange
+    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange, SymbolInfo
 } from "../backend/facade";
+
 import {
     AlternativeSymbol, ContextSymbolTable, RuleReferenceSymbol, EbnfSuffixSymbol, RuleSymbol, ActionSymbol
 } from "./ContextSymbolTable";
+
 import { SourceContext } from "./SourceContext";
 
 export interface GrapsBreakPoint {
@@ -47,11 +51,23 @@ export interface GrapsStackFrame {
  * This class provides debugging support for a grammar.
  */
 export class GrapsDebugger extends EventEmitter {
-    constructor(private contexts: SourceContext[]) {
+    constructor(private contexts: SourceContext[], actionFile: string) {
         super();
 
         if (this.contexts.length == 0) {
             return;
+        }
+
+        if (actionFile) {
+            // Always fully reload the script to allow changing it between parse runs.
+            delete require.cache[require.resolve(actionFile)];
+            const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
+            if (PredicateEvaluator) {
+                this.predicateEvaluator = new PredicateEvaluator();
+            } else {
+                this.evaluateLexerPredicate = evaluateLexerPredicate;
+                this.evaluateParserPredicate = evaluateParserPredicate;
+            }
         }
 
         // The context list contains all dependencies of the main grammar (which is the first entry).
@@ -77,7 +93,7 @@ export class GrapsDebugger extends EventEmitter {
 
             if (this.lexerData) {
                 let stream = new ANTLRInputStream("");
-                this.lexer = new LexerInterpreter(lexerName, this.lexerData.vocabulary,
+                this.lexer = new GrapsLexerInterpreter(this, this.contexts[0], lexerName, this.lexerData.vocabulary,
                     this.lexerData.modes, this.lexerData.ruleNames, this.lexerData.atn, stream);
                 this.lexer.removeErrorListeners();
                 this.lexer.addErrorListener(new DebuggerLexerErrorListener(this));
@@ -644,13 +660,60 @@ export class GrapsDebugger extends EventEmitter {
     private lexerData: InterpreterData | undefined;
     private parserData: InterpreterData | undefined;
 
-    private lexer: LexerInterpreter;
+    private lexer: GrapsLexerInterpreter;
     private tokenStream: CommonTokenStream;
     private parser: GrapsParserInterpreter | undefined;
     private parseTree: ParserRuleContext | undefined;
 
     private breakPoints: Map<number, GrapsBreakPoint> = new Map();
     private nextBreakPointId = 0;
+
+    // Evaluation is possible either via an evaluator class or 2 evaluator functions.
+    public predicateEvaluator?: PredicateEvaluator;
+    public evaluateLexerPredicate?: (lexer: Lexer, ruleIndex: number, actionIndex: number, predicate: string) => boolean;
+    public evaluateParserPredicate?: (parser: Parser, ruleIndex: number, actionIndex: number, predicate: string) => boolean;
+}
+
+interface PredicateEvaluator {
+    evaluateLexerPredicate(recognizer: Lexer, ruleIndex: number, actionIndex: number, predicate: string): boolean;
+    evaluateParserPredicate(recognizer: Parser, ruleIndex: number, actionIndex: number, predicate: string): boolean;
+}
+
+class GrapsLexerInterpreter extends LexerInterpreter {
+    constructor(
+        private _debugger: GrapsDebugger,
+        private mainContext: SourceContext,
+        grammarFileName: string,
+        vocabulary: Vocabulary,
+        modeNames: string[],
+        ruleNames: string[],
+        atn: ATN,
+        input: CharStream) {
+        super(grammarFileName, vocabulary, modeNames, ruleNames, atn, input);
+
+        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol).filter((action => action.isPredicate ));
+    }
+
+    sempred(_localctx: RuleContext | undefined, ruleIndex: number, actionIndex: number): boolean {
+        if (this._debugger.evaluateLexerPredicate || this._debugger.predicateEvaluator) {
+            if (actionIndex < this.predicates.length) {
+                let predicate = this.predicates[actionIndex].context!.text;
+                predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                try {
+                    if (this._debugger.predicateEvaluator) {
+                        return this._debugger.predicateEvaluator.evaluateLexerPredicate(this, ruleIndex, actionIndex, predicate);
+                    } else if (this._debugger.evaluateLexerPredicate) {
+                        return this._debugger.evaluateLexerPredicate(this, ruleIndex, actionIndex, predicate);
+                    }
+                } catch (e) {
+                    throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);
+                }
+            }
+        }
+        return true;
+    }
+
+    private predicates: ActionSymbol[];
 }
 
 class GrapsParserInterpreter extends ParserInterpreter {
@@ -665,11 +728,13 @@ class GrapsParserInterpreter extends ParserInterpreter {
         input: TokenStream
     ) {
         super(mainContext.fileName, parserData.vocabulary, parserData.ruleNames, parserData.atn, input);
+        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol).filter((action => action.isPredicate ));
     }
 
     start(startRuleIndex: number) {
         this.pauseRequested = false;
         this.callStack = [];
+
         let startRuleStartState: RuleStartState = this._atn.ruleToStartState[startRuleIndex];
 
         this._rootContext = this.createInterpreterRuleContext(undefined, ATNState.INVALID_STATE_NUMBER, startRuleIndex);
@@ -831,7 +896,31 @@ class GrapsParserInterpreter extends ParserInterpreter {
         }
     }
 
+    sempred(_localctx: RuleContext | undefined, ruleIndex: number, actionIndex: number): boolean {
+        if (this._debugger.evaluateParserPredicate || this._debugger.predicateEvaluator) {
+            if (actionIndex < this.predicates.length) {
+                let predicate = this.predicates[actionIndex].context!.text;
+                predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                try {
+                    if (this._debugger.predicateEvaluator) {
+                        return this._debugger.predicateEvaluator.evaluateParserPredicate(this, ruleIndex, actionIndex, predicate);
+                    } else if (this._debugger.evaluateParserPredicate) {
+                        return this._debugger.evaluateParserPredicate(this, ruleIndex, actionIndex, predicate);
+                    }
+                } catch (e) {
+                    throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);
+                }
+            }
+        }
+        return true;
+    }
+
+    action(_localctx: RuleContext | undefined, ruleIndex: number, actionIndex: number): void {
+        let i = 0;
+    }
+
     private startIsPrecedenceRule: boolean;
+    private predicates: ActionSymbol[];
 }
 
 enum RunMode { Normal, StepIn, StepOver, StepOut };

@@ -29,6 +29,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     input: string;
     startRule: string;
     grammar: string;
+    actionFile: string;
     stopOnEntry?: boolean;
     trace?: boolean;
     printParseTree?: boolean;
@@ -83,8 +84,16 @@ export class AntlrDebugSession extends LoggingDebugSession {
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
+        if (args.actionFile) {
+            if (!fs.existsSync(args.actionFile)) {
+                window.showInformationMessage("Cannot find file for semantic predicate evaluation. No evaluation will take place.");
+            } else {
+
+            }
+        }
+
         try {
-            this.setup(args.grammar);
+            this.setup(args.grammar, args.actionFile);
             for (let consumer of this.consumers) {
                 consumer.debugger = this.debugger!;
                 consumer.refresh();
@@ -163,7 +172,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
         const stack = this.debugger!.currentStackTrace;
         let frames: StackFrame[] = [];
-        for (let i = 0; i < stack.length; ++i) {
+        for (let i = startFrame; i < stack.length; ++i) {
             let entry = stack[i];
             let frame: StackFrame;
             if (entry.next[0]) {
@@ -180,7 +189,11 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 );
             }
             frames.push(frame);
+            if (frames.length > maxLevels) {
+                break;
+            }
         }
+
         response.body = {
             stackFrames: frames,
             totalFrames: stack.length
@@ -313,9 +326,9 @@ export class AntlrDebugSession extends LoggingDebugSession {
         this.sendResponse(response);
     }
 
-    private setup(grammar: string) {
+    private setup(grammar: string, actionFile: string) {
         let basePath = path.dirname(grammar);
-        this.debugger = this.backend.createDebugger(grammar, path.join(basePath, ".antlr"));
+        this.debugger = this.backend.createDebugger(grammar, actionFile, path.join(basePath, ".antlr"));
         if (!this.debugger) {
             throw Error("Debugger creation failed. There are grammar errors.");
         }

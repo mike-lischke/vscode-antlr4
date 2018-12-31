@@ -397,6 +397,12 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
             }
         }
 
+        if (config.actionFile) {
+            if (!path.isAbsolute(config.actionFile) && folder) {
+                config.actionFile = path.join(folder.uri.fsPath, config.actionFile);
+            }
+        }
+
         if (!config.grammar) {
             const editor = window.activeTextEditor;
             if (editor && editor.document.languageId === 'antlr') {

@@ -30,6 +30,11 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
+        "configurationDefaults": {
+            "antlr": {
+                "editor.wordBasedSuggestions": false
+            }
+        },
         "languages": [{
             "id": "antlr",
             "aliases": [
@@ -453,6 +458,11 @@
                         "grammar": {
                             "type": "string",
                             "description": "The path to a grammar to debug. Leave empty to debug the grammar in the active editor.",
+                            "default": null
+                        },
+                        "actionFile": {
+                            "type": "string",
+                            "description": "The path to a JS file which can evaluate semantic predicates and handle actions from grammars.",
                             "default": null
                         },
                         "trace": {

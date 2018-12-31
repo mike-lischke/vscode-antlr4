@@ -634,7 +634,7 @@ export class AntlrFacade {
         return context.hasErrors;
     }
 
-    public createDebugger(fileName: string, dataDir: string): GrapsDebugger | undefined {
+    public createDebugger(fileName: string, actionFile: string, dataDir: string): GrapsDebugger | undefined {
         let context = this.getContext(fileName);
         if (!context) {
             return;
@@ -654,6 +654,6 @@ export class AntlrFacade {
             }
         }
 
-        return new GrapsDebugger([...contexts]);
+        return new GrapsDebugger([...contexts], actionFile);
     }
 }
