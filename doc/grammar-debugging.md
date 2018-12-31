@@ -24,7 +24,7 @@ When enabled in the launch task setup, a graphical parse tree is shown in an own
 
 This graphical parse tree is interactive. You can collapse/expand parser rule nodes to hide/show tree parts. Both, a horizontal and a vertical graph layout is supported and you can switch between the standard (compact) tree layout or the cluster layout, where all terminals are aligned at the bottom or on the right hand side (depending on the layout).
 
-As with all graphs in this extension, you can export it to an SVG file, along with custom or built-in CSS code to style the parse tree.
+As with all graphs in this extension, you can export it to an SVG file, along with custom or built-in CSS code to style the parse tree. There are 2 user settings that determine the initial orientation and the layout of the tree. You can read details in [Extension Settings](extension-settings.md#debugging).
 
 ### Actions and Semantic Predicates
 Grammars sometimes contain code in the target language of the generated lexer/parser. That can be support code in named actions (e.g. `import` or `#include` statements), other code within rules to support the parsing process or semantic predicates, to guide the parser. However, because this extension uses the interpreters for debugging it is not possible to run any of this code directly (even if the predicates are written in JS, let alone other languages). And since named and unnamed actions are usually to support the generated parser (and mostly not relevant for debugging), they are ignored by the extension debugger. However, for predicates there's an approach to simulate what the generated lexer/parser would do.
@@ -48,7 +48,7 @@ export class PredicateEvaluator {
         return eval(predicate);
     }
 
-	// Add here any function you need for evaluation.
+    // Add here any function you need for evaluation.
     doesItBlend() { return true; }
 }
 ```
@@ -114,11 +114,11 @@ A typical launch config looks like this:
 }
 ```
 
-The values for `type` and `request` are fixed and mandatory. Everything else can be changed to your liking. The config contains paths for the test input file and the grammar to debug. If no grammar is given then the content of the currently active editor (which must contain am ANTLR4 grammar) is used instead. The input file however is mandatory. The `actionFile` parameter is however again optional and refers to a file that must be structured as described in the [Actions and Semantic Predicates](#actions-and-semantic-predicates) section.
+The values for `type` and `request` are fixed and mandatory. Everything else can be changed to your liking. The config contains paths for the test input file and the grammar to debug. If no grammar is given then the content of the currently active editor (which must contain am ANTLR4 grammar) is used instead. The input file obviously must be specified or there's nothing to parse. The optional `actionFile` parameter refers to a file that must be structured as described in the [Actions and Semantic Predicates](#actions-and-semantic-predicates) section.
 
 To tell the interperter where to start parsing we need a start rule. You can omit that, in which case the interpreter starts with the first parser rule in the grammar. However, specifying it allows to parse only a sublange (say, only expressions) or other subrules, instead of the entire possible language. A great possibility to focus only on those parts of your grammar that need fixing.
 
-The 2 boolean parameters refer to visualizations. `printParseTree` causes the debugger to print a textual parse tree to the `DEBUG CONSOLE` window, after a debug session has finished. The `visualParseTree` parameter however makes the debugger to generate a graphical parse tree that will grow on each stop as you step through your grammar.
+The 2 boolean parameters determine visualizations. The entry `printParseTree` causes the debugger to print a textual parse tree to the `DEBUG CONSOLE` window, after a debug session has finished. The `visualParseTree` parameter however lets it generate a graphical parse tree that will grow on each debug stop as you step through your grammar.
 
 ## Debugging
 #### Breakpoints
