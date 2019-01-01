@@ -45,11 +45,11 @@ This release adds a live visual parse tree and fixes a number of bugs. See also 
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-8.png)
 
 ### More Informations
-There are a number documentation files for specific topics:
+There are a number of documentation files for specific topics:
 
 * [Extension Settings](doc/extension-settings.md)
 * [Parser generation](doc/parser-generation.md)
-* [Grammar Debugging](doc/grammars-debugging.md)
+* [Grammar Debugging](doc/grammar-debugging.md)
 * [Graphical Visualizations](doc/graphical-visualizations.md)
 * [Grammar Formatting](doc/formatting.md)
 
