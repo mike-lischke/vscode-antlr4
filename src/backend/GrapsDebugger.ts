@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -25,7 +25,7 @@ import { Symbol, ScopedSymbol, BlockSymbol, VariableSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
-    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange, SymbolInfo
+    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange
 } from "../backend/facade";
 
 import {
@@ -33,6 +33,7 @@ import {
 } from "./ContextSymbolTable";
 
 import { SourceContext } from "./SourceContext";
+import { LexerElementContext, ElementContext } from "../parser/ANTLRv4Parser";
 
 export interface GrapsBreakPoint {
     source: string;
@@ -691,19 +692,21 @@ class GrapsLexerInterpreter extends LexerInterpreter {
         input: CharStream) {
         super(grammarFileName, vocabulary, modeNames, ruleNames, atn, input);
 
-        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol).filter((action => action.isPredicate ));
+        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol).filter(
+            (action => action.isPredicate && action.context!.parent instanceof LexerElementContext)
+        );
     }
 
-    sempred(_localctx: RuleContext | undefined, ruleIndex: number, actionIndex: number): boolean {
+    sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
         if (this._debugger.evaluateLexerPredicate || this._debugger.predicateEvaluator) {
-            if (actionIndex < this.predicates.length) {
-                let predicate = this.predicates[actionIndex].context!.text;
+            if (predIndex < this.predicates.length) {
+                let predicate = this.predicates[predIndex].context!.text;
                 predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
                 try {
                     if (this._debugger.predicateEvaluator) {
-                        return this._debugger.predicateEvaluator.evaluateLexerPredicate(this, ruleIndex, actionIndex, predicate);
+                        return this._debugger.predicateEvaluator.evaluateLexerPredicate(this, ruleIndex, predIndex, predicate);
                     } else if (this._debugger.evaluateLexerPredicate) {
-                        return this._debugger.evaluateLexerPredicate(this, ruleIndex, actionIndex, predicate);
+                        return this._debugger.evaluateLexerPredicate(this, ruleIndex, predIndex, predicate);
                     }
                 } catch (e) {
                     throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);
@@ -728,7 +731,9 @@ class GrapsParserInterpreter extends ParserInterpreter {
         input: TokenStream
     ) {
         super(mainContext.fileName, parserData.vocabulary, parserData.ruleNames, parserData.atn, input);
-        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol).filter((action => action.isPredicate ));
+        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol).filter(
+            (action => action.isPredicate && action.context!.parent instanceof ElementContext)
+        );
     }
 
     start(startRuleIndex: number) {
@@ -896,16 +901,16 @@ class GrapsParserInterpreter extends ParserInterpreter {
         }
     }
 
-    sempred(_localctx: RuleContext | undefined, ruleIndex: number, actionIndex: number): boolean {
+    sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
         if (this._debugger.evaluateParserPredicate || this._debugger.predicateEvaluator) {
-            if (actionIndex < this.predicates.length) {
-                let predicate = this.predicates[actionIndex].context!.text;
+            if (predIndex < this.predicates.length) {
+                let predicate = this.predicates[predIndex].context!.text;
                 predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
                 try {
                     if (this._debugger.predicateEvaluator) {
-                        return this._debugger.predicateEvaluator.evaluateParserPredicate(this, ruleIndex, actionIndex, predicate);
+                        return this._debugger.predicateEvaluator.evaluateParserPredicate(this, ruleIndex, predIndex, predicate);
                     } else if (this._debugger.evaluateParserPredicate) {
-                        return this._debugger.evaluateParserPredicate(this, ruleIndex, actionIndex, predicate);
+                        return this._debugger.evaluateParserPredicate(this, ruleIndex, predIndex, predicate);
                     }
                 } catch (e) {
                     throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);

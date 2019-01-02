@@ -1,9 +1,7 @@
 # Debugging ANTLR4 grammars
 
 ## Introduction
-Debugging a grammar requires a few preparations, but most of the prerequisites are included already. Only a valid Java installation is required, which can be reached without an explicit path. You can debug either a currently loaded grammar (which must be the active tab while starting the debug process) or use any grammar on disk. In either case you must have created interpreter data at least once, by saving the grammar in Visual Studio Code. See also [Parser Generation](parser-generation.md) for more details about generating a lexer/parser from your grammar.
-
-The extension supports debugging of grammar files (parser rules only). At least internal code generation must be enabled to allow debugging (which is the default and requires a usable Java installation). This implementation depends on the interpreter data export introduced in ANTLR4 4.7.1 (which is hence the lowest supported ANTLR4 version).
+Debugging a grammar requires only a few things, since most of the prerequisites are included already. Only a valid Java installation is required to allow generating the interpreter data. Both, combined and separate grammars can be debugged, though only the parser rules can be stepped through. In either case you must have created interpreter data at least once, by saving the grammar in Visual Studio Code. See also [Parser Generation](parser-generation.md) for more details about generating a lexer/parser from your grammar.
 
 ## Feature Overview
 ### Operations
@@ -15,14 +13,14 @@ The extension supports debugging of grammar files (parser rules only). At least 
 	* **Step out of the current parser rule** - ditto
 
 ### Textual Parse Tree
-Once a parse run finished a textual parse tree can be printed to the `DEBUG CONSOLE` panel in vscode (see the Setup section for how to enable it). This is a simple text-only representation much like a simple tree dump (but formatted).
+Once a parse run finished a textual parse tree can be printed to the `DEBUG CONSOLE` panel in vscode (see the [Setup](#setup) section for how to enable it). This is a simple text-only representation much like a simple tree dump (but formatted).
 
 ### Live Graphical Parse Tree
 When enabled in the launch task setup, a graphical parse tree is shown in an own editor tab, which updates on each debugging step:
 
 ![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/live-parse-tree.gif)
 
-This graphical parse tree is interactive. You can collapse/expand parser rule nodes to hide/show tree parts. Both, a horizontal and a vertical graph layout is supported and you can switch between the standard (compact) tree layout or the cluster layout, where all terminals are aligned at the bottom or on the right hand side (depending on the layout).
+This graphical parse tree is interactive. You can collapse/expand parser rule nodes to hide/show tree parts. Two possible layouts exist (horizontal and vertical) and you can switch between the standard (compact) tree layout or the cluster layout, where all terminals are aligned at the bottom or on the right hand side (depending on the layout).
 
 As with all graphs in this extension, you can export it to an SVG file, along with custom or built-in CSS code to style the parse tree. There are 2 user settings that determine the initial orientation and the layout of the tree. You can read details in [Extension Settings](extension-settings.md#debugging).
 
@@ -114,27 +112,23 @@ A typical launch config looks like this:
 }
 ```
 
-The values for `type` and `request` are fixed and mandatory. Everything else can be changed to your liking. The config contains paths for the test input file and the grammar to debug. If no grammar is given then the content of the currently active editor (which must contain am ANTLR4 grammar) is used instead. The input file obviously must be specified or there's nothing to parse. The optional `actionFile` parameter refers to a file that must be structured as described in the [Actions and Semantic Predicates](#actions-and-semantic-predicates) section.
+The value for `type` must be "antlr-debug" to denote a debug configuration for ANLTR4 grammars. For `request` "launch" must be set (attach is not supported and doesn't make sense, since we have no process to attach to). A name for the config is also mandatory as well as the name of the test input file. The rest is optional. If no grammar is given then the content of the currently active editor (which must contain am ANTLR4 grammar) is used instead. A message will be shown if there is no active ANTLR4 grammar in vscode. The optional `actionFile` parameter refers to a file that must be structured as described in the [Actions and Semantic Predicates](#actions-and-semantic-predicates) section.
 
-To tell the interperter where to start parsing we need a start rule. You can omit that, in which case the interpreter starts with the first parser rule in the grammar. However, specifying it allows to parse only a sublange (say, only expressions) or other subrules, instead of the entire possible language. A great possibility to focus only on those parts of your grammar that need fixing.
+To tell the interperter where to start parsing we need a start rule. You can omit that, in which case the interpreter starts with the first parser rule in the grammar. However, specifying it allows to parse only a sublanguage (say, only expressions) or other subrules, instead of the entire possible language. A great possibility to focus only on those parts of your grammar that need fixing.
 
-The 2 boolean parameters determine visualizations. The entry `printParseTree` causes the debugger to print a textual parse tree to the `DEBUG CONSOLE` window, after a debug session has finished. The `visualParseTree` parameter however lets it generate a graphical parse tree that will grow on each debug stop as you step through your grammar.
+The 2 boolean parameters determine visualizations. The entry `printParseTree` causes the debugger to print a textual parse tree to the `DEBUG CONSOLE` window, after a debug session has finished. The `visualParseTree` parameter however lets it generate a graphical parse tree that will grow on each debug step.
 
 ## Debugging
 #### Breakpoints
 
-Breakpoints can be set for rule enter and rule exit. Currently no intermediate lines are supported. Breakpoints set within a rule are moved automatically to the rule name line and act as rule enter breakpoints.
+Breakpoints can be set for parser rule enter and exit. Currently no intermediate lines are supported. Breakpoints set within a rule are moved automatically to the rule name line and act as rule enter breakpoints. If rule enter and exit are on the same source line exit takes precedence.
 
 #### Debug Informations
-During debugging a number of standard and extra views give you grammar details:
+During debugging the following parsing details are shown:
 
 * Variables - a few global values like the used test input and its size, the current error count and the lexed input tokens.
 * Call stack - the parser rule invocation stack.
 * Breakpoints - rule enter + exit breakpoints.
-* Lexer Tokens - a list of all defined lexer tokens, along with their assigned index.
-* Parser Rules - a list of all defined parser rules, along with their assigned index.
-* Lexer Modes - a list of all defined lexer modes (including the default mode).
-* Token Channels - a list of used token channels (including predefined ones).
 
 #### Limitations
 The debugger uses the lexer and parser interpreters found in the ANTLR4 runtime. These interpreters use the same prediction engine as the standard classes, but cannot execute any target runtime code. Hence it is not possible to execute actions or semantic predicates. If your parser depends on that, you will have to modify your grammar(s) to avoid the need for such code. There are however considerations about using an answer file or similar to fake the output of predicates.
@@ -144,12 +138,3 @@ The interpreters are implemented in Typescript and transpiled to Javascript, hen
 Even though ANTLR4 supports (direct) left recursive rules, their internal representation is totally different (they are converted to non-left-recursive rules). This makes it fairly difficult to match the currently executing ATN state to a concrete source position. Expect therefor non-optimal step marker visualization in such rules.
 
 Parser rule context variables, parameters and return values cannot be inspected, as they don't exist in the interpreter generated parse tree.
-
-###Debugging
-
-This is a settings object named **antlr4.debug** with the following members:
-
-* **visualParseTreeHorizontal**: boolean (default: true) Determines if parse trees by default use the horizontal layout (when true) or the vertical orientation (when false).
-* **visualParseTreeClustered**: boolean (default: false) When set to true parse trees will align their terminal nodes on a single row or column (depending on the orientation).
-
-## Troubleshooting

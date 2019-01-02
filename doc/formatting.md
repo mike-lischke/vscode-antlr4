@@ -4,7 +4,7 @@ The extension is able to format grammar source code, considering a [large set of
 
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-9.png)
 
-The formatting feature can be controlled by special comments, which allow to switch a setting on the fly. You can even completely switch off formatting for a file or a part of it. Below are some examples for such a formatting comment. You can use boolean values (on, off, true, false), numbers and identifiers (for word options). They are not case-sensitive.
+The formatting feature can be controlled dynamically by special comments in the grammar source, which allow to switch a setting on the fly. You can even completely switch off formatting for a file or a part of it. Below are some examples for such a formatting comment. You can use boolean values (on, off, true, false), numbers and identifiers (for word options). They are not case-sensitive.
 
 ```
 // $antlr-format on

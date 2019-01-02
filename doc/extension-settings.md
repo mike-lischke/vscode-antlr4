@@ -18,9 +18,9 @@ This is a settings object named **antl4.generation** with the following members:
     * **none**: don't generate any code, not even for internal use (note: this value will disable grammar debugging)
     * **internal**: allow code generation for internal use (e.g. for full error detection and interpreter data)
     * **external**: generate code also for external use, depending on the other generation options
-* **outputDir**, string (default: empty/undefined), determines the output folder where to place generated code (used only if **mode** is set to `external`)
-* **importDir**, string (default: empty/undefined), location to import grammars from (relative to the grammar that is being saved, or absolute path), used also for internal code generation
-* **package**, string (default: empty/undefined), package/namespace for generated code (used only in external mode)
+* **outputDir**, string (default: undefined), determines the output folder where to place generated code (considered only if **mode** is set to `external`)
+* **importDir**, string (default: undefined), location to import grammars from (relative to the grammar that is being saved, or an absolute path), used also for internal code generation
+* **package**, string (default: undefined), package/namespace for generated code (used only in external mode)
 * **language**, string (default: "Java"), specifies the target language for the generated code, overriding what is specified in the grammar (used only in external mode)
 * **listeners**, boolean (default: true), also create listeners on code generation (used only in external mode)
 * **visitors**, boolean (default: false), also create visitors on code generation (used only in external mode)

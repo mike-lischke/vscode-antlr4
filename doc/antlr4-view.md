@@ -1,4 +1,5 @@
-# Parser Generation
+# The ANTLR4 View
 
-When enabled the extension creates parser and lexer files on each save of your grammar. This can either be used for internal operations only (e.g. to find detailed error information or to generate railroad diagrams and debugger data) or to generate these files for your own use. Furthermore, interpreter data is generated which is used to generate the ATN graphs or run the debugger. This generation process can be fine tuned by a number of settings (see below).
+The extension adds an own icon to the action bar of vscode.
 
+![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-view.png)
