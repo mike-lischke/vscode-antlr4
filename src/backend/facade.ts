@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -13,7 +13,7 @@ import * as path from "path";
 import { ATNStateType, TransitionType } from "antlr4ts/atn";
 
 import { SourceContext } from './SourceContext';
-import { GrapsDebugger } from "./GrapsDebugger";
+import { GrammarDebugger } from "./GrammarDebugger";
 import { ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, RuleSymbol } from "./ContextSymbolTable";
 import { ParserRuleContext, Vocabulary } from "antlr4ts";
 import { ScopedSymbol } from "antlr4-c3";
@@ -624,6 +624,11 @@ export class AntlrFacade {
         return context.generateSentences(options, definitions);
     }
 
+    public lexTestInput(fileName: string, input: string, actionFile?: string): [string[], string] {
+        let context = this.getContext(fileName);
+        return context.lexTestInput(input, actionFile);
+    }
+
     public formatGrammar(fileName: string, options: FormattingOptions, start: number, stop: number): [string, number, number] {
         let context = this.getContext(fileName);
         return context.formatGrammar(options, start, stop);
@@ -634,7 +639,7 @@ export class AntlrFacade {
         return context.hasErrors;
     }
 
-    public createDebugger(fileName: string, actionFile: string, dataDir: string): GrapsDebugger | undefined {
+    public createDebugger(fileName: string, actionFile: string, dataDir: string): GrammarDebugger | undefined {
         let context = this.getContext(fileName);
         if (!context) {
             return;
@@ -654,6 +659,6 @@ export class AntlrFacade {
             }
         }
 
-        return new GrapsDebugger([...contexts], actionFile);
+        return new GrammarDebugger([...contexts], actionFile);
     }
 }

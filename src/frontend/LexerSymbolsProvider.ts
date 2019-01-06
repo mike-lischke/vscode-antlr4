@@ -32,15 +32,14 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
                 for (let i = 0; i <= vocabulary.maxTokenType; ++i) {
                     let literal = vocabulary.getLiteralName(i);
                     let symbolic = vocabulary.getSymbolicName(i);
-                    let caption = "";
+                    let caption = i + ": ";
                     if (!literal && !symbolic) {
-                        caption = "<unused>";
+                        caption += "<unused>";
                     } else {
-                        caption = i + ": ";
                         if (symbolic) {
                             caption += symbolic;
                         } else {
-                            caption += "<implic token>"
+                            caption += "<implicit token>"
                         }
 
                         if (literal) {

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -10,9 +10,10 @@
 import * as fs from "fs";
 
 import {
-    ATN, ATNState, ATNStateType, BlockStartState, DecisionState, ATNType, PlusBlockStartState, StarLoopEntryState, TransitionType, RuleTransition, BlockEndState, StarBlockStartState, RuleStartState, LoopEndState, NotSetTransition
+    ATN, ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType, RuleTransition,
+    StarBlockStartState, RuleStartState, LoopEndState, NotSetTransition
 } from "antlr4ts/atn";
-import { Vocabulary, Token } from "antlr4ts";
+import { Vocabulary } from "antlr4ts";
 
 import { SentenceGenerationOptions } from "../backend/facade";
 import { IntervalSet } from "antlr4ts/misc";
@@ -28,7 +29,7 @@ export class SentenceGenerator {
      */
     constructor(private atn: ATN, private ruleMap: ReadonlyMap<string, number>,
         private vocabulary: Vocabulary, private lexerRuleNames: string[],
-        private parserRuleNames: string[]) {
+        private parserRuleNames?: string[]) {
     }
 
     public generate(options: SentenceGenerationOptions, start: RuleStartState, definitions?: Map<string, string>): string[] {
@@ -55,6 +56,40 @@ export class SentenceGenerator {
         if (flag) {
             return ["Error: all paths in this rule lead to endless recursion."];
         }
+        return result;
+    }
+
+    /**
+     * Generates a list of number combinations, where each number represents an index into a list of alternatives
+     * whose count is given in the input values.
+     *
+     * @param values A list of alt counts in several blocks.
+     * @param count The number of combinations that should be returned.
+     */
+    private generateRandomCombinations(values: number[], count: number): number[][] {
+        // Start with the overall count of all possible combinations.
+        var total = 1;
+        for (let value of values) {
+            total *= value;
+        }
+
+        let result: number[][] = [];
+        for (let i = 0; i < count; ++i) {
+            let randomIndex = Math.floor(Math.random() * total);
+            let combination: number[] = Array(values.length).fill(0);
+
+            // Convert the random index into individual indexes in the input value array.
+            // We use a variant of converting a number from base 10 to a different number system,
+            // only that the base is not constant (different counts in each value field).
+            let combinationIndex = 0;
+            while (randomIndex > 0) {
+                combination[combinationIndex] = randomIndex % values[combinationIndex];
+                randomIndex = Math.floor(randomIndex / values[combinationIndex]);
+                ++combinationIndex;
+            }
+            result.push(combination);
+        }
+
         return result;
     }
 
@@ -196,7 +231,7 @@ export class SentenceGenerator {
         while (run != stop) {
             switch (run.stateType) {
                 case ATNStateType.BLOCK_START: {
-                    let subResult = this.generateFromLexerBlock(run as BlockStartState, loopCounts[loopIndex], false);
+                    let subResult = this.generateFromLexerBlock(run as BlockStartState, loopCounts[loopIndex]);
                     result = this.combine(result, subResult, "");
 
                     // Blocks may not use all the length we allowed for,
@@ -214,7 +249,7 @@ export class SentenceGenerator {
 
                 case ATNStateType.PLUS_BLOCK_START: {
                     while (loopCounts[loopIndex] > 0) {
-                        let subResult = this.generateFromLexerBlock(run as BlockStartState, loopCounts[loopIndex], false);
+                        let subResult = this.generateFromLexerBlock(run as BlockStartState, loopCounts[loopIndex]);
                         result = this.combine(result, subResult, "");
 
                         // Each loop run may produce results with more than one char length.
@@ -237,7 +272,7 @@ export class SentenceGenerator {
                     let end = loopStart.endState;
 
                     while (loopCounts[loopIndex] > 0) {
-                        let subResult = this.generateFromLexerBlock(loopStart, loopCounts[loopIndex], false);
+                        let subResult = this.generateFromLexerBlock(loopStart, loopCounts[loopIndex]);
                         result = this.combine(result, subResult, "");
 
                         // Each loop run may produce results with more than one char length.
@@ -330,22 +365,9 @@ export class SentenceGenerator {
     /**
      * Processes a non-loop block (all-path setting applies here).
      */
-    private generateFromLexerBlock(start: BlockStartState, availableLength: number, allPaths: boolean): string[] {
-        let fixedIndex = -1;
-        if (!allPaths) {
-            fixedIndex = Math.floor(Math.random() * start.numberOfTransitions);
-        }
-
-        let result: string[] = [];
-        for (let i = 0; i < start.numberOfTransitions; ++i) {
-            if (fixedIndex > -1 && i != fixedIndex) {
-                continue;
-            }
-
-            result.push(...this.generateFromLexerSequence(start.transition(i).target, start.endState, availableLength));
-        }
-
-        return result;
+    private generateFromLexerBlock(start: BlockStartState, availableLength: number): string[] {
+        let fixedIndex = Math.floor(Math.random() * start.numberOfTransitions);
+        return this.generateFromLexerSequence(start.transition(fixedIndex).target, start.endState, availableLength);
     }
 
     /**
@@ -366,7 +388,7 @@ export class SentenceGenerator {
 
             //console.log(start.ruleIndex + " (" + this.parserRuleNames[start.ruleIndex] + ")");
             this.parserStack.push(start.ruleIndex);
-            this.parserStack2.push(this.parserRuleNames[start.ruleIndex]);
+            this.parserStack2.push(this.parserRuleNames![start.ruleIndex]);
         }
 
         let run = start;
@@ -431,7 +453,7 @@ export class SentenceGenerator {
                             run = (transition as RuleTransition).followState;
                             let ruleStart = transition.target as RuleStartState;
 
-                            let ruleName = this.parserRuleNames[ruleStart.ruleIndex];
+                            let ruleName = this.parserRuleNames![ruleStart.ruleIndex];
                             if (ruleName && this.definitions.has(ruleName)) {
                                 result = this.combine(result, [this.definitions.get(ruleName)!], " ");
                                 continue;

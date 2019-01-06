@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, Mike Lischke
+ * Copyright (c) 2018, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -14,11 +14,11 @@ import * as vscode from "vscode";
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
-import { GrapsDebugger } from "../backend/GrapsDebugger";
+import { GrammarDebugger } from "../backend/GrammarDebugger";
 
 export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerConsumer {
 
-    public debugger: GrapsDebugger;
+    public debugger: GrammarDebugger;
 
     refresh(): void {
         if (this.lastEditor) {

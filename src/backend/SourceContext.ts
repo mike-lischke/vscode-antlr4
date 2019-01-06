@@ -51,6 +51,7 @@ import {
 
 import { SentenceGenerator } from "./SentenceGenerator";
 import { GrammarFormatter } from "./Formatter";
+import { GrammarLexerInterpreter, InterpreterLexerErrorListener } from './GrammarInterpreters';
 
 enum GrammarType { Unknown, Parser, Lexer, Combined };
 
@@ -864,14 +865,15 @@ export class SourceContext {
      * @returns A list of strings with sentences that this grammar would successfully parse.
      */
     public generateSentences(options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
-        if (!this.grammarLexerData || !this.grammarParserData) {
+        if (!this.grammarLexerData) {
             // Requires a generation run.
             return [];
         }
         let isLexerRule = options.startRule[0] == options.startRule[0].toUpperCase();
 
         let generator = new SentenceGenerator(this.grammarLexerData.atn, this.grammarLexerRuleMap,
-            this.grammarLexerData.vocabulary!, this.grammarLexerData.ruleNames, this.grammarParserData.ruleNames);
+            this.grammarLexerData.vocabulary!, this.grammarLexerData.ruleNames,
+                this.grammarParserData ? this.grammarParserData.ruleNames : undefined);
 
         let start: RuleStartState;
         if (isLexerRule) {
@@ -881,7 +883,10 @@ export class SourceContext {
             }
             start = this.grammarLexerData.atn.ruleToStartState[index];
         } else {
-            let index = this.grammarParserRuleMap.get(options.startRule);
+            if (!this.grammarParserData) {
+                return [];
+            }
+                let index = this.grammarParserRuleMap.get(options.startRule);
             if (index == undefined) {
                 return [];
             }
@@ -889,6 +894,45 @@ export class SourceContext {
         }
 
         return generator.generate(options, start, definitions);
+    }
+
+    /**
+     * Testing support: take the input and run it through the lexer interpreter to see if it produces correct tokens.
+     * @returns A tuple with recognized token names and an error message, if an error occured.
+     */
+    public lexTestInput(input: string, actionFile?: string): [string[], string] {
+        let result: string[] = [];
+        let error = "";
+
+        if (this.grammarLexerData) {
+            let predicateEvaluator;
+            if (actionFile) {
+                delete require.cache[require.resolve(actionFile)];
+                const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
+                if (PredicateEvaluator) {
+                    predicateEvaluator = new PredicateEvaluator();
+                } else {
+                    predicateEvaluator = { evaluateLexerPredicate: evaluateLexerPredicate, evaluateParserPredicate: evaluateParserPredicate };
+                }
+            }
+
+            let stream = new ANTLRInputStream(input);
+            let lexer = new GrammarLexerInterpreter(predicateEvaluator, this, "<unnamed>", this.grammarLexerData, stream);
+            lexer.removeErrorListeners();
+
+            lexer.addErrorListener(new InterpreterLexerErrorListener((event: string | symbol, ...args: any[]): boolean => {
+                error += args[0] + "\n";
+                return true
+            }));
+            let tokenStream = new CommonTokenStream(lexer);
+            tokenStream.fill();
+
+            for (let token of tokenStream.getTokens()) {
+                let name = lexer.vocabulary.getSymbolicName(token.type);
+                result.push(name!);
+            }
+        }
+        return [result, error];
     }
 
     public getSymbolInfo(symbol: string): SymbolInfo | undefined {

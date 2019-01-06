@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2018, Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 const { Subject } = require('await-notify');
 
-import { GrapsDebugger, GrapsBreakPoint } from '../backend/GrapsDebugger';
+import { GrammarDebugger, GrapsBreakPoint } from '../backend/GrammarDebugger';
 import { AntlrParseTreeProvider } from "./ParseTreeProvider";
 import { AntlrFacade, ParseTreeNode, ParseTreeNodeType, LexerToken } from '../backend/facade';
 
@@ -37,7 +37,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 }
 
 export interface DebuggerConsumer {
-    debugger: GrapsDebugger;
+    debugger: GrammarDebugger;
 
     refresh(): void; // A full reload, e.g. after a grammar change.
     debuggerStopped(uri: Uri): void; // Called after each stop of the debugger (step, pause, breakpoint).
@@ -470,7 +470,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
 
     private static THREAD_ID = 1;
 
-    private debugger: GrapsDebugger | undefined;
+    private debugger: GrammarDebugger | undefined;
     private parseTreeProvider: AntlrParseTreeProvider;
     private configurationDone = new Subject();
 

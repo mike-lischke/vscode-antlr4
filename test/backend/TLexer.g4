@@ -16,7 +16,7 @@ lexer grammar TLexer;
 #endif
 }
 
-// Directly preceds the lexer class declaration in the h file (e.g. for additional types etc.).
+// Directly preceeds the lexer class declaration in the h file (e.g. for additional types etc.).
 @lexer::context {/* lexer context section */}
 
 // Appears in the public part of the lexer in the h file.

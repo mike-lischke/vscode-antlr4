@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,10 +9,8 @@
 
 import fs = require("fs-extra");
 import glob = require("glob");
-import path = require("path");
-import util = require("util");
 
-import { expect, should, assert } from 'chai';
+import { expect, assert } from 'chai';
 import { AntlrFacade, SymbolKind, ATNGraphData } from "../../src/backend/facade";
 import { SourceContext } from "../../src/backend/SourceContext";
 
@@ -57,7 +55,6 @@ describe('vscode-antlr4-backend:', function () {
 
     describe('Symbol Info Retrieval (t.g4):', function () {
         it('infoForSymbol', function () {
-            let dir = process.cwd();
             var info = backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
             assert(info);
             expect(info!.name, "Test 1").to.equal("B");
@@ -555,7 +552,7 @@ describe('vscode-antlr4-backend:', function () {
         });
     });
 
-    xdescribe("Sentence Generation:", function () {
+    describe.only("Sentence Generation:", function () {
         it("Generate data for tests", async function () {
             this.timeout(20000);
 
@@ -570,14 +567,76 @@ describe('vscode-antlr4-backend:', function () {
 
         });
 
-        // Sentence generation is purely random and hence mostly untestable.
-        // Once the interpreter is fully available we can at least generate and parse the result
-        // to see if that works ok.
-        it("Sentence generation", function () {
+        // Sentence generation is to a large part random and hence tricky to test.
+        // At least we can validate the correctness of the generated text.
+        it("Lexer sentence generation", function () {
+            this.slow(5000);
+
+            let vocabulary = backend.getLexerVocabulary("test/backend/CPP14.g4")!;
+            let testInput = "";
+            let generated: string[] = [];
+            for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
+                let symbolic = vocabulary.getSymbolicName(i);
+                let sentences = backend.generateSentences("test/backend/CPP14.g4", {
+                    startRule: symbolic!,
+                    allPaths: true,
+                    minTokenLength: 3,
+                    maxTokenLength: 20,
+                    maxIterations: 1,
+                    maxRecursions: 1
+                });
+
+                for (let entry of sentences) {
+                    generated.push(entry);
+                    testInput += entry + "\n";
+                }
+            }
+
+            let [tokens, error] = backend.lexTestInput("test/backend/CPP14.g4", testInput);
+            expect(error).to.be.empty;
+
+            let symbolOffset = 1;
+            for (let i = 0; i < tokens.length - 1; ++i) { // The last token is EOF, which we ignore here.
+                let symbolicName = vocabulary.getSymbolicName(i + symbolOffset);
+                while (symbolicName == "Newline" || symbolicName == "Whitespace") {
+                    ++symbolOffset;
+                    symbolicName = vocabulary.getSymbolicName(i + symbolOffset);
+                }
+
+                // Certain tokens are part of other tokens and parsed as their containing tokens or
+                // the can be "misunderstood" because of similarities.
+                let message = `Token ${i} mismatch for input "${generated[i + symbolOffset]}"`;
+                switch (symbolicName) {
+                    case "Integersuffix": {
+                        expect(tokens[i], message).to.equal("Identifier");
+                        break;
+                    }
+
+                    case "Stringliteral": {
+                        expect(tokens[i], message).to.be.oneOf(["Userdefinedstringliteral", "Stringliteral"]);
+                        break;
+                    }
+
+                    case "Decimalliteral":
+                    case "Octalliteral":
+                    case "Hexadecimalliteral":
+                    case "Binaryliteral": {
+                        expect(tokens[i], message).to.equal("Integerliteral");
+                        break;
+                    }
+
+                    default: {
+                        expect(tokens[i], message).to.equal(symbolicName);
+                    }
+                }
+            }
+        });
+
+        xit("Parser sentence generation", function () {
             this.timeout(60000);
 
             let definitions: Map<string, string> = new Map([
-                ["INT_NUMBER", "12345"],
+                /*["INT_NUMBER", "12345"],
                 ["LONG_NUMBER", "1234567890"],
                 ["ULONGLONG_NUMBER", "12345678901234567890"],
                 ["SINGLE_QUOTED_TEXT", "'singlequotedtext'"],
@@ -587,27 +646,32 @@ describe('vscode-antlr4-backend:', function () {
                 ["CONCAT_PIPES_SYMBOL", "||"],
                 ["constantexpression", "a/b*c"],
                 ["expression", "1+1"],
-                ["Identifier", "cppIdentifier"],
+                ["Identifier", "cppIdentifier"],*/
             ]);
 
-            let sentences = backend.generateSentences("test/backend/CPP14.g4", {
-                startRule: "balancedtokenseq",
-                allPaths: false,
-                minTokenLength: 3,
-                maxTokenLength: 20,
-                maxIterations: 1,
-                maxRecursions: 1
-            }, definitions);
+            let vocabulary = backend.getLexerVocabulary("test/backend/CPP14.g4")!;
+            for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
+                let symbolic = vocabulary.getSymbolicName(i);
+                let sentences = backend.generateSentences("test/backend/CPP14.g4", {
+                    startRule: symbolic!,
+                    allPaths: true,
+                    minTokenLength: 3,
+                    maxTokenLength: 20,
+                    maxIterations: 1,
+                    maxRecursions: 1
+                }, definitions);
 
-            console.log("Results (" + sentences.length + " entries):");
-            for (let entry of sentences) {
-                console.log("'" + entry + "'");
+                /*console.log(`Token ${symbolic} (${sentences.length} entries):`);
+                for (let entry of sentences) {
+                    console.log(JSON.stringify(entry));
+                }*/
             }
         });
 
         after(function () {
             backend.releaseGrammar("test/backend/TParser.g4");
             backend.releaseGrammar("test/backend/TLexer.g4");
+            backend.releaseGrammar("test/backend/CPP14.g4");
             fs.removeSync("generated");
         })
     });
