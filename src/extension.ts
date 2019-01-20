@@ -14,7 +14,8 @@ import * as Net from 'net';
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
     commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, OutputChannel, Selection,
-    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult, TextEditorRevealType
+    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult,
+    TextEditorRevealType
 } from 'vscode';
 
 import { AntlrHoverProvider } from './frontend/HoverProvider';
@@ -152,7 +153,7 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(window.registerTreeDataProvider("antlr4.modes", modesProvider));
 
     actionsProvider = new ActionsProvider(backend);
-    context.subscriptions.push(window.registerTreeDataProvider("antlr4.actions", actionsProvider));
+    actionsProvider.actionTree = window.createTreeView("antlr4.actions", { treeDataProvider: actionsProvider });
 
     parseTreeProvider = new AntlrParseTreeProvider(backend, context);
 
@@ -232,6 +233,7 @@ export function activate(context: ExtensionContext) {
         if (event.textEditor.document.languageId === "antlr" && event.textEditor.document.uri.scheme === "file") {
             diagramProvider.update(event.textEditor);
             atnGraphProvider.update(event.textEditor, false);
+            actionsProvider.update(event.textEditor);
         }
     });
 

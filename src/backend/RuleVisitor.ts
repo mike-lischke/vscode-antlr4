@@ -17,7 +17,7 @@
 
 /*
  * Translated to TS and modified by
- * Copyright (c) 2017, Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  * under the MIT license.
  *
  * See LICENSE file for more info.
@@ -29,7 +29,7 @@ import { AbstractParseTreeVisitor, TerminalNode, ParseTree } from "antlr4ts/tree
 import { ANTLRv4ParserVisitor } from "../parser/ANTLRv4ParserVisitor";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 import {
-    ANTLRv4Parser, ParserRuleSpecContext, RuleAltListContext, LexerRuleSpecContext, LexerAltListContext, LexerAltContext,
+    ParserRuleSpecContext, RuleAltListContext, LexerRuleSpecContext, LexerAltListContext, LexerAltContext,
     LexerElementsContext, LexerElementContext, LabeledLexerElementContext, AltListContext, AlternativeContext,
     ElementContext, LabeledElementContext, EbnfContext, EbnfSuffixContext, LexerAtomContext, AtomContext,
     NotSetContext, BlockSetContext, CharacterRangeContext, TerminalRuleContext, SetElementContext,

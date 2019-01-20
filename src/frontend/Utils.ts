@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2018, Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,10 +9,10 @@
 
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
-import * as os from "os";
 import * as path from "path";
 
 import { ExtensionContext, Uri, window } from "vscode";
+import { SymbolInfo } from "../backend/facade";
 
 export class Utils {
 
@@ -108,5 +108,31 @@ export class Utils {
                 });
             }
         })
+    }
+
+    /**
+     * Given a list of objects which must have a `range` member, finds the entry which covers the given caret position
+     * and returns that (or undefined if not found).
+     */
+    public static findInListFromPosition(list: any[], column: number, row: number): any | undefined {
+        for (let entry of list) {
+            if (!entry.range) {
+                continue;
+            }
+
+            let start = entry.range.start;
+            let stop = entry.range.end;
+            let matched = start.row <= row && stop.row >= row;
+            if (matched) {
+                if (start.row == row) {
+                    matched = start.column <= column;
+                } else if (stop.row == row) {
+                    matched = stop.column >= column;
+                }
+            }
+            if (matched) {
+                return entry;
+            }
+        }
     }
 };

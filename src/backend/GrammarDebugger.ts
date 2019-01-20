@@ -13,7 +13,7 @@ import {
 } from "antlr4ts";
 
 import {
-    ATNStateType, Transition} from "antlr4ts/atn";
+    ATNStateType, Transition, ParseInfo} from "antlr4ts/atn";
 
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 
@@ -116,7 +116,7 @@ export class GrammarDebugger extends EventEmitter {
         return this.contexts.find(context => !context.isInterpreterDataLoaded) == undefined;
     }
 
-    public start(startRuleIndex: number, input: string, noDebug: boolean) {
+    public async start(startRuleIndex: number, input: string, noDebug: boolean) {
         let stream = new ANTLRInputStream(input);
         this.lexer.inputStream = stream;
 
@@ -129,8 +129,9 @@ export class GrammarDebugger extends EventEmitter {
         this.parser.breakPoints.clear();
 
         if (noDebug) {
-            //this.parser.setProfile(true);
-            this.parseTree = this.parser.parse(startRuleIndex);
+            await this.parser.setProfile(false);
+            this.parseTree = this.parser!.parse(startRuleIndex);
+            let info = await this.parser!.parseInfo;
             this.sendEvent("end");
         } else {
             for (let bp of this.breakPoints) {
@@ -324,15 +325,15 @@ export class GrammarDebugger extends EventEmitter {
         return result;
     }
 
-    public sendEvent(event: string, ...args: any[]) {
-        setImmediate(_ => {
-            this.emit(event, ...args);
-        });
-    }
-
     public tokenTypeName(token: CommonToken): string {
         // For implicit tokens we use the same approach like ANTLR4 does for the naming.
         return this.lexer.vocabulary.getSymbolicName(token.type) || "T__" + token.type;
+    }
+
+    private sendEvent(event: string, ...args: any[]) {
+        setImmediate(_ => {
+            this.emit(event, ...args);
+        });
     }
 
     private parseContextToNode(tree: ParseTree): ParseTreeNode {
@@ -420,8 +421,7 @@ export class GrammarDebugger extends EventEmitter {
         return {
             text: token.text ? token.text : "",
             type: token.type,
-            // For implicit tokens we use the same approach like ANTLR4 does for the naming.
-            name: this.lexer.vocabulary.getSymbolicName(token.type) || "T__" + token.type,
+            name: this.tokenTypeName(token),
             line: token.line,
             offset: token.charPositionInLine,
             channel: token.channel,

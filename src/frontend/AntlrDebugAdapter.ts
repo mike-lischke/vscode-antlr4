@@ -119,18 +119,18 @@ export class AntlrDebugSession extends LoggingDebugSession {
             let startRuleIndex = this.debugger!.ruleIndexFromName(args.startRule);
             if (startRuleIndex < 0) {
                 this.sendErrorResponse(response, {
-                    id: 1,
+                    id: 2,
                     format: "Error while launching debug session: start rule \"" + args.startRule + "\" not found"
                 });
                 return;
             }
-            this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
+            await this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
             if (this.showGraphicalParseTree) {
                 this.parseTreeProvider.showWebview(Uri.file(args.grammar), { title: "Parse Tree: " + path.basename(args.grammar) });
             }
 
         } catch (e) {
-            this.sendErrorResponse(response, { id: 1, format: "Could not launch debug session:\n\n" + e });
+            this.sendErrorResponse(response, { id: 3, format: "Could not launch debug session:\n\n" + e });
             return;
         }
 

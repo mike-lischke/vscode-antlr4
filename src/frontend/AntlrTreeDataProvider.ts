@@ -1,13 +1,13 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, Mike Lischke
+ * Copyright (c) 2018, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
 "use strict"
 
-import { TreeDataProvider, TreeItem, Event, EventEmitter, TextDocument } from "vscode";
+import { TreeDataProvider, TreeItem, Event, EventEmitter, TextDocument, ProviderResult } from "vscode";
 import { AntlrFacade } from "../backend/facade";
 
 export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
@@ -29,7 +29,7 @@ export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
         return element;
     }
 
-    getChildren(element?: T): Thenable<T[]> {
+    getChildren(element?: T): ProviderResult<T[]> {
         return new Promise(resolve => {
             resolve([]);
         });

@@ -87,7 +87,7 @@ What do you need to debug a grammar?
 * The grammar obviously, either as combined grammar (with parser and lexer rules in a single file) or separate grammars. Note: grammars which require a special setup (e.g. a different base class than the standard `Lexer` and `Parser` classes) could be a problem. It depends on what code is used from such base classes. Maybe you can emulate that also via the mentioned action JS file.
 * Code generation must be enabled in the vscode-antlr4 settings or no interpreter data is generated. In the user preferences set ['antl4.generation']['mode'] to either 'internal' or 'external' (default is 'internal').
 * The interpreter data must be generated and current. Simply save your grammar in vscode to accomplish that.
-* A test input file. It doesn't matter what it is, but it must be readable by the lexer interpreter to generate tokens from. This file can be located anywhere. You can specify a relative or absolute path in the launch configuration.
+* A test input file. This can be any file provided it can be read by the lexer interpreter to generate tokens from and can be located anywhere. You can specify a relative or absolute path for it in the launch configuration. Paths are resolved relative to your workspace.
 * Optionally an action file for semantic predicates.
 * A launch config in vscode to configure your debug sessions.
 

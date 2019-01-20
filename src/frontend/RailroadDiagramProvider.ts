@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2018, Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -10,7 +10,7 @@
 const path = require("path");
 import * as vscode from "vscode";
 
-import { AntlrFacade, SymbolKind } from "../backend/facade";
+import { SymbolKind } from "../backend/facade";
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
 
@@ -22,10 +22,6 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
         let [ruleName, ruleIndex] = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
         if (!ruleName) {
             return "";
-        }
-
-        if (!ruleName) {
-            ruleName = "?";
         }
 
         let baseName = path.basename(fileName, path.extname(fileName));
