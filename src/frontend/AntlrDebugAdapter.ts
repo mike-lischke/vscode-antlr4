@@ -13,14 +13,16 @@ import {
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 
-import { window, workspace, WorkspaceFolder, commands, Uri } from "vscode";
+import { window, WorkspaceFolder, Uri } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 const { Subject } = require('await-notify');
 
-import { GrammarDebugger, GrapsBreakPoint } from '../backend/GrammarDebugger';
+import { GrammarDebugger, GrammarBreakPoint } from '../backend/GrammarDebugger';
 import { AntlrParseTreeProvider } from "./ParseTreeProvider";
-import { AntlrFacade, ParseTreeNode, ParseTreeNodeType, LexerToken } from '../backend/facade';
+import { AntlrFacade, ParseTreeNode, ParseTreeNodeType } from '../backend/facade';
+import { Token, CommonToken } from 'antlr4ts';
+import { stringify } from 'querystring';
 
 /**
  * Interface that reflects the arguments as specified in package.json.
@@ -256,7 +258,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 for (let i = 0; i < length; ++i) {
                     let index = start + i;
                     variables.push({
-                        name: index + ": " + this.tokens[index].name,
+                        name: index + ": " + this.debugger!.tokenTypeName(this.tokens[index] as CommonToken),
                         type: "Token",
                         value: "",
                         variablesReference: VarRef.Token + index,
@@ -271,14 +273,55 @@ export class AntlrDebugSession extends LoggingDebugSession {
                     let tokenIndex = args.variablesReference % VarRef.Token;
                     if (tokenIndex >= 0 && tokenIndex < this.tokens.length) {
                         let token = this.tokens[tokenIndex];
-                        for (let property in token) {
-                            variables.push({
-                                name: property,
-                                type: typeof token[property],
-                                value: this.escapeText(token[property] + ""),
-                                variablesReference: 0
-                            });
-                        }
+                        variables.push({
+                            name: "text",
+                            type: "string",
+                            value: token.text ? token.text : "",
+                            variablesReference: 0
+                        });
+                        variables.push({
+                            name: "type",
+                            type: "number",
+                            value: token.type + "",
+                            variablesReference: 0
+                        });
+                        variables.push({
+                            name: "line",
+                            type: "number",
+                            value: token.line + "",
+                            variablesReference: 0
+                        });
+                        variables.push({
+                            name: "offset",
+                            type: "number",
+                            value: token.charPositionInLine + "",
+                            variablesReference: 0
+                        });
+                        variables.push({
+                            name: "channel",
+                            type: "number",
+                            value: token.channel + "",
+                            variablesReference: 0
+                        });
+                        variables.push({
+                            name: "tokenIndex",
+                            type: "number",
+                            value: token.tokenIndex + "",
+                            variablesReference: 0
+                        });
+                        variables.push({
+                            name: "startIndex",
+                            type: "number",
+                            value: token.startIndex + "",
+                            variablesReference: 0
+                        });
+                        variables.push({
+                            name: "stopIndex",
+                            type: "number",
+                            value: token.stopIndex + "",
+                            variablesReference: 0
+                        });
+
                     }
                 }
                 break;
@@ -358,7 +401,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
             this.sendEvent(new StoppedEvent('exception', AntlrDebugSession.THREAD_ID));
         });
 
-        this.debugger.on('breakpointValidated', (bp: GrapsBreakPoint) => {
+        this.debugger.on('breakpointValidated', (bp: GrammarBreakPoint) => {
             this.sendEvent(new BreakpointEvent('changed', <DebugProtocol.Breakpoint>{ verified: bp.validated, id: bp.id }));
         });
 
@@ -374,6 +417,16 @@ export class AntlrDebugSession extends LoggingDebugSession {
         this.debugger.on('end', () => {
             this.notifyConsumers(Uri.file(grammar));
             if (this.showTextualParseTree) {
+                let text = "";
+                if (!this.tokens) {
+                    this.tokens = this.debugger!.tokenList;
+                }
+
+                for (let token of this.tokens) {
+                    text += token.toString() + "\n";
+                }
+                this.sendEvent(new OutputEvent("Tokens:\n" + text + "\n"));
+
                 let tree = this.debugger!.currentParseTree;
                 if (tree) {
                     let text = this.parseNodeToString(tree);
@@ -479,7 +532,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
     private testInput = "";
 
     // Some variables, which are updated between each scope/var request.
-    private tokens: LexerToken[];
+    private tokens: Token[];
     private variables: [string, string][];
 }
 

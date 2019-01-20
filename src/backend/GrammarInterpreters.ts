@@ -59,7 +59,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     public callStack: InternalStackFrame[];
     public pauseRequested = false;
     constructor(
-        private eventSink: (event: string | symbol, ...args: any[]) => boolean,
+        private eventSink: (event: string | symbol, ...args: any[]) => void,
         private evaluator: PredicateEvaluator | undefined,
         private mainContext: SourceContext,
         parserData: InterpreterData,
@@ -332,7 +332,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 next = next.nextSibling;
 
                 // If the next symbol is a question mark, this block is actually a predicate.
-                if (next instanceof EbnfSuffixSymbol) {
+                if (next && next.name == "?") {
                     next = next.nextSibling;
                 }
             }
@@ -402,7 +402,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 }
             } else if (next instanceof ActionSymbol) { // Actions/predicates.
                 next = next.nextSibling;
-                if (next instanceof EbnfSuffixSymbol) {
+                if (next && next.name == "?") {
                     next = next.nextSibling;
                 }
             }
@@ -466,7 +466,7 @@ export class InternalStackFrame {
 }
 
 export class InterpreterLexerErrorListener implements ANTLRErrorListener<number> {
-    constructor(private eventSink: (event: string | symbol, ...args: any[]) => boolean) {
+    constructor(private eventSink: (event: string | symbol, ...args: any[]) => void) {
     }
 
     syntaxError<T extends number>(recognizer: Recognizer<T, any>, offendingSymbol: T | undefined, line: number,
@@ -476,7 +476,7 @@ export class InterpreterLexerErrorListener implements ANTLRErrorListener<number>
 }
 
 export class InterpreterParserErrorListener implements ANTLRErrorListener<CommonToken> {
-    constructor(private eventSink: (event: string | symbol, ...args: any[]) => boolean) {
+    constructor(private eventSink: (event: string | symbol, ...args: any[]) => void) {
     }
 
     syntaxError<T extends Token>(recognizer: Recognizer<T, any>, offendingSymbol: T | undefined, line: number, charPositionInLine: number, msg: string, e: RecognitionException | undefined): void {

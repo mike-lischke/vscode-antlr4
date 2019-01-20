@@ -34,14 +34,14 @@ import {
     InternalStackFrame, PredicateEvaluator
 } from "./GrammarInterpreters";
 
-export interface GrapsBreakPoint {
+export interface GrammarBreakPoint {
     source: string;
     validated: boolean;
     line: number;
     id: number;
 }
 
-export interface GrapsStackFrame {
+export interface GrammarStackFrame {
     name: string;
     source: string;
     next: LexicalRange[];
@@ -89,8 +89,10 @@ export class GrammarDebugger extends EventEmitter {
                 }
             }
 
-            let eventSink = (event: string | symbol, ...args: any[]): boolean => {
-                return this.emit(event, args);
+            let eventSink = (event: string | symbol, ...args: any[]): void => {
+                setImmediate(_ => {
+                    return this.emit(event, args);
+                });
             };
 
             if (this.lexerData) {
@@ -178,24 +180,20 @@ export class GrammarDebugger extends EventEmitter {
         }
     }
 
-    public addBreakPoint(path: string, line: number): GrapsBreakPoint {
-        let breakPoint = <GrapsBreakPoint>{ source: path, validated: false, line: line, id: this.nextBreakPointId++ };
+    public addBreakPoint(path: string, line: number): GrammarBreakPoint {
+        let breakPoint = <GrammarBreakPoint>{ source: path, validated: false, line: line, id: this.nextBreakPointId++ };
         this.breakPoints.set(breakPoint.id, breakPoint);
         this.validateBreakPoint(breakPoint);
 
         return breakPoint;
     }
 
-    public get tokenList(): LexerToken[] {
+    /**
+     * Token
+     */
+    public get tokenList(): Token[] {
         this.tokenStream.fill();
-        let result: LexerToken[] = [];
-        for (let token of this.tokenStream.getTokens()) {
-            let entry = this.convertToken(<CommonToken>token);
-            if (entry) {
-                result.push(entry);
-            }
-        }
-        return result;
+        return this.tokenStream.getTokens();
     }
 
     public get errorCount(): number {
@@ -239,11 +237,11 @@ export class GrammarDebugger extends EventEmitter {
         return this.parseContextToNode(this.parseTree);
     }
 
-    public get currentStackTrace(): GrapsStackFrame[] {
-        let result: GrapsStackFrame[] = [];
+    public get currentStackTrace(): GrammarStackFrame[] {
+        let result: GrammarStackFrame[] = [];
         if (this.parser) {
             for (let frame of this.parser.callStack) {
-                let externalFrame = <GrapsStackFrame>{
+                let externalFrame = <GrammarStackFrame>{
                     name: frame.name,
                     source: frame.source,
                     next: []
@@ -330,6 +328,11 @@ export class GrammarDebugger extends EventEmitter {
         setImmediate(_ => {
             this.emit(event, ...args);
         });
+    }
+
+    public tokenTypeName(token: CommonToken): string {
+        // For implicit tokens we use the same approach like ANTLR4 does for the naming.
+        return this.lexer.vocabulary.getSymbolicName(token.type) || "T__" + token.type;
     }
 
     private parseContextToNode(tree: ParseTree): ParseTreeNode {
@@ -434,7 +437,7 @@ export class GrammarDebugger extends EventEmitter {
      * can only break on enter or on exit of the rule.
      * @param breakPoint The breakpoint to validate.
      */
-    private validateBreakPoint(breakPoint: GrapsBreakPoint) {
+    private validateBreakPoint(breakPoint: GrammarBreakPoint) {
         let context = this.contexts.find(context => context.fileName == breakPoint.source);
         if (!context || !this.parserData) {
             return;
@@ -471,7 +474,7 @@ export class GrammarDebugger extends EventEmitter {
     private parser: GrammarParserInterpreter | undefined;
     private parseTree: ParserRuleContext | undefined;
 
-    private breakPoints: Map<number, GrapsBreakPoint> = new Map();
+    private breakPoints: Map<number, GrammarBreakPoint> = new Map();
     private nextBreakPointId = 0;
 
     // Evaluation is possible either via an evaluator class or 2 evaluator functions.
