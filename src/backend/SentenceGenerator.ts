@@ -7,32 +7,34 @@
 
 "use strict";
 
-import * as fs from "fs";
-
 import {
     ATN, ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType, RuleTransition,
     StarBlockStartState, RuleStartState, LoopEndState, NotSetTransition
 } from "antlr4ts/atn";
 import { Vocabulary } from "antlr4ts";
 
-import { SentenceGenerationOptions } from "../backend/facade";
+import { SentenceGenerationOptions } from "./facade";
 import { IntervalSet } from "antlr4ts/misc";
+
+import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
 
 /**
  * This class generates a number of strings, each valid input for a given ATN.
  */
 export class SentenceGenerator {
     /**
-     * @param lexerAtn For lexer rule lookups.
-     * @param ruleMap The lexer rule index map to go from token value to token rule index.
+     * @param lexerATN For lexer rule lookups.
+     * @param ruleMap The lexer rule index map to go from token name to token rule index.
      * @param vocabulary The lexer vocabulary to lookup text for token value.
      */
-    constructor(private atn: ATN, private ruleMap: ReadonlyMap<string, number>,
+    constructor(private lexerATN: ATN, private ruleMap: ReadonlyMap<string, number>,
         private vocabulary: Vocabulary, private lexerRuleNames: string[],
         private parserRuleNames?: string[]) {
     }
 
-    public generate(options: SentenceGenerationOptions, start: RuleStartState, definitions?: Map<string, string>): string[] {
+    public generate(options: SentenceGenerationOptions, start: RuleStartState, definitions?: Map<string, string>): string {
+        this.convergenceFactor = options.convergenceFactor || 0.25;
+
         this.allPaths = options.allPaths || false;
         this.maxIterations = (!options.maxIterations || options.maxIterations < 0) ? 1 : options.maxIterations;
         this.maxRecursions = (!options.maxRecursions || options.maxRecursions < 0) ? 1 : options.maxRecursions;
@@ -47,52 +49,27 @@ export class SentenceGenerator {
             this.definitions = definitions;
         }
 
+        this.lexerDecisionCounts = new Map<number, number[]>();
+        this.parserDecisionCounts = new Map<number, number[]>();
+
         this.lexerStack.length = 0;
         this.parserStack.length = 0;
-        if (start.atn == this.atn) {
-            return this.generateFromLexerSequence(start, start.stopState, this.maxLength);
+        this.generateUnicodeCollection();
+
+        if (start.atn == this.lexerATN) {
+            return this.generateFromLexerSequence(start, start.stopState);
         }
+
         let [result, flag] = this.generateFromSequence(start, start.stopState);
         if (flag) {
-            return ["Error: all paths in this rule lead to endless recursion."];
+            return "Error: all paths in this rule lead to endless recursion.";
         }
-        return result;
+        return result[0];
     }
 
     /**
-     * Generates a list of number combinations, where each number represents an index into a list of alternatives
-     * whose count is given in the input values.
-     *
-     * @param values A list of alt counts in several blocks.
-     * @param count The number of combinations that should be returned.
+     * Creates a cross product of input strings.
      */
-    private generateRandomCombinations(values: number[], count: number): number[][] {
-        // Start with the overall count of all possible combinations.
-        var total = 1;
-        for (let value of values) {
-            total *= value;
-        }
-
-        let result: number[][] = [];
-        for (let i = 0; i < count; ++i) {
-            let randomIndex = Math.floor(Math.random() * total);
-            let combination: number[] = Array(values.length).fill(0);
-
-            // Convert the random index into individual indexes in the input value array.
-            // We use a variant of converting a number from base 10 to a different number system,
-            // only that the base is not constant (different counts in each value field).
-            let combinationIndex = 0;
-            while (randomIndex > 0) {
-                combination[combinationIndex] = randomIndex % values[combinationIndex];
-                randomIndex = Math.floor(randomIndex / values[combinationIndex]);
-                ++combinationIndex;
-            }
-            result.push(combination);
-        }
-
-        return result;
-    }
-
     private combine(lhs: string[], rhs: string[], delimiter: string): string[] {
         if (lhs.length == 0) {
             return rhs;
@@ -101,166 +78,52 @@ export class SentenceGenerator {
             return lhs;
         }
 
-        // Take a random entry in lhs and combine this with all entries in rhs.
-        // For the rest of lhs pick a random entry from rhs.
         let result: string[] = [];
-        let randomLhs = Math.floor(Math.random() * lhs.length);
         for (let i = 0; i < lhs.length; ++i) {
-            if (i == randomLhs) {
-                for (let right of rhs) {
-                    if (right.length == 0) {
-                        result.push(lhs[i]);
-                    } else {
-                        result.push(lhs[i] + delimiter + right);
-                    }
-                }
-                continue;
-            }
-
-            let right = rhs[Math.floor(Math.random() * rhs.length)];
-            if (right.length == 0) {
-                result.push(lhs[i]);
-            } else {
-                result.push(lhs[i] + delimiter + right);
+            for (let j = 0; j < rhs.length; ++j) {
+                result.push(lhs[i] + delimiter + rhs[j]);
             }
         }
         return result;
     }
 
-    private addChar(list: string[], char: string) {
+    private addChar(list: string[], subResult: string) {
         if (list.length == 0) {
-            list.push(char);
+            list.push(subResult);
             return;
         }
 
         for (let index = 0; index < list.length; ++index) {
-            list[index] += char;
-        }
-    }
-
-    /**
-     * Distributes a value equally over all entries in the list, starting with startIndex.
-     * Since only integral numbers are used a rest might be left over which is added
-     * to the last entry in the list.
-     */
-    private distribute(list: number[], startIndex: number, value: number) {
-        let part = Math.floor(value / (list.length - startIndex));
-        for (let i = startIndex; i < list.length; ++i) {
-            list[i] += part;
-            value -= part;
-        }
-        if (value > 0) {
-            list[list.length - 1] += value;
+            list[index] += subResult;
         }
     }
 
     /**
      * Processes a single sequence of lexer ATN states.
      */
-    private generateFromLexerSequence(start: ATNState, stop: ATNState, availableLength: number): string[] {
-        let result: string[] = [];
-        let tokenLength = Math.floor(this.minLength + Math.random() * availableLength);
+    private generateFromLexerSequence(start: ATNState, stop: ATNState): string {
+        let result: string = "";
 
         let isRule = start instanceof RuleStartState;
         if (isRule) {
             this.lexerStack.push(start.ruleIndex);
         }
 
-        // Count loops in the rule to allow distributing the token length to each.
         let run = start;
-        let loopCounts: number[] = [];
-        let alreadyTaken = 0;
         while (run != stop) {
             switch (run.stateType) {
                 case ATNStateType.BLOCK_START: {
-                    // Assume at least one "loop" for a block.
-                    loopCounts.push(1);
-                    ++alreadyTaken;
-                    run = (run as BlockStartState).endState;
-                    break;
-                }
-
-                case ATNStateType.PLUS_BLOCK_START: {
-                    // At least one run for a plus loop.
-                    loopCounts.push(1);
-                    ++alreadyTaken;
-                    run = (run as PlusBlockStartState).loopBackState;
-                    run = this.loopEnd(run) || stop;
-                    break;
-                }
-
-                case ATNStateType.STAR_LOOP_ENTRY: {
-                    // No initial count for a star loop.
-                    loopCounts.push(0);
-                    run = this.loopEnd(run) || stop;
-
-                    break;
-                }
-
-                default: {
-                    // Here we have no decision state and hence only single transitions.
-                    // Take any transition label into account for our loop count computation.
-                    let transition = run.transition(0);
-                    if (transition.label) {
-                        ++alreadyTaken;
-                    }
-
-                    if (transition.serializationType == TransitionType.RULE) {
-                        // Assume at least one "loop" for a sub rule.
-                        loopCounts.push(1);
-                        ++alreadyTaken;
-                        run = (transition as RuleTransition).followState;
-                    } else {
-                        run = transition.target;
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Now see how many elements are left and distribute them equally over
-        // all seen blocks and loops.
-        if (loopCounts.length > 0 && tokenLength > alreadyTaken) {
-            this.distribute(loopCounts, 0, tokenLength - alreadyTaken);
-        }
-
-        // Note: for now we do not use the allPath settings for lexer rules as this often leads to many
-        //       useless combinations (full Unicode charset, conditional alts etc.).
-        run = start;
-        let loopIndex = 0;
-        while (run != stop) {
-            switch (run.stateType) {
-                case ATNStateType.BLOCK_START: {
-                    let subResult = this.generateFromLexerBlock(run as BlockStartState, loopCounts[loopIndex]);
-                    result = this.combine(result, subResult, "");
-
-                    // Blocks may not use all the length we allowed for,
-                    // so determine what was used and distribute the rest
-                    // to other blocks + loops.
-                    let used = subResult.reduce(function (max, value) {
-                        return value.length > max ? value.length : max;
-                    }, 0);
-                    this.distribute(loopCounts, loopIndex + 1, loopCounts[loopIndex] - used);
-                    ++loopIndex;
+                    result += this.generateFromLexerBlock(run as BlockStartState);
                     run = (run as BlockStartState).endState;
 
                     break;
                 }
 
                 case ATNStateType.PLUS_BLOCK_START: {
-                    while (loopCounts[loopIndex] > 0) {
-                        let subResult = this.generateFromLexerBlock(run as BlockStartState, loopCounts[loopIndex]);
-                        result = this.combine(result, subResult, "");
-
-                        // Each loop run may produce results with more than one char length.
-                        // Take this into account for overall loop count.
-                        let used = subResult.reduce(function (max, value) {
-                            return value.length > max ? value.length : max;
-                        }, 0);
-                        loopCounts[loopIndex] -= used;
+                    for (let i = 0; i < this.maxIterations; ++i) {
+                        result += this.generateFromLexerBlock(run as BlockStartState);
                     }
 
-                    ++loopIndex;
                     run = (run as PlusBlockStartState).loopBackState;
                     run = this.loopEnd(run) || stop;
 
@@ -269,22 +132,12 @@ export class SentenceGenerator {
 
                 case ATNStateType.STAR_LOOP_ENTRY: {
                     let loopStart = this.blockStart(run as StarLoopEntryState);
-                    let end = loopStart.endState;
 
-                    while (loopCounts[loopIndex] > 0) {
-                        let subResult = this.generateFromLexerBlock(loopStart, loopCounts[loopIndex]);
-                        result = this.combine(result, subResult, "");
-
-                        // Each loop run may produce results with more than one char length.
-                        // Take this into account for overall loop count.
-                        let used = subResult.reduce(function (max, value) {
-                            return value.length > max ? value.length : max;
-                        }, 0);
-                        loopCounts[loopIndex] -= used;
+                    for (let i = 0; i < this.maxIterations; ++i) {
+                        result += this.generateFromLexerBlock(loopStart);
                     }
 
                     run = this.loopEnd(run) || stop;
-                    ++loopIndex;
 
                     break;
                 }
@@ -295,41 +148,21 @@ export class SentenceGenerator {
                         case TransitionType.RULE: { // Transition into a sub rule.
                             run = (transition as RuleTransition).followState;
                             let ruleStart = transition.target as RuleStartState;
-
                             let ruleName = this.lexerRuleNames[ruleStart.ruleIndex];
                             if (ruleName && this.definitions.has(ruleName)) {
-                                result = this.combine(result, [this.definitions.get(ruleName)!], "");
+                                result += this.definitions.get(ruleName);
                                 break;
                             }
 
-                            if (this.recursionCount(ruleStart.ruleIndex, true) < this.maxIterations) {
-                                let subResult = this.generateFromLexerSequence(ruleStart, ruleStart.stopState,
-                                    loopCounts[loopIndex]);
-                                result = this.combine(result, subResult, "");
-
-                                // Subrules may not use all the length we allowed for,
-                                // so determine what was used and distribute the rest
-                                // to other blocks + loops.
-                                let used = subResult.reduce(function (max, value) {
-                                    return value.length > max ? value.length : max;
-                                }, 0);
-                                this.distribute(loopCounts, loopIndex + 1, loopCounts[loopIndex] - used);
-                            } else {
-                                // This sequence shall not contribute anything to the overall result.
-                                result.length = 0;
-                                run = stop;
-                            }
-                            ++loopIndex;
+                            result += this.generateFromLexerSequence(ruleStart, ruleStart.stopState);
 
                             break;
                         }
 
                         case TransitionType.WILDCARD: {
-                            // Any char from the entire Unicode range.
-                            // Grammars shouldn't use that actually (there are too many unusable code points),
-                            // but we have to support it.
-                            let char = String.fromCharCode(Math.floor(Math.random() * 0x10ffff));
-                            this.addChar(result, char);
+                            // Any char from the entire Unicode range. The generator takes care to pick only
+                            // valid characters.
+                            result += this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
                             run = transition.target;
 
                             break;
@@ -345,9 +178,7 @@ export class SentenceGenerator {
                                 if (transition instanceof NotSetTransition) {
                                     label = label.complement(IntervalSet.COMPLETE_CHAR_SET);
                                 }
-                                let index = Math.floor(Math.random() * label.size);
-                                let char = String.fromCharCode(this.getIntervalElement(label, index));
-                                this.addChar(result, char);
+                                result += this.getRandomCharacterFromInterval(label);
                             }
                             run = transition.target;
                     }
@@ -363,11 +194,41 @@ export class SentenceGenerator {
     }
 
     /**
-     * Processes a non-loop block (all-path setting applies here).
+     * Picks a random entry from all possible alternatives. Each alt gets a specific weight depending on its
+     * previous invocation (the higher the invocation count the less the weight).
      */
-    private generateFromLexerBlock(start: BlockStartState, availableLength: number): string[] {
-        let fixedIndex = Math.floor(Math.random() * start.numberOfTransitions);
-        return this.generateFromLexerSequence(start.transition(fixedIndex).target, start.endState, availableLength);
+    private generateFromLexerBlock(start: BlockStartState): string {
+        let weights = new Array<number>(start.numberOfTransitions).fill(1);
+        let altCounts = this.lexerDecisionCounts.get(start.decision);
+        if (!altCounts) {
+            altCounts = new Array<number>(start.numberOfTransitions).fill(0);
+            this.lexerDecisionCounts.set(start.decision, altCounts);
+        } else {
+            for (let i = 0; i < altCounts.length; ++i) {
+                weights[i] = Math.pow(this.convergenceFactor, altCounts[i]);
+            }
+        }
+
+        let sum = weights.reduce((accumulated, current) => accumulated + current);
+        if (sum == 0) {
+            return "";
+        }
+
+        let randomValue = Math.random() * sum;
+        let randomIndex = 0;
+        while (true) {
+            randomValue -= weights[randomIndex];
+            if (randomValue < 0) {
+                break;
+            }
+            ++randomIndex;
+        }
+
+        ++altCounts[randomIndex];
+        let result = this.generateFromLexerSequence(start.transition(randomIndex).target, start.endState);
+        --altCounts[randomIndex];
+
+        return result;
     }
 
     /**
@@ -375,8 +236,8 @@ export class SentenceGenerator {
      * @returns A tuple of generated strings and a flag indicating if we bailed out because the maximum recursion count
      *          was reached.
      */
-    private generateFromSequence(start: ATNState, stop: ATNState): [string[], boolean] {
-        let result: string[] = [];
+    private generateFromSequence(start: ATNState, stop: ATNState): [string, boolean] {
+        let result: string = "";
         let maxRecursionReached = false;
 
         let isRule = start instanceof RuleStartState;
@@ -386,7 +247,6 @@ export class SentenceGenerator {
                 return [result, true];
             }
 
-            //console.log(start.ruleIndex + " (" + this.parserRuleNames[start.ruleIndex] + ")");
             this.parserStack.push(start.ruleIndex);
             this.parserStack2.push(this.parserRuleNames![start.ruleIndex]);
         }
@@ -401,7 +261,7 @@ export class SentenceGenerator {
                         run = stop;
                         break;
                     }
-                    result = this.combine(result, subResult, " ");
+                    result += + subResult;
                     run = (run as BlockStartState).endState;
 
                     break;
@@ -414,7 +274,7 @@ export class SentenceGenerator {
                         let [subResult, flag] = this.generateFromBlock(run as BlockStartState, this.allPaths);
                         if (!flag) {
                             hadResult = true;
-                            result = this.combine(result, subResult, " ");
+                            result += subResult;
                         }
                     }
                     if (hadResult) {
@@ -438,7 +298,7 @@ export class SentenceGenerator {
                             // We can ignore a recursion block here, since a Kleene star loop is optional.
                             break;
                         }
-                        result = this.combine(result, subResult, " ");
+                        result += subResult;
                     }
 
                     run = this.loopEnd(run) || stop;
@@ -455,17 +315,17 @@ export class SentenceGenerator {
 
                             let ruleName = this.parserRuleNames![ruleStart.ruleIndex];
                             if (ruleName && this.definitions.has(ruleName)) {
-                                result = this.combine(result, [this.definitions.get(ruleName)!], " ");
+                                result += this.definitions.get(ruleName);
                                 continue;
                             }
 
                             let [subResult, flag] = this.generateFromSequence(ruleStart, ruleStart.stopState);
                             if (flag) {
                                 maxRecursionReached = true;
-                                result.length = 0;
+                                result = "";
                                 run = stop;
                             } else {
-                                result = this.combine(result, subResult, " ");
+                                result += subResult;
                             }
 
                             break;
@@ -489,12 +349,12 @@ export class SentenceGenerator {
                             }
 
                             if (this.definitions.has(ruleName)) {
-                                result = this.combine(result, [this.definitions.get(ruleName)!], " ");
+                                result += this.definitions.get(ruleName);
                                 continue;
                             }
 
-                            let state: RuleStartState = this.atn.ruleToStartState[ruleIndex];
-                            result = this.combine(result, this.generateFromLexerSequence(state, state.stopState, this.maxLength - this.minLength), " ");
+                            let state: RuleStartState = this.lexerATN.ruleToStartState[ruleIndex];
+                            result += this.generateFromLexerSequence(state, state.stopState);
                             run = transition.target;
 
                             break;
@@ -533,14 +393,14 @@ export class SentenceGenerator {
                                         continue;
                                     }
 
-                                    let state: RuleStartState = this.atn.ruleToStartState[this.ruleMap.get(ruleName)!];
+                                    let state: RuleStartState = this.lexerATN.ruleToStartState[this.ruleMap.get(ruleName)!];
                                     if (!state) {
                                         localResult.push("<<undefined lexer rule: " + ruleName + ">>")
                                     } else {
-                                        localResult.push(...this.generateFromLexerSequence(state, state.stopState, this.maxLength - this.minLength));
+                                        localResult.push(...this.generateFromLexerSequence(state, state.stopState));
                                     }
                                 }
-                                result = this.combine(result, localResult, " ");
+                                result += localResult;
                             }
                             run = transition.target;
 
@@ -561,11 +421,11 @@ export class SentenceGenerator {
     }
 
     /**
-     * Processes a non-loop block (all-path setting applies here).
+     * Processes a non-loop block .
      * @returns A list of generated strings and a flag indicating if we only saw recursive paths.
      */
-    private generateFromBlock(start: BlockStartState, allPaths: boolean): [string[], boolean] {
-        let result: string[] = [];
+    private generateFromBlock(start: BlockStartState, allPaths: boolean): [string, boolean] {
+        let result: string = "";
         if (allPaths) {
             // Count the paths which were taken out because they reached the max recursion count.
             // If this number equals the available transitions the entire block is recursion-blocked.
@@ -577,10 +437,7 @@ export class SentenceGenerator {
                 if (flag) {
                     ++recursionBlocked;
                 } else {
-                    if (localResult.length == 0) {
-                        localResult.push("");
-                    }
-                    result.push(...localResult);
+                    result += localResult;
                 }
             }
             return [result, recursionBlocked == start.numberOfTransitions];
@@ -602,10 +459,7 @@ export class SentenceGenerator {
                 // Start over with another random index if we hit a recursion block.
                 availableIndices.splice(randomIndex, 1);
             } else {
-                if (localResult.length == 0) {
-                    localResult.push("");
-                }
-                result.push(...localResult);
+                result += localResult;
                 break;
             }
         }
@@ -671,6 +525,30 @@ export class SentenceGenerator {
         }
         return runningIndex;
     }
+
+    /**
+     * Generates a collection of Unicode code points matching the given Unicode codeblocks/categories.
+     */
+    private generateUnicodeCollection() {
+        this.unicodeIntervalSet = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
+    }
+
+    private getRandomCharacterFromInterval(set: IntervalSet): String {
+        let validSet = this.unicodeIntervalSet.and(set);
+        if (validSet.size == 0) {
+            return "";
+        }
+
+        return String.fromCodePoint(this.getIntervalElement(validSet, Math.floor(Math.random() * validSet.size)));
+    }
+
+    private unicodeIntervalSet: IntervalSet;
+
+    // Convergence data for recursive rule invocations. We count here the invocation of each alt
+    // of a decision state.
+    private convergenceFactor: number;
+    private lexerDecisionCounts: Map<number, number[]>;
+    private parserDecisionCounts: Map<number, number[]>;
 
     private minLength: number;
     private maxLength: number;

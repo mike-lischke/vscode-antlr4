@@ -864,10 +864,10 @@ export class SourceContext {
      * @param defined A map of rule names and the output string to use for them (instead of walking the ATN).
      * @returns A list of strings with sentences that this grammar would successfully parse.
      */
-    public generateSentences(options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
+    public generateSentence(options: SentenceGenerationOptions, definitions?: Map<string, string>): string {
         if (!this.grammarLexerData) {
             // Requires a generation run.
-            return [];
+            return "";
         }
         let isLexerRule = options.startRule[0] == options.startRule[0].toUpperCase();
 
@@ -879,16 +879,17 @@ export class SourceContext {
         if (isLexerRule) {
             let index = this.grammarLexerRuleMap.get(options.startRule);
             if (index == undefined) {
-                return [];
+                return "";
             }
             start = this.grammarLexerData.atn.ruleToStartState[index];
         } else {
             if (!this.grammarParserData) {
-                return [];
+                return "";
             }
-                let index = this.grammarParserRuleMap.get(options.startRule);
+
+            let index = this.grammarParserRuleMap.get(options.startRule);
             if (index == undefined) {
-                return [];
+                return "";
             }
             start = this.grammarParserData.atn.ruleToStartState[index];
         }
@@ -1199,9 +1200,9 @@ export class SourceContext {
     // Grammar data.
     private grammarType: GrammarType;
     private grammarLexerData: InterpreterData | undefined;
-    private grammarLexerRuleMap: Map<string, number> = new Map();
+    private grammarLexerRuleMap: Map<string, number> = new Map(); // A mapping from lexer rule names to their index.
     private grammarParserData: InterpreterData | undefined;
-    private grammarParserRuleMap: Map<string, number> = new Map();
+    private grammarParserRuleMap: Map<string, number> = new Map(); // A mapping from parser rule names to their index.
 
     private tree: GrammarSpecContext | undefined; // The root context from the last parse run.
     private imports: string[] = []; // Updated on each parse run.

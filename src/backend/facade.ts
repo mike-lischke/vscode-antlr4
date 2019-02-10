@@ -187,6 +187,7 @@ export interface GenerationOptions {
  */
 export interface SentenceGenerationOptions {
     startRule: string;       // The name of the rule to start from (either lexer or parser rule) (required).
+    convergenceFactor?: number; // Determines how quick recursive rule calls converge to 0 (between 0 and 1, default: 0.25).
     maxIterations?: number;  // The maximum number of iterations used for `+` and `*` loops in parser rules (default: 1).
     maxRecursions?: number;  // The maximum number of recursions in parser rules (default: 1);
     minTokenLength?: number; // Min count of elements in a lexer token (default: 1).
@@ -619,9 +620,9 @@ export class AntlrFacade {
         return context.getATNGraph(rule);
     }
 
-    public generateSentences(fileName: string, options: SentenceGenerationOptions, definitions?: Map<string, string>): string[] {
+    public generateSentence(fileName: string, options: SentenceGenerationOptions, definitions?: Map<string, string>): string {
         let context = this.getContext(fileName);
-        return context.generateSentences(options, definitions);
+        return context.generateSentence(options, definitions);
     }
 
     public lexTestInput(fileName: string, input: string, actionFile?: string): [string[], string] {

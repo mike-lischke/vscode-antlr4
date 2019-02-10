@@ -1,4 +1,4 @@
-grammar Expr;
+grammar OddExpr;
 prog:   (formula NEWLINE)* ;
 formula:        expr (LOGICAL expr)*;
 

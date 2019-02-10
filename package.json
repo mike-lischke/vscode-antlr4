@@ -523,24 +523,24 @@
     },
     "dependencies": {
         "antlr4-c3": "^1.1.11",
-        "antlr4ts": "^0.5.0-alpha.1",
+        "antlr4ts": "^0.5.0-alpha.2",
         "await-notify": "^1.0.1",
-        "d3": "^5.7.0",
-        "fs-extra": "^6.0.1",
+        "d3": "^5.9.0",
+        "fs-extra": "^7.0.1",
         "unicode-11.0.0": "^0.7.8",
         "vscode-debugadapter": "^1.33.0",
         "vscode-debugprotocol": "^1.33.0"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",
-        "@types/d3": "^4.13.1",
+        "@types/d3": "^5.7.0",
         "@types/fs-extra": "^5.0.2",
         "@types/glob": "^5.0.36",
         "@types/mocha": "^2.2.48",
-        "@types/node": "^8.10.39",
+        "@types/node": "^8.10.40",
         "chai": "^4.2.0",
         "mocha": "^4.1.0",
-        "typescript": "^2.9.2",
-        "vscode": "^1.1.26"
+        "typescript": "^3.3.3",
+        "vscode": "^1.1.29"
     }
 }

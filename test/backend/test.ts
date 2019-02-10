@@ -503,7 +503,7 @@ describe('vscode-antlr4-backend:', function () {
             // Testing a grammar with an awful lot of (implicit) lexer tokens.
             // Crashes ANTLR and we need to report that separately.
             try {
-                let result = await backend.generate("test/backend/Expr.g4", {
+                let result = await backend.generate("test/backend/OddExpr.g4", {
                     outputDir: "generated", language: "Java", package: "parser", listeners: false, visitors: true
                 });
             } catch (error) {
@@ -565,71 +565,53 @@ describe('vscode-antlr4-backend:', function () {
                 expect(diagnostics.length, "Test 1").to.equal(0);
             }
 
+            result = await backend.generate("test/backend/calculator.g4", { outputDir: "generated", language: "Java" });
+            for (let file of result) {
+                let diagnostics = backend.getDiagnostics(file);
+                if (diagnostics.length > 0) {
+                    console.log("Generation error: " + diagnostics[0].message);
+                }
+                expect(diagnostics.length, "Test 2").to.equal(0);
+            }
+
         });
 
         // Sentence generation is to a large part random and hence tricky to test.
         // At least we can validate the correctness of the generated text.
         it("Lexer sentence generation", function () {
-            this.slow(5000);
-
-            let vocabulary = backend.getLexerVocabulary("test/backend/CPP14.g4")!;
-            let testInput = "";
-            let generated: string[] = [];
+            let vocabulary = backend.getLexerVocabulary("test/backend/calculator.g4")!;
             for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
-                let symbolic = vocabulary.getSymbolicName(i);
-                let sentences = backend.generateSentences("test/backend/CPP14.g4", {
-                    startRule: symbolic!,
-                    allPaths: true,
-                    minTokenLength: 3,
-                    maxTokenLength: 20,
-                    maxIterations: 1,
-                    maxRecursions: 1
-                });
-
-                for (let entry of sentences) {
-                    generated.push(entry);
-                    testInput += entry + "\n";
+                let symbolicName = vocabulary.getSymbolicName(i);
+                for (let i = 0; i < 20; ++i) {
+                    let sentence = backend.generateSentence("test/backend/calculator.g4", {
+                        startRule: symbolicName!,
+                        maxIterations: 5
+                    });
+                    let [tokens, error] = backend.lexTestInput("test/backend/calculator.g4", sentence);
+                    expect(error).to.be.empty;
+                    expect(tokens.length).to.equal(2);
                 }
             }
 
-            let [tokens, error] = backend.lexTestInput("test/backend/CPP14.g4", testInput);
-            expect(error).to.be.empty;
+            vocabulary = backend.getLexerVocabulary("test/backend/CPP14.g4")!;
+            for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
+                let symbolicName = vocabulary.getSymbolicName(i);
+                for (let i = 0; i < 20; ++i) {
+                    let sentence = backend.generateSentence("test/backend/CPP14.g4", {
+                        startRule: symbolicName!,
+                        maxIterations: 5
+                    });
 
-            let symbolOffset = 1;
-            for (let i = 0; i < tokens.length - 1; ++i) { // The last token is EOF, which we ignore here.
-                let symbolicName = vocabulary.getSymbolicName(i + symbolOffset);
-                while (symbolicName == "Newline" || symbolicName == "Whitespace") {
-                    ++symbolOffset;
-                    symbolicName = vocabulary.getSymbolicName(i + symbolOffset);
-                }
-
-                // Certain tokens are part of other tokens and parsed as their containing tokens or
-                // the can be "misunderstood" because of similarities.
-                let message = `Token ${i} mismatch for input "${generated[i + symbolOffset]}"`;
-                switch (symbolicName) {
-                    case "Integersuffix": {
-                        expect(tokens[i], message).to.equal("Identifier");
-                        break;
-                    }
-
-                    case "Stringliteral": {
-                        expect(tokens[i], message).to.be.oneOf(["Userdefinedstringliteral", "Stringliteral"]);
-                        break;
-                    }
-
-                    case "Decimalliteral":
-                    case "Octalliteral":
-                    case "Hexadecimalliteral":
-                    case "Binaryliteral": {
-                        expect(tokens[i], message).to.equal("Integerliteral");
-                        break;
-                    }
-
-                    default: {
-                        expect(tokens[i], message).to.equal(symbolicName);
+                    let [tokens, error] = backend.lexTestInput("test/backend/CPP14.g4", sentence);
+                    expect(error).to.be.empty;
+                    if (symbolicName == "Whitespace" || symbolicName == "Newline") { // Skipped tokens.
+                        expect(tokens.length).to.equal(1);
+                    } else {
+                        expect(tokens.length).to.equal(2);
                     }
                 }
             }
+
         });
 
         xit("Parser sentence generation", function () {
@@ -649,8 +631,8 @@ describe('vscode-antlr4-backend:', function () {
                 ["Identifier", "cppIdentifier"],*/
             ]);
 
-            let vocabulary = backend.getLexerVocabulary("test/backend/CPP14.g4")!;
-            for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
+            let rules = backend.getRuleList("test/backend/CPP14.g4")!;
+            /*for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
                 let symbolic = vocabulary.getSymbolicName(i);
                 let sentences = backend.generateSentences("test/backend/CPP14.g4", {
                     startRule: symbolic!,
@@ -661,11 +643,11 @@ describe('vscode-antlr4-backend:', function () {
                     maxRecursions: 1
                 }, definitions);
 
-                /*console.log(`Token ${symbolic} (${sentences.length} entries):`);
+                console.log(`Token ${symbolic} (${sentences.length} entries):`);
                 for (let entry of sentences) {
                     console.log(JSON.stringify(entry));
-                }*/
-            }
+                }
+            }*/
         });
 
         after(function () {
