@@ -8,30 +8,21 @@
 import { EventEmitter } from "events";
 
 import {
-    ANTLRInputStream,
-    CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, Parser
+    ANTLRInputStream, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, Parser
 } from "antlr4ts";
-
-import {
-    ATNStateType, Transition, ParseInfo} from "antlr4ts/atn";
-
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
-
-import { Symbol, ScopedSymbol, BlockSymbol, VariableSymbol } from "antlr4-c3";
+import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
     LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange
 } from "./facade";
 
-import {
-    AlternativeSymbol, RuleReferenceSymbol, EbnfSuffixSymbol, RuleSymbol, ActionSymbol
-} from "./ContextSymbolTable";
-
+import { RuleSymbol } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 import {
     GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener, RunMode,
-    InternalStackFrame, PredicateEvaluator
+    PredicateEvaluator
 } from "./GrammarInterpreters";
 
 export interface GrammarBreakPoint {

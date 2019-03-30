@@ -34,6 +34,7 @@ import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
 import { ChannelsProvider } from "./frontend/ChannelsProvider";
 import { ModesProvider } from "./frontend/ModesProvider";
 import { ActionsProvider } from "./frontend/ActionsProvider";
+import { InvocationHierarchyProvider } from "./frontend/InvocationHierarchyProvider";
 
 import { AntlrParseTreeProvider } from "./frontend/ParseTreeProvider";
 import { AntlrRenameProvider } from "./frontend/RenameProvider";
@@ -58,6 +59,7 @@ let parserSymbolsProvider: ParserSymbolsProvider;
 let channelsProvider: ChannelsProvider;
 let modesProvider: ModesProvider;
 let actionsProvider: ActionsProvider;
+let invocationHierarchyProvider: InvocationHierarchyProvider;
 
 let parseTreeProvider: AntlrParseTreeProvider;
 let codeLensProvider: AntlrCodeLensProvider;
@@ -155,6 +157,9 @@ export function activate(context: ExtensionContext) {
     actionsProvider = new ActionsProvider(backend);
     actionsProvider.actionTree = window.createTreeView("antlr4.actions", { treeDataProvider: actionsProvider });
 
+    invocationHierarchyProvider = new InvocationHierarchyProvider(backend);
+    invocationHierarchyProvider.hierarchyTree = window.createTreeView("antlr4.invocationHierarchy", { treeDataProvider: invocationHierarchyProvider });
+
     parseTreeProvider = new AntlrParseTreeProvider(backend, context);
 
     // Initialize certain providers.
@@ -234,6 +239,7 @@ export function activate(context: ExtensionContext) {
             diagramProvider.update(event.textEditor);
             atnGraphProvider.update(event.textEditor, false);
             actionsProvider.update(event.textEditor);
+            invocationHierarchyProvider.update(event.textEditor);
         }
     });
 
@@ -355,6 +361,7 @@ export function activate(context: ExtensionContext) {
         channelsProvider.refresh(document);
         modesProvider.refresh(document);
         actionsProvider.refresh(document);
+        invocationHierarchyProvider.refresh(document);
     }
 } // activate() function
 

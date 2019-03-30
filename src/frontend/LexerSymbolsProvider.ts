@@ -80,8 +80,8 @@ export class LexerSymbol extends TreeItem {
     }
 
     iconPath = {
-        light: path.join(__dirname, '..', '..', '..', 'misc', 'lexer-token.svg'),
-        dark: path.join(__dirname, '..', '..', '..', 'misc', 'lexer-token.svg')
+        light: path.join(__dirname, '..', '..', '..', 'misc', 'token-light.svg'),
+        dark: path.join(__dirname, '..', '..', '..', 'misc', 'token-dark.svg')
     };
 
     contextValue = 'lexerSymbols';

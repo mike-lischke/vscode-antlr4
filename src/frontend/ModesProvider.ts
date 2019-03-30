@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, Mike Lischke
+ * Copyright (c) 2018, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -59,8 +59,8 @@ export class ModeEntry extends TreeItem {
     }
 
     iconPath = {
-        light: path.join(__dirname, '..', '..', '..', 'misc', 'mode.svg'),
-        dark: path.join(__dirname, '..', '..', '..', 'misc', 'mode.svg')
+        light: path.join(__dirname, '..', '..', '..', 'misc', 'mode-light.svg'),
+        dark: path.join(__dirname, '..', '..', '..', 'misc', 'mode-dark.svg')
     };
 
     contextValue = 'lexerSymbols';

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2017 Mike Lischke
+ * Copyright (c) 2016, 2019 Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -32,7 +32,7 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
         }
 
         this.documentName = document.fileName;
-        let symbols = this.backend.listSymbols(document.fileName, false);
+        let symbols = this.backend.listTopLevelSymbols(document.fileName, false);
         var lenses = [];
         for (let symbol of symbols) {
             if (!symbol.definition) {

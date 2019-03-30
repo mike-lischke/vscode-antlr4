@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -23,7 +23,7 @@ import {
 import { ParseCancellationException, IntervalSet, Interval } from 'antlr4ts/misc';
 import { ParseTreeWalker, TerminalNode, ParseTree, ParseTreeListener } from 'antlr4ts/tree';
 
-import { CodeCompletionCore, Symbol, LiteralSymbol } from "antlr4-c3";
+import { CodeCompletionCore, Symbol, LiteralSymbol, SymbolTable } from "antlr4-c3";
 
 import {
     ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, OptionsSpecContext, ModeSpecContext
@@ -32,7 +32,7 @@ import { ANTLRv4Lexer } from '../parser/ANTLRv4Lexer';
 
 import {
     SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
-    SentenceGenerationOptions, FormattingOptions, Definition
+    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings, HierarchyNode, HierarchyType, LexicalRange
 } from './facade';
 
 import { ContextErrorListener, ContextLexerErrorListener } from './ContextErrorListener';
@@ -45,13 +45,13 @@ import { ErrorParser } from "./ErrorParser";
 
 import {
     ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
-    VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol, TokenVocabSymbol,
-    LexerModeSymbol, TokenChannelSymbol
+    VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol,
+    LexerModeSymbol, TokenChannelSymbol, ActionSymbol, OperatorSymbol
 } from "./ContextSymbolTable";
 
 import { SentenceGenerator } from "./SentenceGenerator";
 import { GrammarFormatter } from "./Formatter";
-import { GrammarLexerInterpreter, InterpreterLexerErrorListener } from './GrammarInterpreters';
+import { GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener } from './GrammarInterpreters';
 
 enum GrammarType { Unknown, Parser, Lexer, Combined };
 
@@ -86,6 +86,10 @@ export class SourceContext {
         // These are contexts which are used as subrules in rule definitions.
         if (!limitToChildren) {
             return this.getSymbolInfo(terminal.text);
+            /*let symbol = this.symbolTable.symbolWithContext(terminal);
+            if (symbol) {
+                return this.getSymbolInfo(symbol);
+            }*/
         }
 
         let parent = (terminal.parent as RuleContext);
@@ -141,7 +145,7 @@ export class SourceContext {
         }
     }
 
-    public listSymbols(includeDependencies: boolean): SymbolInfo[] {
+    public listTopLevelSymbols(includeDependencies: boolean): SymbolInfo[] {
         return this.symbolTable.listTopLevelSymbols(includeDependencies);
     }
 
@@ -560,6 +564,86 @@ export class SourceContext {
         return result;
     }
 
+    public getInvocationHierarchy(name: string): HierarchyNode[] {
+        this.runSemanticAnalysisIfNeeded();
+
+        // Convert the symbol paths to hierarchy nodes, but ignore irrelevant symbols. Revert order of nodes on the way.
+        let symbols = this.symbolTable.getSymbolOccurences(name, false, true);
+        let convertedPaths: HierarchyNode[][] = [];
+        for (let symbol of symbols) {
+            let convertedPath = [];
+            for (let i = symbol.symbolPath!.length - 1; i >= 0; --i) {
+                let element = symbol.symbolPath![i];
+                let type: HierarchyType = HierarchyType.Unknown;
+                if (element instanceof SymbolTable) {
+                    type = HierarchyType.File;
+                } else if (element instanceof LiteralSymbol) {
+                    type = HierarchyType.Literal;
+                } else if (element instanceof RuleReferenceSymbol
+                    || element instanceof RuleSymbol) {
+                    type = HierarchyType.Rule;
+                } else if (element instanceof TokenSymbol
+                    || element instanceof TokenReferenceSymbol
+                    || element instanceof FragmentTokenSymbol) {
+                    type = HierarchyType.Token;
+                }
+
+                if (type) {
+                    let node: HierarchyNode = {
+                        name: type == HierarchyType.Literal ? "'" + element.name + "'" : element.name,
+                        type: type,
+                        definition: SourceContext.definitionForContext(element.context, true),
+                        callees: []
+                    }
+                    convertedPath.push(node);
+                }
+            }
+
+            convertedPaths.push(convertedPath);
+        }
+
+        function sameRange(range1: LexicalRange, range2: LexicalRange): boolean {
+            if (range1.start.row != range2.start.row) {
+                return false;
+            }
+            if (range1.start.column != range2.start.column) {
+                return false;
+            }
+            if (range1.end.row != range2.end.row) {
+                return false;
+            }
+            if (range1.end.column != range2.end.column) {
+                return false;
+            }
+            return true;
+        }
+
+        // Then merge the individual paths to a tree and establish the parent-child relationships.
+        let result: HierarchyNode[] = [];
+        for (let path of convertedPaths) {
+            let childList: HierarchyNode[] = result;
+            for (let i = 0; i < path.length; ++i) {
+                let index = -1;
+                if (!path[i].definition) { // No definition? Search by name then.
+                    index = childList.findIndex((node) => node.name == path[i].name);
+                }
+
+                if (index == -1) {
+                    index = childList.findIndex((node) => sameRange(node.definition!.range, path[i].definition!.range));
+                }
+
+                if (index == -1) {
+                    childList.push(path[i]);
+                    childList = path[i].callees;
+                } else {
+                    childList = childList[index].callees;
+                }
+            }
+        }
+
+        return result;
+    }
+
     public getRRDScript(ruleName: string): string | undefined {
         this.runSemanticAnalysisIfNeeded();
 
@@ -611,12 +695,12 @@ export class SourceContext {
         return result;
     }
 
-    public getSymbolOccurences(symbol: string, recursive: boolean): Set<Symbol> {
+    public getAllSymbols(recursive: boolean): Set<Symbol> {
         // The symbol table returns symbols of itself and those it depends on (if recursive is true).
         let result = this.symbolTable.getAllSymbols(Symbol, !recursive);
 
-        // Add also occurrences from contexts referencing us, this time not recursive
-        // as we have added the occurrences from this context already.
+        // Add also symbols from contexts referencing us, this time not recursive
+        // as we have added our content already.
         for (let reference of this.references) {
             reference.symbolTable.getAllSymbols(Symbol, true).forEach(result.add, result);
         }
@@ -679,7 +763,7 @@ export class SourceContext {
                 parameters.push(options.alternativeJar);
             } else {
                 if (options.language === "typescript") {
-                    parameters.push(path.join(__dirname, '../../../antlr/antlr4-typescript-4.6-SNAPSHOT-complete.jar'));
+                    parameters.push(path.join(__dirname, '../../node_modules/antlr4ts-cli/target/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar'));
                 } else {
                     parameters.push(path.join(__dirname, '../../../antlr/antlr4-4.7.2-SNAPSHOT-complete.jar'));
                 }
@@ -861,19 +945,17 @@ export class SourceContext {
      * Generates strings that are valid input for the managed grammar.
      *
      * @param options The settings controlling the generation.
-     * @param defined A map of rule names and the output string to use for them (instead of walking the ATN).
+     * @param lexerDefinitions Defines replacement strings to be used for lexer rule indexes.
+     * @param parserDefinitions Defines replacement strings to be used for parser rule indexes.
      * @returns A list of strings with sentences that this grammar would successfully parse.
      */
-    public generateSentence(options: SentenceGenerationOptions, definitions?: Map<string, string>): string {
+    public generateSentence(options: SentenceGenerationOptions, lexerDefinitions?: RuleMappings,
+        parserDefinitions?: RuleMappings): string {
         if (!this.grammarLexerData) {
             // Requires a generation run.
             return "";
         }
         let isLexerRule = options.startRule[0] == options.startRule[0].toUpperCase();
-
-        let generator = new SentenceGenerator(this.grammarLexerData.atn, this.grammarLexerRuleMap,
-            this.grammarLexerData.vocabulary!, this.grammarLexerData.ruleNames,
-                this.grammarParserData ? this.grammarParserData.ruleNames : undefined);
 
         let start: RuleStartState;
         if (isLexerRule) {
@@ -894,12 +976,13 @@ export class SourceContext {
             start = this.grammarParserData.atn.ruleToStartState[index];
         }
 
-        return generator.generate(options, start, definitions);
+        let generator = new SentenceGenerator(this.grammarLexerData.atn);
+        return generator.generate(options, start, lexerDefinitions, parserDefinitions);
     }
 
     /**
      * Testing support: take the input and run it through the lexer interpreter to see if it produces correct tokens.
-     * @returns A tuple with recognized token names and an error message, if an error occured.
+     * @returns A tuple with recognized token names and an error message, if an error occurred.
      */
     public lexTestInput(input: string, actionFile?: string): [string[], string] {
         let result: string[] = [];
@@ -936,7 +1019,52 @@ export class SourceContext {
         return [result, error];
     }
 
-    public getSymbolInfo(symbol: string): SymbolInfo | undefined {
+    /**
+     * Testing support: take the input and run it through the parser interpreter to see if it is syntactically correct.
+     * @returns A list of errors if one occurred.
+     */
+    public parseTestInput(input: string, startRule: string, actionFile?: string): string[] {
+        let errors: string[] = [];
+
+        if (!this.grammarLexerData || !this.grammarParserData) {
+            return ["No interpreter data available"];
+        }
+
+        let predicateEvaluator;
+        if (actionFile) {
+            delete require.cache[require.resolve(actionFile)];
+            const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
+            if (PredicateEvaluator) {
+                predicateEvaluator = new PredicateEvaluator();
+            } else {
+                predicateEvaluator = { evaluateLexerPredicate: evaluateLexerPredicate, evaluateParserPredicate: evaluateParserPredicate };
+            }
+        }
+
+        let eventSink = (event: string | symbol, ...args: any[]): void => {
+            errors.push(args[0]);
+        };
+
+        let stream = new ANTLRInputStream(input);
+        let lexer = new GrammarLexerInterpreter(predicateEvaluator, this, "<unnamed>", this.grammarLexerData, stream);
+        lexer.removeErrorListeners();
+
+        lexer.addErrorListener(new InterpreterLexerErrorListener(eventSink));
+        let tokenStream = new CommonTokenStream(lexer);
+        tokenStream.fill();
+
+        let parser = new GrammarParserInterpreter(eventSink, predicateEvaluator, this, this.grammarParserData, tokenStream);
+        parser.buildParseTree = true;
+        parser.removeErrorListeners();
+        parser.addErrorListener(new InterpreterParserErrorListener(eventSink));
+
+        let startRuleIndex = parser.getRuleIndex(startRule);
+        let parseTree = parser.parse(startRuleIndex);
+
+        return errors;
+    }
+
+    public getSymbolInfo(symbol: string | Symbol): SymbolInfo | undefined {
         return this.symbolTable.getSymbolInfo(symbol);
     }
 
@@ -1086,42 +1214,37 @@ export class SourceContext {
         return result;
     }
 
+    private static symbolToKindMap: Map<{ new (): Symbol }, SymbolKind> = new Map([
+        [ImportSymbol, SymbolKind.Import],
+        [BuiltInTokenSymbol, SymbolKind.BuiltInLexerToken],
+        [VirtualTokenSymbol, SymbolKind.VirtualLexerToken],
+        [FragmentTokenSymbol, SymbolKind.FragmentLexerToken],
+        [TokenSymbol, SymbolKind.LexerToken],
+        [BuiltInModeSymbol, SymbolKind.BuiltInMode],
+        [LexerModeSymbol, SymbolKind.LexerMode],
+        [BuiltInChannelSymbol, SymbolKind.BuiltInChannel],
+        [TokenChannelSymbol, SymbolKind.TokenChannel],
+        [RuleSymbol, SymbolKind.ParserRule],
+        [ActionSymbol, SymbolKind.Action],
+        //[ActionSymbol, SymbolKind.Predicate],
+        [OperatorSymbol, SymbolKind.Operator],
+        [TokenReferenceSymbol, SymbolKind.TokenReference],
+        [RuleReferenceSymbol, SymbolKind.RuleReference]
+    ]);
+
     public static getKindFromSymbol(symbol: Symbol): SymbolKind {
-        if (symbol instanceof TokenVocabSymbol) {
+        if (symbol.name === "tokenVocab") {
             return SymbolKind.TokenVocab;
         }
-        if (symbol instanceof ImportSymbol) {
-            return SymbolKind.Import;
+        let kind = this.symbolToKindMap.get(symbol.constructor as typeof Symbol);
+        if (kind == SymbolKind.Action && (symbol as ActionSymbol).isPredicate) {
+            return SymbolKind.Predicate;
         }
-        if (symbol instanceof BuiltInTokenSymbol) {
-            return SymbolKind.BuiltInLexerToken;
-        }
-        if (symbol instanceof VirtualTokenSymbol) {
-            return SymbolKind.VirtualLexerToken;
-        }
-        if (symbol instanceof FragmentTokenSymbol) {
-            return SymbolKind.FragmentLexerToken;
-        }
-        if (symbol instanceof TokenSymbol) {
-            return SymbolKind.LexerToken;
-        }
-        if (symbol instanceof BuiltInModeSymbol) {
-            return SymbolKind.BuiltInMode;
-        }
-        if (symbol instanceof LexerModeSymbol) {
-            return SymbolKind.LexerMode;
-        }
-        if (symbol instanceof BuiltInChannelSymbol) {
-            return SymbolKind.BuiltInChannel;
-        }
-        if (symbol instanceof TokenChannelSymbol) {
-            return SymbolKind.TokenChannel;
-        }
-        return SymbolKind.ParserRule;
+        return kind!;
     }
 
     /**
-     * Returns the definition info for the given rule context. Public, as it is required by listeners.
+     * Returns the definition info for the given rule context.
      */
     public static definitionForContext(ctx: ParseTree | undefined, keepQuotes: boolean): Definition | undefined {
         if (!ctx) {

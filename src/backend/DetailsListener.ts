@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -18,14 +18,13 @@ import {
 
 import {
     ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
-    VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, TokenVocabSymbol,
-    AlternativeSymbol, EbnfSuffixSymbol, OptionsSymbol, ActionSymbol, ArgumentSymbol, OperatorSymbol
+    VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol,
+    AlternativeSymbol, EbnfSuffixSymbol, OptionsSymbol, ActionSymbol, ArgumentSymbol, OperatorSymbol, OptionSymbol
 } from './ContextSymbolTable';
 
 import { SourceContext } from './SourceContext';
 
 import { ScopedSymbol, LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
-import { ParserRuleContext } from 'antlr4ts';
 
 export class DetailsListener implements ANTLRv4ParserListener {
     constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
@@ -175,17 +174,20 @@ export class DetailsListener implements ANTLRv4ParserListener {
     }
 
     enterOptionsSpec(ctx: OptionsSpecContext) {
-        let symbol = this.symbolTable.addNewSymbolOfType(OptionsSymbol, undefined, "options");
-        symbol.context = ctx;
+        this.currentSymbol = this.symbolTable.addNewSymbolOfType(OptionsSymbol, undefined, "options");
+        this.currentSymbol.context = ctx;
     }
 
     exitOption(ctx: OptionContext) {
         let option = ctx.identifier().text;
-        if (option.toLowerCase() == "tokenvocab" && ctx.tryGetRuleContext(0, OptionValueContext)) {
-            let name = ctx.optionValue().text;
-            let symbol = this.symbolTable.addNewSymbolOfType(TokenVocabSymbol, undefined, name);
+        let value = ctx.tryGetRuleContext(0, OptionValueContext);
+        if (value) {
+            let symbol = this.symbolTable.addNewSymbolOfType(OptionSymbol, this.currentSymbol as ScopedSymbol, option);
+            symbol.value = value.text;
             symbol.context = ctx;
-            this.imports.push(name);
+            if (option == "tokenVocab") {
+                this.imports.push(value.text);
+            }
         }
     }
 

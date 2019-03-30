@@ -14,6 +14,8 @@ import { SymbolKind, SymbolGroupKind, SymbolInfo } from '../backend/facade';
 import { SourceContext } from './SourceContext';
 import { ParseTree, TerminalNode } from 'antlr4ts/tree';
 
+const _ = require('lodash');
+
 type SymbolStore = Map<SymbolKind, Map<string, ParserRuleContext | undefined>>;
 
 export class ContextSymbolTable extends SymbolTable {
@@ -34,46 +36,6 @@ export class ContextSymbolTable extends SymbolTable {
         }
         this.symbolReferences.clear();
         super.clear();
-    }
-
-    public addNewSymbol(kind: SymbolKind, name: string, ctx: ParserRuleContext) {
-        let symbol: Symbol;
-        switch (kind) {
-            case SymbolKind.TokenVocab:
-                symbol = this.addNewSymbolOfType(TokenVocabSymbol, undefined, name);
-                break;
-            case SymbolKind.Import:
-                symbol = this.addNewSymbolOfType(ImportSymbol, undefined, name);
-                break;
-            case SymbolKind.BuiltInLexerToken:
-                symbol = this.addNewSymbolOfType(BuiltInTokenSymbol, undefined, name);
-                break;
-            case SymbolKind.VirtualLexerToken:
-                symbol = this.addNewSymbolOfType(VirtualTokenSymbol, undefined, name);
-                break;
-            case SymbolKind.FragmentLexerToken:
-                symbol = this.addNewSymbolOfType(FragmentTokenSymbol, undefined, name);
-                break;
-            case SymbolKind.LexerToken:
-                symbol = this.addNewSymbolOfType(TokenSymbol, undefined, name);
-                break;
-            case SymbolKind.BuiltInMode:
-                symbol = this.addNewSymbolOfType(BuiltInModeSymbol, undefined, name);
-                break;
-            case SymbolKind.LexerMode:
-                symbol = this.addNewSymbolOfType(LexerModeSymbol, undefined, name);
-                break;
-            case SymbolKind.BuiltInChannel:
-                symbol = this.addNewSymbolOfType(BuiltInChannelSymbol, undefined, name);
-                break;
-            case SymbolKind.TokenChannel:
-                symbol = this.addNewSymbolOfType(TokenChannelSymbol, undefined, name);
-                break;
-            default: // SymbolKind.ParserRule
-                symbol = this.addNewSymbolOfType(RuleSymbol, undefined, name);
-                break;
-        }
-        symbol.context = ctx;
     }
 
     public symbolExists(name: string, kind: SymbolKind, localOnly: boolean): boolean {
@@ -182,7 +144,13 @@ export class ContextSymbolTable extends SymbolTable {
     public listTopLevelSymbols(localOnly: boolean): SymbolInfo[] {
         let result: SymbolInfo[] = [];
 
-        result.push(...this.symbolsOfType(TokenVocabSymbol, localOnly));
+        let options = this.resolve("options", true);
+        if (options) {
+            let tokenVocab = options.resolve("tokenVocab", true);
+            if (tokenVocab) {
+                result.push(this.getSymbolInfo(tokenVocab)!);
+            }
+        }
         result.push(...this.symbolsOfType(ImportSymbol, localOnly));
         result.push(...this.symbolsOfType(BuiltInTokenSymbol, localOnly));
         result.push(...this.symbolsOfType(VirtualTokenSymbol, localOnly));
@@ -253,53 +221,120 @@ export class ContextSymbolTable extends SymbolTable {
         }
     }
 
-    public getSymbolOccurences(symbolName: string, localOnly: boolean): SymbolInfo[] {
+    private symbolIsRule(symbol: Symbol): boolean {
+        return symbol instanceof RuleSymbol || symbol instanceof TokenSymbol
+            || symbol instanceof FragmentTokenSymbol || symbol instanceof VirtualTokenSymbol;
+    }
+
+    private findNestedOccurencesFor(name: string, resolveSymbolPaths: boolean): SymbolInfo[] {
         let result: SymbolInfo[] = [];
+        let pending: SymbolInfo[] = [];
 
-        let symbols = this.getAllSymbols(Symbol, localOnly);
-        for (let symbol of symbols) {
-            let owner = (symbol.root as ContextSymbolTable).owner;
+        let references: Symbol[] = this.getAllNestedSymbols(name);
 
+        // Each reference path contains at least 2 entries: the containing symbol table and a rule
+        // (either the symbol itself or a containing rule).
+        let parentSymbols: Set<string> = new Set();
+        for (let reference of references) {
+            // If we get both rule references and the rule itself then ignore the rule, because
+            // we can continue with the references alone.
+            if (references.length > 1 && this.symbolIsRule(reference)) {
+                continue;
+            }
+
+            let owner = (reference.symbolTable as ContextSymbolTable).owner;
             if (owner) {
-                if (symbol.context && symbol.name == symbolName) {
-                    let context = symbol.context;
-                    if (symbol instanceof FragmentTokenSymbol) {
-                        context = (symbol.context as ParserRuleContext).children![1];
-                    } else if (symbol instanceof TokenSymbol || symbol instanceof RuleSymbol) {
-                        context = (symbol.context as ParserRuleContext).children![0];
-                    }
-
-                    result.push({
-                        kind: SourceContext.getKindFromSymbol(symbol),
-                        name: symbolName,
-                        source: owner.fileName,
-                        definition: SourceContext.definitionForContext(context, true),
-                        description: undefined
-                    });
+                let info: SymbolInfo = {
+                    kind: SourceContext.getKindFromSymbol(reference),
+                    name: name,
+                    source: owner.fileName,
+                    definition: SourceContext.definitionForContext(reference.context, true),
+                    description: undefined,
+                    symbolPath: resolveSymbolPaths ? reference.symbolPath : undefined
                 }
 
-                if (symbol instanceof ScopedSymbol) {
-                    let references = symbol.getAllNestedSymbols(symbolName);
-                    for (let reference of references) {
-                        result.push({
-                            kind: SourceContext.getKindFromSymbol(reference),
-                            name: symbolName,
-                            source: owner.fileName,
-                            definition: SourceContext.definitionForContext(reference.context, true),
-                            description: undefined
-                        });
+                // The symbol itself?
+                if (reference instanceof TokenSymbol
+                    || reference instanceof FragmentTokenSymbol
+                    || reference instanceof RuleSymbol
+                ) {
+                    result.push(info);
+                    continue;
+                }
+
+                // All references to it.
+                if (resolveSymbolPaths) {
+                    // For references the path is at least 3 elements long: the symbol table,
+                    // the referencing symbol and the reference. We have to resolve the referencing symbol too.
+                    pending.push(info);
+                    parentSymbols.add(_.nth(info.symbolPath!, -2).name);
+                } else {
+                    result.push(info);
+                }
+            }
+        }
+
+        while (pending.length > 0) {
+            // Resolve the parent symbols too and merge their symbol paths with the one
+            // of the pending info records.
+
+            // At the same time prepare already the next iteration.
+            let newPending: SymbolInfo[] = [];
+            let newParentSymbols: Set<string> = new Set();
+
+            for (let parentName of parentSymbols) {
+                references = this.getAllNestedSymbols(parentName);
+                for (let entry of pending) {
+                    if (_.nth(entry.symbolPath!, -2).name == parentName) {
+                        for (let parent of references) {
+                            // Also here ignore the rule if we got both, rule references and the rule itself.
+                            if (references.length > 1 && this.symbolIsRule(parent)) {
+                                continue;
+                            }
+                            let info = _.clone(entry);
+
+                            // Keep in mind here the symbol path is reversed (the symbol is at index 0 and each parent
+                            // comes at higher indexes).
+                            let pathLength = info.symbolPath!.length
+                            info.symbolPath = _.concat(info.symbolPath!.slice(0, pathLength - 2), parent.symbolPath!);
+
+                            // Stop iteration if we found a rule symbol (which is a top level element under a symbol table)
+                            // or the path reached the starting entry again.
+                            let nameToLookUp = _.nth(info.symbolPath!, -2).name;
+
+                            // Check that this name appears at most once (to avoid endless recursion).
+                            let nameCount = 0;
+                            info.symbolPath!.forEach((symbol: Symbol) => { if (symbol.name == nameToLookUp) ++nameCount; });
+                            if (!this.symbolIsRule(parent) && nameCount < 2) {
+                                newPending.push(info);
+                                newParentSymbols.add(nameToLookUp);
+                            } else {
+                                result.push(info);
+                            }
+                        }
                     }
                 }
             }
+            pending = newPending;
+            parentSymbols = newParentSymbols;
         }
 
         return result;
     }
 
+
+    public getSymbolOccurences(symbolName: string, localOnly: boolean, resolveSymbolPaths: boolean = false): SymbolInfo[] {
+        return this.findNestedOccurencesFor(symbolName, resolveSymbolPaths);
+    }
+
     private getSymbolOfType(name: string, kind: SymbolKind, localOnly: boolean): Symbol | undefined {
         switch (kind) {
-            case SymbolKind.TokenVocab:
-                return this.resolve(name, localOnly) as TokenVocabSymbol;
+            case SymbolKind.TokenVocab: {
+                let options = this.resolve("options", true);
+                if (options) {
+                    return options.resolve(name, localOnly);
+                }
+            }
             case SymbolKind.Import:
                 return this.resolve(name, localOnly) as ImportSymbol;
             case SymbolKind.BuiltInLexerToken:
@@ -329,7 +364,10 @@ export class ContextSymbolTable extends SymbolTable {
 
 };
 
-export class TokenVocabSymbol extends Symbol { }
+export class OptionSymbol extends Symbol {
+    public value: string;
+ }
+
 export class ImportSymbol extends Symbol { }
 export class BuiltInTokenSymbol extends Symbol { }
 export class VirtualTokenSymbol extends Symbol { }

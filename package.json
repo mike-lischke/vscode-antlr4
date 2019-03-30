@@ -443,6 +443,10 @@
                 {
                     "id": "antlr4.actions",
                     "name": "Actions & Semantic Predicates"
+                },
+                {
+                    "id": "antlr4.invocationHierarchy",
+                    "name": "Invocation Hierarchy"
                 }
             ]
         },
@@ -519,28 +523,32 @@
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",
         "publish": "vsce publish",
-        "test": "tsc && mocha ./out/test/backend/test.js"
+        "test": "tsc && mocha ./out/test/backend/test.js",
+        "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser"
     },
     "dependencies": {
         "antlr4-c3": "^1.1.11",
-        "antlr4ts": "^0.5.0-alpha.2",
+        "antlr4ts": "^0.5.0-alpha.3",
+        "antlr4ts-cli": "^0.5.0-alpha.3",
         "await-notify": "^1.0.1",
-        "d3": "^5.9.0",
+        "d3": "^5.9.2",
         "fs-extra": "^7.0.1",
+        "lodash": "^4.17.11",
         "unicode-11.0.0": "^0.7.8",
-        "vscode-debugadapter": "^1.33.0",
-        "vscode-debugprotocol": "^1.33.0"
+        "vscode-debugadapter": "^1.34.0",
+        "vscode-debugprotocol": "^1.34.0"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",
-        "@types/d3": "^5.7.0",
-        "@types/fs-extra": "^5.0.2",
+        "@types/d3": "^5.7.1",
+        "@types/fs-extra": "^5.0.5",
         "@types/glob": "^5.0.36",
+        "@types/lodash": "^4.14.123",
         "@types/mocha": "^2.2.48",
-        "@types/node": "^8.10.40",
+        "@types/node": "^8.10.44",
         "chai": "^4.2.0",
         "mocha": "^4.1.0",
-        "typescript": "^3.3.3",
-        "vscode": "^1.1.29"
+        "typescript": "^3.3.3333",
+        "vscode": "^1.1.30"
     }
 }

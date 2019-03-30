@@ -12,11 +12,8 @@ import * as path from "path";
 
 import { ATNStateType, TransitionType } from "antlr4ts/atn";
 
-import { SourceContext } from './SourceContext';
-import { GrammarDebugger } from "./GrammarDebugger";
-import { ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, RuleSymbol } from "./ContextSymbolTable";
-import { ParserRuleContext, Vocabulary } from "antlr4ts";
-import { ScopedSymbol } from "antlr4-c3";
+import { Symbol } from "antlr4-c3";
+import { Vocabulary } from "antlr4ts";
 
 export enum SymbolGroupKind { // Multiple symbol kinds can be involved in a symbol lookup.
     TokenRef,
@@ -41,8 +38,14 @@ export enum SymbolKind {
     Action,
     Predicate,
     Operator,
-    Option
+    Option,
+    TokenReference,
+    RuleReference
 };
+
+// Import modules that depend on these enums after their definition, to allow for static initializations.
+import { SourceContext } from './SourceContext';
+import { GrammarDebugger } from "./GrammarDebugger";
 
 /**
  * A range within a text. Just like the range object in vscode the end position is not included in the range.
@@ -66,6 +69,7 @@ export class SymbolInfo {
     definition?: Definition;
     description?: string;  // Used for code completion. Provides a small description for certain symbols.
     isPredicate?: boolean; // Used only for actions.
+    symbolPath?: Symbol[]; // Optional part for invocation hierarchy.
 };
 
 export enum DiagnosticType {
@@ -145,6 +149,25 @@ export class ReferenceNode {
 };
 
 /**
+ * Invocation hierarchies are made of this node.
+ */
+export class HierarchyNode {
+    name: string;
+    type: HierarchyType;
+    callees: HierarchyNode[];
+    definition?: Definition;
+    parent?: HierarchyNode;
+};
+
+export enum HierarchyType {
+    Unknown,
+    File,
+    Rule,
+    Token,
+    Literal
+};
+
+/**
  * Contains the link + node values which describe the ATN graph for a single rule.
  */
 export class ATNGraphData {
@@ -179,21 +202,17 @@ export interface GenerationOptions {
 
 /**
  * Options used by the sentence generation.
- * Note: both min and max lexer token length are rather informative values as the actual length depends heavily on the
- *       rule structure. For instance keywords will always show up completely, even if the max token length is smaller.
- *       The all-path setting does not apply to lexer rule sets (i.e. sets of characters). Otherwise we often had to generate
- *       individual sentences for many Unicode chars. Normal alternatives are however handled depending on that setting (like in parser rules).
- *       Also keep in mind that this setting (when true) can cause a huge set of sentences to be generated. So use it with care.
  */
 export interface SentenceGenerationOptions {
-    startRule: string;       // The name of the rule to start from (either lexer or parser rule) (required).
+    startRule: string;          // The name of the rule to start from (either lexer or parser rule) (required).
     convergenceFactor?: number; // Determines how quick recursive rule calls converge to 0 (between 0 and 1, default: 0.25).
-    maxIterations?: number;  // The maximum number of iterations used for `+` and `*` loops in parser rules (default: 1).
-    maxRecursions?: number;  // The maximum number of recursions in parser rules (default: 1);
-    minTokenLength?: number; // Min count of elements in a lexer token (default: 1).
-    maxTokenLength?: number; // Max count of elements in a lexer token (default: 256).
-    allPaths?: boolean;      // If false a single alt in a list is randomly chosen. If true sentences for all possible alts are generated (default: false).
+    maxIterations?: number;     // The maximum number of iterations used for `+` and `*` loops (default: 1).
 };
+
+/**
+ * Mappings from rule indexes to string, which define output to use for specific rules when generating sentences.
+ */
+export type RuleMappings = Map<number, string>;
 
 /**
  * Options for grammar text formatting. Some names, values and meanings have been taken from clang-format
@@ -201,18 +220,18 @@ export interface SentenceGenerationOptions {
  * Deviations from that are mentioned in comments, otherwise see clang-format and the documentation for descriptions + examples.
  */
 export interface FormattingOptions {
-    alignTrailingComments?: boolean; // Default: false
-    allowShortBlocksOnASingleLine?: boolean; // Default: true;
-    breakBeforeBraces?: boolean; // When true start predicates and actions on a new line. Default: false.
-    columnLimit?: number; // Default: 100 chars.
-    continuationIndentWidth?: number; // For line continuation (only used if useTab is false). Default: same as indentWith.
-    indentWidth?: number; // Default: 4 chars.
+    alignTrailingComments?: boolean;            // Default: false
+    allowShortBlocksOnASingleLine?: boolean;    // Default: true;
+    breakBeforeBraces?: boolean;                // When true start predicates and actions on a new line. Default: false.
+    columnLimit?: number;                       // Default: 100 chars.
+    continuationIndentWidth?: number;           // For line continuation (only used if useTab is false). Default: same as indentWith.
+    indentWidth?: number;                       // Default: 4 chars.
     keepEmptyLinesAtTheStartOfBlocks?: boolean; // Default: false.
-    maxEmptyLinesToKeep?: number; // Default: 1.
-    reflowComments?: boolean; // Default: true.
-    spaceBeforeAssignmentOperators?: boolean; // Default: true
-    tabWidth?: number; // Default: 4.
-    useTab?: boolean; // Default: true.
+    maxEmptyLinesToKeep?: number;               // Default: 1.
+    reflowComments?: boolean;                   // Default: true.
+    spaceBeforeAssignmentOperators?: boolean;   // Default: true
+    tabWidth?: number;                          // Default: 4.
+    useTab?: boolean;                           // Default: true.
 
     // Values not found in clang-format:
 
@@ -436,14 +455,14 @@ export class AntlrFacade {
     }
 
     /**
-     * Returns a list of symbols from a file (and optionally its depdencies).
+     * Returns a list of top level symbols from a file (and optionally its dependencies).
      *
      * @param fileName The grammar file.
      * @param fullList If true, includes symbols from all dependencies as well.
      */
-    public listSymbols(fileName: string, fullList: boolean): SymbolInfo[] {
+    public listTopLevelSymbols(fileName: string, fullList: boolean): SymbolInfo[] {
         let context = this.getContext(fileName);
-        return context.listSymbols(!fullList);
+        return context.listTopLevelSymbols(!fullList);
     };
 
     /**
@@ -525,45 +544,7 @@ export class AntlrFacade {
      */
     public getSymbolOccurences(fileName: string, symbolName: string): SymbolInfo[] {
         let context = this.getContext(fileName);
-        let symbols = context.getSymbolOccurences(symbolName, true);
-
-        let result: SymbolInfo[] = [];
-
-        for (let symbol of symbols) {
-            let owner = (symbol.root as ContextSymbolTable).owner;
-
-            if (owner) {
-                if (symbol.context && symbol.name == symbolName) {
-                    let context = symbol.context;
-                    if (symbol instanceof FragmentTokenSymbol) {
-                        context = (symbol.context as ParserRuleContext).children![1];
-                    } else if (symbol instanceof TokenSymbol || symbol instanceof RuleSymbol) {
-                        context = (symbol.context as ParserRuleContext).children![0];
-                    }
-
-                    result.push({
-                        kind: SourceContext.getKindFromSymbol(symbol),
-                        name: symbolName,
-                        source: owner.fileName,
-                        definition: SourceContext.definitionForContext(context, true),
-                        description: undefined
-                    });
-                }
-
-                if (symbol instanceof ScopedSymbol) {
-                    let references = symbol.getAllNestedSymbols(symbolName);
-                    for (let reference of references) {
-                        result.push({
-                            kind: SourceContext.getKindFromSymbol(reference),
-                            name: symbolName,
-                            source: owner.fileName,
-                            definition: SourceContext.definitionForContext(reference.context, true),
-                            description: undefined
-                        });
-                    }
-                }
-            }
-        }
+        let result = context.symbolTable.getSymbolOccurences(symbolName, false);
 
         // Sort result by kind. This way rule definitions appear before rule references and are re-parsed first.
         return result.sort((lhs: SymbolInfo, rhs: SymbolInfo) => {
@@ -589,6 +570,11 @@ export class AntlrFacade {
     public getReferenceGraph(fileName: string): Map<string, ReferenceNode> {
         let context = this.getContext(fileName);
         return context.getReferenceGraph();
+    }
+
+    public getInvocationhierarchy(fileName: string, name: string): HierarchyNode[] {
+        let context = this.getContext(fileName);
+        return context.getInvocationHierarchy(name);
     }
 
     public getRRDScript(fileName: string, rule: string): string {
@@ -620,14 +606,20 @@ export class AntlrFacade {
         return context.getATNGraph(rule);
     }
 
-    public generateSentence(fileName: string, options: SentenceGenerationOptions, definitions?: Map<string, string>): string {
+    public generateSentence(fileName: string, options: SentenceGenerationOptions, lexerDefinitions?: RuleMappings,
+        parserDefinitions?: RuleMappings): string {
         let context = this.getContext(fileName);
-        return context.generateSentence(options, definitions);
+        return context.generateSentence(options, lexerDefinitions, parserDefinitions);
     }
 
     public lexTestInput(fileName: string, input: string, actionFile?: string): [string[], string] {
         let context = this.getContext(fileName);
         return context.lexTestInput(input, actionFile);
+    }
+
+    public parseTestInput(fileName: string, input: string, startRule: string, actionFile?: string): string[] {
+        let context = this.getContext(fileName);
+        return context.parseTestInput(input, startRule, actionFile);
     }
 
     public formatGrammar(fileName: string, options: FormattingOptions, start: number, stop: number): [string, number, number] {

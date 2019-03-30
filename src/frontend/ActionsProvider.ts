@@ -129,8 +129,8 @@ export class ActionEntry extends TreeItem {
         this.command = command_;
 
         this.iconPath = {
-            light: path.join(__dirname, '..', '..', '..', 'misc', 'action.svg'),
-            dark: path.join(__dirname, '..', '..', '..', 'misc', 'action.svg')
+            light: path.join(__dirname, '..', '..', '..', 'misc', 'action-light.svg'),
+            dark: path.join(__dirname, '..', '..', '..', 'misc', 'action-dark.svg')
         };
 
     }
@@ -145,8 +145,8 @@ export class PredicateEntry extends TreeItem {
         this.command = command_;
 
         this.iconPath = {
-            light: path.join(__dirname, '..', '..', '..', 'misc', 'predicate.svg'),
-            dark: path.join(__dirname, '..', '..', '..', 'misc', 'predicate.svg')
+            light: path.join(__dirname, '..', '..', '..', 'misc', 'predicate-light.svg'),
+            dark: path.join(__dirname, '..', '..', '..', 'misc', 'predicate-dark.svg')
         };
 
     }

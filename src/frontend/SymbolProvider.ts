@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2017 Mike Lischke
+ * Copyright (c) 2016, 2019 Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -19,7 +19,7 @@ export class AntlrSymbolProvider implements DocumentSymbolProvider {
     constructor(private backend: AntlrFacade) {}
 
     provideDocumentSymbols (document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[]> {
-        var symbols = this.backend.listSymbols(document.fileName, false);
+        var symbols = this.backend.listTopLevelSymbols(document.fileName, false);
 
         let basePath = path.dirname(document.fileName);
         var symbolsList = [];

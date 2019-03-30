@@ -13,7 +13,7 @@ export let FULL_UNICODE_SET = new IntervalSet([new Interval(0, 0x10FFFF)]);
 
 export interface UnicodeOptions {
     // The CJK scripts consist of so many code points, any generated random string will contain mostly CJK
-    // characters (Chinese/Japanese/Korean), if not excluded. However, only certain scripts are removed by this setting, namely:
+    // characters (Chinese/Japanese/Korean), if not excluded. However, only the largest scripts are removed by this setting, namely:
     // - CJK Unified Ideographs (+ Extension A)
     // - Yi Syllables
     // - Hangul Syllables

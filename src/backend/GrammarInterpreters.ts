@@ -32,7 +32,7 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         lexerData: InterpreterData,
         input: CharStream) {
 
-        super(grammarFileName, lexerData.vocabulary, lexerData.modes, lexerData.ruleNames, lexerData.atn, input);
+        super(grammarFileName, lexerData.vocabulary, lexerData.ruleNames, lexerData.channels, lexerData.modes, lexerData.atn, input);
         this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol)
             .filter((action => action.isPredicate && action.context!.parent instanceof LexerElementContext));
     }

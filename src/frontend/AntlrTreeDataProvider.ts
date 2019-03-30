@@ -7,7 +7,7 @@
 
 "use strict"
 
-import { TreeDataProvider, TreeItem, Event, EventEmitter, TextDocument, ProviderResult } from "vscode";
+import { TreeDataProvider, TreeItem, EventEmitter, TextDocument, ProviderResult } from "vscode";
 import { AntlrFacade } from "../backend/facade";
 
 export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {

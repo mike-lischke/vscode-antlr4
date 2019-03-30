@@ -53,7 +53,7 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
                     </span>
                 </div>
                 <div id="container">`;
-            var symbols = this.backend.listSymbols(fileName, false);
+            var symbols = this.backend.listTopLevelSymbols(fileName, false);
             for (let symbol of symbols) {
                 if (symbol.kind == SymbolKind.LexerToken
                     || symbol.kind == SymbolKind.ParserRule

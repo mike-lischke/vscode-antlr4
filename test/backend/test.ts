@@ -69,7 +69,7 @@ describe('vscode-antlr4-backend:', function () {
         });
 
         it('listSymbols', function () {
-            let symbols = backend.listSymbols("test/backend/t.g4", true);
+            let symbols = backend.listTopLevelSymbols("test/backend/t.g4", true);
             expect(symbols.length, "Test 1").to.equal(10);
 
             let info = symbols[8];
@@ -147,7 +147,7 @@ describe('vscode-antlr4-backend:', function () {
     describe('Symbol Info Retrieval (TParser.g4):', function () {
         it('Symbol Listing', function () {
             backend.loadGrammar("test/backend/TParser.g4");
-            let symbols = backend.listSymbols("test/backend/TParser.g4", true);
+            let symbols = backend.listTopLevelSymbols("test/backend/TParser.g4", true);
             expect(symbols.length, "Test 1").to.equal(56);
 
             let info = symbols[38];
@@ -565,7 +565,7 @@ describe('vscode-antlr4-backend:', function () {
                 expect(diagnostics.length, "Test 1").to.equal(0);
             }
 
-            result = await backend.generate("test/backend/calculator.g4", { outputDir: "generated", language: "Java" });
+            result = await backend.generate("test/backend/sentences.g4", { outputDir: "generated", language: "Java" });
             for (let file of result) {
                 let diagnostics = backend.getDiagnostics(file);
                 if (diagnostics.length > 0) {
@@ -579,42 +579,101 @@ describe('vscode-antlr4-backend:', function () {
         // Sentence generation is to a large part random and hence tricky to test.
         // At least we can validate the correctness of the generated text.
         it("Lexer sentence generation", function () {
-            let vocabulary = backend.getLexerVocabulary("test/backend/calculator.g4")!;
+            // A grammar made specifically for sentence generation.
+            let vocabulary = backend.getLexerVocabulary("test/backend/sentences.g4")!;
             for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
                 let symbolicName = vocabulary.getSymbolicName(i);
                 for (let i = 0; i < 20; ++i) {
-                    let sentence = backend.generateSentence("test/backend/calculator.g4", {
+                    let sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: symbolicName!,
                         maxIterations: 5
                     });
-                    let [tokens, error] = backend.lexTestInput("test/backend/calculator.g4", sentence);
+
+                    let [tokens, error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
                     expect(error).to.be.empty;
-                    expect(tokens.length).to.equal(2);
+                    if (tokens.length == 1) {
+                        expect(tokens[0], "Test 1").to.equal("EOF");
+                        expect(symbolicName, "Test 2").to.equal("WS");
+                    } else {
+                        expect(tokens.length, "Test 3").to.equal(2);
+                    }
                 }
             }
 
             vocabulary = backend.getLexerVocabulary("test/backend/CPP14.g4")!;
+
+            // The following tokens can have variable content. Others (keywords, operators) are constant.
+            let variableTokens = new Set<string>();
+            variableTokens.add("Directive");
+            variableTokens.add("Octalliteral");
+            variableTokens.add("Hexadecimalliteral");
+            variableTokens.add("Binaryliteral");
+            variableTokens.add("Integersuffix");
+            variableTokens.add("Characterliteral");
+            variableTokens.add("Floatingliteral");
+            variableTokens.add("Stringliteral");
+            variableTokens.add("Userdefinedintegerliteral");
+            variableTokens.add("Userdefinedfloatingliteral");
+            variableTokens.add("Userdefinedstringliteral");
+            variableTokens.add("Userdefinedcharacterliteral");
+            variableTokens.add("BlockComment");
+            variableTokens.add("LineComment");
+
             for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
                 let symbolicName = vocabulary.getSymbolicName(i);
-                for (let i = 0; i < 20; ++i) {
+                let count = variableTokens.has(symbolicName!) ? 20 : 1;
+                for (let i = 0; i < count; ++i) {
                     let sentence = backend.generateSentence("test/backend/CPP14.g4", {
                         startRule: symbolicName!,
                         maxIterations: 5
                     });
 
+                    //console.log(symbolicName + ": " + sentence);
                     let [tokens, error] = backend.lexTestInput("test/backend/CPP14.g4", sentence);
                     expect(error).to.be.empty;
                     if (symbolicName == "Whitespace" || symbolicName == "Newline") { // Skipped tokens.
-                        expect(tokens.length).to.equal(1);
+                        expect(tokens.length, "Test 4").to.equal(1);
                     } else {
-                        expect(tokens.length).to.equal(2);
+                        expect(tokens.length, "Test 5").to.equal(2);
                     }
                 }
             }
 
         });
 
-        xit("Parser sentence generation", function () {
+        it("Parser sentence generation", function () {
+            this.slow(30000);
+            this.timeout(60000);
+
+            let rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (let rule of rules) {
+                for (let i = 0; i < 20; ++i) {
+                    let sentence = backend.generateSentence("test/backend/sentences.g4", {
+                        startRule: rule,
+                        maxIterations: 20
+                    });
+
+                    //console.log(rule + ": " + sentence);
+                }
+            }
+
+            rules = backend.getRuleList("test/backend/CPP14.g4")!;
+            for (let i = 0; i < 20; ++i) {
+                let sentence = backend.generateSentence("test/backend/CPP14.g4", {
+                    startRule: "translationunit",
+                    maxIterations: 1
+                });
+
+                //console.log(sentence);
+                let errors = backend.parseTestInput("test/backend/CPP14.g4", sentence, "translationunit");
+                if (errors.length > 0) {
+                    fs.writeFileSync("generated/code.cpp", sentence);
+                }
+                expect(errors.length, "Test 2").to.equal(0);
+            }
+        });
+
+        xit("Generation with definitions", function () {
             this.timeout(60000);
 
             let definitions: Map<string, string> = new Map([
@@ -651,8 +710,7 @@ describe('vscode-antlr4-backend:', function () {
         });
 
         after(function () {
-            backend.releaseGrammar("test/backend/TParser.g4");
-            backend.releaseGrammar("test/backend/TLexer.g4");
+            backend.releaseGrammar("test/backend/sentences.g4");
             backend.releaseGrammar("test/backend/CPP14.g4");
             fs.removeSync("generated");
         })

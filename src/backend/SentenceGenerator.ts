@@ -9,11 +9,11 @@
 
 import {
     ATN, ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType, RuleTransition,
-    StarBlockStartState, RuleStartState, LoopEndState, NotSetTransition
+    StarBlockStartState, RuleStartState, LoopEndState, NotSetTransition, DecisionState, PlusLoopbackState
 } from "antlr4ts/atn";
 import { Vocabulary } from "antlr4ts";
 
-import { SentenceGenerationOptions } from "./facade";
+import { SentenceGenerationOptions, RuleMappings } from "./facade";
 import { IntervalSet } from "antlr4ts/misc";
 
 import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
@@ -27,117 +27,91 @@ export class SentenceGenerator {
      * @param ruleMap The lexer rule index map to go from token name to token rule index.
      * @param vocabulary The lexer vocabulary to lookup text for token value.
      */
-    constructor(private lexerATN: ATN, private ruleMap: ReadonlyMap<string, number>,
-        private vocabulary: Vocabulary, private lexerRuleNames: string[],
-        private parserRuleNames?: string[]) {
+    constructor(private lexerATN: ATN) {
+
+        this.unicodeIntervalSet = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
     }
 
-    public generate(options: SentenceGenerationOptions, start: RuleStartState, definitions?: Map<string, string>): string {
+    public generate(options: SentenceGenerationOptions, start: RuleStartState, lexerDefinitions?: RuleMappings,
+        parserDefinitions?: RuleMappings): string {
+
         this.convergenceFactor = options.convergenceFactor || 0.25;
 
-        this.allPaths = options.allPaths || false;
         this.maxIterations = (!options.maxIterations || options.maxIterations < 0) ? 1 : options.maxIterations;
-        this.maxRecursions = (!options.maxRecursions || options.maxRecursions < 0) ? 1 : options.maxRecursions;
-        this.minLength = (!options.minTokenLength || options.minTokenLength < 1) ? 1 : options.minTokenLength;
-        this.maxLength = (!options.maxTokenLength || options.maxTokenLength < 1) ? 256 : options.maxTokenLength;
-        if (this.maxLength < this.minLength) {
-            this.maxLength = this.minLength;
-        }
 
-        this.definitions.clear();
-        if (definitions) {
-            this.definitions = definitions;
+        this.lexerDefinitions.clear();
+        if (lexerDefinitions) {
+            this.lexerDefinitions = lexerDefinitions;
+        }
+        this.parserDefinitions.clear();
+        if (parserDefinitions) {
+            this.parserDefinitions = parserDefinitions;
         }
 
         this.lexerDecisionCounts = new Map<number, number[]>();
         this.parserDecisionCounts = new Map<number, number[]>();
 
-        this.lexerStack.length = 0;
         this.parserStack.length = 0;
-        this.generateUnicodeCollection();
 
-        if (start.atn == this.lexerATN) {
-            return this.generateFromLexerSequence(start, start.stopState);
-        }
-
-        let [result, flag] = this.generateFromSequence(start, start.stopState);
-        if (flag) {
-            return "Error: all paths in this rule lead to endless recursion.";
-        }
-        return result[0];
+        return this.generateFromATNSequence(start, start.stopState, true).trim();
     }
 
     /**
-     * Creates a cross product of input strings.
+     * Processes a single sequence of ATN states (a rule or a single alt in a block).
      */
-    private combine(lhs: string[], rhs: string[], delimiter: string): string[] {
-        if (lhs.length == 0) {
-            return rhs;
-        }
-        if (rhs.length == 0) {
-            return lhs;
-        }
+    private generateFromATNSequence(start: ATNState, stop: ATNState, addSpace: boolean): string {
+        let inLexer = start.atn == this.lexerATN;
 
-        let result: string[] = [];
-        for (let i = 0; i < lhs.length; ++i) {
-            for (let j = 0; j < rhs.length; ++j) {
-                result.push(lhs[i] + delimiter + rhs[j]);
+        if (start.stateType == ATNStateType.RULE_START) {
+            // Check if there's a predefined result for the given rule.
+            let mapping;
+            if (inLexer) {
+                mapping = this.lexerDefinitions.get(start.ruleIndex);
+            } else {
+                mapping = this.parserDefinitions.get(start.ruleIndex);
+            }
+
+            if (mapping) {
+                return mapping;
             }
         }
-        return result;
-    }
 
-    private addChar(list: string[], subResult: string) {
-        if (list.length == 0) {
-            list.push(subResult);
-            return;
-        }
 
-        for (let index = 0; index < list.length; ++index) {
-            list[index] += subResult;
-        }
-    }
-
-    /**
-     * Processes a single sequence of lexer ATN states.
-     */
-    private generateFromLexerSequence(start: ATNState, stop: ATNState): string {
         let result: string = "";
-
-        let isRule = start instanceof RuleStartState;
-        if (isRule) {
-            this.lexerStack.push(start.ruleIndex);
-        }
 
         let run = start;
         while (run != stop) {
             switch (run.stateType) {
                 case ATNStateType.BLOCK_START: {
-                    result += this.generateFromLexerBlock(run as BlockStartState);
+                    result += this.generateFromDecisionState(run as BlockStartState, !inLexer);
                     run = (run as BlockStartState).endState;
 
                     break;
                 }
 
                 case ATNStateType.PLUS_BLOCK_START: {
-                    for (let i = 0; i < this.maxIterations; ++i) {
-                        result += this.generateFromLexerBlock(run as BlockStartState);
+                    let loopBack = (run as PlusBlockStartState).loopBackState;
+                    let count = Math.floor(Math.random() * (this.maxIterations - 1)) + 1;
+                    for (let i = 0; i < count; ++i) {
+                        result += this.generateFromATNSequence(run.transition(0).target, loopBack, !inLexer);
+                        result += this.generateFromDecisionState(run as PlusBlockStartState, !inLexer);
                     }
 
-                    run = (run as PlusBlockStartState).loopBackState;
-                    run = this.loopEnd(run) || stop;
+                    run = loopBack.transition(1).target;
 
                     break;
                 }
 
                 case ATNStateType.STAR_LOOP_ENTRY: {
-                    let loopStart = this.blockStart(run as StarLoopEntryState);
-
-                    for (let i = 0; i < this.maxIterations; ++i) {
-                        result += this.generateFromLexerBlock(loopStart);
+                    let slEntry = run as StarLoopEntryState;
+                    let blockStart = this.blockStart(slEntry);
+                    if (blockStart) {
+                        let count = Math.floor(Math.random() * this.maxIterations);
+                        for (let i = 0; i < count; ++i) {
+                            result += this.generateFromATNSequence(blockStart, slEntry.loopBackState, !inLexer);
+                        }
                     }
-
-                    run = this.loopEnd(run) || stop;
+                    run = this.loopEnd(slEntry) || stop;
 
                     break;
                 }
@@ -148,61 +122,115 @@ export class SentenceGenerator {
                         case TransitionType.RULE: { // Transition into a sub rule.
                             run = (transition as RuleTransition).followState;
                             let ruleStart = transition.target as RuleStartState;
-                            let ruleName = this.lexerRuleNames[ruleStart.ruleIndex];
-                            if (ruleName && this.definitions.has(ruleName)) {
-                                result += this.definitions.get(ruleName);
-                                break;
-                            }
-
-                            result += this.generateFromLexerSequence(ruleStart, ruleStart.stopState);
+                            result += this.generateFromATNSequence(ruleStart, ruleStart.stopState, !inLexer);
 
                             break;
                         }
 
                         case TransitionType.WILDCARD: {
-                            // Any char from the entire Unicode range. The generator takes care to pick only
-                            // valid characters.
-                            result += this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
+                            if (inLexer) {
+                                // Any char from the entire Unicode range. The generator takes care to pick only
+                                // valid characters.
+                                result += this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
+                            } else {
+                                // Pick a random lexer rule.
+                                let ruleIndex = Math.floor(Math.random() * this.lexerATN.ruleToStartState.length);
+                                let state: RuleStartState = this.lexerATN.ruleToStartState[ruleIndex];
+                                result += this.generateFromATNSequence(state, state.stopState, !inLexer);
+                            }
                             run = transition.target;
 
                             break;
                         }
 
-                        default:
+                        default: {
                             // Any other basic transition. See if there is a label we can use.
-                            // In lexer rules we always use a random value (one of a set or a list of alts) as we are
-                            // dealing with characters here and it makes no sense to create all possible variations
-                            // for Unicode code points.
-                            if (transition.label) {
-                                let label = transition.label;
-                                if (transition instanceof NotSetTransition) {
-                                    label = label.complement(IntervalSet.COMPLETE_CHAR_SET);
+                            if (inLexer) {
+                                if (transition.label) {
+                                    let label = transition.label;
+                                    if (transition instanceof NotSetTransition) {
+                                        label = label.complement(IntervalSet.COMPLETE_CHAR_SET);
+                                    }
+                                    result += this.getRandomCharacterFromInterval(label);
                                 }
-                                result += this.getRandomCharacterFromInterval(label);
+                            } else {
+                                if (transition.label && transition.label.maxElement > -1) {
+                                    let randomIndex = Math.floor(Math.random() * transition.label.size);
+                                    let tokenIndex = this.getIntervalElement(transition.label, randomIndex);
+                                    let state = this.lexerATN.ruleToStartState[tokenIndex - 1]; // Lexer rule index is one-base.
+                                    result += this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                }
                             }
                             run = transition.target;
+
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        if (isRule) {
-            this.lexerStack.pop();
+        if (addSpace) {
+            return result + " ";
         }
-
         return result;
     }
 
     /**
      * Picks a random entry from all possible alternatives. Each alt gets a specific weight depending on its
-     * previous invocation (the higher the invocation count the less the weight).
+     * previous invocations (the higher the invocation count the smaller the weight).
      */
-    private generateFromLexerBlock(start: BlockStartState): string {
-        let weights = new Array<number>(start.numberOfTransitions).fill(1);
-        let altCounts = this.lexerDecisionCounts.get(start.decision);
+    private generateFromDecisionState(state: DecisionState, addSpace: boolean): string {
+        let decision = this.getRandomDecision(state);
+
+        // The alt counts are initialized in the call above if they don't exist yet.
+        let decisionCounts = state.atn == this.lexerATN ? this.lexerDecisionCounts : this.parserDecisionCounts;
+        let altCounts = decisionCounts.get(state.decision)!;
+        ++altCounts[decision];
+
+        let startState;
+        let endState;
+        switch (state.stateType) {
+            case ATNStateType.BLOCK_START: {
+                startState = state;
+                endState = (state as BlockStartState).endState;
+                break;
+            }
+
+            case ATNStateType.PLUS_BLOCK_START: {
+                endState = (state as PlusBlockStartState).loopBackState;
+                break;
+            }
+
+            default: {
+                throw new Error("Unhandled state type in sentence generator");
+            }
+        }
+
+        let result = "";
+        if (startState != endState) {
+            result = this.generateFromATNSequence(state.transition(decision).target, endState, addSpace);
+        }
+        --altCounts[decision];
+
+        return result;
+    }
+
+    /**
+     * Determines a random decision (one of the outgoing transitions) depending on the already taken
+     * transitions. If the decision state has an exit state (for ?, * and + operators) this exit state
+     * always has a weight of 1, so it will always serve as exit point if other weights become to low.
+     *
+     * @param state The decision state to examine.
+     */
+    private getRandomDecision(state: DecisionState): number {
+        let decisionCounts = state.atn == this.lexerATN ? this.lexerDecisionCounts : this.parserDecisionCounts;
+
+        let weights = new Array<number>(state.numberOfTransitions).fill(1);
+        let altCounts = decisionCounts.get(state.decision);
         if (!altCounts) {
-            altCounts = new Array<number>(start.numberOfTransitions).fill(0);
-            this.lexerDecisionCounts.set(start.decision, altCounts);
+            altCounts = new Array<number>(state.numberOfTransitions).fill(0);
+            decisionCounts.set(state.decision, altCounts);
         } else {
             for (let i = 0; i < altCounts.length; ++i) {
                 weights[i] = Math.pow(this.convergenceFactor, altCounts[i]);
@@ -210,279 +238,15 @@ export class SentenceGenerator {
         }
 
         let sum = weights.reduce((accumulated, current) => accumulated + current);
-        if (sum == 0) {
-            return "";
-        }
-
         let randomValue = Math.random() * sum;
         let randomIndex = 0;
         while (true) {
             randomValue -= weights[randomIndex];
             if (randomValue < 0) {
-                break;
+                return randomIndex;
             }
             ++randomIndex;
         }
-
-        ++altCounts[randomIndex];
-        let result = this.generateFromLexerSequence(start.transition(randomIndex).target, start.endState);
-        --altCounts[randomIndex];
-
-        return result;
-    }
-
-    /**
-     * Processes a chain of parser rule states.
-     * @returns A tuple of generated strings and a flag indicating if we bailed out because the maximum recursion count
-     *          was reached.
-     */
-    private generateFromSequence(start: ATNState, stop: ATNState): [string, boolean] {
-        let result: string = "";
-        let maxRecursionReached = false;
-
-        let isRule = start instanceof RuleStartState;
-        if (isRule) {
-            let maxRecursionReached = this.recursionCount((start as RuleStartState).ruleIndex, false) > this.maxRecursions;
-            if (maxRecursionReached) {
-                return [result, true];
-            }
-
-            this.parserStack.push(start.ruleIndex);
-            this.parserStack2.push(this.parserRuleNames![start.ruleIndex]);
-        }
-
-        let run = start;
-        while (run != stop) {
-            switch (run.stateType) {
-                case ATNStateType.BLOCK_START: {
-                    let [subResult, flag] = this.generateFromBlock(run as BlockStartState, this.allPaths);
-                    if (flag) {
-                        maxRecursionReached = true;
-                        run = stop;
-                        break;
-                    }
-                    result += + subResult;
-                    run = (run as BlockStartState).endState;
-
-                    break;
-                }
-
-                case ATNStateType.PLUS_BLOCK_START: {
-                    let iteration = 0;
-                    let hadResult = false;
-                    while (iteration++ <= this.maxIterations) {
-                        let [subResult, flag] = this.generateFromBlock(run as BlockStartState, this.allPaths);
-                        if (!flag) {
-                            hadResult = true;
-                            result += subResult;
-                        }
-                    }
-                    if (hadResult) {
-                        run = (run as PlusBlockStartState).loopBackState;
-                        run = this.loopEnd(run) || stop;
-                    } else {
-                        maxRecursionReached = true;
-                        run = stop;
-                    }
-
-                    break;
-                }
-
-                case ATNStateType.STAR_LOOP_ENTRY: {
-                    let loopStart = this.blockStart(run as StarLoopEntryState);
-
-                    let iteration = 0;
-                    while (iteration++ < this.maxIterations) {
-                        let [subResult, flag] = this.generateFromBlock(loopStart, this.allPaths);
-                        if (flag) {
-                            // We can ignore a recursion block here, since a Kleene star loop is optional.
-                            break;
-                        }
-                        result += subResult;
-                    }
-
-                    run = this.loopEnd(run) || stop;
-
-                    break;
-                }
-
-                default: {
-                    let transition = run.transition(0);
-                    switch (transition.serializationType) {
-                        case TransitionType.RULE: {
-                            run = (transition as RuleTransition).followState;
-                            let ruleStart = transition.target as RuleStartState;
-
-                            let ruleName = this.parserRuleNames![ruleStart.ruleIndex];
-                            if (ruleName && this.definitions.has(ruleName)) {
-                                result += this.definitions.get(ruleName);
-                                continue;
-                            }
-
-                            let [subResult, flag] = this.generateFromSequence(ruleStart, ruleStart.stopState);
-                            if (flag) {
-                                maxRecursionReached = true;
-                                result = "";
-                                run = stop;
-                            } else {
-                                result += subResult;
-                            }
-
-                            break;
-                        }
-
-                        case TransitionType.WILDCARD: {
-                            // A wild card transition in parser rules allows for any
-                            // token value. Pick a random one from the list of lexer rules.
-                            let ruleIndex;
-                            let ruleName;
-                            while (true) {
-                                ruleIndex = Math.floor(Math.random() * (this.ruleMap.size));
-                                ruleName = this.lexerRuleNames[ruleIndex];
-
-                                if (ruleName != "EOF") { // Try again if we hit the EOF token.
-                                    break;
-                                }
-                            }
-                            if (!ruleName) {
-                                continue;
-                            }
-
-                            if (this.definitions.has(ruleName)) {
-                                result += this.definitions.get(ruleName);
-                                continue;
-                            }
-
-                            let state: RuleStartState = this.lexerATN.ruleToStartState[ruleIndex];
-                            result += this.generateFromLexerSequence(state, state.stopState);
-                            run = transition.target;
-
-                            break;
-                        }
-
-                        default: {
-                            if (transition.label) {
-                                let size = transition.label.size;
-                                let fixedIndex = -1
-                                if (!this.allPaths) {
-                                    fixedIndex = Math.floor(Math.random() * size);
-                                }
-
-                                let localResult: string[] = [];
-                                for (let i = 0; i < size; ++i) {
-                                    if (fixedIndex > -1 && fixedIndex != i) {
-                                        continue;
-                                    }
-
-                                    // Here we try to convert the token value to a lexer rule index. This is however
-                                    // not 100% reliable, as a lexer rule can return any token value by explicitly
-                                    // setting the return type (which doesn't happen often fortunately).
-                                    let token = this.getIntervalElement(transition.label, i);
-                                    let ruleName = this.vocabulary.getSymbolicName(token);
-                                    if (!ruleName) {
-                                        continue;
-                                    }
-
-                                    if (ruleName == "EOF") {
-                                        run = stop;
-                                        break;
-                                    }
-
-                                    if (this.definitions.has(ruleName)) {
-                                        localResult.push(this.definitions.get(ruleName)!);
-                                        continue;
-                                    }
-
-                                    let state: RuleStartState = this.lexerATN.ruleToStartState[this.ruleMap.get(ruleName)!];
-                                    if (!state) {
-                                        localResult.push("<<undefined lexer rule: " + ruleName + ">>")
-                                    } else {
-                                        localResult.push(...this.generateFromLexerSequence(state, state.stopState));
-                                    }
-                                }
-                                result += localResult;
-                            }
-                            run = transition.target;
-
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (isRule) {
-            this.parserStack.pop();
-            this.parserStack2.pop();
-            //console.log(this.parserStack.length);
-        }
-
-        return [result, maxRecursionReached];
-    }
-
-    /**
-     * Processes a non-loop block .
-     * @returns A list of generated strings and a flag indicating if we only saw recursive paths.
-     */
-    private generateFromBlock(start: BlockStartState, allPaths: boolean): [string, boolean] {
-        let result: string = "";
-        if (allPaths) {
-            // Count the paths which were taken out because they reached the max recursion count.
-            // If this number equals the available transitions the entire block is recursion-blocked.
-            let recursionBlocked = 0;
-            for (let i = 0; i < start.numberOfTransitions; ++i) {
-                // If nothing is returned it means we went through an optional part (provided we did not hit a max
-                // recursion case). Add an empty entry for this case.
-                let [localResult, flag] = this.generateFromSequence(start.transition(i).target, start.endState);
-                if (flag) {
-                    ++recursionBlocked;
-                } else {
-                    result += localResult;
-                }
-            }
-            return [result, recursionBlocked == start.numberOfTransitions];
-        }
-
-        // In order to know which path is available in the random selection, even after
-        // we tried out some and hit a recursion block, we need to keep a list of indices.
-        let availableIndices: number[] = [];
-        for (let i = 0; i < start.numberOfTransitions; ++i) {
-            availableIndices.push(i);
-        }
-
-        while (availableIndices.length > 0) {
-            let randomIndex = Math.floor(Math.random() * availableIndices.length);
-            let [localResult, flag] = this.generateFromSequence(
-                start.transition(availableIndices[randomIndex]).target, start.endState
-            );
-            if (flag) {
-                // Start over with another random index if we hit a recursion block.
-                availableIndices.splice(randomIndex, 1);
-            } else {
-                result += localResult;
-                break;
-            }
-        }
-
-        return [result, availableIndices.length == 0];
-    }
-
-    /**
-     * Counts how many times the given rule is on the stack already.
-     *
-     * @param rule The rule to count.
-     * @param forLexer A flag telling if that's a lexer or parser rule.
-     */
-    private recursionCount(rule: number, forLexer: boolean): number {
-        if (forLexer) {
-            return this.lexerStack.reduce(function (count, value) {
-                return (value == rule) ? count + 1 : count;
-            }, 0);
-        }
-
-        return this.parserStack.reduce(function (count, value) {
-            return (value == rule) ? count + 1 : count;
-        }, 0);
     }
 
     /**
@@ -493,20 +257,18 @@ export class SentenceGenerator {
      */
     private loopEnd(state: ATNState): ATNState | undefined {
         for (let transition of state.getTransitions()) {
-            if (transition.target instanceof LoopEndState) {
+            if (transition.target.stateType == ATNStateType.LOOP_END) {
                 return transition.target;
             }
         }
     }
 
-    private blockStart(state: StarLoopEntryState): StarBlockStartState {
+    private blockStart(state: StarLoopEntryState): StarBlockStartState | undefined {
         for (let transition of state.getTransitions()) {
-            if (transition.target instanceof StarBlockStartState) {
-                return transition.target;
+            if (transition.target.stateType == ATNStateType.STAR_BLOCK_START) {
+                return transition.target as StarBlockStartState;
             }
         }
-
-        return state.transition(0).target as StarBlockStartState; // Can never happen.
     }
 
     /**
@@ -526,13 +288,6 @@ export class SentenceGenerator {
         return runningIndex;
     }
 
-    /**
-     * Generates a collection of Unicode code points matching the given Unicode codeblocks/categories.
-     */
-    private generateUnicodeCollection() {
-        this.unicodeIntervalSet = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
-    }
-
     private getRandomCharacterFromInterval(set: IntervalSet): String {
         let validSet = this.unicodeIntervalSet.and(set);
         if (validSet.size == 0) {
@@ -550,15 +305,11 @@ export class SentenceGenerator {
     private lexerDecisionCounts: Map<number, number[]>;
     private parserDecisionCounts: Map<number, number[]>;
 
-    private minLength: number;
-    private maxLength: number;
-    private allPaths: boolean;
     private maxIterations: number;
-    private maxRecursions: number;
-    private definitions: Map<string, string> = new Map();
+    private lexerDefinitions: RuleMappings = new Map();
+    private parserDefinitions: RuleMappings = new Map();
 
     // To limit recursions we need to track through which rules we are walking currently.
     private parserStack: number[] = [];
     private parserStack2: string[] = [];
-    private lexerStack: number[] = [];
 };

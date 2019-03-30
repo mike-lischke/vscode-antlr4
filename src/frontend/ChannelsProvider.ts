@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, Mike Lischke
+ * Copyright (c) 2018, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -57,8 +57,8 @@ export class ChannelEntry extends TreeItem {
     }
 
     iconPath = {
-        light: path.join(__dirname, '..', '..', '..', 'misc', 'channel.svg'),
-        dark: path.join(__dirname, '..', '..', '..', 'misc', 'channel.svg')
+        light: path.join(__dirname, '..', '..', '..', 'misc', 'channel-light.svg'),
+        dark: path.join(__dirname, '..', '..', '..', 'misc', 'channel-dark.svg')
     };
 
     contextValue = 'channels';
