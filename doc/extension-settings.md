@@ -12,7 +12,7 @@ The vscode-antlr4 extension can be configured in many ways to support your prefe
 
 ## Parser Generation
 
-This is a settings object named **antl4.generation** with the following members:
+This is a settings object named **antlr4.generation** with the following members:
 
 * **mode**, string enum (default: "internal"), determines what code generation pattern should be followed:
     * **none**: don't generate any code, not even for internal use (note: this value will disable grammar debugging)
