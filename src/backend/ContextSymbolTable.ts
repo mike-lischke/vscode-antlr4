@@ -221,111 +221,49 @@ export class ContextSymbolTable extends SymbolTable {
         }
     }
 
-    private symbolIsRule(symbol: Symbol): boolean {
-        return symbol instanceof RuleSymbol || symbol instanceof TokenSymbol
-            || symbol instanceof FragmentTokenSymbol || symbol instanceof VirtualTokenSymbol;
-    }
-
-    private findNestedOccurencesFor(name: string, resolveSymbolPaths: boolean): SymbolInfo[] {
+    public getSymbolOccurences(symbolName: string, localOnly: boolean): SymbolInfo[] {
         let result: SymbolInfo[] = [];
-        let pending: SymbolInfo[] = [];
 
-        let references: Symbol[] = this.getAllNestedSymbols(name);
+        let symbols = this.getAllSymbols(Symbol, localOnly);
+        for (let symbol of symbols) {
+            let owner = (symbol.root as ContextSymbolTable).owner;
 
-        // Each reference path contains at least 2 entries: the containing symbol table and a rule
-        // (either the symbol itself or a containing rule).
-        let parentSymbols: Set<string> = new Set();
-        for (let reference of references) {
-            // If we get both rule references and the rule itself then ignore the rule, because
-            // we can continue with the references alone.
-            if (references.length > 1 && this.symbolIsRule(reference)) {
-                continue;
-            }
-
-            let owner = (reference.symbolTable as ContextSymbolTable).owner;
             if (owner) {
-                let info: SymbolInfo = {
-                    kind: SourceContext.getKindFromSymbol(reference),
-                    name: name,
-                    source: owner.fileName,
-                    definition: SourceContext.definitionForContext(reference.context, true),
-                    description: undefined,
-                    symbolPath: resolveSymbolPaths ? reference.symbolPath : undefined
+                if (symbol.context && symbol.name == symbolName) {
+                    let context = symbol.context;
+                    if (symbol instanceof FragmentTokenSymbol) {
+                        context = (symbol.context as ParserRuleContext).children![1];
+                    } else if (symbol instanceof TokenSymbol || symbol instanceof RuleSymbol) {
+                        context = (symbol.context as ParserRuleContext).children![0];
+                    }
+
+                    result.push({
+                        kind: SourceContext.getKindFromSymbol(symbol),
+                        name: symbolName,
+                        source: owner.fileName,
+                        definition: SourceContext.definitionForContext(context, true),
+                        description: undefined
+                    });
                 }
 
-                // The symbol itself?
-                if (reference instanceof TokenSymbol
-                    || reference instanceof FragmentTokenSymbol
-                    || reference instanceof RuleSymbol
-                ) {
-                    result.push(info);
-                    continue;
-                }
-
-                // All references to it.
-                if (resolveSymbolPaths) {
-                    // For references the path is at least 3 elements long: the symbol table,
-                    // the referencing symbol and the reference. We have to resolve the referencing symbol too.
-                    pending.push(info);
-                    parentSymbols.add(_.nth(info.symbolPath!, -2).name);
-                } else {
-                    result.push(info);
-                }
-            }
-        }
-
-        while (pending.length > 0) {
-            // Resolve the parent symbols too and merge their symbol paths with the one
-            // of the pending info records.
-
-            // At the same time prepare already the next iteration.
-            let newPending: SymbolInfo[] = [];
-            let newParentSymbols: Set<string> = new Set();
-
-            for (let parentName of parentSymbols) {
-                references = this.getAllNestedSymbols(parentName);
-                for (let entry of pending) {
-                    if (_.nth(entry.symbolPath!, -2).name == parentName) {
-                        for (let parent of references) {
-                            // Also here ignore the rule if we got both, rule references and the rule itself.
-                            if (references.length > 1 && this.symbolIsRule(parent)) {
-                                continue;
-                            }
-                            let info = _.clone(entry);
-
-                            // Keep in mind here the symbol path is reversed (the symbol is at index 0 and each parent
-                            // comes at higher indexes).
-                            let pathLength = info.symbolPath!.length
-                            info.symbolPath = _.concat(info.symbolPath!.slice(0, pathLength - 2), parent.symbolPath!);
-
-                            // Stop iteration if we found a rule symbol (which is a top level element under a symbol table)
-                            // or the path reached the starting entry again.
-                            let nameToLookUp = _.nth(info.symbolPath!, -2).name;
-
-                            // Check that this name appears at most once (to avoid endless recursion).
-                            let nameCount = 0;
-                            info.symbolPath!.forEach((symbol: Symbol) => { if (symbol.name == nameToLookUp) ++nameCount; });
-                            if (!this.symbolIsRule(parent) && nameCount < 2) {
-                                newPending.push(info);
-                                newParentSymbols.add(nameToLookUp);
-                            } else {
-                                result.push(info);
-                            }
-                        }
+                if (symbol instanceof ScopedSymbol) {
+                    let references = symbol.getAllNestedSymbols(symbolName);
+                    for (let reference of references) {
+                        result.push({
+                            kind: SourceContext.getKindFromSymbol(reference),
+                            name: symbolName,
+                            source: owner.fileName,
+                            definition: SourceContext.definitionForContext(reference.context, true),
+                            description: undefined
+                        });
                     }
                 }
             }
-            pending = newPending;
-            parentSymbols = newParentSymbols;
         }
 
         return result;
     }
 
-
-    public getSymbolOccurences(symbolName: string, localOnly: boolean, resolveSymbolPaths: boolean = false): SymbolInfo[] {
-        return this.findNestedOccurencesFor(symbolName, resolveSymbolPaths);
-    }
 
     private getSymbolOfType(name: string, kind: SymbolKind, localOnly: boolean): Symbol | undefined {
         switch (kind) {

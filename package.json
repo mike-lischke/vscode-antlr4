@@ -443,10 +443,6 @@
                 {
                     "id": "antlr4.actions",
                     "name": "Actions & Semantic Predicates"
-                },
-                {
-                    "id": "antlr4.invocationHierarchy",
-                    "name": "Invocation Hierarchy"
                 }
             ]
         },

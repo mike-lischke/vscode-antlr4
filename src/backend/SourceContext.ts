@@ -32,7 +32,7 @@ import { ANTLRv4Lexer } from '../parser/ANTLRv4Lexer';
 
 import {
     SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
-    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings, HierarchyNode, HierarchyType, LexicalRange
+    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings, HierarchyNode, LexicalRange, HierarchyNodeType
 } from './facade';
 
 import { ContextErrorListener, ContextLexerErrorListener } from './ContextErrorListener';
@@ -561,86 +561,6 @@ export class SourceContext {
                 result.set(symbol.qualifiedName(), { kind: SymbolKind.VirtualLexerToken, rules: [], tokens: [], literals: [] });
             }
         }
-        return result;
-    }
-
-    public getInvocationHierarchy(name: string): HierarchyNode[] {
-        this.runSemanticAnalysisIfNeeded();
-
-        // Convert the symbol paths to hierarchy nodes, but ignore irrelevant symbols. Revert order of nodes on the way.
-        let symbols = this.symbolTable.getSymbolOccurences(name, false, true);
-        let convertedPaths: HierarchyNode[][] = [];
-        for (let symbol of symbols) {
-            let convertedPath = [];
-            for (let i = symbol.symbolPath!.length - 1; i >= 0; --i) {
-                let element = symbol.symbolPath![i];
-                let type: HierarchyType = HierarchyType.Unknown;
-                if (element instanceof SymbolTable) {
-                    type = HierarchyType.File;
-                } else if (element instanceof LiteralSymbol) {
-                    type = HierarchyType.Literal;
-                } else if (element instanceof RuleReferenceSymbol
-                    || element instanceof RuleSymbol) {
-                    type = HierarchyType.Rule;
-                } else if (element instanceof TokenSymbol
-                    || element instanceof TokenReferenceSymbol
-                    || element instanceof FragmentTokenSymbol) {
-                    type = HierarchyType.Token;
-                }
-
-                if (type) {
-                    let node: HierarchyNode = {
-                        name: type == HierarchyType.Literal ? "'" + element.name + "'" : element.name,
-                        type: type,
-                        definition: SourceContext.definitionForContext(element.context, true),
-                        callees: []
-                    }
-                    convertedPath.push(node);
-                }
-            }
-
-            convertedPaths.push(convertedPath);
-        }
-
-        function sameRange(range1: LexicalRange, range2: LexicalRange): boolean {
-            if (range1.start.row != range2.start.row) {
-                return false;
-            }
-            if (range1.start.column != range2.start.column) {
-                return false;
-            }
-            if (range1.end.row != range2.end.row) {
-                return false;
-            }
-            if (range1.end.column != range2.end.column) {
-                return false;
-            }
-            return true;
-        }
-
-        // Then merge the individual paths to a tree and establish the parent-child relationships.
-        let result: HierarchyNode[] = [];
-        for (let path of convertedPaths) {
-            let childList: HierarchyNode[] = result;
-            for (let i = 0; i < path.length; ++i) {
-                let index = -1;
-                if (!path[i].definition) { // No definition? Search by name then.
-                    index = childList.findIndex((node) => node.name == path[i].name);
-                }
-
-                if (index == -1) {
-                    index = childList.findIndex((node) => sameRange(node.definition!.range, path[i].definition!.range));
-                }
-
-                if (index == -1) {
-                    childList.push(path[i]);
-                    childList = path[i].callees;
-                } else {
-                    childList = childList[index].callees;
-                }
-            }
-        }
-
         return result;
     }
 

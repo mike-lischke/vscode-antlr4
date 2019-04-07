@@ -153,13 +153,13 @@ export class ReferenceNode {
  */
 export class HierarchyNode {
     name: string;
-    type: HierarchyType;
+    type: HierarchyNodeType;
     callees: HierarchyNode[];
     definition?: Definition;
     parent?: HierarchyNode;
 };
 
-export enum HierarchyType {
+export enum HierarchyNodeType {
     Unknown,
     File,
     Rule,
@@ -570,11 +570,6 @@ export class AntlrFacade {
     public getReferenceGraph(fileName: string): Map<string, ReferenceNode> {
         let context = this.getContext(fileName);
         return context.getReferenceGraph();
-    }
-
-    public getInvocationhierarchy(fileName: string, name: string): HierarchyNode[] {
-        let context = this.getContext(fileName);
-        return context.getInvocationHierarchy(name);
     }
 
     public getRRDScript(fileName: string, rule: string): string {
