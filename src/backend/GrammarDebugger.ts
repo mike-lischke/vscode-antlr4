@@ -8,7 +8,7 @@
 import { EventEmitter } from "events";
 
 import {
-    ANTLRInputStream, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, Parser
+    CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, Parser
 } from "antlr4ts";
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
@@ -87,7 +87,7 @@ export class GrammarDebugger extends EventEmitter {
             };
 
             if (this.lexerData) {
-                let stream = new ANTLRInputStream("");
+                let stream = CharStreams.fromString("");
                 this.lexer = new GrammarLexerInterpreter(this.predicateEvaluator, this.contexts[0], lexerName, this.lexerData, stream);
                 this.lexer.removeErrorListeners();
                 this.lexer.addErrorListener(new InterpreterLexerErrorListener(eventSink));
@@ -108,7 +108,7 @@ export class GrammarDebugger extends EventEmitter {
     }
 
     public async start(startRuleIndex: number, input: string, noDebug: boolean) {
-        let stream = new ANTLRInputStream(input);
+        let stream = CharStreams.fromString(input);
         this.lexer.inputStream = stream;
 
         if (!this.parser) {
