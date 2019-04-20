@@ -15,7 +15,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import {
-    ANTLRInputStream, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext, Vocabulary
+    CharStreams, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext, Vocabulary
 } from 'antlr4ts';
 import {
     PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState
@@ -431,7 +431,7 @@ export class SourceContext {
      * This call doesn't do any expensive processing (parse() does).
      */
     public setText(source: string) {
-        let input = new ANTLRInputStream(source);
+        let input = CharStreams.fromString(source);
         let lexer = new ANTLRv4Lexer(input);
 
         // There won't be lexer errors actually. They are silently bubbled up and will cause parser errors.
@@ -920,7 +920,7 @@ export class SourceContext {
                 }
             }
 
-            let stream = new ANTLRInputStream(input);
+            let stream = CharStreams.fromString(input);
             let lexer = new GrammarLexerInterpreter(predicateEvaluator, this, "<unnamed>", this.grammarLexerData, stream);
             lexer.removeErrorListeners();
 
@@ -965,7 +965,7 @@ export class SourceContext {
             errors.push(args[0]);
         };
 
-        let stream = new ANTLRInputStream(input);
+        let stream = CharStreams.fromString(input);
         let lexer = new GrammarLexerInterpreter(predicateEvaluator, this, "<unnamed>", this.grammarLexerData, stream);
         lexer.removeErrorListeners();
 
