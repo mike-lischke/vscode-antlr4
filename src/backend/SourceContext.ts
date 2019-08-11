@@ -683,7 +683,8 @@ export class SourceContext {
                 parameters.push(options.alternativeJar);
             } else {
                 if (options.language === "typescript") {
-                    parameters.push(path.join(__dirname, '../../node_modules/antlr4ts-cli/target/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar'));
+                    //parameters.push(path.join(__dirname, '../../node_modules/antlr4ts-cli/target/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar'));
+                    parameters.push(path.join(__dirname, '../../../antlr/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar'));
                 } else {
                     parameters.push(path.join(__dirname, '../../../antlr/antlr4-4.7.2-SNAPSHOT-complete.jar'));
                 }
@@ -713,9 +714,9 @@ export class SourceContext {
             let genListener = options.listeners == undefined || options.listeners === true;
             parameters.push(genListener ? "-listener" : "-no-listener");
             parameters.push(options.visitors === true ? "-visitor" : "-no-visitor");
-            if (options.language != "typescript") {
+            //if (options.language != "typescript") {
                 parameters.push("-Xexact-output-dir"); // Available starting with 4.7.2.
-            }
+            //}
             dependencies.add(thisRef); // Needs this also in the error parser.
 
             let fileList: string[] = [];
@@ -873,7 +874,7 @@ export class SourceContext {
         parserDefinitions?: RuleMappings): string {
         if (!this.grammarLexerData) {
             // Requires a generation run.
-            return "";
+            return "[No grammar data available]";
         }
         let isLexerRule = options.startRule[0] == options.startRule[0].toUpperCase();
 
@@ -881,17 +882,17 @@ export class SourceContext {
         if (isLexerRule) {
             let index = this.grammarLexerRuleMap.get(options.startRule);
             if (index == undefined) {
-                return "";
+                return "[Virtual or undefined token]";
             }
             start = this.grammarLexerData.atn.ruleToStartState[index];
         } else {
             if (!this.grammarParserData) {
-                return "";
+                return "[No parser data available]";
             }
 
             let index = this.grammarParserRuleMap.get(options.startRule);
             if (index == undefined) {
-                return "";
+                return "[Undefined rule]";
             }
             start = this.grammarParserData.atn.ruleToStartState[index];
         }
