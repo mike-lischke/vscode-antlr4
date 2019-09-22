@@ -326,7 +326,7 @@ export function printableUnicodePoints(options: UnicodeOptions): IntervalSet {
         intervalsToExclude = codePointsToIntervals('General_Category/Control/code-points.js', intervalsToExclude);
         intervalsToExclude = codePointsToIntervals('General_Category/Format/code-points.js', intervalsToExclude);
         intervalsToExclude = codePointsToIntervals('General_Category/Surrogate/code-points.js', intervalsToExclude);
-        intervalsToExclude = codePointsToIntervals('General_Category/Private_use/code-points.js', intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals('General_Category/Private_Use/code-points.js', intervalsToExclude);
 
         if (options.excludeCJK) {
             intervalsToExclude = codePointsToIntervals('Block/CJK_Unified_Ideographs/code-points.js', intervalsToExclude);

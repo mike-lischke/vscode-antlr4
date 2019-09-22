@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, Mike Lischke
+ * Copyright (c) 2018, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,12 +9,12 @@
 
 import * as path from "path";
 
-import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
+import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
 
-    getChildren(element?: LexerSymbol): Thenable<LexerSymbol[]> {
+    getChildren(element?: LexerSymbol): ProviderResult<LexerSymbol[]> {
         if (!element) {
             let vocabulary;
             if (this.currentFile) {

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,12 +9,12 @@
 
 import * as path from "path";
 
-import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
+import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class ImportsProvider extends AntlrTreeDataProvider<Import> {
 
-    getChildren(element?: Import): Thenable<Import[]> {
+    getChildren(element?: Import): ProviderResult<Import[]> {
         if (!element) {
             let dependencies;
             if (this.currentFile) {

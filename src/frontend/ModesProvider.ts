@@ -9,7 +9,7 @@
 
 import * as path from "path";
 
-import { TreeItem, TreeItemCollapsibleState, Command, Event } from "vscode";
+import { TreeItem, TreeItemCollapsibleState, Command, Event, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class ModesProvider extends AntlrTreeDataProvider<ModeEntry> {
@@ -18,7 +18,7 @@ export class ModesProvider extends AntlrTreeDataProvider<ModeEntry> {
         return element;
     }
 
-    getChildren(element?: ModeEntry): Thenable<ModeEntry[]> {
+    getChildren(element?: ModeEntry): ProviderResult<ModeEntry[]> {
         if (!element) {
             var modes;
             if (this.currentFile) {
