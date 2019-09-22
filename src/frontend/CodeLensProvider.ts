@@ -58,7 +58,7 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
     public resolveCodeLens(codeLens: CodeLens, token: CancellationToken): CodeLens | Thenable<CodeLens> {
         let refs = this.backend.countReferences(this.documentName, (codeLens as SymbolCodeLens).symbol.name);
         codeLens.command = {
-            title: refs + " references",
+            title: (refs === 1) ? "1 reference" : refs + " references",
             command: "",
             arguments: undefined
         };

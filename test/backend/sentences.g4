@@ -1,34 +1,47 @@
 grammar sentences;
 
-// Note: currently the Typscript lexer has no support for the extended Unicode syntax and hence
-//       fails for many Unicode characters. The outcommented rules below can be enabled once
-//       the ANTLR 4.7 support for Unicode has been incorporated.
-
-//unicodeIdentifier: UnicodeIdentifier;
+unicodeIdentifier: UnicodeIdentifier;
 cyrillicIdentifier: CyrillicIdentifier;
-plusLoop: DIGITS? (COMMA DIGITS)+ (COMMA DIGITS)*;
+plusLoop: DIGIT (COMMA DIGITS)+;
+starLoop: DIGIT DIGITS*;
 alts: alt1 | alt2 | alt3 |;
+blocks: block (COMMA block)*;
+block: OPEN_BRACE (SimpleIdentifier SimpleIdentifier?) | (CyrillicIdentifier DIGIT DIGITS) CLOSE_BRACE;
 
-alt1: COMMA;
-alt2: DOT;
-alt3: COLON;
+alt1: RED;
+alt2: GREEN;
+alt3: BLUE;
 
-//UnicodeIdentifier: [\p{ID_Start}] [\p{ID_Continue}]*;
-SimpleIdentifier: SimpleChar (SimpleChar | DIGIT)+;
-CyrillicIdentifier: CyrillicChar+;
+recursion:
+	recursion DOT alt3
+	| recursion COLON alt1
+	| DIGITS recursion
+	| SimpleIdentifier
+;
+
+// Numbers
+DIGIT: [0-9];
+DIGITS: DIGIT+;
+
+HEXDIGIT: [\p{ASCII_Hex_Digit}];
+HexNumber: HEXDIGIT+;
+UnicodeNumber: [\p{Nd}]+;
+
+RED: 'red';
+GREEN: 'green';
+BLUE: 'blue';
+
+OPEN_BRACE: '{';
+CLOSE_BRACE: '}';
+COMMA: ',';
+DOT: '.';
+COLON: ':';
 
 SimpleChar: [A-z] | [\p{InLatin_Extended-B}] | [\p{block=Greek_and_Coptic}];
 CyrillicChar: [\p{Script=Cyrillic}];
 
-// Numbers
-DIGITS: DIGIT+;
-DIGIT: [0-9];
+SimpleIdentifier: SimpleChar (SimpleChar | DIGIT)+;
+CyrillicIdentifier: CyrillicChar+;
+UnicodeIdentifier: [\p{ID_Start}] [\p{ID_Continue}]*;
 
-HEXDIGIT: [\p{ASCII_Hex_Digit}];
-HexNumber: HEXDIGIT+;
-//UnicodeNumber: [\p{Nd}]+;
-
-COMMA: ',';
-DOT: '.';
-COLON: ':';
 WS: [ \r\n\t]+ -> channel (HIDDEN);

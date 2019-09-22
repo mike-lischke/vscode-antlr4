@@ -9,14 +9,13 @@
 
 import {
     ATN, ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType, RuleTransition,
-    StarBlockStartState, RuleStartState, LoopEndState, NotSetTransition, DecisionState, PlusLoopbackState
+    StarBlockStartState, RuleStartState, NotSetTransition, DecisionState
 } from "antlr4ts/atn";
-import { Vocabulary } from "antlr4ts";
 
 import { SentenceGenerationOptions, RuleMappings } from "./facade";
-import { IntervalSet } from "antlr4ts/misc";
+import { IntervalSet, Interval } from "antlr4ts/misc";
 
-import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
+import { printableUnicodePoints, FULL_UNICODE_SET, randomCodeBlock } from "./Unicode";
 
 /**
  * This class generates a number of strings, each valid input for a given ATN.
@@ -29,7 +28,7 @@ export class SentenceGenerator {
      */
     constructor(private lexerATN: ATN) {
 
-        this.unicodeIntervalSet = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
+        this.printableUnicode = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
     }
 
     public generate(options: SentenceGenerationOptions, start: RuleStartState, lexerDefinitions?: RuleMappings,
@@ -289,15 +288,11 @@ export class SentenceGenerator {
     }
 
     private getRandomCharacterFromInterval(set: IntervalSet): String {
-        let validSet = this.unicodeIntervalSet.and(set);
-        if (validSet.size == 0) {
-            return "";
-        }
-
+        let validSet = this.printableUnicode.and(set);
         return String.fromCodePoint(this.getIntervalElement(validSet, Math.floor(Math.random() * validSet.size)));
     }
 
-    private unicodeIntervalSet: IntervalSet;
+    private printableUnicode: IntervalSet;
 
     // Convergence data for recursive rule invocations. We count here the invocation of each alt
     // of a decision state.

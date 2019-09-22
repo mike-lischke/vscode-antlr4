@@ -60,25 +60,29 @@ export class Utils {
      * @param targetPath
      */
     public static copyFilesIfNewer(files: string[], targetPath: string) {
-        fs.ensureDir(targetPath, async (error: Error) => {
-            for (let file of files) {
-                try {
-                    let canCopy = true;
-                    let targetFile = path.join(targetPath, path.basename(file));
-                    if (fs.existsSync(targetFile)) {
-                        let sourceStat = fs.statSync(file);
-                        let targetStat = fs.statSync(targetFile);
-                        canCopy = targetStat.mtime < sourceStat.mtime;
-                    }
+        try {
+            fs.ensureDirSync(targetPath);
+        } catch (error) {
+            window.showErrorMessage("Could not create target folder '" + targetPath + "'. " + error);
+        }
 
-                    if (canCopy) {
-                        await fs.copy(file, targetFile, { overwrite: true });
-                    }
-                } catch (error) {
-                    window.showErrorMessage("Could not copy file '" + file + "'. " + error);
+        for (let file of files) {
+            try {
+                let canCopy = true;
+                let targetFile = path.join(targetPath, path.basename(file));
+                if (fs.existsSync(targetFile)) {
+                    let sourceStat = fs.statSync(file);
+                    let targetStat = fs.statSync(targetFile);
+                    canCopy = targetStat.mtime < sourceStat.mtime;
                 }
+
+                if (canCopy) {
+                    fs.copy(file, targetFile, { overwrite: true });
+                }
+            } catch (error) {
+                window.showErrorMessage("Could not copy file '" + file + "'. " + error);
             }
-        });
+        }
     }
 
     /**
