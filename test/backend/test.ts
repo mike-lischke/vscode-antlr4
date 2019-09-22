@@ -564,6 +564,7 @@ describe('vscode-antlr4-backend:', function () {
 
     describe("Sentence Generation:", function () {
         before(async function() {
+            this.timeout(10000);
             let result = await backend.generate("grammars/ANTLRv4Parser.g4", { outputDir: "generated", language: "CSharp" });
             for (let file of result) {
                 let diagnostics = backend.getDiagnostics(file);
@@ -719,6 +720,8 @@ describe('vscode-antlr4-backend:', function () {
         });
 
         it("Alignment formatting", function () {
+            this.slow(20000);
+
             //createAlignmentGrammar();
 
             // Load a large file with all possible alignment combinations (50 rules for each permutation),
