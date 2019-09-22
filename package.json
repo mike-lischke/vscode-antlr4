@@ -519,7 +519,7 @@
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",
         "publish": "vsce publish",
-        "test": "tsc && mocha ./out/test/backend/test.js",
+        "test": "npm install && tsc && mocha ./out/test/backend/test.js",
         "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser"
     },
     "dependencies": {
