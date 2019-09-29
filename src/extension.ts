@@ -449,7 +449,12 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
             }).listen(0);
         }
 
-        config.debugServer = this.server.address().port;
+        let info = this.server.address() as Net.AddressInfo;
+        if (info) {
+            config.debugServer = info.port;
+        } else {
+            config.debugServer = 0;
+        }
 
         return config;
     }
