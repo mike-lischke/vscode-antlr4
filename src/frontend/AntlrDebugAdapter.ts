@@ -116,7 +116,8 @@ export class AntlrDebugSession extends LoggingDebugSession {
         try {
             let testInput = fs.readFileSync(args.input, { encoding: "utf8" });
 
-            let startRuleIndex = this.debugger!.ruleIndexFromName(args.startRule);
+            let startRuleIndex = args.startRule ? this.debugger!.ruleIndexFromName(args.startRule) : 0;
+
             if (startRuleIndex < 0) {
                 this.sendErrorResponse(response, {
                     id: 2,
@@ -208,9 +209,9 @@ export class AntlrDebugSession extends LoggingDebugSession {
         this.tokens = this.debugger!.tokenList;
         this.variables = this.debugger!.getVariables(args.frameId);
 
-		let scopes: Scope[] = [];
-		scopes.push(new Scope("Globals", VarRef.Globals, true));
-		//scopes.push(new Scope(this.debugger.getStackInfo(args.frameId), VarRef.Context, false));
+        let scopes: Scope[] = [];
+        scopes.push(new Scope("Globals", VarRef.Globals, true));
+        //scopes.push(new Scope(this.debugger.getStackInfo(args.frameId), VarRef.Context, false));
         response.body = {
             scopes: scopes
         };
@@ -253,7 +254,7 @@ export class AntlrDebugSession extends LoggingDebugSession {
             }
 
             case VarRef.Tokens: {
-                let start =  this.debugger!.currentTokenIndex + (args.start ? args.start : 0);
+                let start = this.debugger!.currentTokenIndex + (args.start ? args.start : 0);
                 let length = args.count ? args.count : this.tokens.length;
                 for (let i = 0; i < length; ++i) {
                     let index = start + i;
