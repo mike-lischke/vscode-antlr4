@@ -13,9 +13,11 @@ import * as vscode from "vscode";
 import { SymbolKind } from "../backend/facade";
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
+import { Webview } from "vscode";
 
 export class AntlrRailroadDiagramProvider extends WebviewProvider {
-    public generateContent(editor: vscode.TextEditor, options: WebviewShowOptions): string {
+
+    public generateContent(webView: Webview, editor: vscode.TextEditor, options: WebviewShowOptions): string {
         let caret = editor.selection.active;
 
         let fileName = editor.document.fileName;
@@ -29,15 +31,16 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
         // Content Security Policy
         const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
         const scripts = [
-            Utils.getMiscPath('utils.js', this.context, true),
-            Utils.getMiscPath("railroad-diagrams.js", this.context, true)
+            Utils.getMiscPath('utils.js', this.context, webView),
+            Utils.getMiscPath("railroad-diagrams.js", this.context, webView)
         ];
 
         let diagram = `<!DOCTYPE html>
             <html>
             <head>
-                <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-                ${this.getStyles(editor.document.uri)}
+                <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
+                ${this.generateContentSecurityPolicy(editor)}
+                ${this.getStyles(webView)}
                 <base href="${editor.document.uri.toString(true)}">
             </head>
 

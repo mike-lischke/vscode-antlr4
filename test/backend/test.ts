@@ -261,17 +261,20 @@ describe('vscode-antlr4-backend:', function () {
         it("Reference Graph", function () {
             let graph = backend.getReferenceGraph("test/backend/TParser.g4");
             expect(graph.size, "Test 1").to.equal(48);
-            expect(graph.has("TParser.expr"), "Test 2").to.be.true;
-            expect(graph.get("TParser.expr")!.tokens.length, "Test 3").to.equal(9);
-            expect(graph.get("TParser.expr")!.tokens[4], "Test 4").to.equal("TLexer.QuestionMark");
 
-            expect(graph.has("TParser.flowControl"), "Test 5").to.be.true;
-            expect(graph.get("TParser.flowControl")!.rules.length, "Test 6").to.equal(1);
-            expect(graph.get("TParser.flowControl")!.tokens.length, "Test 7").to.equal(2);
-            expect(graph.get("TParser.flowControl")!.literals.length, "Test 8").to.equal(1);
-            expect(graph.get("TParser.flowControl")!.rules[0], "Test 9").to.equal("TParser.expr");
-            expect(graph.get("TParser.flowControl")!.tokens[1], "Test 10").to.equal("TLexer.Continue");
-            expect(graph.get("TParser.flowControl")!.literals[0], "Test 11").to.equal("return");
+            let element = graph.get("TParser.expr");
+            expect(element, "Test 2").not.to.be.undefined;
+            expect(element!.tokens.size, "Test 3").to.equal(9);
+            expect(element!.tokens).contains("TLexer.QuestionMark");
+
+            element = graph.get("TParser.flowControl");
+            expect(element, "Test 5").not.to.be.undefined;
+            expect(element!.rules.size, "Test 6").to.equal(1);
+            expect(element!.tokens.size, "Test 7").to.equal(2);
+            expect(element!.literals.size, "Test 8").to.equal(1);
+            expect(element!.rules, "Test 9").contains("TParser.expr");
+            expect(element!.tokens, "Test 10").contains("TLexer.Continue");
+            expect(element!.literals, "Test 11").contains("return");
         });
 
     });

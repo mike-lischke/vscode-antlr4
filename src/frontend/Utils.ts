@@ -11,8 +11,7 @@ import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import * as path from "path";
 
-import { ExtensionContext, Uri, window } from "vscode";
-import { SymbolInfo } from "../backend/facade";
+import { ExtensionContext, Uri, window, Webview } from "vscode";
 
 export class Utils {
 
@@ -21,12 +20,24 @@ export class Utils {
      *
      * @param file The base file name.
      * @param context The context of this extension to get its path regardless where it is installed.
+     * @param webview When given format the path for use in this webview.
      */
-    public static getMiscPath(file: string, context: ExtensionContext, asResource: boolean): string {
-        if (asResource) {
-            return Uri.file(context.asAbsolutePath(path.join('misc', file))).with({ scheme: 'vscode-resource' }).toString();
+    public static getMiscPath(file: string, context: ExtensionContext, webView?: Webview): string {
+        if (webView) {
+            let uri = Uri.file(context.asAbsolutePath(path.join('misc', file)));
+            return webView.asWebviewUri(uri).toString();
         }
         return context.asAbsolutePath(path.join('misc', file));
+    }
+
+    /**
+     * Returns the absolute path to a file located in the node_modules folder.
+     *
+     * @param file The base file name.
+     * @param context The context of this extension to get its path regardless where it is installed.
+     */
+    public static getNodeModulesPath(file: string, context: ExtensionContext): string {
+        return Uri.file(context.asAbsolutePath(path.join('node_modules', file))).with({ scheme: 'vscode-resource' }).toString();
     }
 
     public static isAbsolute(p: string): boolean {
@@ -49,7 +60,7 @@ export class Utils {
         }
     };
 
-    public static hashFromPath(dataPath: string): string {
+    public static hashForPath(dataPath: string): string {
         return crypto.createHash('md5').update(dataPath).digest('hex');
     }
 

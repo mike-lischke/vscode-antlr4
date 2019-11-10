@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017 Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -12,7 +12,7 @@ import * as path from "path";
 
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
-import { window, workspace, Uri, TextEditor } from "vscode";
+import { window, workspace, Uri, TextEditor, Webview } from "vscode";
 
 // ATN graph state info for a single rule.
 export class ATNStateEntry {
@@ -27,7 +27,7 @@ export class AntlrATNGraphProvider extends WebviewProvider {
     public static atnStates: Map<string, Map<string, ATNStateEntry>> = new Map();
 
     public static addStatesForGrammar(root: string, grammar: string) {
-        let hash = Utils.hashFromPath(grammar);
+        let hash = Utils.hashForPath(grammar);
         let atnCacheFile = path.join(root, "cache", hash + ".atn");
         if (fs.existsSync(atnCacheFile)) {
             let data = fs.readFileSync(atnCacheFile, { encoding: "utf-8" });
@@ -36,29 +36,34 @@ export class AntlrATNGraphProvider extends WebviewProvider {
         }
     }
 
-    public generateContent(source: TextEditor | Uri, options: WebviewShowOptions): string {
+    public generateContent(webView: Webview, source: TextEditor | Uri, options: WebviewShowOptions): string {
         if (!this.currentRule) {
             return `<html><body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body><html>`;
         }
 
-        let html = fs.readFileSync(Utils.getMiscPath("atngraph-head.html", this.context, false), { encoding: "utf-8" });
-        let code = fs.readFileSync(Utils.getMiscPath("atngraph.js", this.context, false), { encoding: "utf-8" });
+        let html = fs.readFileSync(Utils.getMiscPath("atngraph-head.html", this.context), { encoding: "utf-8" });
+        let code = fs.readFileSync(Utils.getMiscPath("atngraph.js", this.context), { encoding: "utf-8" });
 
         const scripts = [
-            Utils.getMiscPath('utils.js', this.context, true),
+            Utils.getMiscPath('utils.js', this.context, webView),
         ];
 
         let uri = (source instanceof Uri) ? source : source.document.uri;
         html = html.replace("##header##", `
-                ${this.getStyles(uri)}
-                <base target="_blank" />`.replace(/\$/g, "$$"));
+            ${this.generateContentSecurityPolicy(source)}
+            ${this.getStyles(webView)}
+            <base target="_blank" />
+        `.replace(/\$/g, "$$"));
+
+        let graphLibPath = Utils.getNodeModulesPath('d3/dist/d3.js', this.context);
+        html = html.replace("##d3path##", graphLibPath);
 
         html = html.replace(/##objectName##/g, this.currentRule.replace(/\$/g, "$$"));
         html = html.replace(/##index##/g, this.currentRuleIndex ? "" + this.currentRuleIndex : "?");
 
         let maxLabelCount = workspace.getConfiguration("antlr4.atn")["maxLabelCount"];
         html = html.replace("##maxLabelCount##", maxLabelCount > 1 ? maxLabelCount : 5);
-        html += `  var width = 1000, height = 1000\n\n`;
+        html += `  var width = 1000, height = 1000;\n\n`;
 
         let data = this.backend.getATNGraph(uri.fsPath, this.currentRule);
         if (data) {
@@ -114,13 +119,13 @@ export class AntlrATNGraphProvider extends WebviewProvider {
                     (code generation must run at least once in internal or external mode)</span></div></body>`;
         }
 
-        return html;
+        return html + "</html>";
     };
 
     public update(editor: TextEditor, forced: boolean = false) {
         let [currentRule, ruleIndex] = this.findCurrentRule(editor);
-        if (!this.lastEditor || this.lastEditor !== editor || this.currentRule !== currentRule || forced) {
-            let hash = Utils.hashFromPath(editor.document.fileName);
+        if (!this.currentEditor || this.currentEditor !== editor || this.currentRule !== currentRule || forced) {
+            let hash = Utils.hashForPath(editor.document.fileName);
             let cachedStates = AntlrATNGraphProvider.atnStates.get(hash);
 
             if (!cachedStates || !currentRule) {
@@ -131,19 +136,19 @@ export class AntlrATNGraphProvider extends WebviewProvider {
 
             // Update content only if this is the first invocation, editors were switched or
             // the currently selected rule changed.
-            if (this.lastEditor) {
+            if (this.currentEditor) {
                 if (this.sendMessage(editor.document.uri, {
                     command: "cacheATNLayout",
                     file: editor.document.fileName,
                     rule: this.currentRule
                 })) {
-                    this.lastEditor = editor;
+                    this.currentEditor = editor;
                     this.currentRule = currentRule;
                     this.currentRuleIndex = ruleIndex;
                     super.update(editor);
                 };
             } else {
-                this.lastEditor = editor;
+                this.currentEditor = editor;
                 this.currentRule = currentRule;
                 this.currentRuleIndex = ruleIndex;
                 super.update(editor);
@@ -155,7 +160,7 @@ export class AntlrATNGraphProvider extends WebviewProvider {
         if (message.command == "saveATNState") {
             // This is the bounce back from the script code for our call to `cacheATNLayout` triggered from
             // the `update()` function.
-            let hash = Utils.hashFromPath(message.file);
+            let hash = Utils.hashForPath(message.file);
             let basePath = path.dirname(message.file);
             let atnCachePath = path.join(basePath, ".antlr/cache");
 

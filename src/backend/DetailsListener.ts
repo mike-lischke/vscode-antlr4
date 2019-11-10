@@ -19,7 +19,8 @@ import {
 import {
     ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
     VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol,
-    AlternativeSymbol, EbnfSuffixSymbol, OptionsSymbol, ActionSymbol, ArgumentSymbol, OperatorSymbol, OptionSymbol
+    AlternativeSymbol, EbnfSuffixSymbol, OptionsSymbol, ActionSymbol, ArgumentSymbol, OperatorSymbol, OptionSymbol,
+    PredicateMarkerSymbol
 } from './ContextSymbolTable';
 
 import { SourceContext } from './SourceContext';
@@ -225,7 +226,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
             let child = (this.currentSymbol as ScopedSymbol).lastChild;
             if (child instanceof ActionSymbol) {
                 child.isPredicate = true;
-                let questionMark = this.symbolTable.addNewSymbolOfType(TokenReferenceSymbol, this.currentSymbol as ScopedSymbol, '?');
+                let questionMark = this.symbolTable.addNewSymbolOfType(PredicateMarkerSymbol, this.currentSymbol as ScopedSymbol, '?');
                 questionMark.context = ctx.QUESTION();
             }
         }
@@ -236,7 +237,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
             let child = (this.currentSymbol as ScopedSymbol).lastChild;
             if (child instanceof ActionSymbol) {
                 child.isPredicate = true;
-                let questionMark = this.symbolTable.addNewSymbolOfType(TokenReferenceSymbol, this.currentSymbol as ScopedSymbol, '?');
+                let questionMark = this.symbolTable.addNewSymbolOfType(PredicateMarkerSymbol, this.currentSymbol as ScopedSymbol, '?');
                 questionMark.context = ctx.QUESTION();
             }
         }

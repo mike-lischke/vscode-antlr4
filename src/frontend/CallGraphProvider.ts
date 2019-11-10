@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017 Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -8,15 +8,14 @@
 'use strict';
 
 const path = require("path");
-import * as vscode from "vscode";
 
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
-import { TextEditor, Uri } from "vscode";
+import { TextEditor, Uri, Webview } from "vscode";
 
 export class AntlrCallGraphProvider extends WebviewProvider {
 
-    public generateContent(source: TextEditor | Uri, options: WebviewShowOptions): string {
+    public generateContent(webView: Webview, source: TextEditor | Uri, options: WebviewShowOptions): string {
         let uri = (source instanceof Uri) ? source : source.document.uri;
 
         let fileName = uri.fsPath;
@@ -35,19 +34,21 @@ export class AntlrCallGraphProvider extends WebviewProvider {
             data.push({ name: entry[0], references: references });
         }
 
-        // Content Security Policy
         const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
         const scripts = [
-            Utils.getMiscPath('utils.js', this.context, true),
-            Utils.getMiscPath("call-graph.js", this.context, true)
+            Utils.getMiscPath('utils.js', this.context, webView),
+            Utils.getMiscPath("call-graph.js", this.context, webView)
         ];
+        let graphLibPath = Utils.getNodeModulesPath('d3/dist/d3.js', this.context);
+
         let diagram = `<!DOCTYPE html>
             <html>
                 <head>
-                    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-                    ${this.getStyles(uri)}
+                    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+                    ${this.generateContentSecurityPolicy(source)}
+                    ${this.getStyles(webView)}
                     <base href="${uri.toString(true)}">
-                    <script src="https://d3js.org/d3.v4.min.js"></script>
+                    <script src="${graphLibPath}"></script>
                     <script>
                         var data = ${JSON.stringify(data)};
                     </script>

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017 Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -11,7 +11,7 @@ const path = require("path");
 
 import { AntlrFacade, SymbolKind } from "../backend/facade";
 import { Utils } from "./Utils";
-import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Position, ViewColumn } from "vscode";
+import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 
 export interface WebviewShowOptions {
     title: string;
@@ -24,7 +24,7 @@ export interface WebviewShowOptions {
 export class WebviewProvider {
     protected currentRule: string | undefined;
     protected currentRuleIndex: number | undefined;
-    protected lastEditor: TextEditor | undefined; // Vscode doesn't tell us which editor lost activation on switch.
+    protected currentEditor: TextEditor | undefined;
 
     constructor(
         protected backend: AntlrFacade,
@@ -32,14 +32,15 @@ export class WebviewProvider {
     ) { }
 
     public showWebview(source: TextEditor | Uri, options: WebviewShowOptions) {
-        this.lastEditor = (source instanceof Uri) ? undefined : source;
+        this.currentEditor = (source instanceof Uri) ? undefined : source;
         let uri = (source instanceof Uri) ? source : source.document.uri;
         let uriString = uri.toString();
         if (this.webViewMap.has(uriString)) {
             let [panel, _] = this.webViewMap.get(uriString)!;
             panel.title = options.title;
             if (!this.updateContent(uri)) {
-                panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
+                panel.webview.html = this.generateContent(panel.webview,
+                    this.currentEditor ? this.currentEditor : uri, options);
             }
 
             return;
@@ -53,7 +54,8 @@ export class WebviewProvider {
         );
         this.webViewMap.set(uriString, [panel, options]);
 
-        panel.webview.html = this.generateContent(this.lastEditor ? this.lastEditor : uri, options);
+        panel.webview.html = this.generateContent(panel.webview,
+            this.currentEditor ? this.currentEditor : uri, options);
         panel.onDidDispose(() => {
             this.webViewMap.delete(uriString);
         }, null, this.context.subscriptions);
@@ -71,7 +73,7 @@ export class WebviewProvider {
 
                 case "saveSVG": {
                     let css: string[] = [];
-                    css.push(Utils.getMiscPath("light.css", this.context, false));
+                    css.push(Utils.getMiscPath("light.css", this.context));
                     let customStyles = workspace.getConfiguration("antlr4")['customcss'];
                     if (customStyles && Array.isArray(customStyles)) {
                         for (let style of customStyles) {
@@ -99,8 +101,8 @@ export class WebviewProvider {
 
                 case "saveHTML": {
                     let css: string[] = [];
-                    css.push(Utils.getMiscPath("light.css", this.context, false));
-                    css.push(Utils.getMiscPath("dark.css", this.context, false));
+                    css.push(Utils.getMiscPath("light.css", this.context));
+                    css.push(Utils.getMiscPath("dark.css", this.context));
                     let customStyles = workspace.getConfiguration("antlr4")['customcss'];
                     if (customStyles && Array.isArray(customStyles)) {
                         for (let style of customStyles) {
@@ -120,8 +122,16 @@ export class WebviewProvider {
         }, undefined, this.context.subscriptions);
     }
 
-    protected generateContent(source: TextEditor | Uri, options: WebviewShowOptions): string {
+    protected generateContent(webView: Webview, source: TextEditor | Uri, options: WebviewShowOptions): string {
         return "";
+    }
+
+    protected generateContentSecurityPolicy(_: TextEditor | Uri): string {
+        return `<meta http-equiv="Content-Security-Policy" content="default-src 'self';
+            script-src vscode-resource: 'self' 'unsafe-inline' 'unsafe-eval' https:;
+            style-src vscode-resource: 'self' 'unsafe-inline';
+            img-src vscode-resource: 'self' "/>
+        `;
     }
 
     protected updateContent(uri: Uri): boolean {
@@ -132,7 +142,7 @@ export class WebviewProvider {
         if (this.webViewMap.has(editor.document.uri.toString())) {
             let [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
             if (!this.updateContent(editor.document.uri)) {
-                panel.webview.html = this.generateContent(editor, options);
+                panel.webview.html = this.generateContent(panel.webview, editor, options);
             }
         }
     }
@@ -152,50 +162,20 @@ export class WebviewProvider {
         return false;
     }
 
-    // A few support functions taken from the markdown preview extension.
-    protected fixHref(resource: Uri, href: string): string {
-        if (!href) {
-            return href;
-        }
-
-        // Use href if it is already an URL.
-        if (Uri.parse(href).scheme) {
-            return href;
-        }
-
-        // Use href as file URI if it is absolute.
-        if (Utils.isAbsolute(href)) {
-            return Uri.file(href).with({ scheme: 'vscode-resource' }).toString();
-        }
-
-        // Use a workspace relative path if there is a workspace.
-        let rootPath = workspace.rootPath;
-        if (rootPath) {
-            return Uri.file(path.join(rootPath, href)).with({ scheme: 'vscode-resource' }).toString();
-        }
-
-        // Otherwise look relative to the grammar file.
-        return Uri.file(path.join(path.dirname(resource.fsPath), href)).with({ scheme: 'vscode-resource' }).toString();
-    }
-
-    protected computeCustomStyleSheetIncludes(uri: Uri): string {
-        const styles = workspace.getConfiguration("antlr4")['customcss'];
-        if (styles && Array.isArray(styles) && styles.length > 0) {
-            return styles.map((style) => {
-                return `<link rel="stylesheet" href="${this.fixHref(uri, style)}" type="text/css" media="screen">`;
-            }).join('\n');
-        }
-        return '';
-    }
-
-    protected getStyles(uri: Uri): string {
+    protected getStyles(webView: Webview): string {
         const baseStyles = [
-            Utils.getMiscPath("light.css", this.context, true),
-            Utils.getMiscPath("dark.css", this.context, true)
+            Utils.getMiscPath("light.css", this.context, webView),
+            Utils.getMiscPath("dark.css", this.context, webView)
         ];
 
-        return `${baseStyles.map(href => `<link rel="stylesheet" type="text/css" href="${href}">`).join('\n')}
-			${this.computeCustomStyleSheetIncludes(uri)}`;
+        let defaults = baseStyles.map(link => `<link rel="stylesheet" type="text/css" href="${link}">`).join('\n');
+
+        const paths = workspace.getConfiguration("antlr4")['customcss'];
+        if (paths && Array.isArray(paths) && paths.length > 0) {
+            return defaults + "\n" + paths.map(path =>
+              `<link rel="stylesheet" href="${webView.asWebviewUri(path)}" type="text/css" media="screen">`).join('\n');
+        }
+        return defaults;
     }
 
     protected getScripts(nonce: string, scripts: string[]): string {

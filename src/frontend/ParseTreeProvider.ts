@@ -15,14 +15,15 @@ import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
 import { GrammarDebugger } from "../backend/GrammarDebugger";
+import { Webview } from "vscode";
 
 export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerConsumer {
 
     public debugger: GrammarDebugger;
 
     refresh(): void {
-        if (this.lastEditor) {
-            this.update(this.lastEditor);
+        if (this.currentEditor) {
+            this.update(this.currentEditor);
         }
     }
 
@@ -30,14 +31,14 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
         this.updateContent(uri);
     }
 
-    public generateContent(uri: vscode.Uri, options: WebviewShowOptions): string {
+    public generateContent(webView: Webview, uri: vscode.Uri, options: WebviewShowOptions): string {
         let graph = this.debugger.currentParseTree;
 
         // Content Security Policy
         const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
         const scripts = [
-            Utils.getMiscPath('utils.js', this.context, true),
-            Utils.getMiscPath("parse-tree.js", this.context, true)
+            Utils.getMiscPath('utils.js', this.context, webView),
+            Utils.getMiscPath("parse-tree.js", this.context, webView)
         ];
 
         let settings = vscode.workspace.getConfiguration("antlr4.debug");
@@ -48,7 +49,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-                    ${this.getStyles(uri)}
+                    ${this.getStyles(webView)}
                     <base target="_blank">
                     <script src="https://d3js.org/d3.v4.min.js"></script>
                     <script>

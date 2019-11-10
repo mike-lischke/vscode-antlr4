@@ -143,9 +143,9 @@ export class ParseTreeNode {
  */
 export class ReferenceNode {
     kind: SymbolKind;
-    rules: string[];
-    tokens: string[];
-    literals: string[];
+    rules: Set<string>;
+    tokens: Set<string>;
+    literals: Set<string>;
 };
 
 /**

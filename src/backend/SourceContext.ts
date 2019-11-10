@@ -328,16 +328,35 @@ export class SourceContext {
         candidates.rules.forEach((callStack, key) => {
             switch (key) {
                 case ANTLRv4Parser.RULE_argActionBlock: {
-                    result.push({ kind: SymbolKind.Action, name: "[ argument action code ]", source: this.fileName, definition: undefined, description: undefined });
+                    result.push({
+                        kind: SymbolKind.Action,
+                        name: "[ argument action code ]",
+                        source: this.fileName,
+                        definition: undefined,
+                        description: undefined
+                    });
                     break;
                 }
 
                 case ANTLRv4Parser.RULE_actionBlock: {
-                    result.push({ kind: SymbolKind.Action, name: "{ action code }", source: this.fileName, definition: undefined, description: undefined });
+                    result.push({
+                        kind: SymbolKind.Action,
+                        name: "{ action code }",
+                        source: this.fileName,
+                        definition: undefined,
+                        description: undefined
+                    });
+
                     // Include predicates only when we are in a lexer or parser element.
                     if (callStack[callStack.length - 1] === ANTLRv4Parser.RULE_lexerElement
                         || callStack[callStack.length - 1] === ANTLRv4Parser.RULE_element) {
-                        result.push({ kind: SymbolKind.Predicate, name: "{ predicate }?", source: this.fileName, definition: undefined, description: undefined });
+                        result.push({
+                            kind: SymbolKind.Predicate,
+                            name: "{ predicate }?",
+                            source: this.fileName,
+                            definition: undefined,
+                            description: undefined
+                        });
                     }
                     break;
                 }
@@ -345,11 +364,23 @@ export class SourceContext {
                 case ANTLRv4Parser.RULE_terminalRule: { // Lexer rules.
                     this.symbolTable.getAllSymbols(BuiltInTokenSymbol).forEach(symbol => {
                         if (symbol.name !== "EOF") {
-                            result.push({ kind: SymbolKind.BuiltInLexerToken, name: symbol.name, source: this.fileName, definition: undefined, description: undefined });
+                            result.push({
+                                kind: SymbolKind.BuiltInLexerToken,
+                                name: symbol.name,
+                                source: this.fileName,
+                                definition: undefined,
+                                description: undefined
+                            });
                         }
                     });
                     this.symbolTable.getAllSymbols(VirtualTokenSymbol).forEach(symbol => {
-                        result.push({ kind: SymbolKind.VirtualLexerToken, name: symbol.name, source: this.fileName, definition: undefined, description: undefined });
+                        result.push({
+                            kind: SymbolKind.VirtualLexerToken,
+                            name: symbol.name,
+                            source: this.fileName,
+                            definition: undefined,
+                            description: undefined
+                        });
                     });
 
                     // Include fragment rules only when referenced from a lexer rule.
@@ -380,14 +411,26 @@ export class SourceContext {
 
                 case ANTLRv4Parser.RULE_lexerCommandName: {
                     ["channel", "skip", "more", "mode", "push", "pop"].forEach(symbol => {
-                        result.push({ kind: SymbolKind.Keyword, name: symbol, source: this.fileName, definition: undefined, description: undefined });
+                        result.push({
+                            kind: SymbolKind.Keyword,
+                            name: symbol,
+                            source: this.fileName,
+                            definition: undefined,
+                            description: undefined
+                        });
                     });
                     break;
                 }
 
                 case ANTLRv4Parser.RULE_ruleref: {
                     this.symbolTable.getAllSymbols(RuleSymbol).forEach(symbol => {
-                        result.push({ kind: SymbolKind.ParserRule, name: symbol.name, source: this.fileName, definition: undefined, description: undefined });
+                        result.push({
+                            kind: SymbolKind.ParserRule,
+                            name: symbol.name,
+                            source: this.fileName,
+                            definition: undefined,
+                            description: undefined
+                        });
                     });
                     break;
                 }
@@ -397,20 +440,35 @@ export class SourceContext {
                     // More concrete identifiers should be captured by rules further up in the call chain.
                     switch (callStack[callStack.length - 1]) {
                         case ANTLRv4Parser.RULE_option: {
-                            ["superClass", "tokenVocab", "TokenLabelType", "contextSuperClass", "exportMacro"].forEach(symbol => {
-                                result.push({ kind: SymbolKind.Option, name: symbol, source: this.fileName, definition: undefined, description: undefined });
+                            ["superClass", "tokenVocab", "TokenLabelType", "contextSuperClass", "exportMacro"]
+                            .forEach(symbol => {
+                                result.push({
+                                    kind: SymbolKind.Option,
+                                    name: symbol,
+                                    source: this.fileName,
+                                    definition: undefined,
+                                    description: undefined
+                                });
                             });
                             break;
                         }
 
                         case ANTLRv4Parser.RULE_namedAction: {
                             ["header", "members", "preinclude", "postinclude", "context", "declarations", "definitions",
-                                "listenerpreinclude", "listenerpostinclude", "listenerdeclarations", "listenermembers", "listenerdefinitions",
-                                "baselistenerpreinclude", "baselistenerpostinclude", "baselistenerdeclarations", "baselistenermembers",
-                                "baselistenerdefinitions", "visitorpreinclude", "visitorpostinclude", "visitordeclarations", "visitormembers",
-                                "visitordefinitions", "basevisitorpreinclude", "basevisitorpostinclude", "basevisitordeclarations", "basevisitormembers",
-                                "basevisitordefinitions"].forEach(symbol => {
-                                    result.push({ kind: SymbolKind.Keyword, name: symbol, source: this.fileName, definition: undefined, description: undefined });
+                                "listenerpreinclude", "listenerpostinclude", "listenerdeclarations", "listenermembers",
+                                "listenerdefinitions", "baselistenerpreinclude", "baselistenerpostinclude",
+                                "baselistenerdeclarations", "baselistenermembers", "baselistenerdefinitions",
+                                "visitorpreinclude", "visitorpostinclude", "visitordeclarations", "visitormembers",
+                                "visitordefinitions", "basevisitorpreinclude", "basevisitorpostinclude",
+                                "basevisitordeclarations", "basevisitormembers", "basevisitordefinitions"]
+                                .forEach(symbol => {
+                                    result.push({
+                                        kind: SymbolKind.Keyword,
+                                        name: symbol,
+                                        source: this.fileName,
+                                        definition: undefined,
+                                        description: undefined
+                                    });
                                 });
 
                             break;
@@ -522,43 +580,54 @@ export class SourceContext {
                 || symbol instanceof FragmentTokenSymbol) {
                 let entry: ReferenceNode = {
                     kind: symbol instanceof RuleSymbol ? SymbolKind.ParserRule : SymbolKind.LexerToken,
-                    rules: [],
-                    tokens: [],
-                    literals: []
+                    rules: new Set<string>(),
+                    tokens: new Set<string>(),
+                    literals: new Set<string>()
                 };
 
                 for (let child of symbol.getNestedSymbolsOfType(RuleReferenceSymbol)) {
                     let resolved = this.symbolTable.resolve(child.name, false);
                     if (resolved) {
-                        entry.rules.push(resolved.qualifiedName());
+                        entry.rules.add(resolved.qualifiedName());
                     } else {
-                        entry.rules.push(child.name);
+                        entry.rules.add(child.name);
                     }
                 }
 
+                let x = 10;
                 for (let child of symbol.getNestedSymbolsOfType(TokenReferenceSymbol)) {
                     let resolved = this.symbolTable.resolve(child.name, false);
                     if (resolved) {
-                        entry.tokens.push(resolved.qualifiedName());
+                        entry.tokens.add(resolved.qualifiedName());
                     } else {
-                        entry.tokens.push(child.name);
+                        entry.tokens.add(child.name);
                     }
                 }
 
                 for (let child of symbol.getNestedSymbolsOfType(LiteralSymbol)) {
                     let resolved = this.symbolTable.resolve(child.name, false);
                     if (resolved) {
-                        entry.literals.push(resolved.qualifiedName());
+                        entry.literals.add(resolved.qualifiedName());
                     } else {
-                        entry.literals.push(child.name);
+                        entry.literals.add(child.name);
                     }
                 }
 
                 result.set(symbol.qualifiedName(), entry);
             } else if (symbol instanceof BuiltInTokenSymbol) {
-                result.set(symbol.qualifiedName(), { kind: SymbolKind.BuiltInLexerToken, rules: [], tokens: [], literals: [] });
+                result.set(symbol.qualifiedName(), {
+                    kind: SymbolKind.BuiltInLexerToken,
+                    rules: [],
+                    tokens: [],
+                    literals: []
+                });
             } else if (symbol instanceof VirtualTokenSymbol) {
-                result.set(symbol.qualifiedName(), { kind: SymbolKind.VirtualLexerToken, rules: [], tokens: [], literals: [] });
+                result.set(symbol.qualifiedName(), {
+                    kind: SymbolKind.VirtualLexerToken,
+                    rules: [],
+                    tokens: [],
+                    literals: []
+                });
             }
         }
         return result;
@@ -638,7 +707,8 @@ export class SourceContext {
         }
 
         let context: RuleContext | undefined = (tree as RuleContext);
-        while (context && context.ruleIndex != ANTLRv4Parser.RULE_parserRuleSpec && context.ruleIndex != ANTLRv4Parser.RULE_lexerRuleSpec) {
+        while (context && context.ruleIndex != ANTLRv4Parser.RULE_parserRuleSpec
+            && context.ruleIndex != ANTLRv4Parser.RULE_lexerRuleSpec) {
             context = context.parent;
         }
 
@@ -683,7 +753,6 @@ export class SourceContext {
                 parameters.push(options.alternativeJar);
             } else {
                 if (options.language === "typescript") {
-                    //parameters.push(path.join(__dirname, '../../node_modules/antlr4ts-cli/target/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar'));
                     parameters.push(path.join(__dirname, '../../../antlr/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar'));
                 } else {
                     parameters.push(path.join(__dirname, '../../../antlr/antlr4-4.7.2-SNAPSHOT-complete.jar'));
@@ -714,9 +783,7 @@ export class SourceContext {
             let genListener = options.listeners == undefined || options.listeners === true;
             parameters.push(genListener ? "-listener" : "-no-listener");
             parameters.push(options.visitors === true ? "-visitor" : "-no-visitor");
-            //if (options.language != "typescript") {
-                parameters.push("-Xexact-output-dir"); // Available starting with 4.7.2.
-            //}
+            parameters.push("-Xexact-output-dir"); // Available starting with 4.7.2.
             dependencies.add(thisRef); // Needs this also in the error parser.
 
             let fileList: string[] = [];
@@ -798,7 +865,11 @@ export class SourceContext {
                     let marker = state.stateNumber * transitions[0].target.stateNumber;
                     stateToIndex.set(marker, result.nodes.length);
                     // Type 13 is a fake type denoting a rule. It's one beyond the highest ATNStateType values.
-                    result.nodes.push({ id: currentRuleIndex--, name: ruleNames[transitions[0].target.ruleIndex], type: 13 });
+                    result.nodes.push({
+                        id: currentRuleIndex--,
+                        name: ruleNames[transitions[0].target.ruleIndex],
+                        type: 13
+                    });
                 }
             }
         }
@@ -917,7 +988,10 @@ export class SourceContext {
                 if (PredicateEvaluator) {
                     predicateEvaluator = new PredicateEvaluator();
                 } else {
-                    predicateEvaluator = { evaluateLexerPredicate: evaluateLexerPredicate, evaluateParserPredicate: evaluateParserPredicate };
+                    predicateEvaluator = {
+                        evaluateLexerPredicate: evaluateLexerPredicate,
+                        evaluateParserPredicate: evaluateParserPredicate
+                    };
                 }
             }
 
@@ -958,7 +1032,10 @@ export class SourceContext {
             if (PredicateEvaluator) {
                 predicateEvaluator = new PredicateEvaluator();
             } else {
-                predicateEvaluator = { evaluateLexerPredicate: evaluateLexerPredicate, evaluateParserPredicate: evaluateParserPredicate };
+                predicateEvaluator = {
+                    evaluateLexerPredicate: evaluateLexerPredicate,
+                    evaluateParserPredicate: evaluateParserPredicate
+                };
             }
         }
 
@@ -1098,6 +1175,7 @@ export class SourceContext {
 
     /**
      * Convert an interval set to a list of ranges, consumable by a human.
+     *
      * @param set The set to convert.
      * @return A list of strings, one for each defined interval.
      */

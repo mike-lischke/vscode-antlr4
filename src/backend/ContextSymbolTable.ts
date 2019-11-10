@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -327,3 +327,5 @@ export class OperatorSymbol extends Symbol { }
 export class ActionSymbol extends ScopedSymbol {
     public isPredicate: boolean = false;
 }
+
+export class PredicateMarkerSymbol extends Symbol { }
