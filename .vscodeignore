@@ -7,6 +7,5 @@ images/**
 **/*.map
 .gitignore
 tsconfig.json
-node_modules/**
 typings/**
 **/.antlr
