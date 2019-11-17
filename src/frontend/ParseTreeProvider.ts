@@ -49,6 +49,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+                    ${this.generateContentSecurityPolicy(uri)}
                     ${this.getStyles(webView)}
                     <base target="_blank">
                     <script src="https://d3js.org/d3.v4.min.js"></script>

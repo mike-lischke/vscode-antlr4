@@ -45,16 +45,13 @@ export interface DebuggerConsumer {
     debuggerStopped(uri: Uri): void; // Called after each stop of the debugger (step, pause, breakpoint).
 }
 
-export class AntlrDebugSession extends LoggingDebugSession {
+export class AntlrDebugSession extends DebugSession {
     /**
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
 	 */
-    constructor(
-        private folder: WorkspaceFolder,
-        private backend: AntlrFacade,
-        private consumers: DebuggerConsumer[]) {
-        super("antlr4-vscode-trace.txt");
+    constructor(private backend: AntlrFacade, private consumers: DebuggerConsumer[]) {
+        super();
 
         this.setDebuggerLinesStartAt1(true);
         this.setDebuggerColumnsStartAt1(false);
@@ -73,7 +70,6 @@ export class AntlrDebugSession extends LoggingDebugSession {
         response.body.supportsStepInTargetsRequest = true;
 
         this.sendResponse(response);
-        this.sendEvent(new InitializedEvent());
     }
 
     protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse,
@@ -84,13 +80,9 @@ export class AntlrDebugSession extends LoggingDebugSession {
     }
 
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-        logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
-
         if (args.actionFile) {
             if (!fs.existsSync(args.actionFile)) {
                 window.showInformationMessage("Cannot find file for semantic predicate evaluation. No evaluation will take place.");
-            } else {
-
             }
         }
 
@@ -100,13 +92,14 @@ export class AntlrDebugSession extends LoggingDebugSession {
                 consumer.debugger = this.debugger!;
                 consumer.refresh();
             }
+            this.sendEvent(new InitializedEvent()); // Now we can accept breakpoints.
         } catch (e) {
             this.sendErrorResponse(response, { id: 1, format: "Could not prepare debug session:\n\n" + e });
             return;
         }
 
-        // The launch request comes in before the breakpoints are set (which depends on the debugger
-        // backend anyway). So we wait here for the configuration request end before we continue.
+        // Need to wait here for the configuration to be done, which happens after break points are set.
+        // This in turn is triggered by sending the InitializedEvent above.
         await this.configurationDone.wait(1000);
 
         this.showTextualParseTree = args.printParseTree || false;
@@ -407,6 +400,15 @@ export class AntlrDebugSession extends LoggingDebugSession {
         });
 
         this.debugger.on('output', (text, filePath, line, column, isError) => {
+            // Temporary workaround for a bug in vscode.
+            if (text instanceof Array) {
+                isError = text[4];
+                column = text[3];
+                line = text[2];
+                filePath = text[1];
+                text = text[0];
+            }
+
             const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
             e.body.source = this.createSource(filePath);
             e.body.line = line;

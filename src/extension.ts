@@ -441,7 +441,7 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                     //console.error('>> ANTLR debugging client connection closed\n');
                 });
 
-                const session = new AntlrDebugSession(folder!, backend, [
+                const session = new AntlrDebugSession(backend, [
                     parseTreeProvider
                 ]);
                 session.setRunAsServer(true);

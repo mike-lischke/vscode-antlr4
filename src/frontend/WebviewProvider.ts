@@ -7,9 +7,9 @@
 
 'use strict';
 
-const path = require("path");
+import path from "path";
 
-import { AntlrFacade, SymbolKind } from "../backend/facade";
+import { AntlrFacade } from "../backend/facade";
 import { Utils } from "./Utils";
 import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 

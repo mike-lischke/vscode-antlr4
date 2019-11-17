@@ -7,8 +7,8 @@
 
 'use strict';
 
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
@@ -38,7 +38,13 @@ export class AntlrATNGraphProvider extends WebviewProvider {
 
     public generateContent(webView: Webview, source: TextEditor | Uri, options: WebviewShowOptions): string {
         if (!this.currentRule) {
-            return `<html><body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body><html>`;
+            return `<!DOCTYPE html>
+                <html>
+                    <head>
+                        ${this.generateContentSecurityPolicy(source)}
+                    </head>
+                    <body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body>
+                </html>`;
         }
 
         let html = fs.readFileSync(Utils.getMiscPath("atngraph-head.html", this.context), { encoding: "utf-8" });
