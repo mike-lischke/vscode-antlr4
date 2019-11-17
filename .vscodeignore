@@ -1,6 +1,6 @@
 .vscode/**
 .vscode-test/**
-out/src/test/**
+out/**
 test/**
 src/**
 images/**
