@@ -7,7 +7,7 @@
 
 'use strict';
 
-import path from "path";
+import * as path from "path";
 
 import { AntlrFacade } from "../backend/facade";
 import { Utils } from "./Utils";

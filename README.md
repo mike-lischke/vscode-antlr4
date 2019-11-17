@@ -14,7 +14,7 @@
 
 ## What's New
 
-This release adds a live visual parse tree and fixes a number of bugs. See also the [Release Notes](#release-notes) for further details.
+All ANTLR4 functionality is now bundled in an own sidebar. Also, predicates with native (JS) code are now supported. See also the [Release Notes](#release-notes) for further details.
 
 ## Features
 
@@ -71,6 +71,22 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
+
+### 2.2.0
+- Update to latest antlr4ts version.
+- Added a new view container with sidebar icon for ANTLR4 files.
+- Added lists of actions and predicates in a grammar to the sidebar.
+- Added support for predicates in grammars. Code must be written in Javascript.
+- Improved stacktrace display in debug view.
+- Reorganized documentation, with individual documents for specific aspects like debugging.
+- Enhanced parsing support for tests, with an overhaul of the lexer and parser interpreters.
+- Textual parse trees now include a list of recognized tokens.
+- Improved sentence generation, using weight based ATN graph traveling. Added full Unicode support for identifier generation and a dedicated test for this. Still, the sentence generator is not yet available in the editor.
+- Overhaul of most of the used extension icons (with support for light + dark themes).
+- Added a reference provider.
+- Fixed Bug #87: Omitting startrule doesn't fallback to first parser rule (when debugging)
+- Graphs no longer need an internet connection (to load D3.js). Instead it's taken from the D3 node module.
+- Added content security policies to all graphs, as required by vscode.
 
 ### 2.1.0
 - Fixed Bug #41: Plugin Internal Error on EOF

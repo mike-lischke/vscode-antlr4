@@ -7,8 +7,8 @@
 
 'use strict';
 
-import fs from "fs-extra";
-import path from "path";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
