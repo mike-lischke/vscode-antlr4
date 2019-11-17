@@ -41,7 +41,7 @@ export class PredicateEvaluator {
     evaluateLexerPredicate(lexer, ruleIndex, actionIndex, predicate) {
         return eval(predicate);
     }
-    
+
     evaluateParserPredicate(parser, ruleIndex, actionIndex, predicate) {
         return eval(predicate);
     }
@@ -131,10 +131,10 @@ During debugging the following parsing details are shown:
 * Breakpoints - rule enter + exit breakpoints.
 
 #### Limitations
-The debugger uses the lexer and parser interpreters found in the ANTLR4 runtime. These interpreters use the same prediction engine as the standard classes, but cannot execute any target runtime code. Hence it is not possible to execute actions or semantic predicates. If your parser depends on that, you will have to modify your grammar(s) to avoid the need for such code. There are however considerations about using an answer file or similar to fake the output of predicates.
+The debugger uses the lexer and parser interpreters found in the ANTLR4 runtime. These interpreters use the same prediction engine as the standard classes, but cannot execute any target runtime code (except for action code as described above).
 
 The interpreters are implemented in Typescript and transpiled to Javascript, hence you shouldn't expect high performance parsing from the debugger. However, it should be good enough for normal error search.
 
-Even though ANTLR4 supports (direct) left recursive rules, their internal representation is totally different (they are converted to non-left-recursive rules). This makes it fairly difficult to match the currently executing ATN state to a concrete source position. Expect therefor non-optimal step marker visualization in such rules.
+Even though ANTLR4 supports (direct) left recursive rules, their internal representation is totally different (they are converted to non-left-recursive rules). This makes it fairly difficult to match the currently executing ATN state to a concrete source position. Expect therefore non-optimal step marker visualization in such rules.
 
 Parser rule context variables, parameters and return values cannot be inspected, as they don't exist in the interpreter generated parse tree.
