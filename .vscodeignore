@@ -1,6 +1,6 @@
 .vscode/**
 .vscode-test/**
-out/**
+out/test/**
 test/**
 src/**
 images/**
@@ -8,3 +8,5 @@ images/**
 .gitignore
 tsconfig.json
 node_modules/**
+typings/**
+**/.antlr
