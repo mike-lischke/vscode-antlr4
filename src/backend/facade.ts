@@ -302,7 +302,7 @@ export class AntlrFacade {
         let basePath = path.dirname(contextEntry.grammar);
         let fullPath = path.isAbsolute(this.importDir) ? this.importDir : path.join(basePath, this.importDir);
         try {
-            let depPath = fullPath + "/" + depName + ".g4";
+            let depPath = path.join(fullPath, depName + ".g4");
             fs.accessSync(depPath, fs.constants.R_OK);
             // Target path can be read. Now check the target file.
             contextEntry.dependencies.push(depPath);
@@ -312,7 +312,7 @@ export class AntlrFacade {
 
         // File not found. Try other extension.
         try {
-            let depPath = fullPath + "/" + depName + ".g";
+            let depPath = path.join(fullPath, depName + ".g");
             fs.accessSync(depPath, fs.constants.R_OK);
             // Target path can be read. Now check the target file.
             contextEntry.dependencies.push(depPath);
@@ -322,7 +322,7 @@ export class AntlrFacade {
 
         // Couldn't find it in the import folder. Use the base then.
         try {
-            let depPath = basePath + "/" + depName + ".g4";
+            let depPath = path.join(basePath, depName + ".g4");
             fs.statSync(depPath);
             contextEntry.dependencies.push(depPath);
             return this.loadGrammar(depPath);
@@ -330,7 +330,7 @@ export class AntlrFacade {
         };
 
         try {
-            let depPath = basePath + "/" + depName + ".g";
+            let depPath = path.join(basePath, depName + ".g");
             fs.statSync(depPath);
             contextEntry.dependencies.push(depPath);
             return this.loadGrammar(depPath);

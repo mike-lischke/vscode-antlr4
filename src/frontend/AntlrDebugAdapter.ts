@@ -8,12 +8,12 @@
 "use strict"
 
 import {
-    DebugSession, LoggingDebugSession, Handles, InitializedEvent, logger, Logger, Thread, Scope, Source, OutputEvent,
+    DebugSession, InitializedEvent, Thread, Scope, Source, OutputEvent,
     TerminatedEvent, StoppedEvent, Breakpoint, BreakpointEvent, StackFrame
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 
-import { window, WorkspaceFolder, Uri } from "vscode";
+import { window, Uri } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 const { Subject } = require('await-notify');
@@ -22,7 +22,6 @@ import { GrammarDebugger, GrammarBreakPoint } from '../backend/GrammarDebugger';
 import { AntlrParseTreeProvider } from "./ParseTreeProvider";
 import { AntlrFacade, ParseTreeNode, ParseTreeNodeType } from '../backend/facade';
 import { Token, CommonToken } from 'antlr4ts';
-import { stringify } from 'querystring';
 
 /**
  * Interface that reflects the arguments as specified in package.json.

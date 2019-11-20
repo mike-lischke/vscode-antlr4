@@ -44,19 +44,19 @@ export class Utils {
         return path.normalize(p + '/') === path.normalize(path.resolve(p) + '/');
     }
 
-    public static deleteFolderRecursive(path: string) {
+    public static deleteFolderRecursive(target: string) {
         var files = [];
-        if (fs.existsSync(path)) {
-            files = fs.readdirSync(path);
+        if (fs.existsSync(target)) {
+            files = fs.readdirSync(target);
             files.forEach(function (file, index) {
-                var curPath = path + "/" + file;
+                var curPath = path.join(target, file);
                 if (fs.lstatSync(curPath).isDirectory()) {
                     Utils.deleteFolderRecursive(curPath);
                 } else {
                     fs.unlinkSync(curPath);
                 }
             });
-            fs.rmdirSync(path);
+            fs.rmdirSync(target);
         }
     };
 

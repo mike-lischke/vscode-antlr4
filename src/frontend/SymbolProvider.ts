@@ -7,9 +7,8 @@
 
 'use strict';
 
-import { TextDocument, Position, CancellationToken, Range, Location, Uri, SymbolInformation, DocumentSymbolProvider } from 'vscode';
-import { SymbolKind as vscSymbolKind, ProviderResult } from 'vscode';
-import * as path from "path";
+import { TextDocument, CancellationToken, Range, Location, Uri, SymbolInformation, DocumentSymbolProvider } from 'vscode';
+import { ProviderResult } from 'vscode';
 
 import { AntlrFacade, SymbolKind } from "../backend/facade";
 
@@ -18,10 +17,9 @@ import { symbolDescriptionFromEnum, translateSymbolKind } from './Symbol';
 export class AntlrSymbolProvider implements DocumentSymbolProvider {
     constructor(private backend: AntlrFacade) {}
 
-    provideDocumentSymbols (document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[]> {
+    provideDocumentSymbols(document: TextDocument, _token: CancellationToken): ProviderResult<SymbolInformation[]> {
         var symbols = this.backend.listTopLevelSymbols(document.fileName, false);
 
-        let basePath = path.dirname(document.fileName);
         var symbolsList = [];
         for (let symbol of symbols) {
             if (!symbol.definition) {
@@ -44,6 +42,7 @@ export class AntlrSymbolProvider implements DocumentSymbolProvider {
             let info = new SymbolInformation(symbol.name, kind, description, location);
             symbolsList.push(info);
         }
+
         return symbolsList;
     };
 };
