@@ -299,7 +299,9 @@ export function activate(context: ExtensionContext) {
             libDir: workspace.getConfiguration("antlr4.generation")["importDir"],
             outputDir: outputDir,
             listeners: false,
-            visitors: false
+            visitors: false,
+            alternativeJar: workspace.getConfiguration("antlr4.generation")["alternativeJar"],
+            additionalParameters: workspace.getConfiguration("antlr4.generation")["additionalParameters"]
         };
 
         if (externalMode) {

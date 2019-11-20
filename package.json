@@ -151,6 +151,14 @@
                             "type": "boolean",
                             "default": false,
                             "description": "Also create visitors on code generation"
+                        },
+                        "alternativeJar": {
+                            "type": "string",
+                            "description": "Path to a Java jar file to be used for parser generation"
+                        },
+                        "additionalParameters": {
+                            "type": "string",
+                            "description": "Any other commandline parameters you want to send to the ANTLR4 jar"
                         }
                     }
                 },

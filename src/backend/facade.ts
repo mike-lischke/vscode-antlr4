@@ -189,7 +189,8 @@ export class ATNGraphData {
  * Options used by the parser files generation.
  */
 export interface GenerationOptions {
-    baseDir?: string;    // The folder in which to run the generation process. Should be an absolute path for predictable results.
+    baseDir?: string;    // The folder in which to run the generation process.
+                         // Should be an absolute path for predictable results. Used internally only.
     libDir?: string;     // Search path for the ANTLR tool.
     outputDir?: string;  // The folder where to place generated files in (relative to baseDir or absolute). (default: grammar dir)
     package?: string;    // Package or namespace name for generated files. (default: none)
@@ -197,7 +198,8 @@ export interface GenerationOptions {
     listeners?: boolean; // Generate listener files if set. (default: true)
     visitors?: boolean;  // Generate visitor files if set. (default: false)
     loadOnly?: boolean;  // Don't generate anything. Just try to load interpreter data and do interpreter setup.
-    alternativeJar?: string; // Use this jar for work instead of the built-in one(s).
+    alternativeJar?: string;        // Use this jar for work instead of the built-in one(s).
+    additionalParameters?: string;  // Any additional parameter you want to send to ANTLR4 for generation (e.g. "-XdbgST").
 };
 
 /**
@@ -470,7 +472,7 @@ export class AntlrFacade {
      *
      * @param fileName The grammar file.
      */
-    public getLexerVocabulary(fileName: string): Vocabulary | undefined{
+    public getLexerVocabulary(fileName: string): Vocabulary | undefined {
         let context = this.getContext(fileName);
         return context.getVocabulary();
     }
@@ -525,7 +527,7 @@ export class AntlrFacade {
         return context.getDiagnostics();
     };
 
-    public ruleFromPosition(fileName: string, column: number, row: number): [string | undefined, number | undefined ]{
+    public ruleFromPosition(fileName: string, column: number, row: number): [string | undefined, number | undefined] {
         let context = this.getContext(fileName);
         return context.ruleFromPosition(column, row);
     }

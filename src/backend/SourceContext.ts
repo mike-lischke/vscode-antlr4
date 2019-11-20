@@ -784,6 +784,11 @@ export class SourceContext {
             parameters.push(genListener ? "-listener" : "-no-listener");
             parameters.push(options.visitors === true ? "-visitor" : "-no-visitor");
             parameters.push("-Xexact-output-dir"); // Available starting with 4.7.2.
+
+            if (options.additionalParameters) {
+                parameters.push(options.additionalParameters);
+            }
+
             dependencies.add(thisRef); // Needs this also in the error parser.
 
             let fileList: string[] = [];
@@ -818,7 +823,7 @@ export class SourceContext {
                     thisRef.setupInterpreters(options.outputDir);
                     resolve(fileList);
                 } else {
-                    reject(buffer); // Treat this as non-grammar error (e.g. Java exception).
+                    reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
                 }
             });
         });
