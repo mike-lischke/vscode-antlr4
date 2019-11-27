@@ -380,70 +380,13 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                 });
         }
 
-        // launch.json missing or empty?
-        if (!config.type || !config.request || !config.name) {
-            return window.showErrorMessage("Create a launch configuration for debugging of ANTLR grammars first.").then(_ => {
-                return undefined;
-            });
-        }
-
-        if (!config.input) {
-            return window.showErrorMessage("No test input file specified").then(_ => {
-                return undefined;
-            });
-        } else {
-            if (!path.isAbsolute(config.input) && folder) {
-                config.input = path.join(folder.uri.fsPath, config.input);
-            }
-            if (!fs.existsSync(config.input)) {
-                return window.showErrorMessage("Cannot read test input file: " + config.input).then(_ => {
-                    return undefined;
-                });
-            }
-        }
-
-        if (config.actionFile) {
-            if (!path.isAbsolute(config.actionFile) && folder) {
-                config.actionFile = path.join(folder.uri.fsPath, config.actionFile);
-            }
-        }
-
-        if (!config.grammar) {
-            const editor = window.activeTextEditor;
-            if (editor && editor.document.languageId === 'antlr') {
-                let diagnostics = diagnosticCollection.get(editor!.document.uri);
-                if (diagnostics && diagnostics.length > 0) {
-                    return window.showErrorMessage("Cannot lauch grammar debugging. There are errors in the code.").then(_ => {
-                        return undefined;
-                    });
-                }
-
-                config.grammar = editor.document.fileName;
-            } else {
-                window.showInformationMessage("The ANTLR4 debugger can only be started for ANTLR4 grammars.");
-            }
-        } else {
-            if (!path.isAbsolute(config.grammar) && folder) {
-                config.grammar = path.join(folder.uri.fsPath, config.grammar);
-            }
-            if (!fs.existsSync(config.grammar)) {
-                return window.showErrorMessage("Cannot read grammar file: " + config.grammar).then(_ => {
-                    return undefined;
-                });
-            }
-        }
-
-        if (!config.grammar) {
-            return undefined;
-        }
-
         if (!this.server) {
             this.server = Net.createServer(socket => {
                 socket.on('end', () => {
                     //console.error('>> ANTLR debugging client connection closed\n');
                 });
 
-                const session = new AntlrDebugSession(backend, [
+                const session = new AntlrDebugSession(folder, backend, [
                     parseTreeProvider
                 ]);
                 session.setRunAsServer(true);

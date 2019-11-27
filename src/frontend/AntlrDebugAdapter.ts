@@ -13,7 +13,7 @@ import {
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 
-import { window, Uri } from "vscode";
+import { window, Uri, WorkspaceFolder } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 const { Subject } = require('await-notify');
@@ -49,7 +49,10 @@ export class AntlrDebugSession extends DebugSession {
 	 * Creates a new debug adapter that is used for one debug session.
 	 * We configure the default implementation of a debug adapter here.
 	 */
-    constructor(private backend: AntlrFacade, private consumers: DebuggerConsumer[]) {
+    constructor(
+        private folder: WorkspaceFolder | undefined,
+        private backend: AntlrFacade,
+         private consumers: DebuggerConsumer[]) {
         super();
 
         this.setDebuggerLinesStartAt1(true);
@@ -79,10 +82,64 @@ export class AntlrDebugSession extends DebugSession {
     }
 
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+        if (!args.input) {
+            this.sendErrorResponse(response, {
+                id: 1,
+                format: "Could not launch debug session: no test input file specified"
+            });
+            return;
+        }
+
+        if (!path.isAbsolute(args.input) && this.folder) {
+            args.input = path.join(this.folder.uri.fsPath, args.input);
+        }
+
+        if (!fs.existsSync(args.input)) {
+            this.sendErrorResponse(response, {
+                id: 1,
+                format: "Could not launch debug session: test input file not found."
+            });
+            return;
+        }
+
         if (args.actionFile) {
-            if (!fs.existsSync(args.actionFile)) {
-                window.showInformationMessage("Cannot find file for semantic predicate evaluation. No evaluation will take place.");
+            if (!path.isAbsolute(args.actionFile) && this.folder) {
+                args.actionFile = path.join(this.folder.uri.fsPath, args.actionFile);
             }
+
+            if (!fs.existsSync(args.actionFile)) {
+                window.showInformationMessage(
+                    "Cannot find file for semantic predicate evaluation. No evaluation will take place."
+                );
+            }
+        }
+
+        if (!args.grammar) {
+            this.sendErrorResponse(response, {
+                id: 1,
+                format: "Could not launch debug session: no grammar file specified (use the ${file} macro for the current editor)."
+            });
+            return;
+        }
+
+        if (!path.isAbsolute(args.grammar) && this.folder) {
+            args.grammar = path.join(this.folder.uri.fsPath, args.grammar);
+        }
+
+        if (!fs.existsSync(args.grammar)) {
+            this.sendErrorResponse(response, {
+                id: 1,
+                format: "Could not launch debug session: cannot find grammar file."
+            });
+            return;
+        }
+
+        if (this.backend.hasErrors(args.grammar)) {
+            this.sendErrorResponse(response, {
+                id: 1,
+                format: "Could not launch debug session: the grammar contains issues."
+            });
+            return;
         }
 
         try {

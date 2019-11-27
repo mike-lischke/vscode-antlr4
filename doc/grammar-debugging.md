@@ -29,7 +29,7 @@ Grammars sometimes contain code in the target language of the generated lexer/pa
 
 This is possible by using a Javascript file, which contains code to evaluate semantic predicates (see the [Setup section](#setup) for how to enable it). That means however, the predicates must be written in valid JS code. Since predicates are usually short and use simple expressions (like `{version < 1000}` or `{doesItBlend()}` it should be easy to use what's originally written for another language (JS, C++, TS, Java etc. which all share a very similar expression syntax) without changes in the grammar. If an expression doesn't work in JS, you will have to change it however, temporarily.
 
-On each start of the debugger the extension loads the specified file freshly (no caching takes place to support changes in that file between debugger runs) using a Node.js `require()` call. It then looks for an exported class named `PredicateEvaluator`, which can be used for evaluation. This class has a very simple structure and usually uses the JS `eval()` function to parse and run the predicate code. Here's a typcial example:
+On each start of the debugger the extension loads the specified file freshly (no caching takes place to support changes in that file between debugger runs) using a Node.js `require()` call. It then looks for an exported class named `PredicateEvaluator`, which can be used for evaluation. This class has a very simple structure and usually uses the JS `eval()` function to parse and run the predicate code. Here's a typical example:
 
 ```Javascript
 export class PredicateEvaluator {
@@ -82,9 +82,9 @@ With that action JS file in place you can then use semantic predicates as shown 
 ![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/predicate-debugging.gif)
 
 ## Setup
-What do you need to debug a grammar?
+What is needed to debug a grammar?
 
-* The grammar obviously, either as combined grammar (with parser and lexer rules in a single file) or separate grammars. Note: grammars which require a special setup (e.g. a different base class than the standard `Lexer` and `Parser` classes) could be a problem. It depends on what code is used from such base classes. Maybe you can emulate that also via the mentioned action JS file.
+* The grammar obviously, either as combined grammar (with parser and lexer rules in a single file) or separate grammars. Note: grammars which require a special setup (e.g. a different base class than the standard `Lexer` and `Parser` classes) could be a problem. It depends on what code is used from such base classes. Maybe you can emulate that also using the mentioned action JS file.
 * Code generation must be enabled in the vscode-antlr4 settings or no interpreter data is generated. In the user preferences set ['antlr4.generation']['mode'] to either 'internal' or 'external' (default is 'internal').
 * The interpreter data must be generated and current. Simply save your grammar in vscode to accomplish that.
 * A test input file. This can be any file provided it can be read by the lexer interpreter to generate tokens from and can be located anywhere. You can specify a relative or absolute path for it in the launch configuration. Paths are resolved relative to your workspace.
@@ -112,9 +112,9 @@ A typical launch config looks like this:
 }
 ```
 
-The value for `type` must be "antlr-debug" to denote a debug configuration for ANLTR4 grammars. For `request` "launch" must be set (attach is not supported and doesn't make sense, since we have no process to attach to). A name for the config is also mandatory as well as the name of the test input file. The rest is optional. If no grammar is given then the content of the currently active editor (which must contain am ANTLR4 grammar) is used instead. A message will be shown if there is no active ANTLR4 grammar in vscode. The optional `actionFile` parameter refers to a file that must be structured as described in the [Actions and Semantic Predicates](#actions-and-semantic-predicates) section.
+The value for `type` must be "antlr-debug" to denote a debug configuration for ANLTR4 grammars. For `request` "launch" must be set (attach is not supported and doesn't make sense, since we have no process to attach to). A name for the config is also mandatory as well as the name of the test input and the grammar file. The rest of the options is optional. The `actionFile` parameter refers to a file that must be structured as described in the [Actions and Semantic Predicates](#actions-and-semantic-predicates) section. All file entries can [use variables](https://code.visualstudio.com/docs/editor/variables-reference) to specify the file loaded in the current editor or specific folders etc.
 
-To tell the interperter where to start parsing we need a start rule. You can omit that, in which case the interpreter starts with the first parser rule in the grammar. However, specifying it allows to parse only a sublanguage (say, only expressions) or other subrules, instead of the entire possible language. A great possibility to focus only on those parts of your grammar that need fixing.
+To tell the interpreter where to start parsing we need a start rule. You can omit that, in which case the interpreter starts with the first parser rule in the grammar. However, specifying it allows to parse only a sublanguage (say, only expressions) or other subrules, instead of the entire possible language. A great possibility to focus only on those parts of your grammar that need fixing.
 
 The 2 boolean parameters determine visualizations. The entry `printParseTree` causes the debugger to print a textual parse tree to the `DEBUG CONSOLE` window, after a debug session has finished. The `visualParseTree` parameter however lets it generate a graphical parse tree that will grow on each debug step.
 
