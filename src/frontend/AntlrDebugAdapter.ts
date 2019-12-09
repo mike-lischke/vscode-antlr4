@@ -122,6 +122,14 @@ export class AntlrDebugSession extends DebugSession {
             return;
         }
 
+        if (path.extname(args.grammar) !== '.g4') {
+            this.sendErrorResponse(response, {
+                id: 1,
+                format: "Could not launch debug session: " + args.grammar + " is not a grammar file"
+            });
+            return;
+        }
+
         if (!path.isAbsolute(args.grammar) && this.folder) {
             args.grammar = path.join(this.folder.uri.fsPath, args.grammar);
         }
