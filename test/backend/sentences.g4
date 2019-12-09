@@ -6,15 +6,21 @@ plusLoop: DIGIT (COMMA DIGITS)+;
 starLoop: DIGIT DIGITS*;
 alts: alt1 | alt2 | alt3 |;
 blocks: block (COMMA block)*;
-block: OPEN_BRACE (SimpleIdentifier SimpleIdentifier?) | (CyrillicIdentifier DIGIT DIGITS) CLOSE_BRACE;
+block:
+    OPEN_BRACE (
+        SimpleIdentifier SimpleIdentifier?
+        | CyrillicIdentifier DIGIT DIGITS
+    )
+    CLOSE_BRACE
+;
 
 alt1: RED;
 alt2: GREEN;
 alt3: BLUE;
 
 recursion:
-	recursion DOT alt3
-	| recursion COLON alt1
+	recursion DOT alts
+	| recursion COLON alts
 	| DIGITS recursion
 	| SimpleIdentifier
 ;

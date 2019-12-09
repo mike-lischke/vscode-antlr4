@@ -371,11 +371,7 @@
             },
             {
                 "command": "antlr.tools.generateSentences",
-                "title": "Generate Sentences From Grammar"
-            },
-            {
-                "command": "antlr.tools.startGREPL",
-                "title": "Open Grammar REPL console "
+                "title": "Generate valid input for Rule"
             }
         ],
         "menus": {
@@ -414,6 +410,11 @@
                     "when": "resourceLangId == antlr",
                     "command": "antlr.call-graph",
                     "group": "antlr@4"
+                },
+                {
+                    "when": "resourceLangId == antlr",
+                    "command": "antlr.tools.generateSentences",
+                    "group": "antlr@5"
                 }
             ]
         },

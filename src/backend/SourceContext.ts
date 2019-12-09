@@ -15,7 +15,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import {
-    CharStreams, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext, Vocabulary
+    CharStreams, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext,
+    Vocabulary
 } from 'antlr4ts';
 import {
     PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState
@@ -23,7 +24,7 @@ import {
 import { ParseCancellationException, IntervalSet, Interval } from 'antlr4ts/misc';
 import { ParseTreeWalker, TerminalNode, ParseTree, ParseTreeListener } from 'antlr4ts/tree';
 
-import { CodeCompletionCore, Symbol, LiteralSymbol, SymbolTable } from "antlr4-c3";
+import { CodeCompletionCore, Symbol, LiteralSymbol } from "antlr4-c3";
 
 import {
     ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, OptionsSpecContext, ModeSpecContext
@@ -32,7 +33,7 @@ import { ANTLRv4Lexer } from '../parser/ANTLRv4Lexer';
 
 import {
     SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
-    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings, HierarchyNode, LexicalRange, HierarchyNodeType
+    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings
 } from './facade';
 
 import { ContextErrorListener, ContextLexerErrorListener } from './ContextErrorListener';
@@ -51,7 +52,9 @@ import {
 
 import { SentenceGenerator } from "./SentenceGenerator";
 import { GrammarFormatter } from "./Formatter";
-import { GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener } from './GrammarInterpreters';
+import {
+    GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener
+} from './GrammarInterpreters';
 
 enum GrammarType { Unknown, Parser, Lexer, Combined };
 
@@ -941,40 +944,73 @@ export class SourceContext {
     /**
      * Generates strings that are valid input for the managed grammar.
      *
+     * @param dependencies All source contexts on which this one depends (usually the lexer, if this is a split grammar).
      * @param options The settings controlling the generation.
-     * @param lexerDefinitions Defines replacement strings to be used for lexer rule indexes.
-     * @param parserDefinitions Defines replacement strings to be used for parser rule indexes.
+     * @param ruleDefinitions Defines replacement strings to be used for rule names.
      * @returns A list of strings with sentences that this grammar would successfully parse.
      */
-    public generateSentence(options: SentenceGenerationOptions, lexerDefinitions?: RuleMappings,
-        parserDefinitions?: RuleMappings): string {
-        if (!this.grammarLexerData) {
+    public generateSentence(dependencies: Set<SourceContext>, options: SentenceGenerationOptions,
+        ruleDefinitions?: RuleMappings): string {
+        if (!this.isInterpreterDataLoaded) {
             // Requires a generation run.
             return "[No grammar data available]";
         }
+
         let isLexerRule = options.startRule[0] == options.startRule[0].toUpperCase();
+        let lexerData: InterpreterData | undefined;
+        let parserData: InterpreterData | undefined;
+        let lexerContext: SourceContext = this;
+
+        switch (this.grammarType) {
+            case GrammarType.Combined: {
+                lexerData = this.grammarLexerData;
+                parserData = this.grammarParserData;
+                break;
+            }
+
+            case GrammarType.Lexer: {
+                lexerData = this.grammarLexerData;
+                break;
+            }
+            case GrammarType.Parser: {
+                // Get lexer data from dependency.
+                for (let dependency of dependencies) {
+                    if (dependency.grammarType == GrammarType.Lexer) {
+                        lexerData = dependency.grammarLexerData;
+                        lexerContext = dependency;
+                        break;
+                    }
+                }
+                parserData = this.grammarParserData;
+                break;
+            }
+        }
+
+        if (!lexerData) { // Lexer data must always exist.
+            return "[No lexer data available]";
+        }
+
+        if (!isLexerRule && !parserData) { // Parser data is only required for parser sentence generation.
+            return "[No parser data available]";
+        }
 
         let start: RuleStartState;
         if (isLexerRule) {
-            let index = this.grammarLexerRuleMap.get(options.startRule);
+            let index = lexerContext.grammarLexerRuleMap.get(options.startRule);
             if (index == undefined) {
                 return "[Virtual or undefined token]";
             }
-            start = this.grammarLexerData.atn.ruleToStartState[index];
+            start = lexerData.atn.ruleToStartState[index];
         } else {
-            if (!this.grammarParserData) {
-                return "[No parser data available]";
-            }
-
             let index = this.grammarParserRuleMap.get(options.startRule);
             if (index == undefined) {
                 return "[Undefined rule]";
             }
-            start = this.grammarParserData.atn.ruleToStartState[index];
+            start = parserData!.atn.ruleToStartState[index];
         }
 
-        let generator = new SentenceGenerator(this.grammarLexerData.atn);
-        return generator.generate(options, start, lexerDefinitions, parserDefinitions);
+        let generator = new SentenceGenerator(lexerData, parserData);
+        return generator.generate(options, start, ruleDefinitions);
     }
 
     /**

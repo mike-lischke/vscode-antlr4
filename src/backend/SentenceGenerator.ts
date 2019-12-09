@@ -8,14 +8,15 @@
 "use strict";
 
 import {
-    ATN, ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType, RuleTransition,
-    StarBlockStartState, RuleStartState, NotSetTransition, DecisionState
+    ATN, ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType,
+    RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState
 } from "antlr4ts/atn";
 
 import { SentenceGenerationOptions, RuleMappings } from "./facade";
-import { IntervalSet, Interval } from "antlr4ts/misc";
+import { IntervalSet } from "antlr4ts/misc";
 
-import { printableUnicodePoints, FULL_UNICODE_SET, randomCodeBlock } from "./Unicode";
+import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
+import { InterpreterData } from "./InterpreterDataReader";
 
 /**
  * This class generates a number of strings, each valid input for a given ATN.
@@ -26,25 +27,23 @@ export class SentenceGenerator {
      * @param ruleMap The lexer rule index map to go from token name to token rule index.
      * @param vocabulary The lexer vocabulary to lookup text for token value.
      */
-    constructor(private lexerATN: ATN) {
+    constructor(
+        private lexerData: InterpreterData, private parserData?: InterpreterData) {
 
         this.printableUnicode = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
     }
 
-    public generate(options: SentenceGenerationOptions, start: RuleStartState, lexerDefinitions?: RuleMappings,
-        parserDefinitions?: RuleMappings): string {
+    public generate(options: SentenceGenerationOptions, start: RuleStartState, ruleDefinitions?: RuleMappings): string {
 
         this.convergenceFactor = options.convergenceFactor || 0.25;
 
-        this.maxIterations = (!options.maxIterations || options.maxIterations < 0) ? 1 : options.maxIterations;
+        this.maxIterations = (!options.maxIterations || options.maxIterations < 1) ? 3 : options.maxIterations;
+        this.maxRecursions = (!options.maxRecursions || options.maxRecursions < 1) ? 3 : options.maxRecursions;
 
-        this.lexerDefinitions.clear();
-        if (lexerDefinitions) {
-            this.lexerDefinitions = lexerDefinitions;
-        }
-        this.parserDefinitions.clear();
-        if (parserDefinitions) {
-            this.parserDefinitions = parserDefinitions;
+        this.ruleInvocations.clear();
+        this.ruleDefinitions.clear();
+        if (ruleDefinitions) {
+            this.ruleDefinitions = ruleDefinitions;
         }
 
         this.lexerDecisionCounts = new Map<number, number[]>();
@@ -56,22 +55,80 @@ export class SentenceGenerator {
     }
 
     /**
+     * Returns the name of the rule with the given index.
+     *
+     * @param inLexer A flag to tell where to lookup the symbol name.
+     * @param index The rule index to convert.
+     */
+    private getRuleName(inLexer: boolean, index: number): string | undefined {
+        if (inLexer) {
+            return this.lexerData.ruleNames[index];
+        }
+
+        if (this.parserData) {
+            return this.parserData.ruleNames[index];
+        }
+    }
+
+    /**
+     * Records the invocation of the given rule and returns true if that rule's invocation count is less
+     * than the maximum recursion count.
+     *
+     * @param name The name of the rule.
+     */
+    private invokeRule(name: string): boolean {
+        let count = this.ruleInvocations.get(name);
+        if (count) {
+            if (count < this.maxRecursions) {
+                this.ruleInvocations.set(name, count + 1);
+            }
+            return false;
+        }
+
+        this.ruleInvocations.set(name, 1);
+        return true;
+    }
+
+    /**
+     * Remove one invocation step for the given rule. If the count is zero after that, then the rule is removed
+     * from the invocation list alltogether.
+     *
+     * @param name The name of the rule.
+     */
+    private leaveRule(name: string) {
+        let count = this.ruleInvocations.get(name);
+        if (count) {
+            --count;
+            if (count == 0) {
+                this.ruleInvocations.delete(name);
+            } else {
+                this.ruleInvocations.set(name, count);
+            }
+        }
+    }
+
+    /**
      * Processes a single sequence of ATN states (a rule or a single alt in a block).
      */
     private generateFromATNSequence(start: ATNState, stop: ATNState, addSpace: boolean): string {
-        let inLexer = start.atn == this.lexerATN;
+        let inLexer = start.atn == this.lexerData.atn;
+        let isRule = start.stateType == ATNStateType.RULE_START;
 
-        if (start.stateType == ATNStateType.RULE_START) {
+        let ruleName: string | undefined;
+        if (isRule) {
             // Check if there's a predefined result for the given rule.
-            let mapping;
-            if (inLexer) {
-                mapping = this.lexerDefinitions.get(start.ruleIndex);
-            } else {
-                mapping = this.parserDefinitions.get(start.ruleIndex);
+            ruleName = this.getRuleName(inLexer, start.ruleIndex);
+            if (!ruleName) {
+                return "";
             }
 
+            let mapping = this.ruleDefinitions.get(ruleName);
             if (mapping) {
-                return mapping;
+                return addSpace ? mapping + " " : mapping;
+            }
+
+            if (!this.invokeRule(ruleName)) {
+                return addSpace ? "42 " : "42";
             }
         }
 
@@ -133,8 +190,8 @@ export class SentenceGenerator {
                                 result += this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
                             } else {
                                 // Pick a random lexer rule.
-                                let ruleIndex = Math.floor(Math.random() * this.lexerATN.ruleToStartState.length);
-                                let state: RuleStartState = this.lexerATN.ruleToStartState[ruleIndex];
+                                let ruleIndex = Math.floor(Math.random() * this.lexerData.atn.ruleToStartState.length);
+                                let state: RuleStartState = this.lexerData.atn.ruleToStartState[ruleIndex];
                                 result += this.generateFromATNSequence(state, state.stopState, !inLexer);
                             }
                             run = transition.target;
@@ -155,9 +212,24 @@ export class SentenceGenerator {
                             } else {
                                 if (transition.label && transition.label.maxElement > -1) {
                                     let randomIndex = Math.floor(Math.random() * transition.label.size);
-                                    let tokenIndex = this.getIntervalElement(transition.label, randomIndex);
-                                    let state = this.lexerATN.ruleToStartState[tokenIndex - 1]; // Lexer rule index is one-base.
-                                    result += this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                    let token = this.getIntervalElement(transition.label, randomIndex);
+                                    let tokenIndex = this.lexerData.atn.ruleToTokenType.indexOf(token);
+                                    if (tokenIndex === -1) {
+                                        // If there's no token type then it means we have a virtual token here.
+                                        // See if there's a mapping for it.
+                                        let tokenName = this.lexerData.vocabulary.getSymbolicName(token);
+                                        if (tokenName) {
+                                            let mapping = this.ruleDefinitions.get(tokenName);
+                                            if (mapping) {
+                                                result += addSpace ? mapping + " " : mapping;
+                                            }
+                                        } else {
+                                            result += `[Cannot generate value for virtual token ${token}]`;
+                                        }
+                                    } else {
+                                        let state = this.lexerData.atn.ruleToStartState[tokenIndex];
+                                        result += this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                    }
                                 }
                             }
                             run = transition.target;
@@ -169,8 +241,11 @@ export class SentenceGenerator {
             }
         }
 
-        if (addSpace) {
-            return result + " ";
+        if (isRule) {
+            this.leaveRule(ruleName!);
+            if (addSpace) {
+                return result + " ";
+            }
         }
         return result;
     }
@@ -183,7 +258,7 @@ export class SentenceGenerator {
         let decision = this.getRandomDecision(state);
 
         // The alt counts are initialized in the call above if they don't exist yet.
-        let decisionCounts = state.atn == this.lexerATN ? this.lexerDecisionCounts : this.parserDecisionCounts;
+        let decisionCounts = state.atn == this.lexerData.atn ? this.lexerDecisionCounts : this.parserDecisionCounts;
         let altCounts = decisionCounts.get(state.decision)!;
         ++altCounts[decision];
 
@@ -223,7 +298,7 @@ export class SentenceGenerator {
      * @param state The decision state to examine.
      */
     private getRandomDecision(state: DecisionState): number {
-        let decisionCounts = state.atn == this.lexerATN ? this.lexerDecisionCounts : this.parserDecisionCounts;
+        let decisionCounts = state.atn == this.lexerData.atn ? this.lexerDecisionCounts : this.parserDecisionCounts;
 
         let weights = new Array<number>(state.numberOfTransitions).fill(1);
         let altCounts = decisionCounts.get(state.decision);
@@ -301,10 +376,10 @@ export class SentenceGenerator {
     private parserDecisionCounts: Map<number, number[]>;
 
     private maxIterations: number;
-    private lexerDefinitions: RuleMappings = new Map();
-    private parserDefinitions: RuleMappings = new Map();
+    private maxRecursions: number;
+    private ruleInvocations: Map<string, number> = new Map();
+    private ruleDefinitions: RuleMappings = new Map();
 
     // To limit recursions we need to track through which rules we are walking currently.
     private parserStack: number[] = [];
-    private parserStack2: string[] = [];
 };

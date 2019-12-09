@@ -69,7 +69,6 @@ export class SymbolInfo {
     definition?: Definition;
     description?: string;  // Used for code completion. Provides a small description for certain symbols.
     isPredicate?: boolean; // Used only for actions.
-    symbolPath?: Symbol[]; // Optional part for invocation hierarchy.
 };
 
 export enum DiagnosticType {
@@ -149,25 +148,6 @@ export class ReferenceNode {
 };
 
 /**
- * Invocation hierarchies are made of this node.
- */
-export class HierarchyNode {
-    name: string;
-    type: HierarchyNodeType;
-    callees: HierarchyNode[];
-    definition?: Definition;
-    parent?: HierarchyNode;
-};
-
-export enum HierarchyNodeType {
-    Unknown,
-    File,
-    Rule,
-    Token,
-    Literal
-};
-
-/**
  * Contains the link + node values which describe the ATN graph for a single rule.
  */
 export class ATNGraphData {
@@ -209,12 +189,13 @@ export interface SentenceGenerationOptions {
     startRule: string;          // The name of the rule to start from (either lexer or parser rule) (required).
     convergenceFactor?: number; // Determines how quick recursive rule calls converge to 0 (between 0 and 1, default: 0.25).
     maxIterations?: number;     // The maximum number of iterations used for `+` and `*` loops (default: 1).
+    maxRecursions?: number;     // The maxium number of recursions (rules calling themselves directly or indirectly).
 };
 
 /**
- * Mappings from rule indexes to string, which define output to use for specific rules when generating sentences.
+ * Mappings from rule names to strings, which define output to use for specific rules when generating sentences.
  */
-export type RuleMappings = Map<number, string>;
+export type RuleMappings = Map<string, string>;
 
 /**
  * Options for grammar text formatting. Some names, values and meanings have been taken from clang-format
@@ -603,10 +584,25 @@ export class AntlrFacade {
         return context.getATNGraph(rule);
     }
 
-    public generateSentence(fileName: string, options: SentenceGenerationOptions, lexerDefinitions?: RuleMappings,
-        parserDefinitions?: RuleMappings): string {
+    public generateSentence(fileName: string, options: SentenceGenerationOptions, ruleDefinitions?: RuleMappings): string {
         let context = this.getContext(fileName);
-        return context.generateSentence(options, lexerDefinitions, parserDefinitions);
+
+        let dependencies: Set<SourceContext> = new Set();
+        this.pushDependencyFiles(this.sourceContexts.get(fileName)!, dependencies);
+
+        let basePath = path.dirname(fileName);
+
+        for (let dependency of dependencies) {
+            if (dependency.hasErrors) {
+                return "[Fix grammar errors first]";
+            }
+
+            if (!dependency.isInterpreterDataLoaded) {
+                dependency.setupInterpreters(path.join(basePath, ".antlr"));
+            }
+        }
+
+        return context.generateSentence(dependencies, options, ruleDefinitions);
     }
 
     public lexTestInput(fileName: string, input: string, actionFile?: string): [string[], string] {

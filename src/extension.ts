@@ -13,7 +13,7 @@ import * as Net from 'net';
 
 import {
     workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
-    commands, Uri, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, OutputChannel, Selection,
+    commands, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, OutputChannel, Selection,
     debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult,
     TextEditorRevealType
 } from 'vscode';
@@ -41,7 +41,7 @@ import { AntlrRenameProvider } from "./frontend/RenameProvider";
 import { ProgressIndicator } from "./frontend/ProgressIndicator";
 import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
 
-import { DiagnosticType, AntlrFacade, GenerationOptions, LexicalRange } from "./backend/facade";
+import { DiagnosticType, AntlrFacade, GenerationOptions, LexicalRange, RuleMappings } from "./backend/facade";
 import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
 
 const ANTLR = { language: 'antlr', scheme: 'file' };
@@ -129,10 +129,64 @@ export function activate(context: ExtensionContext) {
     }));
 
     // Sentence generation.
-    // This is currently not enabled in the UI. This generation can too easily go endless if the grammar is highly recursive.
-    // Need to get an idea how to make this really usable.
     context.subscriptions.push(commands.registerTextEditorCommand("antlr.tools.generateSentences", (editor: TextEditor, edit: TextEditorEdit) => {
-        return workspace.openTextDocument(editor.document.uri).then(doc => window.showTextDocument(doc, editor.viewColumn! + 1));
+        let ruleMappings: RuleMappings = new Map([
+            ["A", "A"],
+            ["B", "B"],
+            ["C", "C"],
+            ["D", "D"],
+            ["E", "E"],
+            ["F", "F"],
+            ["G", "G"],
+            ["H", "H"],
+            ["I", "I"],
+            ["J", "J"],
+            ["K", "K"],
+            ["L", "L"],
+            ["M", "M"],
+            ["N", "N"],
+            ["O", "O"],
+            ["P", "P"],
+            ["Q", "Q"],
+            ["R", "R"],
+            ["S", "S"],
+            ["T", "T"],
+            ["U", "U"],
+            ["V", "V"],
+            ["W", "W"],
+            ["X", "X"],
+            ["Y", "Y"],
+            ["Z", "Z"],
+            ["NOT2_SYMBOL", "NOT"],
+            ["CONCAT_PIPES_SYMBOL", "||"],
+            ["INT_NUMBER", "12345"],
+            ["LONG_NUMBER", "1122334455667788"],
+            ["ULONGLONG_NUMBER", "11112222333344445555666677778888"],
+            ["DOUBLE_QUOTED_TEXT", "\"text\""],
+            ["SINGLE_QUOTED_TEXT", "'text'"],
+            ["BACK_TICK_QUOTED_ID", "`id`"],
+            ["identifier", "`id`"],
+            ["schemaRef", "sakila"],
+            ["tableRef", "sakila.actor"],
+            ["columnRef", "sakila.actor.actor_id"],
+        ]);
+
+        let fileName = editor.document.uri.fsPath;
+        let caret = editor.selection.active;
+        let [ruleName, _] = backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+
+        if (!ruleName) {
+            console.log("ANTLR4 sentence generation: no rule selected");
+        }
+
+        for (let i = 0; i < 1; ++i) {
+            let sentence = backend.generateSentence(fileName, {
+                startRule: ruleName!,
+                maxIterations: 10,
+                maxRecursions: 30,
+            }, ruleMappings);
+            console.log(sentence);
+        }
     }));
 
     // Debugging support.

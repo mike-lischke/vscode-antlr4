@@ -11,7 +11,7 @@ import fs = require("fs-extra");
 import glob = require("glob");
 
 import { expect, assert } from 'chai';
-import { AntlrFacade, SymbolKind, ATNGraphData } from "../../src/backend/facade";
+import { AntlrFacade, SymbolKind, ATNGraphData, RuleMappings } from "../../src/backend/facade";
 import { SourceContext } from "../../src/backend/SourceContext";
 
 var backend: AntlrFacade;
@@ -651,13 +651,12 @@ describe('vscode-antlr4-backend:', function () {
                 for (let i = 0; i < 100; ++i) {
                     let sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: rule,
-                        maxIterations: 10
+                        maxIterations: 7
                     });
 
-                    //console.log(rule + ": " + sentence);
+                    //onsole.log(rule + ": " + sentence);
                     let errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                     if (errors.length > 0) {
-                        errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                         console.log("errors:");
                         for (let error of errors) {
                             console.log("\t" + error + "\n")
@@ -668,40 +667,50 @@ describe('vscode-antlr4-backend:', function () {
             }
         });
 
-        xit("Generation with definitions", function () {
+        it("Generation with definitions", function () {
+            this.slow(30000);
             this.timeout(60000);
 
-            let definitions: Map<string, string> = new Map([
-                /*["INT_NUMBER", "12345"],
-                ["LONG_NUMBER", "1234567890"],
-                ["ULONGLONG_NUMBER", "12345678901234567890"],
-                ["SINGLE_QUOTED_TEXT", "'singlequotedtext'"],
-                ["DOUBLE_QUOTED_TEXT", "\"doublequotedtext\""],
-                ["BACK_TICK_QUOTED_ID", "`backtickid`"],
-                ["NOT2_SYMBOL", "NOT"],
-                ["CONCAT_PIPES_SYMBOL", "||"],
-                ["constantexpression", "a/b*c"],
-                ["expression", "1+1"],
-                ["Identifier", "cppIdentifier"],*/
+            let ruleMappings: RuleMappings = new Map([
+                ['DIGITS', '12345'],
+                ['HexNumber', 'DEADBEEF'],
+                ['SimpleIdentifier', 'Mike'],
+                ['CyrillicIdentifier', 'абвгдеж'],
+                ['unicodeIdentifier', 'µπåƒ'],
             ]);
 
-            let rules = backend.getRuleList("test/backend/CPP14.g4")!;
-            /*for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
-                let symbolic = vocabulary.getSymbolicName(i);
-                let sentences = backend.generateSentences("test/backend/CPP14.g4", {
-                    startRule: symbolic!,
-                    allPaths: true,
-                    minTokenLength: 3,
-                    maxTokenLength: 20,
-                    maxIterations: 1,
-                    maxRecursions: 1
-                }, definitions);
+            let rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (let rule of rules) {
+                for (let i = 0; i < 10; ++i) {
+                    let sentence = backend.generateSentence("test/backend/sentences.g4", {
+                        startRule: rule,
+                        maxIterations: 7
+                    }, ruleMappings);
 
-                console.log(`Token ${symbolic} (${sentences.length} entries):`);
-                for (let entry of sentences) {
-                    console.log(JSON.stringify(entry));
+                    //console.log(rule + ": " + sentence);
+                    let errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                    if (errors.length > 0) {
+                        console.log("errors:");
+                        for (let error of errors) {
+                            console.log("\t" + error + "\n")
+                        }
+                    }
+                    expect(errors.length, "Test 1").to.equal(0);
+
+                    // In addition to error free generation check also that only known elements are in the sentence.
+                    sentence = sentence.replace(/12345/g, "");
+                    sentence = sentence.replace(/DEADBEEF/g, "");
+                    sentence = sentence.replace(/Mike/g, "");
+                    sentence = sentence.replace(/абвгдеж/g, "");
+                    sentence = sentence.replace(/µπåƒ/g, "");
+                    sentence = sentence.replace(/red/g, "");
+                    sentence = sentence.replace(/green/g, "");
+                    sentence = sentence.replace(/blue/g, "");
+                    sentence = sentence.replace(/[0-9{},.]/g, "");
+                    sentence = sentence.trim();
+                    expect(sentence.length, "Test 2").to.equal(0);
                 }
-            }*/
+            }
         });
 
         after(function () {
