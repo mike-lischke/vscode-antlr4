@@ -601,7 +601,8 @@ describe('vscode-antlr4-backend:', function () {
                 for (let i = 0; i < 20; ++i) {
                     let sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: symbolicName!,
-                        maxIterations: 15
+                        maxLexerIterations: 15,
+                        maxParserIterations: 15
                     });
 
                     //console.log(symbolicName + ": " + sentence);
@@ -630,7 +631,8 @@ describe('vscode-antlr4-backend:', function () {
                 for (let i = 0; i < 5; ++i) {
                     let sentence = backend.generateSentence("grammars/ANTLRv4Lexer.g4", {
                         startRule: token,
-                        maxIterations: 10
+                        maxLexerIterations: 10,
+                        maxParserIterations: 10
                     });
 
                     //console.log(token + ": " + sentence);
@@ -651,10 +653,13 @@ describe('vscode-antlr4-backend:', function () {
                 for (let i = 0; i < 100; ++i) {
                     let sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: rule,
-                        maxIterations: 7
+                        minLexerIterations: 3,
+                        maxLexerIterations: 10,
+                        minParserIterations: 0,
+                        maxParserIterations: 3
                     });
 
-                    //onsole.log(rule + ": " + sentence);
+                    //console.log(rule + ": " + sentence);
                     let errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                     if (errors.length > 0) {
                         console.log("errors:");
@@ -673,10 +678,8 @@ describe('vscode-antlr4-backend:', function () {
 
             let ruleMappings: RuleMappings = new Map([
                 ['DIGITS', '12345'],
-                ['HexNumber', 'DEADBEEF'],
                 ['SimpleIdentifier', 'Mike'],
-                ['CyrillicIdentifier', 'абвгдеж'],
-                ['unicodeIdentifier', 'µπåƒ'],
+                ['UnicodeIdentifier', 'µπåƒ'],
             ]);
 
             let rules = backend.getRuleList("test/backend/sentences.g4")!;
@@ -684,7 +687,8 @@ describe('vscode-antlr4-backend:', function () {
                 for (let i = 0; i < 10; ++i) {
                     let sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: rule,
-                        maxIterations: 7
+                        maxLexerIterations: 7,
+                        maxParserIterations: 7
                     }, ruleMappings);
 
                     //console.log(rule + ": " + sentence);
@@ -701,13 +705,13 @@ describe('vscode-antlr4-backend:', function () {
                     sentence = sentence.replace(/12345/g, "");
                     sentence = sentence.replace(/DEADBEEF/g, "");
                     sentence = sentence.replace(/Mike/g, "");
-                    sentence = sentence.replace(/абвгдеж/g, "");
                     sentence = sentence.replace(/µπåƒ/g, "");
                     sentence = sentence.replace(/red/g, "");
                     sentence = sentence.replace(/green/g, "");
                     sentence = sentence.replace(/blue/g, "");
-                    sentence = sentence.replace(/[0-9{},.]/g, "");
+                    sentence = sentence.replace(/[0-9{},.:]/g, "");
                     sentence = sentence.trim();
+                    //console.log(rule + ": " + sentence);
                     expect(sentence.length, "Test 2").to.equal(0);
                 }
             }

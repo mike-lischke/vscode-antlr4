@@ -37,7 +37,34 @@ export class SentenceGenerator {
 
         this.convergenceFactor = options.convergenceFactor || 0.25;
 
-        this.maxIterations = (!options.maxIterations || options.maxIterations < 1) ? 3 : options.maxIterations;
+        this.minParserIterations = options.minParserIterations || 0;
+        if (this.minParserIterations < 0) {
+            this.minParserIterations = 0;
+        } else {
+            this.minParserIterations = Math.floor(this.minParserIterations);
+        }
+
+        this.maxParserIterations = options.maxParserIterations || this.minParserIterations + 1;
+        if (this.maxParserIterations < this.minParserIterations) {
+            this.maxParserIterations = this.minParserIterations + 1;
+        } else {
+            this.maxParserIterations = Math.ceil(this.maxParserIterations);
+        }
+
+        this.minLexerIterations = options.minLexerIterations || 0;
+        if (this.minLexerIterations < 0) {
+            this.minLexerIterations = 0;
+        } else {
+            this.minLexerIterations = Math.floor(this.minLexerIterations);
+        }
+
+        this.maxLexerIterations = options.maxLexerIterations || this.minLexerIterations + 10;
+        if (this.maxLexerIterations < this.minLexerIterations) {
+            this.maxLexerIterations = this.minLexerIterations + 10;
+        } else {
+            this.maxLexerIterations = Math.ceil(this.maxLexerIterations);
+        }
+
         this.maxRecursions = (!options.maxRecursions || options.maxRecursions < 1) ? 3 : options.maxRecursions;
 
         this.ruleInvocations.clear();
@@ -51,7 +78,8 @@ export class SentenceGenerator {
 
         this.parserStack.length = 0;
 
-        return this.generateFromATNSequence(start, start.stopState, true).trim();
+        let [result, ] = this.generateFromATNSequence(start, start.stopState, true)
+        return result.trim();
     }
 
     /**
@@ -81,6 +109,7 @@ export class SentenceGenerator {
         if (count) {
             if (count < this.maxRecursions) {
                 this.ruleInvocations.set(name, count + 1);
+                return true;
             }
             return false;
         }
@@ -110,7 +139,7 @@ export class SentenceGenerator {
     /**
      * Processes a single sequence of ATN states (a rule or a single alt in a block).
      */
-    private generateFromATNSequence(start: ATNState, stop: ATNState, addSpace: boolean): string {
+    private generateFromATNSequence(start: ATNState, stop: ATNState, addSpace: boolean): [string, boolean] {
         let inLexer = start.atn == this.lexerData.atn;
         let isRule = start.stateType == ATNStateType.RULE_START;
 
@@ -119,21 +148,22 @@ export class SentenceGenerator {
             // Check if there's a predefined result for the given rule.
             ruleName = this.getRuleName(inLexer, start.ruleIndex);
             if (!ruleName) {
-                return "";
+                return ["", false];
             }
 
             let mapping = this.ruleDefinitions.get(ruleName);
             if (mapping) {
-                return addSpace ? mapping + " " : mapping;
+                return [addSpace ? mapping + " " : mapping, false];
             }
 
             if (!this.invokeRule(ruleName)) {
-                return addSpace ? "42 " : "42";
+                return [addSpace ? "42 " : "42", false];
             }
         }
 
 
         let result: string = "";
+        let blockedByPredicate = false;
 
         let run = start;
         while (run != stop) {
@@ -147,9 +177,8 @@ export class SentenceGenerator {
 
                 case ATNStateType.PLUS_BLOCK_START: {
                     let loopBack = (run as PlusBlockStartState).loopBackState;
-                    let count = Math.floor(Math.random() * (this.maxIterations - 1)) + 1;
+                    let count = this.getRandomLoopCount(inLexer, true);
                     for (let i = 0; i < count; ++i) {
-                        result += this.generateFromATNSequence(run.transition(0).target, loopBack, !inLexer);
                         result += this.generateFromDecisionState(run as PlusBlockStartState, !inLexer);
                     }
 
@@ -162,9 +191,11 @@ export class SentenceGenerator {
                     let slEntry = run as StarLoopEntryState;
                     let blockStart = this.blockStart(slEntry);
                     if (blockStart) {
-                        let count = Math.floor(Math.random() * this.maxIterations);
+                        let count = this.getRandomLoopCount(inLexer, false);
                         for (let i = 0; i < count; ++i) {
-                            result += this.generateFromATNSequence(blockStart, slEntry.loopBackState, !inLexer);
+                            //let [text, ] = this.generateFromATNSequence(blockStart, slEntry.loopBackState, !inLexer);
+                            //result += text;
+                            result += this.generateFromDecisionState(blockStart, !inLexer);
                         }
                     }
                     run = this.loopEnd(slEntry) || stop;
@@ -178,24 +209,37 @@ export class SentenceGenerator {
                         case TransitionType.RULE: { // Transition into a sub rule.
                             run = (transition as RuleTransition).followState;
                             let ruleStart = transition.target as RuleStartState;
-                            result += this.generateFromATNSequence(ruleStart, ruleStart.stopState, !inLexer);
+                            let [text, ] = this.generateFromATNSequence(ruleStart, ruleStart.stopState, !inLexer);
+                            result += text;
 
                             break;
                         }
 
                         case TransitionType.WILDCARD: {
+                            let text = "";
                             if (inLexer) {
                                 // Any char from the entire Unicode range. The generator takes care to pick only
                                 // valid characters.
-                                result += this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
+                                [text, ] = this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
                             } else {
                                 // Pick a random lexer rule.
                                 let ruleIndex = Math.floor(Math.random() * this.lexerData.atn.ruleToStartState.length);
                                 let state: RuleStartState = this.lexerData.atn.ruleToStartState[ruleIndex];
-                                result += this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                [text, ] = this.generateFromATNSequence(state, state.stopState, !inLexer);
+
                             }
+                            result += text;
                             run = transition.target;
 
+                            break;
+                        }
+
+                        case TransitionType.PREDICATE: {
+                            // Evaluate the predicate if possible (or assume it succeeds if not).
+                            // If evaluation returns false then return immediately with a flag to tell the caller
+                            // to use a different decision (if possible).
+                            blockedByPredicate = true;
+                            run = stop;
                             break;
                         }
 
@@ -228,7 +272,8 @@ export class SentenceGenerator {
                                         }
                                     } else {
                                         let state = this.lexerData.atn.ruleToStartState[tokenIndex];
-                                        result += this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                        let [text, ] = this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                        result += text;
                                     }
                                 }
                             }
@@ -244,49 +289,57 @@ export class SentenceGenerator {
         if (isRule) {
             this.leaveRule(ruleName!);
             if (addSpace) {
-                return result + " ";
+                return [result + " ", blockedByPredicate];
             }
         }
-        return result;
+        return [result, blockedByPredicate];
     }
 
     /**
      * Picks a random entry from all possible alternatives. Each alt gets a specific weight depending on its
      * previous invocations (the higher the invocation count the smaller the weight).
+     *
+     * If a decision is blocked by a failing predicate then an attempt is made to select another random decision.
+     * If none is left for consideration then an empty string is returned.
      */
     private generateFromDecisionState(state: DecisionState, addSpace: boolean): string {
-        let decision = this.getRandomDecision(state);
-
-        // The alt counts are initialized in the call above if they don't exist yet.
-        let decisionCounts = state.atn == this.lexerData.atn ? this.lexerDecisionCounts : this.parserDecisionCounts;
-        let altCounts = decisionCounts.get(state.decision)!;
-        ++altCounts[decision];
-
-        let startState;
-        let endState;
-        switch (state.stateType) {
-            case ATNStateType.BLOCK_START: {
-                startState = state;
-                endState = (state as BlockStartState).endState;
-                break;
-            }
-
-            case ATNStateType.PLUS_BLOCK_START: {
-                endState = (state as PlusBlockStartState).loopBackState;
-                break;
-            }
-
-            default: {
-                throw new Error("Unhandled state type in sentence generator");
-            }
-        }
-
         let result = "";
-        if (startState != endState) {
-            result = this.generateFromATNSequence(state.transition(decision).target, endState, addSpace);
-        }
-        --altCounts[decision];
+        let blocked = false; // Current decision blocked by a predicate?
 
+        do {
+            let decision = this.getRandomDecision(state);
+            if (decision < 0) {
+                return "";
+            }
+
+            // The alt counts are initialized in the call above if they don't exist yet.
+            let decisionCounts = state.atn == this.lexerData.atn ? this.lexerDecisionCounts : this.parserDecisionCounts;
+            let altCounts = decisionCounts.get(state.decision)!;
+            ++altCounts[decision];
+
+            let endState;
+            switch (state.stateType) {
+                case ATNStateType.STAR_BLOCK_START:
+                case ATNStateType.BLOCK_START: {
+                    endState = (state as BlockStartState).endState;
+                    break;
+                }
+
+                case ATNStateType.PLUS_BLOCK_START: {
+                    endState = (state as PlusBlockStartState).loopBackState;
+                    break;
+                }
+
+                default: {
+                    throw new Error("Unhandled state type in sentence generator");
+                }
+            }
+
+            [result, blocked] = this.generateFromATNSequence(state.transition(decision).target, endState, addSpace);
+            if (blocked) {
+                altCounts[decision] = 1e6; // Set a large execution count to effectively disable this decision.
+            }
+        } while (blocked);
         return result;
     }
 
@@ -314,13 +367,16 @@ export class SentenceGenerator {
         let sum = weights.reduce((accumulated, current) => accumulated + current);
         let randomValue = Math.random() * sum;
         let randomIndex = 0;
-        while (true) {
+        while (randomIndex < altCounts.length) {
             randomValue -= weights[randomIndex];
             if (randomValue < 0) {
                 return randomIndex;
             }
             ++randomIndex;
         }
+
+
+        return -1;
     }
 
     /**
@@ -367,6 +423,16 @@ export class SentenceGenerator {
         return String.fromCodePoint(this.getIntervalElement(validSet, Math.floor(Math.random() * validSet.size)));
     }
 
+    private getRandomLoopCount(inLexer: boolean, forPlusLoop: boolean): number {
+        let min = inLexer ? this.minLexerIterations : this.minParserIterations;
+        if (forPlusLoop && min == 0) {
+            min = 1;
+        }
+        let max = inLexer ? this.maxLexerIterations : this.maxParserIterations;
+
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
     private printableUnicode: IntervalSet;
 
     // Convergence data for recursive rule invocations. We count here the invocation of each alt
@@ -375,7 +441,10 @@ export class SentenceGenerator {
     private lexerDecisionCounts: Map<number, number[]>;
     private parserDecisionCounts: Map<number, number[]>;
 
-    private maxIterations: number;
+    private minParserIterations: number;
+    private maxParserIterations: number;
+    private minLexerIterations: number;
+    private maxLexerIterations: number;
     private maxRecursions: number;
     private ruleInvocations: Map<string, number> = new Map();
     private ruleDefinitions: RuleMappings = new Map();

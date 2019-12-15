@@ -1,15 +1,14 @@
 grammar sentences;
 
 unicodeIdentifier: UnicodeIdentifier;
-cyrillicIdentifier: CyrillicIdentifier;
-plusLoop: DIGIT (COMMA DIGITS)+;
-starLoop: DIGIT DIGITS*;
+plusLoop: DIGITS (COMMA DIGITS)+;
+starLoop: DIGITS DIGITS*;
 alts: alt1 | alt2 | alt3 |;
 blocks: block (COMMA block)*;
 block:
     OPEN_BRACE (
         SimpleIdentifier SimpleIdentifier?
-        | CyrillicIdentifier DIGIT DIGITS
+        | UnicodeIdentifier DIGITS
     )
     CLOSE_BRACE
 ;
@@ -26,11 +25,8 @@ recursion:
 ;
 
 // Numbers
-DIGIT: [0-9];
-DIGITS: DIGIT+;
+DIGITS: [0-9]+;
 
-HEXDIGIT: [\p{ASCII_Hex_Digit}];
-HexNumber: HEXDIGIT+;
 UnicodeNumber: [\p{Nd}]+;
 
 RED: 'red';
@@ -43,11 +39,9 @@ COMMA: ',';
 DOT: '.';
 COLON: ':';
 
-SimpleChar: [A-z] | [\p{InLatin_Extended-B}] | [\p{block=Greek_and_Coptic}];
-CyrillicChar: [\p{Script=Cyrillic}];
+fragment SimpleChar: [A-z] | [\p{InLatin_Extended-B}] | [\p{block=Greek_and_Coptic}];
 
-SimpleIdentifier: SimpleChar (SimpleChar | DIGIT)+;
-CyrillicIdentifier: CyrillicChar+;
+SimpleIdentifier: SimpleChar (SimpleChar | DIGITS)+;
 UnicodeIdentifier: [\p{ID_Start}] [\p{ID_Continue}]*;
 
 WS: [ \r\n\t]+ -> channel (HIDDEN);

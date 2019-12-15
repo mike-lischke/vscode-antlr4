@@ -12,7 +12,6 @@ import * as path from "path";
 
 import { ATNStateType, TransitionType } from "antlr4ts/atn";
 
-import { Symbol } from "antlr4-c3";
 import { Vocabulary } from "antlr4ts";
 
 export enum SymbolGroupKind { // Multiple symbol kinds can be involved in a symbol lookup.
@@ -186,10 +185,48 @@ export interface GenerationOptions {
  * Options used by the sentence generation.
  */
 export interface SentenceGenerationOptions {
-    startRule: string;          // The name of the rule to start from (either lexer or parser rule) (required).
-    convergenceFactor?: number; // Determines how quick recursive rule calls converge to 0 (between 0 and 1, default: 0.25).
-    maxIterations?: number;     // The maximum number of iterations used for `+` and `*` loops (default: 1).
-    maxRecursions?: number;     // The maxium number of recursions (rules calling themselves directly or indirectly).
+    /**
+     * The name of the rule to start from (either lexer or parser rule) (required).
+     */
+    startRule: string;
+
+    /**
+     * Determines how quick the weight for a decision to be select converges towards 0 (between 0 and 1, default: 0.25).
+     * Each time a decision is taken its weight will decrease. The lower the weight is, compared to other decisions from
+     * a particular decision state, the less likely will it be selected.
+     */
+    convergenceFactor?: number;
+
+    /**
+     * The minimum number of iterations used for `+` and `*` loops in the parser (default: 1 for `+`, 0 for `*`).
+     * Must be a positive integer (or 0) and must be smaller than maxParserIterations (if that is given).
+     * If set to 0 then for `+` loops 1 is used, automatically.
+     */
+    minParserIterations?: number;
+
+    /**
+     * The maximum number of iterations in the parser. Must be a number > 0 and > minParserIterations.
+     * If that is not the case or the value is not specified then it is set to minParserIterations + 1.
+     */
+    maxParserIterations?: number;
+
+    /**
+     * The minimum number of iterations in the lexer (default: 1 for `+`, 0 for `*`).
+     * Must be a positive integer (or 0) and must be smaller than maxLexerIterations (if that is given).
+     * If set to 0 then for `+` loops 1 is used, automatically.
+     */
+    minLexerIterations?: number;
+
+    /**
+     * The maximum number of iterations in the lexer. Must be a number > 0 and > than minLexerIterations.
+     * If that is not the case or the value is not specified then it is set to minLexerIterations + 10.
+     */
+    maxLexerIterations?: number;
+
+    /**
+     * The maxium number of recursions (rules calling themselves directly or indirectly, default: 3).
+     */
+    maxRecursions?: number;
 };
 
 /**

@@ -159,9 +159,9 @@ export function activate(context: ExtensionContext) {
             ["Z", "Z"],
             ["NOT2_SYMBOL", "NOT"],
             ["CONCAT_PIPES_SYMBOL", "||"],
-            ["INT_NUMBER", "12345"],
-            ["LONG_NUMBER", "1122334455667788"],
-            ["ULONGLONG_NUMBER", "11112222333344445555666677778888"],
+            ["INT_NUMBER", "-1111111111"],
+            ["LONG_NUMBER", "1111111111"],
+            ["ULONGLONG_NUMBER", "18446744073709551614"],
             ["DOUBLE_QUOTED_TEXT", "\"text\""],
             ["SINGLE_QUOTED_TEXT", "'text'"],
             ["BACK_TICK_QUOTED_ID", "`id`"],
@@ -179,13 +179,14 @@ export function activate(context: ExtensionContext) {
             console.log("ANTLR4 sentence generation: no rule selected");
         }
 
-        for (let i = 0; i < 1; ++i) {
+        for (let i = 0; i < 10; ++i) {
             let sentence = backend.generateSentence(fileName, {
                 startRule: ruleName!,
-                maxIterations: 10,
-                maxRecursions: 30,
+                maxParserIterations: 3,
+                maxLexerIterations: 10,
+                maxRecursions: 4,
+                convergenceFactor: 0.5,
             }, ruleMappings);
-            console.log(sentence);
         }
     }));
 
