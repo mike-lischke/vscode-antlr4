@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict"
-
 import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";

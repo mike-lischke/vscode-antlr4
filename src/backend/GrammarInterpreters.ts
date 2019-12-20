@@ -7,7 +7,7 @@
 
 import {
     LexerInterpreter, ParserInterpreter, TokenStream, CommonToken, ParserRuleContext, RecognitionException,
-    ANTLRErrorListener, Recognizer, Token, Lexer, RuleContext, CharStream, Parser
+    ANTLRErrorListener, Recognizer, Token, Lexer, RuleContext, CharStream
 } from "antlr4ts";
 
 import { RuleStartState, ATNState, ATNStateType, TransitionType, Transition } from "antlr4ts/atn";
@@ -15,14 +15,12 @@ import { TerminalNode } from "antlr4ts/tree";
 import { Symbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
-import { ContextSymbolTable, ActionSymbol, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, AlternativeSymbol } from "./ContextSymbolTable";
+import {
+    ContextSymbolTable, ActionSymbol, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, AlternativeSymbol
+} from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 import { LexerElementContext, ElementContext } from "../parser/ANTLRv4Parser";
-
-export interface PredicateEvaluator {
-    evaluateLexerPredicate(recognizer: Lexer, ruleIndex: number, actionIndex: number, predicate: string): boolean;
-    evaluateParserPredicate(recognizer: Parser, ruleIndex: number, actionIndex: number, predicate: string): boolean;
-}
+import { PredicateEvaluator } from "./facade";
 
 export class GrammarLexerInterpreter extends LexerInterpreter {
     constructor(
@@ -51,6 +49,7 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         }
         return true;
     }
+
     private predicates: ActionSymbol[];
 }
 

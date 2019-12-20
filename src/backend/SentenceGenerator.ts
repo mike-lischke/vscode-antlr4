@@ -5,18 +5,21 @@
  * See LICENSE file for more info.
  */
 
-"use strict";
+ import * as fs from "fs";
 
 import {
-    ATN, ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType,
-    RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState
+    ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType,
+    RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState, PredicateTransition
 } from "antlr4ts/atn";
 
-import { SentenceGenerationOptions, RuleMappings } from "./facade";
+import { SentenceGenerationOptions, RuleMappings, PredicateEvaluator } from "./facade";
 import { IntervalSet } from "antlr4ts/misc";
 
 import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
 import { InterpreterData } from "./InterpreterDataReader";
+import { ActionSymbol } from "./ContextSymbolTable";
+import { LexerElementContext, ElementContext } from "../parser/ANTLRv4Parser";
+import { SourceContext } from "./SourceContext";
 
 /**
  * This class generates a number of strings, each valid input for a given ATN.
@@ -28,9 +31,30 @@ export class SentenceGenerator {
      * @param vocabulary The lexer vocabulary to lookup text for token value.
      */
     constructor(
-        private lexerData: InterpreterData, private parserData?: InterpreterData) {
+        context: SourceContext,
+        private lexerData: InterpreterData,
+        private parserData: InterpreterData | undefined,
+        actionFile: string | undefined) {
 
         this.printableUnicode = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
+
+        // Get the symbols for all predicates (to enable predicate evaluation).
+        this.lexerPredicates = context.symbolTable.getNestedSymbolsOfType(ActionSymbol)
+            .filter((action => action.isPredicate && action.context!.parent instanceof LexerElementContext));
+        this.parserPredicates = context.symbolTable.getNestedSymbolsOfType(ActionSymbol)
+            .filter((action => action.isPredicate && action.context!.parent instanceof ElementContext));
+
+        if (actionFile && fs.existsSync(actionFile)) {
+            const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
+            if (PredicateEvaluator) {
+                this.predicateEvaluator = new PredicateEvaluator();
+            } else {
+                this.predicateEvaluator = {
+                    evaluateLexerPredicate: evaluateLexerPredicate,
+                    evaluateParserPredicate: evaluateParserPredicate
+                };
+            }
+        }
     }
 
     public generate(options: SentenceGenerationOptions, start: RuleStartState, ruleDefinitions?: RuleMappings): string {
@@ -238,8 +262,9 @@ export class SentenceGenerator {
                             // Evaluate the predicate if possible (or assume it succeeds if not).
                             // If evaluation returns false then return immediately with a flag to tell the caller
                             // to use a different decision (if possible).
-                            blockedByPredicate = true;
-                            run = stop;
+                            let predicateTransition = transition as PredicateTransition;
+                            blockedByPredicate = !this.sempred(run.ruleIndex, predicateTransition.predIndex, inLexer);
+                            run = blockedByPredicate ? stop : transition.target;
                             break;
                         }
 
@@ -433,6 +458,37 @@ export class SentenceGenerator {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
+    sempred(ruleIndex: number, predIndex: number, inLexer: boolean): boolean {
+        if (this.predicateEvaluator) {
+            if (inLexer) {
+                if (predIndex < this.lexerPredicates.length) {
+                    let predicate = this.lexerPredicates[predIndex].context!.text;
+                    predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                    try {
+                        return this.predicateEvaluator.evaluateLexerPredicate(undefined, ruleIndex, predIndex, predicate);
+                    } catch (e) {
+                        throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);
+                    }
+                }
+            } else {
+                if (predIndex < this.parserPredicates.length) {
+                    let predicate = this.parserPredicates[predIndex].context!.text;
+                    predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                    try {
+                        return this.predicateEvaluator.evaluateParserPredicate(undefined, ruleIndex, predIndex, predicate);
+                    } catch (e) {
+                        throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private lexerPredicates: ActionSymbol[];
+    private parserPredicates: ActionSymbol[];
+
     private printableUnicode: IntervalSet;
 
     // Convergence data for recursive rule invocations. We count here the invocation of each alt
@@ -451,4 +507,7 @@ export class SentenceGenerator {
 
     // To limit recursions we need to track through which rules we are walking currently.
     private parserStack: number[] = [];
+
+    // Allow evaluating predicates.
+    public predicateEvaluator?: PredicateEvaluator;
 };

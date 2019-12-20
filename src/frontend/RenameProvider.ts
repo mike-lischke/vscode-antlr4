@@ -5,9 +5,9 @@
  * See LICENSE file for more info.
  */
 
-'use strict';
-
-import { TextDocument, Position, CancellationToken, Range, Uri, ProviderResult, WorkspaceEdit, RenameProvider } from 'vscode';
+import {
+    TextDocument, Position, CancellationToken, Range, Uri, ProviderResult, WorkspaceEdit, RenameProvider
+} from 'vscode';
 import { AntlrFacade } from '../backend/facade';
 
 export class AntlrRenameProvider implements RenameProvider {

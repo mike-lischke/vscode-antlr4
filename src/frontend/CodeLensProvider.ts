@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict"
-
 import { workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, EventEmitter, Event } from "vscode";
 import { SymbolInfo, AntlrFacade, SymbolKind } from "../backend/facade";
 

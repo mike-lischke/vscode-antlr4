@@ -1,11 +1,9 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, Mike Lischke
+ * Copyright (c) 2017, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
-
-"use strict"
 
 import { StatusBarAlignment, StatusBarItem, window } from "vscode";
 

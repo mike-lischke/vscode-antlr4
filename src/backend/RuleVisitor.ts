@@ -23,8 +23,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict";
-
 import { AbstractParseTreeVisitor, TerminalNode, ParseTree } from "antlr4ts/tree";
 import { ANTLRv4ParserVisitor } from "../parser/ANTLRv4ParserVisitor";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";

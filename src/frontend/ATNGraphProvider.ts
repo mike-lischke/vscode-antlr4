@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-'use strict';
-
 import * as fs from "fs-extra";
 import * as path from "path";
 

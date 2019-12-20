@@ -102,6 +102,17 @@
                     "default": "",
                     "description": "Default export target folder for call graphs"
                 },
+                "antlr4.sentenceGeneration": {
+                    "type": "object",
+                    "description": "Settings related to sentence generation",
+                    "properties": {
+                        "actionFile": {
+                            "type": "string",
+                            "description": "The path to a JS file which can evaluate semantic predicates and handle actions from grammars.",
+                            "default": null
+                        }
+                    }
+                },
                 "antlr4.generation": {
                     "type": "object",
                     "default": {

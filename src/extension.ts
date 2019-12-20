@@ -179,14 +179,27 @@ export function activate(context: ExtensionContext) {
             console.log("ANTLR4 sentence generation: no rule selected");
         }
 
-        for (let i = 0; i < 10; ++i) {
+        let basePath = path.dirname(fileName);
+        let actionFile = workspace.getConfiguration("antlr4.sentenceGeneration")["actionFile"];
+        if (actionFile) {
+            if (!path.isAbsolute(actionFile)) {
+                actionFile = path.join(basePath, actionFile);
+            }
+        }
+
+        if (fs.existsSync(actionFile)) {
+            delete require.cache[require.resolve(actionFile)];
+        }
+
+        for (let i = 0; i < 20; ++i) {
             let sentence = backend.generateSentence(fileName, {
                 startRule: ruleName!,
                 maxParserIterations: 3,
                 maxLexerIterations: 10,
                 maxRecursions: 4,
                 convergenceFactor: 0.5,
-            }, ruleMappings);
+            }, ruleMappings, actionFile);
+            console.log(sentence);
         }
     }));
 

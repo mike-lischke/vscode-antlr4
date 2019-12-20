@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict";
-
 import { ANTLRv4ParserListener } from '../parser/ANTLRv4ParserListener';
 import {
     LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,

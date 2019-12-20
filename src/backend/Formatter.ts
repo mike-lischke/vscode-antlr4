@@ -1,13 +1,11 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2019, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
-"use strict";
-
-import { FormattingOptions, LexicalRange } from "../backend/facade";
+import { FormattingOptions } from "../backend/facade";
 
 import { Token } from "antlr4ts";
 import { Interval } from "antlr4ts/misc";

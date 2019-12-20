@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict"
-
 // This file contains the handling for a single source file. It provides syntactic and semantic
 // informations, symbol lookups and more.
 
@@ -950,7 +948,7 @@ export class SourceContext {
      * @returns A list of strings with sentences that this grammar would successfully parse.
      */
     public generateSentence(dependencies: Set<SourceContext>, options: SentenceGenerationOptions,
-        ruleDefinitions?: RuleMappings): string {
+        ruleDefinitions: RuleMappings | undefined, actionFile: string | undefined): string {
         if (!this.isInterpreterDataLoaded) {
             // Requires a generation run.
             return "[No grammar data available]";
@@ -1009,7 +1007,7 @@ export class SourceContext {
             start = parserData!.atn.ruleToStartState[index];
         }
 
-        let generator = new SentenceGenerator(lexerData, parserData);
+        let generator = new SentenceGenerator(this, lexerData, parserData, actionFile);
         return generator.generate(options, start, ruleDefinitions);
     }
 

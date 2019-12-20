@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict"
-
 import {
     DebugSession, InitializedEvent, Thread, Scope, Source, OutputEvent,
     TerminatedEvent, StoppedEvent, Breakpoint, BreakpointEvent, StackFrame
@@ -52,7 +50,7 @@ export class AntlrDebugSession extends DebugSession {
     constructor(
         private folder: WorkspaceFolder | undefined,
         private backend: AntlrFacade,
-         private consumers: DebuggerConsumer[]) {
+        private consumers: DebuggerConsumer[]) {
         super();
 
         this.setDebuggerLinesStartAt1(true);

@@ -603,7 +603,7 @@ describe('vscode-antlr4-backend:', function () {
                         startRule: symbolicName!,
                         maxLexerIterations: 15,
                         maxParserIterations: 15
-                    });
+                    }, undefined, undefined);
 
                     //console.log(symbolicName + ": " + sentence);
                     let [_, error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
@@ -633,7 +633,7 @@ describe('vscode-antlr4-backend:', function () {
                         startRule: token,
                         maxLexerIterations: 10,
                         maxParserIterations: 10
-                    });
+                    }, undefined, undefined);
 
                     //console.log(token + ": " + sentence);
                     expect(sentence.length, "Empty sentence generated").to.be.greaterThan(0);
@@ -657,7 +657,7 @@ describe('vscode-antlr4-backend:', function () {
                         maxLexerIterations: 10,
                         minParserIterations: 0,
                         maxParserIterations: 3
-                    });
+                    }, undefined, undefined);
 
                     //console.log(rule + ": " + sentence);
                     let errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
@@ -689,7 +689,7 @@ describe('vscode-antlr4-backend:', function () {
                         startRule: rule,
                         maxLexerIterations: 7,
                         maxParserIterations: 7
-                    }, ruleMappings);
+                    }, ruleMappings, undefined);
 
                     //console.log(rule + ": " + sentence);
                     let errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);

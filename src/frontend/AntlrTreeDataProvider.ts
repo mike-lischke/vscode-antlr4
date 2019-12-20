@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict"
-
 import { TreeDataProvider, TreeItem, EventEmitter, TextDocument, ProviderResult } from "vscode";
 import { AntlrFacade } from "../backend/facade";
 

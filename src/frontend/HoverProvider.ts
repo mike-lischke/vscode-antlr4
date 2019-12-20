@@ -5,9 +5,7 @@
  * See LICENSE file for more info.
  */
 
-'use strict';
-
-import { TextDocument, Position, CancellationToken, Range, Location, Uri, Hover, ProviderResult, HoverProvider } from 'vscode';
+import { TextDocument, Position, CancellationToken, Range, Hover, ProviderResult, HoverProvider } from 'vscode';
 
 import { AntlrFacade } from "../backend/facade";
 

@@ -11,7 +11,8 @@
         "isolatedModules": false,
 		"allowSyntheticDefaultImports": true,
 		"experimentalDecorators": true,
-		"strictNullChecks": true
+        "strictNullChecks": true,
+        "alwaysStrict": true
     },
 	"compileOnSave": true,
     "include": [

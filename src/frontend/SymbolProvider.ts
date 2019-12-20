@@ -5,13 +5,11 @@
  * See LICENSE file for more info.
  */
 
-'use strict';
-
-import { TextDocument, CancellationToken, Range, Location, Uri, SymbolInformation, DocumentSymbolProvider } from 'vscode';
+import {
+    TextDocument, CancellationToken, Range, Location, Uri, SymbolInformation, DocumentSymbolProvider
+} from 'vscode';
 import { ProviderResult } from 'vscode';
-
 import { AntlrFacade, SymbolKind } from "../backend/facade";
-
 import { symbolDescriptionFromEnum, translateSymbolKind } from './Symbol';
 
 export class AntlrSymbolProvider implements DocumentSymbolProvider {

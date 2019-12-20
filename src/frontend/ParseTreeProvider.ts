@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-'use strict';
-
 const path = require("path");
 
 import * as vscode from "vscode";

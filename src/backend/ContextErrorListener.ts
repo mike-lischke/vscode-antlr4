@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict";
-
 import { ANTLRErrorListener, Recognizer, RecognitionException, Token, CommonToken } from 'antlr4ts';
 
 import { Override } from 'antlr4ts/Decorators';

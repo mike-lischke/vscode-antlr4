@@ -15,14 +15,14 @@ import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
-    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange
+    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, IndexRange, PredicateEvaluator
 } from "./facade";
 
 import { RuleSymbol } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 import {
-    GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener, RunMode,
-    PredicateEvaluator
+    GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
+    RunMode
 } from "./GrammarInterpreters";
 
 export interface GrammarBreakPoint {
@@ -56,7 +56,10 @@ export class GrammarDebugger extends EventEmitter {
             if (PredicateEvaluator) {
                 this.predicateEvaluator = new PredicateEvaluator();
             } else {
-                this.predicateEvaluator = { evaluateLexerPredicate: evaluateLexerPredicate, evaluateParserPredicate: evaluateParserPredicate };
+                this.predicateEvaluator = {
+                    evaluateLexerPredicate: evaluateLexerPredicate,
+                    evaluateParserPredicate: evaluateParserPredicate
+                };
             }
         }
 

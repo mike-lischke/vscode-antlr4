@@ -5,9 +5,10 @@
  * See LICENSE file for more info.
  */
 
-'use strict';
-
-import { TextDocument, Position, CancellationToken, Location, CompletionItem, CompletionItemKind, ProviderResult, CompletionList } from 'vscode';
+import {
+    TextDocument, Position, CancellationToken, Location, CompletionItem, CompletionItemKind, ProviderResult,
+    CompletionList
+} from 'vscode';
 import { AntlrFacade, SymbolKind } from '../backend/facade';
 import { translateCompletionKind } from './Symbol';
 

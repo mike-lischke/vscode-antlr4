@@ -5,14 +5,11 @@
  * See LICENSE file for more info.
  */
 
-"use strict";
-
 import * as fs from "fs";
 import * as path from "path";
 
 import { ATNStateType, TransitionType } from "antlr4ts/atn";
-
-import { Vocabulary } from "antlr4ts";
+import { Vocabulary, Lexer, Parser } from "antlr4ts";
 
 export enum SymbolGroupKind { // Multiple symbol kinds can be involved in a symbol lookup.
     TokenRef,
@@ -292,6 +289,11 @@ export interface FormattingOptions {
     // Index signature to allow accessing properties via brackets.
     [key: string]: boolean | number | string | undefined;
 };
+
+export interface PredicateEvaluator {
+    evaluateLexerPredicate(recognizer: Lexer | undefined, ruleIndex: number, actionIndex: number, predicate: string): boolean;
+    evaluateParserPredicate(recognizer: Parser | undefined, ruleIndex: number, actionIndex: number, predicate: string): boolean;
+}
 
 class ContextEntry {
     context: SourceContext;
@@ -621,7 +623,8 @@ export class AntlrFacade {
         return context.getATNGraph(rule);
     }
 
-    public generateSentence(fileName: string, options: SentenceGenerationOptions, ruleDefinitions?: RuleMappings): string {
+    public generateSentence(fileName: string, options: SentenceGenerationOptions,
+        ruleDefinitions: RuleMappings | undefined, actionFile: string | undefined): string {
         let context = this.getContext(fileName);
 
         let dependencies: Set<SourceContext> = new Set();
@@ -639,7 +642,7 @@ export class AntlrFacade {
             }
         }
 
-        return context.generateSentence(dependencies, options, ruleDefinitions);
+        return context.generateSentence(dependencies, options, ruleDefinitions, actionFile);
     }
 
     public lexTestInput(fileName: string, input: string, actionFile?: string): [string[], string] {

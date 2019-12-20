@@ -3,8 +3,6 @@
  * Licensed under the BSD-3-Clause license. See LICENSE file in the project root for license information.
  */
 
-"use strict";
-
 import * as fs from "fs";
 
 import { ATN } from "antlr4ts/atn";

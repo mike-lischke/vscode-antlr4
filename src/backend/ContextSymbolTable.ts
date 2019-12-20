@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-"use strict";
-
 import { ParserRuleContext } from 'antlr4ts';
 import { SymbolTable, Symbol, ScopedSymbol, SymbolTableOptions } from "antlr4-c3";
 
