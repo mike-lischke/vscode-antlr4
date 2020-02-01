@@ -190,10 +190,6 @@ export function activate(context: ExtensionContext) {
             }
         }
 
-        if (fs.existsSync(actionFile)) {
-            delete require.cache[require.resolve(actionFile)];
-        }
-
         for (let i = 0; i < 20; ++i) {
             let sentence = backend.generateSentence(fileName, {
                 startRule: ruleName!,

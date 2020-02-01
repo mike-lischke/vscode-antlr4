@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2019, Mike Lischke
+ * Copyright (c) 2016, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -24,6 +24,9 @@ import {
     GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
     RunMode
 } from "./GrammarInterpreters";
+
+import * as vm from "vm";
+import * as fs from "fs";
 
 export interface GrammarBreakPoint {
     source: string;
@@ -50,17 +53,8 @@ export class GrammarDebugger extends EventEmitter {
         }
 
         if (actionFile) {
-            // Always fully reload the script to allow changing it between parse runs.
-            delete require.cache[require.resolve(actionFile)];
-            const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
-            if (PredicateEvaluator) {
-                this.predicateEvaluator = new PredicateEvaluator();
-            } else {
-                this.predicateEvaluator = {
-                    evaluateLexerPredicate: evaluateLexerPredicate,
-                    evaluateParserPredicate: evaluateParserPredicate
-                };
-            }
+           const code = fs.readFileSync(actionFile, { encoding: "utf-8" });
+           this.predicateEvaluator = vm.runInThisContext(code);
         }
 
         // The context list contains all dependencies of the main grammar (which is the first entry).

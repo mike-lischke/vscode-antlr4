@@ -11,6 +11,7 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as vm from "vm";
 
 import {
     CharStreams, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token,  RuleContext, ParserRuleContext,
@@ -1018,16 +1019,8 @@ export class SourceContext {
         if (this.grammarLexerData) {
             let predicateEvaluator;
             if (actionFile) {
-                delete require.cache[require.resolve(actionFile)];
-                const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
-                if (PredicateEvaluator) {
-                    predicateEvaluator = new PredicateEvaluator();
-                } else {
-                    predicateEvaluator = {
-                        evaluateLexerPredicate: evaluateLexerPredicate,
-                        evaluateParserPredicate: evaluateParserPredicate
-                    };
-                }
+                const code = fs.readFileSync(actionFile, { encoding: "utf-8" });
+                predicateEvaluator = vm.runInThisContext(code);
             }
 
             let stream = CharStreams.fromString(input);
@@ -1062,17 +1055,9 @@ export class SourceContext {
 
         let predicateEvaluator;
         if (actionFile) {
-            delete require.cache[require.resolve(actionFile)];
-            const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
-            if (PredicateEvaluator) {
-                predicateEvaluator = new PredicateEvaluator();
-            } else {
-                predicateEvaluator = {
-                    evaluateLexerPredicate: evaluateLexerPredicate,
-                    evaluateParserPredicate: evaluateParserPredicate
-                };
-            }
-        }
+            const code = fs.readFileSync(actionFile, { encoding: "utf-8" });
+            predicateEvaluator = vm.runInThisContext(code);
+         }
 
         let eventSink = (event: string | symbol, ...args: any[]): void => {
             errors.push(args[0]);
