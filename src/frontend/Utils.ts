@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2019, Mike Lischke
+ * Copyright (c) 2017, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import * as path from "path";
 
-import { ExtensionContext, Uri, window, Webview } from "vscode";
+import { ExtensionContext, Uri, window, Webview, commands } from "vscode";
 
 export class Utils {
 
@@ -147,5 +147,16 @@ export class Utils {
                 return entry;
             }
         }
+    }
+
+    /**
+     * Dynamically switches a vscode context on or off. Such a context is used to enable/disable vscode commands,
+     * menus, views and others.
+     *
+     * @param key The name of the context value to switch.
+     * @param enable True or false to enabled/disable.
+     */
+    public static switchVsCodeContext(key: string, enable: boolean) {
+        return commands.executeCommand("setContext", key, enable);
     }
 };

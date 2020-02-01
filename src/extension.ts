@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2018, Mike Lischke
+ * Copyright (c) 2016, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -43,6 +43,8 @@ import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
 
 import { DiagnosticType, AntlrFacade, GenerationOptions, LexicalRange, RuleMappings } from "./backend/facade";
 import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
+import { Utils } from "./frontend/Utils";
+import { GrammarType } from "./backend/SourceContext";
 
 const ANTLR = { language: 'antlr', scheme: 'file' };
 
@@ -64,7 +66,6 @@ let parseTreeProvider: AntlrParseTreeProvider;
 let codeLensProvider: AntlrCodeLensProvider;
 
 export function activate(context: ExtensionContext) {
-
     DiagnosticTypeMap.set(DiagnosticType.Hint, DiagnosticSeverity.Hint);
     DiagnosticTypeMap.set(DiagnosticType.Info, DiagnosticSeverity.Information);
     DiagnosticTypeMap.set(DiagnosticType.Warning, DiagnosticSeverity.Warning);
@@ -76,7 +77,7 @@ export function activate(context: ExtensionContext) {
 
     // Load interpreter + cache data for each open document, if there's any.
     for (let document of workspace.textDocuments) {
-        if (document.languageId === "antlr") {
+        if (isGrammarFile(document)) {
             let antlrPath = path.join(path.dirname(document.fileName), ".antlr");
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
             AntlrATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
@@ -129,6 +130,7 @@ export function activate(context: ExtensionContext) {
     }));
 
     // Sentence generation.
+    let genOutputChannel = window.createOutputChannel("Sentence Generation");
     context.subscriptions.push(commands.registerTextEditorCommand("antlr.tools.generateSentences", (editor: TextEditor, edit: TextEditorEdit) => {
         let ruleMappings: RuleMappings = new Map([
             ["A", "A"],
@@ -165,6 +167,7 @@ export function activate(context: ExtensionContext) {
             ["DOUBLE_QUOTED_TEXT", "\"text\""],
             ["SINGLE_QUOTED_TEXT", "'text'"],
             ["BACK_TICK_QUOTED_ID", "`id`"],
+            ["UNDERSCORE_CHARSET", "_utf8"],
             ["identifier", "`id`"],
             ["schemaRef", "sakila"],
             ["tableRef", "sakila.actor"],
@@ -196,10 +199,10 @@ export function activate(context: ExtensionContext) {
                 startRule: ruleName!,
                 maxParserIterations: 3,
                 maxLexerIterations: 10,
-                maxRecursions: 4,
-                convergenceFactor: 0.5,
+                maxRecursions: 1,
+                convergenceFactor: 0.15,
             }, ruleMappings, actionFile);
-            console.log(sentence);
+            genOutputChannel.appendLine(sentence);
         }
     }));
 
@@ -228,7 +231,7 @@ export function activate(context: ExtensionContext) {
 
     // Initialize certain providers.
     let editor = window.activeTextEditor;
-    if (editor && editor.document.languageId == "antlr" && editor.document.uri.scheme === "file") {
+    if (editor && isGrammarFile(editor.document)) {
         updateTreeProviders(editor.document);
     }
 
@@ -254,15 +257,15 @@ export function activate(context: ExtensionContext) {
 
     //----- Events -----
 
-    workspace.onDidOpenTextDocument((doc: TextDocument) => {
-        if (doc.languageId == "antlr" && doc.uri.scheme === "file") {
-            backend.loadGrammar(doc.fileName);
-            regenerateBackgroundData(doc);
+    workspace.onDidOpenTextDocument((document: TextDocument) => {
+        if (isGrammarFile(document)) {
+            backend.loadGrammar(document.fileName);
+            regenerateBackgroundData(document);
         }
     });
 
     workspace.onDidCloseTextDocument((document: TextDocument) => {
-        if (document.languageId === "antlr" && document.uri.scheme === "file") {
+        if (isGrammarFile(document)) {
             backend.releaseGrammar(document.fileName);
             diagnosticCollection.set(document.uri, []);
         }
@@ -271,9 +274,7 @@ export function activate(context: ExtensionContext) {
     let changeTimers: Map<string, any> = new Map(); // Keyed by file name.
 
     workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
-        if (event.contentChanges.length > 0
-            && event.document.languageId === "antlr"
-            && event.document.uri.scheme === "file") {
+        if (event.contentChanges.length > 0 && isGrammarFile(event.document)) {
 
             let fileName = event.document.fileName;
             backend.setText(fileName, event.document.getText());
@@ -293,13 +294,13 @@ export function activate(context: ExtensionContext) {
     })
 
     workspace.onDidSaveTextDocument((document: TextDocument) => {
-        if (document.languageId === "antlr" && document.uri.scheme === "file") {
+        if (isGrammarFile(document)) {
             regenerateBackgroundData(document);
         }
     });
 
     window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
-        if (event.textEditor.document.languageId === "antlr" && event.textEditor.document.uri.scheme === "file") {
+        if (isGrammarFile(event.textEditor.document)) {
             diagramProvider.update(event.textEditor);
             atnGraphProvider.update(event.textEditor, false);
             actionsProvider.update(event.textEditor);
@@ -307,6 +308,19 @@ export function activate(context: ExtensionContext) {
     });
 
     window.onDidChangeActiveTextEditor((editor: TextEditor) => {
+        if (isGrammarFile(editor.document)) {
+            let info = backend.getContextDetails(editor.document.fileName);1
+            Utils.switchVsCodeContext("antlr4.isLexer", info.type == GrammarType.Lexer);
+            Utils.switchVsCodeContext("antlr4.isParser", info.type == GrammarType.Parser);
+            Utils.switchVsCodeContext("antlr4.isCombined", info.type == GrammarType.Combined);
+
+            Utils.switchVsCodeContext("antlr4.hasImports", info.imports.length > 0);
+        } else {
+            Utils.switchVsCodeContext("antlr4.isLexer", false);
+            Utils.switchVsCodeContext("antlr4.isParser", false);
+            Utils.switchVsCodeContext("antlr4.isCombined", false);
+            Utils.switchVsCodeContext("antlr4.hasImports", false);
+        }
         updateTreeProviders(editor.document);
     });
 
@@ -427,6 +441,11 @@ export function activate(context: ExtensionContext) {
         modesProvider.refresh(document);
         actionsProvider.refresh(document);
     }
+
+    function isGrammarFile(document: TextDocument): boolean {
+        return document.languageId === "antlr" && document.uri.scheme === "file";
+    }
+
 } // activate() function
 
 export function deactivate() {

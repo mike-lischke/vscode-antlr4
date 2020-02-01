@@ -442,27 +442,33 @@
             "antlr4-view": [
                 {
                     "id": "antlr4.lexerSymbols",
-                    "name": "Lexer Tokens"
+                    "name": "Lexer Tokens",
+                    "when": "antlr4.isLexer || antlr4.isCombined"
                 },
                 {
                     "id": "antlr4.parserSymbols",
-                    "name": "Parser Rules"
+                    "name": "Parser Rules",
+                    "when": "antlr4.isParser || antlr4.isCombined"
                 },
                 {
                     "id": "antlr4.imports",
-                    "name": "Grammar Dependencies"
+                    "name": "Grammar Dependencies",
+                    "when": "antlr4.hasImports"
                 },
                 {
                     "id": "antlr4.channels",
-                    "name": "Token Channels"
+                    "name": "Token Channels",
+                    "when": "antlr4.isLexer || antlr4.isCombined"
                 },
                 {
                     "id": "antlr4.modes",
-                    "name": "Lexer Modes"
+                    "name": "Lexer Modes",
+                    "when": "antlr4.isLexer || antlr4.isCombined"
                 },
                 {
                     "id": "antlr4.actions",
-                    "name": "Actions & Semantic Predicates"
+                    "name": "Actions & Semantic Predicates",
+                    "when": "antlr4.isLexer || antlr4.isParser || antlr4.isCombined"
                 }
             ]
         },

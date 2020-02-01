@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2019, Mike Lischke
+ * Copyright (c) 2016, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -40,7 +40,7 @@ export enum SymbolKind {
 };
 
 // Import modules that depend on these enums after their definition, to allow for static initializations.
-import { SourceContext } from './SourceContext';
+import { SourceContext, GrammarType } from './SourceContext';
 import { GrammarDebugger } from "./GrammarDebugger";
 
 /**
@@ -294,6 +294,12 @@ export interface PredicateEvaluator {
     evaluateLexerPredicate(recognizer: Lexer | undefined, ruleIndex: number, actionIndex: number, predicate: string): boolean;
     evaluateParserPredicate(recognizer: Parser | undefined, ruleIndex: number, actionIndex: number, predicate: string): boolean;
 }
+
+export class ContextDetails {
+    type: GrammarType = GrammarType.Unknown;
+    unreferencedRules: string[] = [];
+    imports: string[] = [];
+};
 
 class ContextEntry {
     context: SourceContext;
@@ -686,5 +692,10 @@ export class AntlrFacade {
         }
 
         return new GrammarDebugger([...contexts], actionFile);
+    }
+
+    public getContextDetails(fileName: string): ContextDetails {
+        let context = this.getContext(fileName);
+        return context.info;
     }
 }

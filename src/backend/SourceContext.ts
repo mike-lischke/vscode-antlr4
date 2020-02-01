@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2019, Mike Lischke
+ * Copyright (c) 2016, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -31,7 +31,7 @@ import { ANTLRv4Lexer } from '../parser/ANTLRv4Lexer';
 
 import {
     SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
-    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings
+    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings, ContextDetails
 } from './facade';
 
 import { ContextErrorListener, ContextLexerErrorListener } from './ContextErrorListener';
@@ -54,12 +54,13 @@ import {
     GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener
 } from './GrammarInterpreters';
 
-enum GrammarType { Unknown, Parser, Lexer, Combined };
+export enum GrammarType { Unknown, Parser, Lexer, Combined };
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
     public symbolTable: ContextSymbolTable;
     public sourceId: string;
+    public info: ContextDetails = new ContextDetails();
 
     /* @internal */
     public diagnostics: DiagnosticEntry[] = [];
@@ -87,10 +88,6 @@ export class SourceContext {
         // These are contexts which are used as subrules in rule definitions.
         if (!limitToChildren) {
             return this.getSymbolInfo(terminal.text);
-            /*let symbol = this.symbolTable.symbolWithContext(terminal);
-            if (symbol) {
-                return this.getSymbolInfo(symbol);
-            }*/
         }
 
         let parent = (terminal.parent as RuleContext);
@@ -486,7 +483,7 @@ export class SourceContext {
     }
 
     /**
-     * Should be called on every change to keep the input stream up to date particularly for code completion.
+     * Should be called on every change to keep the input stream up to date, particularly for code completion.
      * This call doesn't do any expensive processing (parse() does).
      */
     public setText(source: string) {
@@ -514,7 +511,10 @@ export class SourceContext {
         this.parser.interpreter.setPredictionMode(PredictionMode.SLL);
 
         this.tree = undefined;
-        this.grammarType = GrammarType.Unknown;
+
+        this.info.type = GrammarType.Unknown;
+        this.info.imports.length = 0;
+
         this.grammarLexerData = undefined;
         this.grammarLexerRuleMap.clear();
         this.grammarParserData = undefined;
@@ -522,7 +522,6 @@ export class SourceContext {
 
         this.semanticAnalysisDone = false;
         this.diagnostics.length = 0;
-        this.imports.length = 0;
 
         this.symbolTable.clear();
         this.symbolTable.addDependencies(SourceContext.globalSymbols);
@@ -544,31 +543,28 @@ export class SourceContext {
             try {
                 let typeContext = this.tree.grammarType();
                 if (typeContext.LEXER()) {
-                    this.grammarType = GrammarType.Lexer;
+                    this.info.type = GrammarType.Lexer;
                 } else if (typeContext.PARSER()) {
-                    this.grammarType = GrammarType.Parser;
+                    this.info.type = GrammarType.Parser;
                 } else {
-	                this.grammarType = GrammarType.Combined;
+	                this.info.type = GrammarType.Combined;
                 }
 		    } catch (e) {
             }
         }
         this.symbolTable.tree = this.tree;
-        let listener: DetailsListener = new DetailsListener(this.symbolTable, this.imports);
+        let listener: DetailsListener = new DetailsListener(this.symbolTable, this.info.imports);
         ParseTreeWalker.DEFAULT.walk(listener as ParseTreeListener, this.tree);
 
-        return this.imports;
+        this.info.unreferencedRules = this.symbolTable.getUnreferencedSymbols();
+
+        return this.info.imports;
     }
 
     public getDiagnostics(): DiagnosticEntry[] {
         this.runSemanticAnalysisIfNeeded();
 
         return this.diagnostics;
-    }
-
-    // Returns all rules with a reference count of 0.
-    public getUnreferencedRules(): string[] {
-        return this.symbolTable.getUnreferencedSymbols();
     }
 
     public getReferenceGraph(): Map<string, ReferenceNode> {
@@ -959,7 +955,7 @@ export class SourceContext {
         let parserData: InterpreterData | undefined;
         let lexerContext: SourceContext = this;
 
-        switch (this.grammarType) {
+        switch (this.info.type) {
             case GrammarType.Combined: {
                 lexerData = this.grammarLexerData;
                 parserData = this.grammarParserData;
@@ -973,7 +969,7 @@ export class SourceContext {
             case GrammarType.Parser: {
                 // Get lexer data from dependency.
                 for (let dependency of dependencies) {
-                    if (dependency.grammarType == GrammarType.Lexer) {
+                    if (dependency.info.type == GrammarType.Lexer) {
                         lexerData = dependency.grammarLexerData;
                         lexerContext = dependency;
                         break;
@@ -1146,6 +1142,10 @@ export class SourceContext {
 
             let visitor = new RuleVisitor(this.rrdScripts);
             visitor.visit(this.tree!);
+
+            //let lexer = this.tokenStream.tokenSource;
+            //(lexer as ANTLRv4Lexer).reset();
+            let tokens = this.tokenStream.getTokens();
         }
     }
 
@@ -1161,7 +1161,7 @@ export class SourceContext {
         let baseName = (this.fileName.endsWith(".g4") ? path.basename(this.fileName, ".g4") : path.basename(this.fileName, ".g"));
         let grammarPath = (outputDir) ? outputDir : path.dirname(this.fileName);
 
-        switch (this.grammarType) {
+        switch (this.info.type) {
             case GrammarType.Combined: {
                 // In a combined grammar the lexer is implicitly extracted and treated as a separate file.
                 // We have no own source context for this case and hence load both lexer and parser data here.
@@ -1359,14 +1359,12 @@ export class SourceContext {
     private lexerErrorListener: ContextLexerErrorListener = new ContextLexerErrorListener(this.diagnostics);
 
     // Grammar data.
-    private grammarType: GrammarType;
     private grammarLexerData: InterpreterData | undefined;
     private grammarLexerRuleMap: Map<string, number> = new Map(); // A mapping from lexer rule names to their index.
     private grammarParserData: InterpreterData | undefined;
     private grammarParserRuleMap: Map<string, number> = new Map(); // A mapping from parser rule names to their index.
 
     private tree: GrammarSpecContext | undefined; // The root context from the last parse run.
-    private imports: string[] = []; // Updated on each parse run.
 };
 
 /**
