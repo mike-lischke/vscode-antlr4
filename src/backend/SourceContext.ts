@@ -750,10 +750,10 @@ export class SourceContext {
             if (options.alternativeJar) {
                 parameters.push(options.alternativeJar);
             } else {
-                if (options.language === "typescript") {
+                if (options.language?.toLowerCase() === "typescript") {
                     parameters.push(path.join(__dirname, '../../../antlr/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar'));
                 } else {
-                    parameters.push(path.join(__dirname, '../../../antlr/antlr4-4.7.2-SNAPSHOT-complete.jar'));
+                    parameters.push(path.join(__dirname, '../../../antlr/antlr-4.8-complete.jar'));
                 }
             }
 
