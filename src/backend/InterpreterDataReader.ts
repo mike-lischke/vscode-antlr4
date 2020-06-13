@@ -9,27 +9,25 @@ import { ATN } from "antlr4ts/atn";
 import { Vocabulary, VocabularyImpl } from "antlr4ts";
 import { CompatibleATNDeserializer } from "./CompatibleATNDeserializer";
 
-export class InterpreterData {
+export interface InterpreterData {
     atn: ATN;
     vocabulary: Vocabulary;
     ruleNames: string[];
     channels: string[]; // Only valid for lexer grammars.
     modes: string[]; // ditto
-};
+}
 
 export class InterpreterDataReader {
 
-    static parseFile(fileName: string): InterpreterData {
-        let result = new InterpreterData();
-        result.ruleNames = [];
-        result.channels = [];
-        result.modes = [];
+    public static parseFile(fileName: string): InterpreterData {
+        const ruleNames: string[] = [];
+        const channels: string[] = [];
+        const modes: string[] = [];
 
-        let step = 0;
-        let literalNames = [];
-        let symbolicNames = [];
-        let source = fs.readFileSync(fileName, 'utf8');
-        let lines = source.split("\n");
+        const literalNames = [];
+        const symbolicNames = [];
+        const source = fs.readFileSync(fileName, "utf8");
+        const lines = source.split("\n");
         let index = 0;
         let line = lines[index++];
         if (line !== "token literal names:") {
@@ -38,7 +36,7 @@ export class InterpreterDataReader {
 
         do {
             line = lines[index++];
-            if (line.length == 0) {
+            if (line.length === 0) {
                 break;
             }
             literalNames.push(line === "null" ? "" : line);
@@ -51,13 +49,11 @@ export class InterpreterDataReader {
 
         do {
             line = lines[index++];
-            if (line.length == 0) {
+            if (line.length === 0) {
                 break;
             }
             symbolicNames.push(line === "null" ? "" : line);
         } while (true);
-
-        result.vocabulary = new VocabularyImpl(literalNames, symbolicNames, []);
 
         line = lines[index++];
         if (line !== "rule names:") {
@@ -66,20 +62,20 @@ export class InterpreterDataReader {
 
         do {
             line = lines[index++];
-            if (line.length == 0) {
+            if (line.length === 0) {
                 break;
             }
-            result.ruleNames.push(line);
+            ruleNames.push(line);
         } while (true);
 
         line = lines[index++];
         if (line === "channel names:") { // Additional lexer data.
             do {
                 line = lines[index++];
-                if (line.length == 0) {
+                if (line.length === 0) {
                     break;
                 }
-                result.channels.push(line);
+                channels.push(line);
             } while (true);
 
             line = lines[index++];
@@ -89,12 +85,12 @@ export class InterpreterDataReader {
 
             do {
                 line = lines[index++];
-                if (line.length == 0) {
+                if (line.length === 0) {
                     break;
                 }
-                result.modes.push(line);
+                modes.push(line);
             } while (true);
-        };
+        }
 
         line = lines[index++];
         if (line !== "atn:") {
@@ -102,22 +98,29 @@ export class InterpreterDataReader {
         }
 
         line = lines[index++];
-        let elements = line.split(",");
+        const elements = line.split(",");
         let value;
-        let serializedATN = new Uint16Array(elements.length);
+        const serializedATN = new Uint16Array(elements.length);
         for (let i = 0; i < elements.length; ++i) {
-            let element = elements[i];
-            if (element.startsWith("["))
+            const element = elements[i];
+            if (element.startsWith("[")) {
                 value = Number(element.substring(1).trim());
-            else if (element.endsWith("]"))
+            } else if (element.endsWith("]")) {
                 value = Number(element.substring(0, element.length - 1).trim());
-            else
+            } else {
                 value = Number(element.trim());
+            }
             serializedATN[i] = value;
         }
 
-        let deserializer = new CompatibleATNDeserializer();
-        result.atn = deserializer.deserialize(serializedATN);
-        return result;
+        const deserializer = new CompatibleATNDeserializer();
+
+        return {
+            atn: deserializer.deserialize(serializedATN),
+            vocabulary: new VocabularyImpl(literalNames, symbolicNames, []),
+            ruleNames,
+            channels,
+            modes,
+        };
     }
-};
+}

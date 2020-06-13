@@ -17,13 +17,13 @@
 
 /*
  * Translated to TS and modified by
- * Copyright (c) 2017, 2019, Mike Lischke
+ * Copyright (c) 2017, 2020, Mike Lischke
  * under the MIT license.
  *
  * See LICENSE file for more info.
  */
 
-import { AbstractParseTreeVisitor, TerminalNode, ParseTree } from "antlr4ts/tree";
+import { AbstractParseTreeVisitor, TerminalNode } from "antlr4ts/tree";
 import { ANTLRv4ParserVisitor } from "../parser/ANTLRv4ParserVisitor";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 import {
@@ -32,88 +32,90 @@ import {
     ElementContext, LabeledElementContext, EbnfContext, EbnfSuffixContext, LexerAtomContext, AtomContext,
     NotSetContext, BlockSetContext, CharacterRangeContext, TerminalRuleContext, SetElementContext,
 
-    RuleBlockContext, LexerRuleBlockContext, ElementOptionsContext
+    RuleBlockContext, LexerRuleBlockContext, ElementOptionsContext,
 } from "../parser/ANTLRv4Parser";
 
 export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANTLRv4ParserVisitor<string> {
 
-    constructor(private scripts: Map<string, string>) {
+    public constructor(private scripts: Map<string, string>) {
         super();
     }
 
-    defaultResult(): string {
+    public defaultResult(): string {
         return "";
     }
 
-    visitParserRuleSpec(ctx: ParserRuleSpecContext): string {
+    public visitParserRuleSpec(ctx: ParserRuleSpecContext): string {
         if (!ctx.tryGetRuleContext(0, RuleBlockContext)) {
             return "# Syntax Error #";
         }
 
-        let diagram = "ComplexDiagram(" + this.visitRuleAltList(ctx.ruleBlock().ruleAltList()) + ").addTo()";
+        const diagram = "ComplexDiagram(" + this.visitRuleAltList(ctx.ruleBlock().ruleAltList()) + ").addTo()";
         this.scripts.set(ctx.RULE_REF().text, diagram);
 
         return diagram;
     }
 
-    visitRuleAltList = function (ctx: RuleAltListContext): string {
+    public visitRuleAltList = (ctx: RuleAltListContext): string => {
         let script = "Choice(0";
-        let alternatives = ctx.labeledAlt();
-        for (let alternative of alternatives) {
+        const alternatives = ctx.labeledAlt();
+        for (const alternative of alternatives) {
             script += ", " + this.visitAlternative(alternative.alternative());
         }
 
         return script + ")";
-    }
+    };
 
-    visitLexerRuleSpec = function (ctx: LexerRuleSpecContext): string {
+    public visitLexerRuleSpec = (ctx: LexerRuleSpecContext): string => {
         if (!ctx.tryGetRuleContext(0, LexerRuleBlockContext)) {
             return "# Syntax Error #";
         }
 
-        let diagram = "Diagram(" + this.visitLexerAltList(ctx.lexerRuleBlock()!.lexerAltList()) + ").addTo()";
+        const diagram = "Diagram(" + this.visitLexerAltList(ctx.lexerRuleBlock()!.lexerAltList()) + ").addTo()";
 
         this.scripts.set(ctx.TOKEN_REF().text, diagram);
 
         return diagram;
-    }
+    };
 
-    visitLexerAltList = function (ctx: LexerAltListContext): string {
+    public visitLexerAltList = (ctx: LexerAltListContext): string => {
         let script = "Choice(0";
 
-        for (let alternative of ctx.lexerAlt()) {
+        for (const alternative of ctx.lexerAlt()) {
             script += ", " + this.visitLexerAlt(alternative);
         }
 
         return script + ")";
-    }
+    };
 
-    visitLexerAlt = function (ctx: LexerAltContext): string {
+    public visitLexerAlt = (ctx: LexerAltContext): string => {
         if (ctx.lexerElements()) {
             return this.visitLexerElements(ctx.lexerElements()!);
         }
-        return "";
-    }
 
-    visitLexerElements = function (ctx: LexerElementsContext): string {
+        return "";
+    };
+
+    public visitLexerElements = (ctx: LexerElementsContext): string => {
         let script = "";
 
-        for (let element of ctx.lexerElement()) {
+        for (const element of ctx.lexerElement()) {
             if (script.length > 0) {
-                script += ", "
+                script += ", ";
             }
             script += this.visitLexerElement(element);
         }
 
         return "Sequence(" + script + ")";
-    }
+    };
 
-    visitLexerElement = function (ctx: LexerElementContext): string {
-        let hasEbnfSuffix = (ctx.ebnfSuffix() != undefined);
+    public visitLexerElement = (ctx: LexerElementContext): string => {
+        const hasEbnfSuffix = (ctx.ebnfSuffix() !== undefined);
 
         if (ctx.labeledLexerElement()) {
             if (hasEbnfSuffix) {
-                return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" + this.visitLabeledLexerElement(ctx.labeledLexerElement()!) + ")";
+                return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" +
+                    this.visitLabeledLexerElement(ctx.labeledLexerElement()!) + ")";
             } else {
                 return this.visitLabeledLexerElement(ctx.labeledLexerElement()!);
             }
@@ -125,7 +127,8 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
             }
         } else if (ctx.lexerBlock()) {
             if (hasEbnfSuffix) {
-                return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" + this.visitLexerAltList(ctx.lexerBlock()!.lexerAltList()) + ")";
+                return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" +
+                    this.visitLexerAltList(ctx.lexerBlock()!.lexerAltList()) + ")";
             } else {
                 return this.visitLexerAltList(ctx.lexerBlock()!.lexerAltList());
             }
@@ -134,43 +137,52 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         } else {
             return "Comment('{ action code }')";
         }
-    }
+    };
 
-    visitLabeledLexerElement = function (ctx: LabeledLexerElementContext): string {
+    public visitLabeledLexerElement = (ctx: LabeledLexerElementContext): string => {
         if (ctx.lexerAtom()) {
             return this.visitLexerAtom(ctx.lexerAtom()!);
         } else if (ctx.block()) {
             return this.visitAltList(ctx.block()!.altList());
         }
-        return "";
-    }
 
-    visitAltList = function (ctx: AltListContext): string {
+        return "";
+    };
+
+    public visitAltList = (ctx: AltListContext): string => {
         let script = "Choice(0";
-        for (let alternative of ctx.alternative()) {
+        for (const alternative of ctx.alternative()) {
             script += ", " + this.visitAlternative(alternative);
         }
 
         return script + ")";
-    }
+    };
 
-    visitAlternative = function (ctx: AlternativeContext): string {
-        let script = this.visitElementOptions(ctx.elementOptions());
-        for (let element of ctx.element()) {
+    public visitAlternative = (ctx: AlternativeContext): string => {
+        let script = "";
+
+        const optionsContext = ctx.elementOptions();
+        if (optionsContext) {
+            script += this.visitElementOptions(optionsContext);
+        }
+
+        for (const element of ctx.element()) {
             if (script.length > 0) {
                 script += ", ";
             }
             script += this.visitElement(element);
         }
-        return "Sequence(" + script + ")";
-    }
 
-    visitElement = function (ctx: ElementContext): string {
-        let hasEbnfSuffix = (ctx.ebnfSuffix() != undefined);
+        return "Sequence(" + script + ")";
+    };
+
+    public visitElement = (ctx: ElementContext): string => {
+        const hasEbnfSuffix = (ctx.ebnfSuffix() !== undefined);
 
         if (ctx.labeledElement()) {
             if (hasEbnfSuffix) {
-                return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" + this.visitLabeledElement(ctx.labeledElement()!) + ")";
+                return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" +
+                    this.visitLabeledElement(ctx.labeledElement()!) + ")";
             } else {
                 return this.visitLabeledElement(ctx.labeledElement()!);
             }
@@ -187,38 +199,33 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         } else {
             return "Comment('{ action code }')";
         }
-    }
+    };
 
-    visitElementOptions = function (ctx: ElementOptionsContext): string {
-        if (!ctx) {
-            return "";
-        }
+    public visitElementOptions = (ctx: ElementOptionsContext): string => "Comment('" + ctx.text + "')";
 
-        return "Comment('" + ctx.text + "')";
-    }
-
-    visitLabeledElement = function (ctx: LabeledElementContext): string {
+    public visitLabeledElement = (ctx: LabeledElementContext): string => {
         if (ctx.atom()) {
             return this.visitAtom(ctx.atom()!);
         } else {
             return this.visitAltList(ctx.block()!.altList());
         }
-    }
+    };
 
-    visitEbnf = function (ctx: EbnfContext): string {
+    public visitEbnf = (ctx: EbnfContext): string => {
         if (!ctx.block()) {
             return "# Syntax Error #";
         }
 
         if (ctx.blockSuffix()) {
-            return this.visitEbnfSuffix(ctx.blockSuffix()!.ebnfSuffix()) + "(" + this.visitAltList(ctx.block()!.altList()) + ")";
+            return this.visitEbnfSuffix(ctx.blockSuffix()!.ebnfSuffix()) + "(" +
+                this.visitAltList(ctx.block()!.altList()) + ")";
         } else {
             return this.visitAltList(ctx.block()!.altList());
         }
-    }
+    };
 
-    visitEbnfSuffix = function (ctx: EbnfSuffixContext): string {
-        let text = ctx.text;
+    public visitEbnfSuffix = (ctx: EbnfSuffixContext): string => {
+        const text = ctx.text;
 
         if (text === "?") {
             return "Optional";
@@ -227,9 +234,9 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         } else {
             return "OneOrMore";
         }
-    }
+    };
 
-    visitLexerAtom = function (ctx: LexerAtomContext): string {
+    public visitLexerAtom = (ctx: LexerAtomContext): string => {
         if (ctx.characterRange()) {
             return this.visitCharacterRange(ctx.characterRange()!);
         } else if (ctx.terminalRule()) {
@@ -240,52 +247,57 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
             return this.visitTerminal(ctx.LEXER_CHAR_SET()!);
         }
 
-        let options = this.visitElementOptions(ctx.elementOptions());
-        if (options !== "") {
-            return "Sequence(Terminal('any char'), Comment(" + options + ")";
+        const options = ctx.elementOptions();
+        if (options) {
+            const text = this.visitElementOptions(options);
+            if (text !== "") {
+                return "Sequence(Terminal('any char'), Comment(" + text + ")";
+            }
         }
-        return "Terminal('any char')";
-    }
 
-    visitAtom = function (ctx: AtomContext): string {
+        return "Terminal('any char')";
+    };
+
+    public visitAtom = (ctx: AtomContext): string => {
         if (ctx.characterRange()) {
             return this.visitCharacterRange(ctx.characterRange()!);
-        }
-        else if (ctx.terminalRule()) {
+        } else if (ctx.terminalRule()) {
             return this.visitTerminalRule(ctx.terminalRule()!);
-        }
-        else if (ctx.ruleref()) {
+        } else if (ctx.ruleref()) {
             return this.visitTerminal(ctx.ruleref()!.RULE_REF());
-        }
-        else if (ctx.notSet()) {
+        } else if (ctx.notSet()) {
             return this.visitNotSet(ctx.notSet()!);
         }
 
-        let options = this.visitElementOptions(ctx.elementOptions());
-        if (options !== "") {
-            return "Sequence(NonTerminal('any token'), Comment(" + options + ")";
+        const options = ctx.elementOptions();
+        if (options) {
+            const text = this.visitElementOptions(options);
+            if (text !== "") {
+                return "Sequence(NonTerminal('any token'), Comment(" + text + ")";
+            }
         }
-        return "NonTerminal('any token')";
-    }
 
-    visitNotSet = function (ctx: NotSetContext): string {
+        return "NonTerminal('any token')";
+    };
+
+    public visitNotSet = (ctx: NotSetContext): string => {
         if (ctx.setElement() != null) {
             return "Sequence(Comment('not'), " + this.visitSetElement(ctx.setElement()!) + ")";
         } else {
             return "Sequence(Comment('not'), " + this.visitBlockSet(ctx.blockSet()!) + ")";
         }
-    }
+    };
 
-    visitBlockSet = function (ctx: BlockSetContext): string {
+    public visitBlockSet = (ctx: BlockSetContext): string => {
         let script = "Choice(0";
-        for (let element of ctx.setElement()) {
+        for (const element of ctx.setElement()) {
             script += ", " + this.visitSetElement(element);
         }
 
         return script + ")";
-    }
+    };
 
-    visitSetElement = function (ctx: SetElementContext): string {
+    public visitSetElement = (ctx: SetElementContext): string => {
         if (ctx.characterRange()) {
             return this.visitCharacterRange(ctx.characterRange()!);
         } else if (ctx.TOKEN_REF()) {
@@ -295,25 +307,26 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         }
 
         return this.visitTerminal(ctx.LEXER_CHAR_SET()!);
-    }
+    };
 
-    visitCharacterRange = function (ctx: CharacterRangeContext): string {
+    public visitCharacterRange = (ctx: CharacterRangeContext): string => {
         // The second literal can be non-existing (e.g. if not properly quoted).
         if (ctx.STRING_LITERAL().length > 1) {
-            return this.escapeTerminal(ctx.STRING_LITERAL(0)) + " .. " + this.escapeTerminal(ctx.STRING_LITERAL(1))
+            return this.escapeTerminal(ctx.STRING_LITERAL(0)) + " .. " + this.escapeTerminal(ctx.STRING_LITERAL(1));
         }
-        return this.escapeTerminal(ctx.STRING_LITERAL(0)) + " .. ?"
-    }
 
-    visitTerminalRule = function (ctx: TerminalRuleContext): string {
+        return this.escapeTerminal(ctx.STRING_LITERAL(0)) + " .. ?";
+    };
+
+    public visitTerminalRule = (ctx: TerminalRuleContext): string => {
         if (ctx.TOKEN_REF()) {
             return this.visitTerminal(ctx.TOKEN_REF()!);
         } else {
             return this.visitTerminal(ctx.STRING_LITERAL()!);
         }
-    }
+    };
 
-    visitTerminal(node: TerminalNode): string {
+    public visitTerminal = (node: TerminalNode): string => {
         switch (node.symbol.type) {
             case ANTLRv4Lexer.STRING_LITERAL:
             case ANTLRv4Lexer.LEXER_CHAR_SET:
@@ -325,11 +338,11 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
             default:
                 return "NonTerminal('" + node.text + "')";
         }
-    }
+    };
 
     private escapeTerminal(node: TerminalNode): string {
-        let text = node.text;
-        let escaped = text.replace(/\\/g, "\\\\");
+        const text = node.text;
+        const escaped = text.replace(/\\/g, "\\\\");
 
         switch (node.symbol.type) {
             case ANTLRv4Lexer.STRING_LITERAL:

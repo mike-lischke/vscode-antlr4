@@ -30,11 +30,6 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "configurationDefaults": {
-            "antlr": {
-                "editor.wordBasedSuggestions": false
-            }
-        },
         "languages": [
             {
                 "id": "antlr",
@@ -545,32 +540,42 @@
     "scripts": {
         "publish": "vsce publish",
         "test": "tsc && mocha ./out/test/backend/test.js",
-        "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser"
+        "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
+        "lint": "eslint \"./src/**/*.ts\""
     },
     "dependencies": {
         "antlr4-c3": "^1.1.12",
         "antlr4ts": "^0.5.0-alpha.3",
         "antlr4ts-cli": "^0.5.0-alpha.3",
         "await-notify": "^1.0.1",
-        "d3": "^5.12.0",
-        "fs-extra": "^7.0.1",
+        "d3": "^5.16.0",
+        "fs-extra": "^9.0.1",
         "lodash": "^4.17.15",
         "unicode-11.0.0": "^0.7.8",
-        "vscode-debugadapter": "^1.37.1",
-        "vscode-debugprotocol": "^1.37.0"
+        "vscode-debugadapter": "^1.41.0",
+        "vscode-debugprotocol": "^1.41.0"
     },
     "devDependencies": {
-        "@types/chai": "^4.2.3",
+        "@types/chai": "^4.2.11",
         "@types/d3": "^5.7.2",
-        "@types/fs-extra": "^8.0.0",
-        "@types/glob": "^7.1.1",
-        "@types/lodash": "^4.14.141",
-        "@types/mocha": "^5.2.7",
-        "@types/node": "^12.7.8",
-        "@types/vscode": "1.38.0",
+        "@types/expect": "^24.3.0",
+        "@types/fs-extra": "^9.0.1",
+        "@types/glob": "^7.1.2",
+        "@types/lodash": "^4.14.155",
+        "@types/mocha": "^7.0.2",
+        "@types/node": "^14.0.13",
+        "@types/vscode": "1.46.0",
+        "@typescript-eslint/eslint-plugin": "^3.2.0",
+        "@typescript-eslint/eslint-plugin-tslint": "^3.2.0",
+        "@typescript-eslint/parser": "^3.2.0",
         "chai": "^4.2.0",
-        "mocha": "^6.2.0",
-        "typescript": "^3.6.3",
-        "vscode-test": "^1.2.0"
+        "eslint": "^7.2.0",
+        "eslint-plugin-import": "^2.21.2",
+        "eslint-plugin-jsdoc": "^27.0.6",
+        "eslint-plugin-prefer-arrow": "^1.2.1",
+        "tslint": "^6.1.2",
+        "typescript": "^3.9.5",
+        "typescript-eslint-parser": "22.0.0",
+        "vscode-test": "^1.4.0"
     }
 }

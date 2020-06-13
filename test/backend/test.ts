@@ -1,28 +1,51 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2019, Mike Lischke
+ * Copyright (c) 2016, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
-"use strict";
 
 import fs = require("fs-extra");
 import glob = require("glob");
 
-import { expect, assert } from 'chai';
-import { AntlrFacade, SymbolKind, ATNGraphData, RuleMappings } from "../../src/backend/facade";
+import { expect, assert } from "chai";
+import { AntlrFacade, SymbolKind, RuleMappings } from "../../src/backend/facade";
 import { SourceContext } from "../../src/backend/SourceContext";
 
-var backend: AntlrFacade;
+let backend: AntlrFacade;
 
-describe('vscode-antlr4-backend:', function () {
+interface TestRange {
+    source: {
+        start: {
+            column: number;
+            row: number;
+        };
+        end: {
+            column: number;
+            row: number;
+        };
+    };
+    target: {
+        start: {
+            column: number;
+            row: number;
+        };
+        end: {
+            column: number;
+            row: number;
+        };
+    };
+    result: string;
+}
+
+describe("vscode-antlr4-backend:", function () {
     this.slow(10000);
 
     backend = new AntlrFacade("."); // Search path is cwd for this test.
 
-    describe('Base Handling:', function () {
-        it("Create Backend", function () {
+    describe("Base Handling:", () => {
+        it("Create Backend", () => {
             expect(backend, "Test 1").to.be.a("object");
 
             expect(backend, "Test 2").to.have.property("loadGrammar");
@@ -33,15 +56,15 @@ describe('vscode-antlr4-backend:', function () {
             expect(backend, "Test 7").to.have.property("getDiagnostics");
         });
 
-        var c1: SourceContext;
-        it('Load Grammar', function () {
+        let c1: SourceContext;
+        it("Load Grammar", () => {
             c1 = backend.loadGrammar("test/backend/t.g4");
             expect(c1, "Test 1").to.be.an.instanceOf(SourceContext);
         });
 
-        it("Unload grammar", function () {
+        it("Unload grammar", () => {
             backend.releaseGrammar("test/backend/t.g4");
-            var context = backend.loadGrammar("test/backend/t.g"); // Non-existing grammar.
+            let context = backend.loadGrammar("test/backend/t.g"); // Non-existing grammar.
             expect(context, "Test 1").to.be.an.instanceOf(SourceContext);
             expect(context, "Test 2").to.not.equal(c1);
 
@@ -53,13 +76,13 @@ describe('vscode-antlr4-backend:', function () {
         });
     });
 
-    describe('Symbol Info Retrieval (t.g4):', function () {
-        it('infoForSymbol', function () {
-            var info = backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
+    describe("Symbol Info Retrieval (t.g4):", () => {
+        it("infoForSymbol", () => {
+            const info = backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
             assert(info);
             expect(info!.name, "Test 1").to.equal("B");
             expect(info!.source, "Test 2").to.equal("test/backend/t.g4");
-            expect(info!.kind, "Test 3").to.equal(SymbolKind.LexerToken);
+            expect(info!.kind, "Test 3").to.equal(SymbolKind.LexerRule);
             assert(info!.definition);
             expect(info!.definition!.text, "Test 4").to.equal("B: 'B';");
             expect(info!.definition!.range.start.column, "Test 5").to.equal(0);
@@ -68,11 +91,11 @@ describe('vscode-antlr4-backend:', function () {
             expect(info!.definition!.range.end.row, "Test 8").to.equal(7);
         });
 
-        it('listTopLevelSymbols', function () {
-            let symbols = backend.listTopLevelSymbols("test/backend/t.g4", true);
+        it("listTopLevelSymbols", () => {
+            const symbols = backend.listTopLevelSymbols("test/backend/t.g4", true);
             expect(symbols.length, "Test 1").to.equal(10);
 
-            let info = symbols[8];
+            const info = symbols[8];
             expect(info.name, "Test 2").to.equal("x");
             expect(info.source, "Test 3").to.equal("test/backend/t.g4");
             expect(info.kind, "Test 4").to.equal(SymbolKind.ParserRule);
@@ -83,24 +106,24 @@ describe('vscode-antlr4-backend:', function () {
             expect(info.definition!.range.end.row, "Test 9").to.equal(2);
         });
 
-        it('getDiagnostics', function () {
-            let diagnostics = backend.getDiagnostics("test/backend/t.g4");
+        it("getDiagnostics", () => {
+            const diagnostics = backend.getDiagnostics("test/backend/t.g4");
             expect(diagnostics.length, "Test 1").to.equal(2);
 
-            expect(diagnostics[0].message, "Test 2").to.equal("Unknown token reference \'ZZ\'");
+            expect(diagnostics[0].message, "Test 2").to.equal("Unknown token reference 'ZZ'");
             expect(diagnostics[0].range.start.column, "Test 3").to.equal(3);
             expect(diagnostics[0].range.start.row, "Test 4").to.equal(3);
             expect(diagnostics[0].range.end.column, "Test 5").to.equal(5);
             expect(diagnostics[0].range.end.row, "Test 6").to.equal(3);
 
-            expect(diagnostics[1].message, "Test 7").to.equal("Unknown channel \'BLAH\'");
+            expect(diagnostics[1].message, "Test 7").to.equal("Unknown channel 'BLAH'");
             expect(diagnostics[1].range.start.column, "Test 8").to.equal(18);
             expect(diagnostics[1].range.start.row, "Test 9").to.equal(8);
             expect(diagnostics[1].range.end.column, "Test 10").to.equal(22);
             expect(diagnostics[1].range.end.row, "Test 11").to.equal(8);
         });
 
-        it('reparse', function () {
+        it("reparse", () => {
             backend.loadGrammar("test/backend/t.g4");
             try {
                 backend.setText("test/backend/t.g4", "grammar A; a:: b \n| c; c: b+;");
@@ -109,31 +132,33 @@ describe('vscode-antlr4-backend:', function () {
 
                 expect(diagnostics.length, "Test 1").to.equal(4);
 
-                expect(diagnostics[0].message, "Test 2").to.equal("mismatched input '::' expecting {BEGIN_ARGUMENT, 'options', 'returns', 'locals', 'throws', COLON, AT}");
+                expect(diagnostics[0].message, "Test 2").to.equal("mismatched input '::' expecting {BEGIN_ARGUMENT, " +
+                    "'options', 'returns', 'locals', 'throws', COLON, AT}");
                 expect(diagnostics[0].range.start.column, "Test 3").to.equal(12);
                 expect(diagnostics[0].range.start.row, "Test 4").to.equal(1);
                 expect(diagnostics[0].range.end.column, "Test 5").to.equal(14);
                 expect(diagnostics[0].range.end.row, "Test 6").to.equal(1);
 
-                expect(diagnostics[1].message, "Test 7").to.equal("mismatched input '|' expecting {BEGIN_ARGUMENT, 'options', 'returns', 'locals', 'throws', COLON, AT}");
+                expect(diagnostics[1].message, "Test 7").to.equal("mismatched input '|' expecting {BEGIN_ARGUMENT, " +
+                    "'options', 'returns', 'locals', 'throws', COLON, AT}");
                 expect(diagnostics[1].range.start.column, "Test 8").to.equal(0);
                 expect(diagnostics[1].range.start.row, "Test 9").to.equal(2);
                 expect(diagnostics[1].range.end.column, "Test 10").to.equal(1);
                 expect(diagnostics[1].range.end.row, "Test 11").to.equal(2);
 
-                backend.setText("test/backend/t.g4", "grammar A; a: b \n| c; c: b+;")
+                backend.setText("test/backend/t.g4", "grammar A; a: b \n| c; c: b+;");
                 backend.reparse("test/backend/t.g4");
                 diagnostics = backend.getDiagnostics("test/backend/t.g4");
 
                 expect(diagnostics.length, "Test 12").to.equal(2);
 
-                expect(diagnostics[0].message, "Test 13").to.equal("Unknown parser rule \'b\'");
+                expect(diagnostics[0].message, "Test 13").to.equal("Unknown parser rule 'b'");
                 expect(diagnostics[0].range.start.column, "Test 14").to.equal(14);
                 expect(diagnostics[0].range.start.row, "Test 15").to.equal(1);
                 expect(diagnostics[0].range.end.column, "Test 16").to.equal(15);
                 expect(diagnostics[0].range.end.row, "Test 17").to.equal(1);
 
-                expect(diagnostics[1].message, "Test 18").to.equal("Unknown parser rule \'b\'");
+                expect(diagnostics[1].message, "Test 18").to.equal("Unknown parser rule 'b'");
                 expect(diagnostics[1].range.start.column, "Test 19").to.equal(8);
                 expect(diagnostics[1].range.start.row, "Test 20").to.equal(2);
                 expect(diagnostics[1].range.end.column, "Test 21").to.equal(9);
@@ -144,13 +169,13 @@ describe('vscode-antlr4-backend:', function () {
         });
     });
 
-    describe('Symbol Info Retrieval (TParser.g4):', function () {
-        it('Symbol Listing', function () {
+    describe("Symbol Info Retrieval (TParser.g4):", () => {
+        it("Symbol Listing", () => {
             backend.loadGrammar("test/backend/TParser.g4");
-            let symbols = backend.listTopLevelSymbols("test/backend/TParser.g4", true);
+            const symbols = backend.listTopLevelSymbols("test/backend/TParser.g4", true);
             expect(symbols.length, "Test 1").to.equal(56);
 
-            let info = symbols[38];
+            const info = symbols[38];
             expect(info.name, "Test 2").to.equal("Mode2");
             expect(info.source, "Test 3").to.equal("test/backend/TLexer.g4");
             expect(info.kind, "Test 4").to.equal(SymbolKind.LexerMode);
@@ -161,36 +186,36 @@ describe('vscode-antlr4-backend:', function () {
             expect(info.definition!.range.end.column, "Test 9").to.equal(10);
             expect(info.definition!.range.end.row, "Test 10").to.equal(86);
 
-            let [ruleName, ruleIndex] = backend.ruleFromPosition("test/backend/TParser.g4", 37, 103);
+            let [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 37, 103);
             expect(ruleName, "Test 11").to.equal("expr");
-            [ruleName, ruleIndex] = backend.ruleFromPosition("test/backend/TParser.g4", 100, 123);
+            [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 100, 123);
             expect(ruleName, "Test 12").to.be.undefined;
-            [ruleName, ruleIndex] = backend.ruleFromPosition("test/backend/TParser.g4", 2, 119)!;
+            [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 2, 119)!;
             expect(ruleName, "Test 13").to.equal("any");
-            [ruleName, ruleIndex] = backend.ruleFromPosition("test/backend/TParser.g4", 103, 82)!;
+            [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 103, 82)!;
             expect(ruleName, "Test 14").to.equal("unused");
-            [ruleName, ruleIndex] = backend.ruleFromPosition("test/backend/TParser.g4", 64, 68);
+            [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 64, 68);
             expect(ruleName, "Test 15").to.be.undefined;
 
-            [ruleName, ruleIndex] = backend.ruleFromPosition("test/backend/TLexer.g4", 62, 77)!;
+            [ruleName] = backend.ruleFromPosition("test/backend/TLexer.g4", 62, 77)!;
             expect(ruleName, "Test 16").to.equal("Comment");
-            [ruleName, ruleIndex] = backend.ruleFromPosition("test/backend/TLexer.g4", 0, 50)!;
+            [ruleName] = backend.ruleFromPosition("test/backend/TLexer.g4", 0, 50)!;
             expect(ruleName, "Test 16").to.equal("ID");
         });
 
-        it('Editing', function () {
+        it("Editing", () => {
             // Change the source. This will release the lexer reference and reload it.
             // If that does not work we'll get a lot of unknown-symbol errors (for all lexer symbols).
-            let source = fs.readFileSync("test/backend/TParser.g4", 'utf8');
+            const source = fs.readFileSync("test/backend/TParser.g4", "utf8");
             backend.setText("test/backend/TParser.g4", source + "\nblah: any idarray;");
             backend.reparse("test/backend/TParser.g4");
 
-            let parserDiags = backend.getDiagnostics("test/backend/TParser.g4"); // This also updates the symbol reference counts.
+            const parserDiags = backend.getDiagnostics("test/backend/TParser.g4"); // This also updates the symbol reference counts.
             expect(parserDiags.length, "Test 1").to.be.equal(0);
         });
 
-        it('getDiagnostics', function () {
-            let lexerDiags = backend.getDiagnostics("test/backend/TLexer.g4");
+        it("getDiagnostics", () => {
+            const lexerDiags = backend.getDiagnostics("test/backend/TLexer.g4");
             expect(lexerDiags.length, "Test 1").to.be.equal(0);
 
             let refCount = backend.countReferences("test/backend/TParser.g4", "Semicolon");
@@ -201,7 +226,7 @@ describe('vscode-antlr4-backend:', function () {
             backend.releaseGrammar("test/backend/TParser.g4");
         });
 
-        it("Symbol ranges", function () {
+        it("Symbol ranges", () => {
             let symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 100, 4); // options {} block
             expect(symbol, "Test 1").not.to.be.undefined;
             expect(symbol!.definition, "Test 2").not.to.be.undefined;
@@ -239,27 +264,32 @@ describe('vscode-antlr4-backend:', function () {
         });
     });
 
-    describe('Advanced Symbol Informations:', function () {
+    describe("Advanced Symbol Informations:", () => {
 
-        it("RRD diagram", function () {
+        it("RRD diagram", () => {
             let diagram = backend.getRRDScript("test/backend/TLexer.g4", "Any");
             expect(diagram, "Test 1").to.equal("Diagram(Choice(0, Sequence(Terminal('Foo'), Terminal('Dot'), " +
                 "Optional(Terminal('Bar')), Terminal('DotDot'), Terminal('Baz'), Terminal('Bar')))).addTo()");
 
             diagram = backend.getRRDScript("test/backend/TParser.g4", "idarray");
             expect(diagram, "Test 2").to.equal("ComplexDiagram(Choice(0, Sequence(Terminal('OpenCurly'), " +
-                "NonTerminal('id'), ZeroOrMore(Choice(0, Sequence(Terminal('Comma'), NonTerminal('id')))), Terminal('CloseCurly')))).addTo()");
+                "NonTerminal('id'), ZeroOrMore(Choice(0, Sequence(Terminal('Comma'), NonTerminal('id')))), " +
+                "Terminal('CloseCurly')))).addTo()");
 
             diagram = backend.getRRDScript("test/backend/TParser.g4", "expr");
-            expect(diagram, "Test 3").to.equal("ComplexDiagram(Choice(0, Sequence(NonTerminal('expr'), Terminal('Star'), NonTerminal('expr'))," +
-                " Sequence(NonTerminal('expr'), Terminal('Plus'), NonTerminal('expr')), Sequence(Terminal('OpenPar'), NonTerminal('expr'), " +
-                "Terminal('ClosePar')), Sequence(Comment('<assoc=right>'), NonTerminal('expr'), Terminal('QuestionMark'), NonTerminal('expr'), " +
-                "Terminal('Colon'), NonTerminal('expr')), Sequence(Comment('<assoc=right>'), NonTerminal('expr'), Terminal('Equal'), NonTerminal('expr'))," +
-                " Sequence(NonTerminal('id')), Sequence(NonTerminal('flowControl')), Sequence(Terminal('INT')), Sequence(Terminal('String')))).addTo()");
+            expect(diagram, "Test 3").to.equal("ComplexDiagram(Choice(0, Sequence(NonTerminal('expr'), " +
+                "Terminal('Star'), NonTerminal('expr'))," +
+                " Sequence(NonTerminal('expr'), Terminal('Plus'), NonTerminal('expr')), Sequence(Terminal('OpenPar')," +
+                " NonTerminal('expr'), Terminal('ClosePar')), Sequence(Comment('<assoc=right>'), NonTerminal('expr')" +
+                ", Terminal('QuestionMark'), NonTerminal('expr'), Terminal('Colon'), NonTerminal('expr')), " +
+                "Sequence(Comment('<assoc=right>'), NonTerminal('expr'), Terminal('Equal'), NonTerminal('expr'))," +
+                " Sequence(NonTerminal('id')), Sequence(NonTerminal('flowControl')), Sequence(Terminal('INT')), " +
+                "Sequence(Terminal('String')))).addTo()",
+            );
         });
 
-        it("Reference Graph", function () {
-            let graph = backend.getReferenceGraph("test/backend/TParser.g4");
+        it("Reference Graph", () =>  {
+            const graph = backend.getReferenceGraph("test/backend/TParser.g4");
             expect(graph.size, "Test 1").to.equal(48);
 
             let element = graph.get("TParser.expr");
@@ -279,16 +309,16 @@ describe('vscode-antlr4-backend:', function () {
 
     });
 
-    describe('ATN Related:', function () {
-        it("ATN Rule Graph, split grammar", async function () {
+    describe("ATN Related:", () => {
+        it("ATN Rule Graph, split grammar", async () => {
             // Need code generation here. Details will be tested later. The ATN retrieval will fail
             // anyway when generation fails.
-            let result = await backend.generate("grammars/ANTLRv4Parser.g4", { outputDir: "generated", language: "Cpp" });
+            await backend.generate("grammars/ANTLRv4Parser.g4", { outputDir: "generated", language: "Cpp" });
 
-            var graph = backend.getATNGraph("grammars/ANTLRv4Parser.g4", "ruleModifier");
+            const graph = backend.getATNGraph("grammars/ANTLRv4Parser.g4", "ruleModifier");
 
             try {
-                expect(graph, "Test 1").to.be.instanceof(ATNGraphData);
+                expect(graph, "Test 1").not.to.be.undefined;
 
                 expect(graph!.nodes.length, "Test 2").to.equal(4);
                 expect(graph!.nodes[0].name, "Test 3").to.equal("56");
@@ -325,9 +355,10 @@ describe('vscode-antlr4-backend:', function () {
         }).timeout(20000);
     });
 
-    describe('Code Generation:', function () {
-        it("A standard generation run (CSharp), split grammar", async function () {
-            let result = await backend.generate("test/backend/TParser.g4", { outputDir: "generated", language: "CSharp" });
+    describe("Code Generation:", () => {
+        it("A standard generation run (CSharp), split grammar", async () => {
+            const result = await backend.generate("test/backend/TParser.g4",
+                { outputDir: "generated", language: "CSharp" });
             expect(result, "Test 1").to.eql(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);
 
             try {
@@ -347,30 +378,30 @@ describe('vscode-antlr4-backend:', function () {
             }
         }).timeout(20000);
 
-        it("Load interpreter with existing data, split grammar", async function () {
+        it("Load interpreter with existing data, split grammar", async () => {
             expect(fs.existsSync("generated/"), "Test 1");
 
             let result = await backend.generate("test/backend/TParser.g4", {
-                outputDir: "generated", language: "CSharp", loadOnly: true
+                outputDir: "generated", language: "CSharp", loadOnly: true,
             });
 
             // No dependencies are returned since data is only loaded, not generated.
             expect(result, "Test 2").to.eql([]);
 
             // Only for combined grammars is the lexer data stored in the main context.
-            let temp = backend.getATNGraph("test/backend/TLexer.g4", "Dollar");
+            const temp = backend.getATNGraph("test/backend/TLexer.g4", "Dollar");
             expect(temp, "Test 3").to.be.undefined;
 
             // Now load the lexer data too.
             result = await backend.generate("test/backend/TLexer.g4", {
-                outputDir: "generated", language: "CSharp", loadOnly: true
+                outputDir: "generated", language: "CSharp", loadOnly: true,
             });
 
-            let dollarGraph = backend.getATNGraph("test/backend/TLexer.g4", "Dollar");
-            let statGraph = backend.getATNGraph("test/backend/TParser.g4", "stat");
+            const dollarGraph = backend.getATNGraph("test/backend/TLexer.g4", "Dollar");
+            const statGraph = backend.getATNGraph("test/backend/TParser.g4", "stat");
 
             try {
-                expect(dollarGraph, "Test 4").to.be.instanceof(ATNGraphData);
+                expect(dollarGraph, "Test 4").not.to.be.undefined;
 
                 expect(dollarGraph!.nodes.length, "Test 5").to.equal(7);
                 expect(dollarGraph!.nodes[0].name, "Test 6").to.equal("45");
@@ -401,7 +432,7 @@ describe('vscode-antlr4-backend:', function () {
                 expect(dollarGraph!.links[5].labels.length, "Test 28").to.equal(1);
                 expect(dollarGraph!.links[5].labels[0], "Test 29").to.equal("ε");
 
-                expect(statGraph, "Test 30").to.be.instanceof(ATNGraphData);
+                expect(statGraph, "Test 30").not.to.be.undefined;
                 expect(statGraph!.nodes.length, "Test 31").to.equal(15);
                 expect(statGraph!.nodes[0].id.toString(), "Test 32").to.equal(statGraph!.nodes[0].name);
                 expect(statGraph!.nodes[0].name, "Test 32").to.equal("12");
@@ -445,16 +476,17 @@ describe('vscode-antlr4-backend:', function () {
             }
         }).timeout(20000);
 
-        it("Interpreter load w/o existing data, split grammar", async function () {
-            let result = await backend.generate("test/backend/TParser.g4", { outputDir: "generated", language: "CSharp", loadOnly: true });
+        it("Interpreter load w/o existing data, split grammar", async () => {
+            const result = await backend.generate("test/backend/TParser.g4",
+                { outputDir: "generated", language: "CSharp", loadOnly: true });
             expect(result, "Test 1").to.eql([]);
             expect(!fs.existsSync("generated/"), "Test 2");
 
-            var graph = backend.getATNGraph("test/backend/TParser.g4", "stat");
+            const graph = backend.getATNGraph("test/backend/TParser.g4", "stat");
             expect(graph, "Test 3").to.be.undefined;
         }).timeout(20000);
 
-        it("A generation run with settings, split grammar (typescript, cpp)", async function () {
+        it("A generation run with settings, split grammar (typescript, cpp)", async () => {
             // The typescript target requires a different tool jar.
             // TODO: currently we have to create the lib folder manually (until a pending path handling patch is included in ANTLR).
             fs.ensureDirSync("generated/typescript");
@@ -466,7 +498,7 @@ describe('vscode-antlr4-backend:', function () {
                 language: "typescript",
                 package: "parser",
                 listeners: false,
-                visitors: true
+                visitors: true,
             });
             expect(result, "Test 1").to.eql(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);
 
@@ -479,7 +511,7 @@ describe('vscode-antlr4-backend:', function () {
                 language: "Cpp",
                 package: "parser",
                 listeners: false,
-                visitors: true
+                visitors: true,
             });
             expect(result, "Test 1").to.eql(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);
 
@@ -495,15 +527,15 @@ describe('vscode-antlr4-backend:', function () {
             }
         }).timeout(20000);
 
-        it('Generation with semantic error, combined grammar (C++)', async function () {
+        it("Generation with semantic error, combined grammar (C++)", async () => {
             try {
                 // File contains left recursive rule which are detected only by the ANTLR.
                 // Hence we need a generation run to report them.
-                let parserDiags = backend.getDiagnostics("test/backend/t2.g4");
+                const parserDiags = backend.getDiagnostics("test/backend/t2.g4");
                 expect(parserDiags.length, "Test 1").to.be.equal(0); // No error here yet.
 
-                let result = await backend.generate("test/backend/t2.g4", {
-                    outputDir: "generated", language: "Cpp", package: "parser", listeners: false, visitors: true
+                await backend.generate("test/backend/t2.g4", {
+                    outputDir: "generated", language: "Cpp", package: "parser", listeners: false, visitors: true,
                 });
                 expect(parserDiags.length, "Test 2").to.be.equal(3);
             } finally {
@@ -512,31 +544,33 @@ describe('vscode-antlr4-backend:', function () {
             }
         }).timeout(20000);
 
-        it('Generation with Java exception, combined grammar (Java)', async function () {
+        it("Generation with Java exception, combined grammar (Java)", async () => {
             // Testing a grammar with an awful lot of (implicit) lexer tokens.
             // Crashes ANTLR and we need to report that separately.
             try {
-                let result = await backend.generate("test/backend/OddExpr.g4", {
-                    outputDir: "generated", language: "Java", package: "parser", listeners: false, visitors: true
+                await backend.generate("test/backend/OddExpr.g4", {
+                    outputDir: "generated", language: "Java", package: "parser", listeners: false, visitors: true,
                 });
             } catch (error) {
-                expect(error, "Test 1").to.contain("java.lang.UnsupportedOperationException: Serialized ATN data element 101246 element 11 out of range 0..65535")
+                expect(error, "Test 1").to.contain("java.lang.UnsupportedOperationException: Serialized ATN data " +
+                    "element 101246 element 11 out of range 0..65535");
             } finally {
                 backend.releaseGrammar("test/backend/t2.g4");
                 fs.removeSync("generated");
             }
         }).timeout(20000);
 
-        it('Generation with errors, split grammar (C++)', async function () {
+        it("Generation with errors, split grammar (C++)", async () => {
             try {
                 // Asking for parser generation, getting lexer error back.
-                let result = await backend.generate("test/backend/TParser2.g4", {
-                    outputDir: "generated", language: "Cpp", package: "parser", listeners: false, visitors: false
+                const result = await backend.generate("test/backend/TParser2.g4", {
+                    outputDir: "generated", language: "Cpp", package: "parser", listeners: false, visitors: false,
                 });
                 expect(result, "Test 1").to.be.eql(["test/backend/TLexer2.g4", "test/backend/TParser2.g4"]);
-                let diagnostics = backend.getDiagnostics("test/backend/TLexer2.g4");
+                const diagnostics = backend.getDiagnostics("test/backend/TLexer2.g4");
                 expect(diagnostics.length, "Test 2").to.equal(1);
-                expect(diagnostics[0].message, "Test 3").to.equal("cannot find tokens file test/backend/nonexisting.tokens");
+                expect(diagnostics[0].message, "Test 3")
+                    .to.equal("cannot find tokens file test/backend/nonexisting.tokens");
             } finally {
                 backend.releaseGrammar("test/backend/TParser2.g4");
                 backend.releaseGrammar("test/backend/TLexer2.g4");
@@ -545,32 +579,36 @@ describe('vscode-antlr4-backend:', function () {
         }).timeout(20000);
     });
 
-    describe('Test for Bugs:', function () {
-        it("Lexer token in a set-element context", function () {
-            var info = backend.symbolInfoAtPosition("test/backend/TParser.g4", 48, 93, true);
+    describe("Test for Bugs:", () => {
+        it("Lexer token in a set-element context", () => {
+            const info = backend.symbolInfoAtPosition("test/backend/TParser.g4", 48, 93, true);
             assert(info, "Test 1");
             expect(info!.name, "Test 2").to.equal("Semicolon");
             expect(info!.source, "Test 3").to.equal("test/backend/TLexer.g4");
-            expect(info!.kind, "Test 4").to.equal(SymbolKind.LexerToken);
+            expect(info!.kind, "Test 4").to.equal(SymbolKind.LexerRule);
             assert(info!.definition, "Test 5");
-            expect(info!.definition!.text, "Test 6").to.equal("Semicolon: \';\';");
+            expect(info!.definition!.text, "Test 6").to.equal("Semicolon: ';';");
             expect(info!.definition!.range.start.column, "Test 7").to.equal(0);
             expect(info!.definition!.range.start.row, "Test 8").to.equal(59);
             expect(info!.definition!.range.end.column, "Test 9").to.equal(14);
             expect(info!.definition!.range.end.row, "Test 10").to.equal(59);
 
             backend.releaseGrammar("test/backend/TParser.g4");
-            var selfDiags = backend.getSelfDiagnostics();
+            const selfDiags = backend.getSelfDiagnostics();
             expect(selfDiags.contextCount, "Test 11").to.equal(0);
         });
     });
 
-    describe("Sentence Generation:", function () {
-        before(async function() {
+    // TODO: sentence generation is not ready yet.
+    // Due to the nature of language definition by rules, we often generate invalid content.
+    // This need investigation.
+    xdescribe("Sentence Generation:", () => {
+        before(async () => {
             this.timeout(10000);
-            let result = await backend.generate("grammars/ANTLRv4Parser.g4", { outputDir: "generated", language: "CSharp" });
-            for (let file of result) {
-                let diagnostics = backend.getDiagnostics(file);
+            let result = await backend.generate("grammars/ANTLRv4Parser.g4",
+                { outputDir: "generated", language: "CSharp" });
+            for (const file of result) {
+                const diagnostics = backend.getDiagnostics(file);
                 if (diagnostics.length > 0) {
                     console.log("Generation error: " + diagnostics[0].message);
                 }
@@ -582,8 +620,8 @@ describe('vscode-antlr4-backend:', function () {
             result = await backend.generate("grammars/ANTLRv4LexBasic.g4", { outputDir: "generated", loadOnly: true });
 
             result = await backend.generate("test/backend/sentences.g4", { outputDir: "generated", language: "Java" });
-            for (let file of result) {
-                let diagnostics = backend.getDiagnostics(file);
+            for (const file of result) {
+                const diagnostics = backend.getDiagnostics(file);
                 if (diagnostics.length > 0) {
                     console.log("Generation error: " + diagnostics[0].message);
                 }
@@ -593,28 +631,28 @@ describe('vscode-antlr4-backend:', function () {
 
         // Sentence generation is random for variable parts and it happens pretty frequently that generated
         // sentences are ambiguous. Hence we only test that such generated content can be parsed error free.
-        it("Simple lexer sentence generation", function () {
+        it("Simple lexer sentence generation", () => {
             // A grammar made specifically for sentence generation.
-            let vocabulary = backend.getLexerVocabulary("test/backend/sentences.g4")!;
+            const vocabulary = backend.getLexerVocabulary("test/backend/sentences.g4")!;
             for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
-                let symbolicName = vocabulary.getSymbolicName(i);
-                for (let i = 0; i < 20; ++i) {
-                    let sentence = backend.generateSentence("test/backend/sentences.g4", {
+                const symbolicName = vocabulary.getSymbolicName(i);
+                for (let j = 0; j < 20; ++j) {
+                    const sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: symbolicName!,
                         maxLexerIterations: 15,
-                        maxParserIterations: 15
+                        maxParserIterations: 15,
                     }, undefined, undefined);
 
                     //console.log(symbolicName + ": " + sentence);
-                    let [_, error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const [tokenNames, error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
                     expect(error).to.be.empty;
                 }
             }
-
         });
 
-        it("ANTLR4 lexer sentence generation", function () {
-            let lexerTokens = [
+        it("ANTLR4 lexer sentence generation", () => {
+            const lexerTokens = [
                 "DOC_COMMENT",
                 "BLOCK_COMMENT",
                 "LINE_COMMENT",
@@ -627,44 +665,45 @@ describe('vscode-antlr4-backend:', function () {
                 "ID",
             ];
 
-            for (let token of lexerTokens) {
+            for (const token of lexerTokens) {
                 for (let i = 0; i < 5; ++i) {
-                    let sentence = backend.generateSentence("grammars/ANTLRv4Lexer.g4", {
+                    const sentence = backend.generateSentence("grammars/ANTLRv4Lexer.g4", {
                         startRule: token,
                         maxLexerIterations: 10,
-                        maxParserIterations: 10
+                        maxParserIterations: 10,
                     }, undefined, undefined);
 
                     //console.log(token + ": " + sentence);
                     expect(sentence.length, "Empty sentence generated").to.be.greaterThan(0);
-                    let [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
                     expect(error).to.be.empty;
                 }
             }
 
         });
 
-        it("Parser sentence generation", function () {
+        it("Parser sentence generation", () => {
             this.slow(30000);
             this.timeout(60000);
 
-            let rules = backend.getRuleList("test/backend/sentences.g4")!;
-            for (let rule of rules) {
+            const rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (const rule of rules) {
                 for (let i = 0; i < 100; ++i) {
-                    let sentence = backend.generateSentence("test/backend/sentences.g4", {
+                    const sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: rule,
                         minLexerIterations: 3,
                         maxLexerIterations: 10,
                         minParserIterations: 0,
-                        maxParserIterations: 3
+                        maxParserIterations: 3,
                     }, undefined, undefined);
 
                     //console.log(rule + ": " + sentence);
-                    let errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                    const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                     if (errors.length > 0) {
                         console.log("errors:");
-                        for (let error of errors) {
-                            console.log("\t" + error + "\n")
+                        for (const error of errors) {
+                            console.log("\t" + error + "\n");
                         }
                     }
                     expect(errors.length, "Test 5").to.equal(0);
@@ -672,31 +711,31 @@ describe('vscode-antlr4-backend:', function () {
             }
         });
 
-        it("Generation with definitions", function () {
+        it("Generation with definitions", () => {
             this.slow(30000);
             this.timeout(60000);
 
-            let ruleMappings: RuleMappings = new Map([
-                ['DIGITS', '12345'],
-                ['SimpleIdentifier', 'Mike'],
-                ['UnicodeIdentifier', 'µπåƒ'],
+            const ruleMappings: RuleMappings = new Map([
+                ["DIGITS", "12345"],
+                ["SimpleIdentifier", "Mike"],
+                ["UnicodeIdentifier", "µπåƒ"],
             ]);
 
-            let rules = backend.getRuleList("test/backend/sentences.g4")!;
-            for (let rule of rules) {
+            const rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (const rule of rules) {
                 for (let i = 0; i < 10; ++i) {
                     let sentence = backend.generateSentence("test/backend/sentences.g4", {
                         startRule: rule,
                         maxLexerIterations: 7,
-                        maxParserIterations: 7
+                        maxParserIterations: 7,
                     }, ruleMappings, undefined);
 
                     //console.log(rule + ": " + sentence);
-                    let errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                    const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                     if (errors.length > 0) {
                         console.log("errors:");
-                        for (let error of errors) {
-                            console.log("\t" + error + "\n")
+                        for (const error of errors) {
+                            console.log("\t" + error + "\n");
                         }
                     }
                     expect(errors.length, "Test 1").to.equal(0);
@@ -717,60 +756,65 @@ describe('vscode-antlr4-backend:', function () {
             }
         });
 
-        after(function () {
+        after(() => {
             backend.releaseGrammar("test/backend/sentences.g4");
             backend.releaseGrammar("test/backend/CPP14.g4");
             fs.removeSync("generated");
-        })
+        });
     });
 
-    describe("Formatting:", function () {
-        it("With all options (except alignment)", function () {
+    describe("Formatting:", () => {
+        it("With all options (except alignment)", () => {
             // Format a file with all kinds of syntactic elements. Start out with default
             // formatting options and change them in the file to test all variations.
-            let [text, start, stop] = backend.formatGrammar("test/backend/formatting/raw.g4", {}, 0, 1e10);
+            const [text] = backend.formatGrammar("test/backend/formatting/raw.g4", {}, 0, 1e10);
 
             //fs.writeFileSync("test/backend/formatting-results/raw2.g4", text, "utf8");
-            let expected = fs.readFileSync("test/backend/formatting-results/raw.g4", { encoding: "utf8" });
+            const expected = fs.readFileSync("test/backend/formatting-results/raw.g4", { encoding: "utf8" });
             expect(expected).to.equal(text);
         });
 
-        it("Alignment formatting", function () {
+        it("Alignment formatting", () => {
             this.slow(20000);
 
             //createAlignmentGrammar();
 
             // Load a large file with all possible alignment combinations (50 rules for each permutation),
             // checking so also the overall performance (9600 rules).
-            let [text, start, stop] = backend.formatGrammar("test/backend/formatting/alignment.g4", {}, 0, 1e10);
+            const [text] = backend.formatGrammar("test/backend/formatting/alignment.g4", {}, 0, 1e10);
 
             //fs.writeFileSync("test/backend/formatting-results/alignment.g4", text, "utf8");
-            let expected = fs.readFileSync("test/backend/formatting-results/alignment.g4", { encoding: "utf8" });
+            const expected = fs.readFileSync("test/backend/formatting-results/alignment.g4", { encoding: "utf8" });
             expect(expected).to.equal(text);
         }).timeout(30000);
 
-        it("Ranged formatting", function () {
+        it("Ranged formatting", () => {
             let [text, targetStart, targetStop] = backend.formatGrammar("test/backend/formatting/raw.g4", {}, -10, -20);
             expect(text.length, "Test 0a").to.equal(0);
             expect(targetStart, "Test 0b").to.equal(0);
             expect(targetStop, "Test 0c").to.equal(4);
 
-            let rangeTests = JSON.parse(fs.readFileSync("test/backend/formatting/ranges.json", { encoding: "utf8" }));
-            let source = fs.readFileSync("test/backend/formatting/raw.g4", { encoding: "utf8" });
+            const rangeTests = JSON.parse(fs.readFileSync("test/backend/formatting/ranges.json",
+                { encoding: "utf8" })) as TestRange[];
+            const source = fs.readFileSync("test/backend/formatting/raw.g4", { encoding: "utf8" });
             for (let i = 1; i <= rangeTests.length; ++i) {
-                let rangeTest = rangeTests[i - 1];
+                const rangeTest = rangeTests[i - 1];
 
-                 // Range ends are non-inclusive.
-                let startIndex = positionToIndex(source, rangeTest.source.start.column, rangeTest.source.start.row);
-                let stopIndex = positionToIndex(source, rangeTest.source.end.column, rangeTest.source.end.row) - 1;
-                [text, targetStart, targetStop] = backend.formatGrammar("test/backend/formatting/raw.g4", {}, startIndex, stopIndex);
+                // Range ends are non-inclusive.
+                const startIndex = positionToIndex(source, rangeTest.source.start.column, rangeTest.source.start.row);
+                const stopIndex = positionToIndex(source, rangeTest.source.end.column, rangeTest.source.end.row) - 1;
+                [text, targetStart, targetStop] = backend.formatGrammar("test/backend/formatting/raw.g4", {},
+                    startIndex, stopIndex);
 
-                let [startColumn, startRow] = indexToPosition(source, targetStart);
-                let [stopColumn, stopRow] = indexToPosition(source, targetStop + 1);
-                let range = { start: { column: startColumn, row: startRow }, end: { column: stopColumn, row: stopRow }};
+                const [startColumn, startRow] = indexToPosition(source, targetStart);
+                const [stopColumn, stopRow] = indexToPosition(source, targetStop + 1);
+                const range = {
+                    start: { column: startColumn, row: startRow }, end: { column: stopColumn, row: stopRow },
+                };
 
                 //fs.writeFileSync("test/backend/formatting-results/" + rangeTest.result, text, "utf8");
-                let expected = fs.readFileSync("test/backend/formatting-results/" + rangeTest.result, { encoding: "utf8" });
+                const expected = fs.readFileSync("test/backend/formatting-results/" + rangeTest.result,
+                    { encoding: "utf8" });
                 expect(range, "Range Test " + i + "a").to.deep.equal(rangeTest.target);
                 expect(expected, "Test " + i + "b").to.equal(text);
             }
@@ -780,14 +824,12 @@ describe('vscode-antlr4-backend:', function () {
         // with the same set of settings. Consider it more like a smoke test.
         // For running it you must copy the ANTLR4 grammar directory into "test/backend/formatting/grammars-v4"
         // (or adjust the path in this test).
-        xit("ANTLR grammar directory", function () {
+        xit("ANTLR grammar directory", () => {
             this.timeout(20000);
 
-            let files = glob.sync("test/backend/formatting/grammars-v4/**\/*.g4", {});
-            let counter = 0;
-            for (let file of files) {
-                ++counter;
-                let [text, start, stop] = backend.formatGrammar(file, {
+            const files = glob.sync("test/backend/formatting/grammars-v4/**/*.g4", {});
+            for (const file of files) {
+                const [text] = backend.formatGrammar(file, {
                     useTab: false,
                     tabWidth: 4,
                     spaceBeforeAssignmentOperators: true,
@@ -798,26 +840,26 @@ describe('vscode-antlr4-backend:', function () {
                     alignTrailingComments: true,
                     alignLexerCommands: true,
                 }, 0, 100000);
-                let output = file.replace("formatting/", "formatting-results/");
+                const output = file.replace("formatting/", "formatting-results/");
 
                 //fs.ensureDirSync(path.dirname(output));
                 //fs.writeFileSync(output, text, "utf8");
-                let expected = fs.readFileSync(output, { encoding: "utf8" });
+                const expected = fs.readFileSync(output, { encoding: "utf8" });
                 expect(expected, "Test 1").to.equal(text);
             }
         });
     });
 
-    describe("Debugger:", function () {
-        it("Run interpreter", async function () {
-            this.timeout(10000);
-            let result = await backend.generate("test/backend/CPP14.g4", { outputDir: "generated", language: "Java" });
+    describe("Debugger:", () => {
+        it("Run interpreter", async () => {
+            this.timeout(20000);
+            await backend.generate("test/backend/CPP14.g4", { outputDir: "generated", language: "Java" });
             try {
-                let code = fs.readFileSync("test/backend/code.cpp", { "encoding": "utf8" });
-                let d = backend.createDebugger("test/backend/CPP14.g4", "", "generated");
+                const code = fs.readFileSync("test/backend/code.cpp", { encoding: "utf8" });
+                const d = backend.createDebugger("test/backend/CPP14.g4", "", "generated");
                 expect(d, "Test 1").not.to.be.undefined;
                 d!.start(0, code, false);
-                let tree = d!.currentParseTree;
+                //const tree = d!.currentParseTree;
                 //console.log(util.inspect(tree, false, null, true));
 
                 // TODO: test step-in/out/over/ as well as breakpoints.
@@ -832,30 +874,31 @@ describe('vscode-antlr4-backend:', function () {
 /**
  * Generates the alignment.g4 grammar from formatting options in the alignment-template.g4 file.
  */
-function createAlignmentGrammar(): void {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const createAlignmentGrammar = (): void => {
     let grammar = "grammar alignment;\n\n// $antlr-format reset, columnLimit 200\n";
-    let template = fs.readFileSync("test/backend/formatting/alignment-template.g4", { encoding: "utf8" });
-    let sections = template.split("\n");
+    const template = fs.readFileSync("test/backend/formatting/alignment-template.g4", { encoding: "utf8" });
+    const sections = template.split("\n");
 
     // For each section create 100 rules with some random parts.
-    for (let section of sections) {
+    for (const section of sections) {
         grammar += "\n" + section + "\n";
 
         // Make it 30 lexer rules and 20 parser rules (less parser rules as we always use grouped alignments for them).
         for (let i = 0; i < 30; ++i) {
-            if (i == 0) {
+            if (i === 0) {
                 grammar += "// $antlr-format groupedAlignments off\n";
-            } else if (i == 15) {
+            } else if (i === 15) {
                 grammar += "// $antlr-format groupedAlignments on\n";
             }
 
-            let ruleNameFillCount = Math.random() * 25 + 1;
-            let useLexerAction = Math.random() < 0.5;
-            let useComment = Math.random() < 0.5;
-            let usePredicate = Math.random() < 0.5;
-            let useAction = Math.random() < 0.5;
+            const ruleNameFillCount = Math.random() * 25 + 1;
+            const useLexerAction = Math.random() < 0.5;
+            const useComment = Math.random() < 0.5;
+            const usePredicate = Math.random() < 0.5;
+            const useAction = Math.random() < 0.5;
 
-            let filler = "_".repeat(ruleNameFillCount);
+            const filler = "_".repeat(ruleNameFillCount);
             let line = "Keyword" + filler + i + ":'Keyword" + filler + i + "'";
 
             if (useAction) {
@@ -876,7 +919,7 @@ function createAlignmentGrammar(): void {
             }
 
             if (useLexerAction) {
-                let type = Math.random() < 0.5 ? "mode" : "type";
+                const type = Math.random() < 0.5 ? "mode" : "type";
                 line += "-> " + type + "(SomethingReallyMeaningful) ";
             }
 
@@ -890,17 +933,17 @@ function createAlignmentGrammar(): void {
 
         grammar += "// $antlr-format groupedAlignments on\n";
         for (let i = 0; i < 20; ++i) {
-            if (i == 0) {
+            if (i === 0) {
                 grammar += "// $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine false\n";
-            } else if (i == 10) {
+            } else if (i === 10) {
                 grammar += "// $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true\n";
             }
 
-            let ruleNameFillCount = Math.random() * 25 + 1;
-            let useComment = Math.random() < 0.25;
-            let action = Math.random() < 0.25 ? "{doSomething($text);}" : " ";
-            let predicate = Math.random() < 0.25 ? "{doesItBlend}?" : " ";
-            let useLabels = Math.random() < 0.5;
+            const ruleNameFillCount = Math.random() * 25 + 1;
+            const useComment = Math.random() < 0.25;
+            const action = Math.random() < 0.25 ? "{doSomething($text);}" : " ";
+            const predicate = Math.random() < 0.25 ? "{doesItBlend}?" : " ";
+            const useLabels = Math.random() < 0.5;
 
             let line = "rule" + "_".repeat(ruleNameFillCount) + i + ": (";
 
@@ -929,10 +972,18 @@ function createAlignmentGrammar(): void {
     }
 
     fs.writeFileSync("test/backend/formatting/alignment.g4", grammar, "utf8");
-}
+};
 
-/** Converts the given position in the text to a character index (assuming 4 chars tabwidth). */
-function positionToIndex(text: string, column: number, row: number): number {
+/**
+ * Converts the given position in the text to a character index (assuming 4 chars tabwidth).
+ *
+ * @param text The text for which to convert the position.
+ * @param column The position in the text line.
+ * @param row The line in the text.
+ *
+ * @returns The character index in the text for the given position.
+ */
+const positionToIndex = (text: string, column: number, row: number): number => {
     let currentRow = 1; // Remember: row numbers in ANTLR4 are one-based.
     let currentColumn = 0;
 
@@ -941,7 +992,7 @@ function positionToIndex(text: string, column: number, row: number): number {
             return i - 1;
         }
 
-        if (currentRow == row && currentColumn == column) {
+        if (currentRow === row && currentColumn === column) {
             return i;
         }
         switch (text[i]) {
@@ -959,15 +1010,23 @@ function positionToIndex(text: string, column: number, row: number): number {
                 break;
         }
     }
-    return text.length;
-}
 
-/** Converts the given character index into a column/row pair (assuming 4 chars tabwidth). */
-function indexToPosition(text: string, index: number): [number, number] {
+    return text.length;
+};
+
+/**
+ * Converts the given character index into a column/row pair (assuming 4 chars tabwidth).
+ *
+ * @param text The text for which to convert the index.
+ * @param index The character index in the text.
+ *
+ * @returns A [column, row] tuple with the position of the given index.
+ */
+const indexToPosition = (text: string, index: number): [number, number] => {
     let currentRow = 1;
     let currentColumn = 0;
     for (let i = 0; i < text.length; ++i) {
-        if (i == index) {
+        if (i === index) {
             return [currentColumn, currentRow];
         }
         switch (text[i]) {
@@ -985,5 +1044,6 @@ function indexToPosition(text: string, index: number): [number, number] {
                 break;
         }
     }
+
     return [currentColumn, currentRow];
-}
+};

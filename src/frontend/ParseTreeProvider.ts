@@ -1,11 +1,11 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2019, Mike Lischke
+ * Copyright (c) 2018, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
-const path = require("path");
+import * as path from "path";
 
 import * as vscode from "vscode";
 
@@ -13,37 +13,36 @@ import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
 import { Utils } from "./Utils";
 import { DebuggerConsumer } from "./AntlrDebugAdapter";
 import { GrammarDebugger } from "../backend/GrammarDebugger";
-import { Webview } from "vscode";
 
 export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerConsumer {
 
     public debugger: GrammarDebugger;
 
-    refresh(): void {
+    public refresh(): void {
         if (this.currentEditor) {
             this.update(this.currentEditor);
         }
     }
 
-    debuggerStopped(uri: vscode.Uri): void {
+    public debuggerStopped(uri: vscode.Uri): void {
         this.updateContent(uri);
     }
 
-    public generateContent(webView: Webview, uri: vscode.Uri, options: WebviewShowOptions): string {
-        let graph = this.debugger.currentParseTree;
+    public generateContent(webView: vscode.Webview, uri: vscode.Uri, options: WebviewShowOptions): string {
+        const graph = this.debugger.currentParseTree;
 
         // Content Security Policy
-        const nonce = new Date().getTime() + '' + new Date().getMilliseconds();
+        const nonce = new Date().getTime() + "" + new Date().getMilliseconds();
         const scripts = [
-            Utils.getMiscPath('utils.js', this.context, webView),
-            Utils.getMiscPath("parse-tree.js", this.context, webView)
+            Utils.getMiscPath("utils.js", this.context, webView),
+            Utils.getMiscPath("parse-tree.js", this.context, webView),
         ];
 
-        let settings = vscode.workspace.getConfiguration("antlr4.debug");
-        let horizontal = settings["visualParseTreeHorizontal"];
-        let clustered = settings["visualParseTreeClustered"];
+        const settings = vscode.workspace.getConfiguration("antlr4.debug");
+        const horizontal = settings.visualParseTreeHorizontal ? 1 : 0;
+        const clustered = settings.visualParseTreeClustered ? 1 : 0;
 
-        let diagram = `<!DOCTYPE html>
+        const diagram = `<!DOCTYPE html>
             <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
@@ -83,10 +82,19 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
                             </span>
                         </span>
                         Vertical&nbsp;&nbsp;
-                        <a onClick="changeNodeSize(0.9);"><span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">-</span></a>
+                        <a onClick="changeNodeSize(0.9);">
+                            <span class="parse-tree-color" style="font-size: 120%; font-weight: 800;
+                                cursor: pointer; vertical-align: middle;">-</span>
+                        </a>
                         Node Size
-                        <a onClick="changeNodeSize(1.1);"><span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">+</span></a>&nbsp;&nbsp;
-                        Save to SVG<a onClick="exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');"><span class="parse-tree-save-image" /></a>
+                        <a onClick="changeNodeSize(1.1);">
+                            <span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer;
+                                vertical-align: middle;">+</span>
+                        </a>&nbsp;&nbsp;
+                        Save to SVG
+                        <a onClick="exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');">
+                            <span class="parse-tree-save-image" />
+                        </a>
                     </span>
                 </div>
 
@@ -97,15 +105,15 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
         </html>`;
 
         return diagram;
-    };
+    }
 
     protected updateContent(uri: vscode.Uri): boolean {
-        let graph = this.debugger.currentParseTree;
+        const graph = this.debugger.currentParseTree;
         this.sendMessage(uri, {
             command: "updateParseTreeData",
-            treeData: graph
+            treeData: graph,
         });
 
         return true;
     }
-};
+}

@@ -1,9 +1,11 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2019, Mike Lischke
+ * Copyright (c) 2018, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
+
+/* eslint-disable max-classes-per-file */
 
 import * as path from "path";
 
@@ -12,7 +14,7 @@ import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
 
-    getChildren(element?: LexerSymbol): ProviderResult<LexerSymbol[]> {
+    public getChildren(element?: LexerSymbol): ProviderResult<LexerSymbol[]> {
         if (!element) {
             let vocabulary;
             if (this.currentFile) {
@@ -20,16 +22,16 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
             }
 
             if (vocabulary) {
-                let list: LexerSymbol[] = [];
+                const list: LexerSymbol[] = [];
                 list.push(new LexerSymbol("-1: EOF", TreeItemCollapsibleState.None, {
                     title: "<unused>",
                     command: "",
-                    arguments: []
+                    arguments: [],
                 }));
 
                 for (let i = 0; i <= vocabulary.maxTokenType; ++i) {
-                    let literal = vocabulary.getLiteralName(i);
-                    let symbolic = vocabulary.getSymbolicName(i);
+                    const literal = vocabulary.getLiteralName(i);
+                    const symbolic = vocabulary.getSymbolicName(i);
                     let caption = i + ": ";
                     if (!literal && !symbolic) {
                         caption += "<unused>";
@@ -37,7 +39,7 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
                         if (symbolic) {
                             caption += symbolic;
                         } else {
-                            caption += "<implicit token>"
+                            caption += "<implicit token>";
                         }
 
                         if (literal) {
@@ -45,22 +47,24 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
                         }
                     }
 
-                    let info = this.backend.infoForSymbol(this.currentFile!, symbolic ? symbolic : literal!.substr(1, literal!.length - 2));
-                    let parameters: Command = { title: "", command: "" };
+                    const info = this.backend.infoForSymbol(this.currentFile!,
+                        symbolic ? symbolic : literal!.substr(1, literal!.length - 2));
+                    const parameters: Command = { title: "", command: "" };
                     if (info && info.definition) {
-                        parameters.title = ""
+                        parameters.title = "";
                         parameters.command = "antlr.selectGrammarRange";
-                        parameters.arguments = [ info.definition!.range ];
+                        parameters.arguments = [ info.definition.range ];
                     }
                     list.push(new LexerSymbol(caption, TreeItemCollapsibleState.None, parameters));
                 }
-                return new Promise(resolve => {
+
+                return new Promise((resolve) => {
                     resolve(list);
                 });
             }
         }
 
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             resolve([]);
         });
     }
@@ -68,19 +72,20 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbol> {
 
 export class LexerSymbol extends TreeItem {
 
-    constructor(
+    public iconPath = {
+        light: path.join(__dirname, "..", "..", "..", "misc", "token-light.svg"),
+        dark: path.join(__dirname, "..", "..", "..", "misc", "token-dark.svg"),
+    };
+
+    public contextValue = "lexerSymbols";
+
+    public constructor(
         public readonly label: string,
         public readonly collapsibleState: TreeItemCollapsibleState,
-        command_?: Command
+        command_?: Command,
     ) {
         super(label, collapsibleState);
         this.command = command_;
     }
 
-    iconPath = {
-        light: path.join(__dirname, '..', '..', '..', 'misc', 'token-light.svg'),
-        dark: path.join(__dirname, '..', '..', '..', 'misc', 'token-dark.svg')
-    };
-
-    contextValue = 'lexerSymbols';
 }

@@ -5,25 +5,24 @@
  * See LICENSE file for more info.
  */
 
-'use strict';
 
 import * as path from "path";
 import * as fs from "fs-extra";
-import * as Net from 'net';
+import * as Net from "net";
 
 import {
-    workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic, TextDocumentChangeEvent,
-    commands, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor, OutputChannel, Selection,
-    debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken, ProviderResult,
-    TextEditorRevealType
-} from 'vscode';
+    workspace, languages, DiagnosticSeverity, ExtensionContext, Range, TextDocument, Diagnostic,
+    TextDocumentChangeEvent, commands, window, TextEditorSelectionChangeEvent, TextEditorEdit, TextEditor,
+    OutputChannel, Selection, debug, DebugConfigurationProvider, WorkspaceFolder, DebugConfiguration, CancellationToken,
+    ProviderResult, TextEditorRevealType,
+} from "vscode";
 
-import { AntlrHoverProvider } from './frontend/HoverProvider';
-import { AntlrDefinitionProvider } from './frontend/DefinitionProvider';
-import { AntlrSymbolProvider } from './frontend/SymbolProvider';
-import { AntlrCodeLensProvider } from './frontend/CodeLensProvider';
-import { AntlrCompletionItemProvider } from './frontend/CompletionItemProvider';
-import { AntlrRailroadDiagramProvider } from './frontend/RailroadDiagramProvider';
+import { AntlrHoverProvider } from "./frontend/HoverProvider";
+import { AntlrDefinitionProvider } from "./frontend/DefinitionProvider";
+import { AntlrSymbolProvider } from "./frontend/SymbolProvider";
+import { AntlrCodeLensProvider } from "./frontend/CodeLensProvider";
+import { AntlrCompletionItemProvider } from "./frontend/CompletionItemProvider";
+import { AntlrRailroadDiagramProvider } from "./frontend/RailroadDiagramProvider";
 import { AntlrATNGraphProvider } from "./frontend/ATNGraphProvider";
 import { AntlrFormattingProvider } from "./frontend/FormattingProvider";
 import { AntlrCallGraphProvider } from "./frontend/CallGraphProvider";
@@ -46,10 +45,10 @@ import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
 import { Utils } from "./frontend/Utils";
 import { GrammarType } from "./backend/SourceContext";
 
-const ANTLR = { language: 'antlr', scheme: 'file' };
+const ANTLR = { language: "antlr", scheme: "file" };
 
-let diagnosticCollection = languages.createDiagnosticCollection('antlr');
-let DiagnosticTypeMap: Map<DiagnosticType, DiagnosticSeverity> = new Map();
+const diagnosticCollection = languages.createDiagnosticCollection("antlr");
+const DiagnosticTypeMap = new Map<DiagnosticType, DiagnosticSeverity>();
 
 let backend: AntlrFacade;
 let progress: ProgressIndicator;
@@ -65,21 +64,50 @@ let actionsProvider: ActionsProvider;
 let parseTreeProvider: AntlrParseTreeProvider;
 let codeLensProvider: AntlrCodeLensProvider;
 
-export function activate(context: ExtensionContext) {
+/**
+ * Entry function for the extension. Called when the extension is activated.
+ *
+ * @param context The extension context from vscode.
+ */
+export const activate = (context: ExtensionContext): void => {
+    /**
+     * Checks if the given document is actually a grammar file.
+     *
+     * @param document The document to check.
+     *
+     * @returns True if this is indeed a grammar file.
+     */
+    const isGrammarFile = (document: TextDocument): boolean =>
+        document.languageId === "antlr" && document.uri.scheme === "file";
+
+    /**
+     * Updates all used tree providers for the given document.
+     *
+     * @param document The source for the updates.
+     */
+    const updateTreeProviders = (document: TextDocument): void => {
+        lexerSymbolsProvider.refresh(document);
+        parserSymbolsProvider.refresh(document);
+        importsProvider.refresh(document);
+        channelsProvider.refresh(document);
+        modesProvider.refresh(document);
+        actionsProvider.refresh(document);
+    };
+
     DiagnosticTypeMap.set(DiagnosticType.Hint, DiagnosticSeverity.Hint);
     DiagnosticTypeMap.set(DiagnosticType.Info, DiagnosticSeverity.Information);
     DiagnosticTypeMap.set(DiagnosticType.Warning, DiagnosticSeverity.Warning);
     DiagnosticTypeMap.set(DiagnosticType.Error, DiagnosticSeverity.Error);
 
-    backend = new AntlrFacade(workspace.getConfiguration("antlr4.generation")["importDir"] || "");
+    backend = new AntlrFacade(workspace.getConfiguration("antlr4.generation").importDir || "");
     progress = new ProgressIndicator();
     outputChannel = window.createOutputChannel("ANTLR Exceptions");
 
     // Load interpreter + cache data for each open document, if there's any.
-    for (let document of workspace.textDocuments) {
+    for (const document of workspace.textDocuments) {
         if (isGrammarFile(document)) {
-            let antlrPath = path.join(path.dirname(document.fileName), ".antlr");
-            backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
+            const antlrPath = path.join(path.dirname(document.fileName), ".antlr");
+            void backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
             AntlrATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
         }
     }
@@ -91,119 +119,132 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(languages.registerCodeLensProvider(ANTLR, codeLensProvider));
     context.subscriptions.push(languages.registerCompletionItemProvider(ANTLR, new AntlrCompletionItemProvider(backend),
         " ", ":", "@", "<", "{", "["));
-    context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider(ANTLR, new AntlrFormattingProvider(backend)));
+    context.subscriptions.push(languages.registerDocumentRangeFormattingEditProvider(ANTLR,
+        new AntlrFormattingProvider(backend)));
     context.subscriptions.push(languages.registerRenameProvider(ANTLR, new AntlrRenameProvider(backend)));
     context.subscriptions.push(languages.registerReferenceProvider(ANTLR, new AntlrReferenceProvider(backend)));
 
-    let diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
+    const diagramProvider = new AntlrRailroadDiagramProvider(backend, context);
 
     // The single RRD diagram command.
-    context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.singleRule', (editor: TextEditor, edit: TextEditorEdit) => {
-        diagramProvider.showWebview(editor, {
-            title: "RRD: " + path.basename(editor.document.fileName),
-            fullList: false
-        });
-    }));
+    context.subscriptions.push(commands.registerTextEditorCommand("antlr.rrd.singleRule",
+        (textEditor: TextEditor, edit: TextEditorEdit) => {
+            diagramProvider.showWebview(textEditor, {
+                title: "RRD: " + path.basename(textEditor.document.fileName),
+                fullList: false,
+            });
+        }),
+    );
 
     // The full RRD diagram command.
-    context.subscriptions.push(commands.registerTextEditorCommand('antlr.rrd.allRules', (editor: TextEditor, edit: TextEditorEdit) => {
-        diagramProvider.showWebview(editor, {
-            title: "RRD: " + path.basename(editor.document.fileName),
-            fullList: true
-        });
-    }));
+    context.subscriptions.push(commands.registerTextEditorCommand("antlr.rrd.allRules",
+        (textEditor: TextEditor, edit: TextEditorEdit) => {
+            diagramProvider.showWebview(textEditor, {
+                title: "RRD: " + path.basename(textEditor.document.fileName),
+                fullList: true,
+            });
+        }),
+    );
 
     // The ATN graph command.
-    let atnGraphProvider = new AntlrATNGraphProvider(backend, context);
-    context.subscriptions.push(commands.registerTextEditorCommand("antlr.atn.singleRule", (editor: TextEditor, edit: TextEditorEdit) => {
-        atnGraphProvider.showWebview(editor, {
-            title: "ATN: " + path.basename(editor.document.fileName)
-        });
-    }));
+    const atnGraphProvider = new AntlrATNGraphProvider(backend, context);
+    context.subscriptions.push(commands.registerTextEditorCommand("antlr.atn.singleRule",
+        (textEditor: TextEditor, edit: TextEditorEdit) => {
+            atnGraphProvider.showWebview(textEditor, {
+                title: "ATN: " + path.basename(textEditor.document.fileName),
+            });
+        }),
+    );
 
     // The call graph command.
-    let callGraphProvider = new AntlrCallGraphProvider(backend, context);
-    context.subscriptions.push(commands.registerTextEditorCommand('antlr.call-graph', (editor: TextEditor, edit: TextEditorEdit) => {
-        callGraphProvider.showWebview(editor, {
-            title: "Call Graph: " + path.basename(editor.document.fileName)
-        });
-    }));
+    const callGraphProvider = new AntlrCallGraphProvider(backend, context);
+    context.subscriptions.push(commands.registerTextEditorCommand("antlr.call-graph",
+        (textEditor: TextEditor, edit: TextEditorEdit) => {
+            callGraphProvider.showWebview(textEditor, {
+                title: "Call Graph: " + path.basename(textEditor.document.fileName),
+            });
+        }),
+    );
 
     // Sentence generation.
-    let genOutputChannel = window.createOutputChannel("Sentence Generation");
-    context.subscriptions.push(commands.registerTextEditorCommand("antlr.tools.generateSentences", (editor: TextEditor, edit: TextEditorEdit) => {
-        let ruleMappings: RuleMappings = new Map([
-            ["A", "A"],
-            ["B", "B"],
-            ["C", "C"],
-            ["D", "D"],
-            ["E", "E"],
-            ["F", "F"],
-            ["G", "G"],
-            ["H", "H"],
-            ["I", "I"],
-            ["J", "J"],
-            ["K", "K"],
-            ["L", "L"],
-            ["M", "M"],
-            ["N", "N"],
-            ["O", "O"],
-            ["P", "P"],
-            ["Q", "Q"],
-            ["R", "R"],
-            ["S", "S"],
-            ["T", "T"],
-            ["U", "U"],
-            ["V", "V"],
-            ["W", "W"],
-            ["X", "X"],
-            ["Y", "Y"],
-            ["Z", "Z"],
-            ["NOT2_SYMBOL", "NOT"],
-            ["CONCAT_PIPES_SYMBOL", "||"],
-            ["INT_NUMBER", "-1111111111"],
-            ["LONG_NUMBER", "1111111111"],
-            ["ULONGLONG_NUMBER", "18446744073709551614"],
-            ["DOUBLE_QUOTED_TEXT", "\"text\""],
-            ["SINGLE_QUOTED_TEXT", "'text'"],
-            ["BACK_TICK_QUOTED_ID", "`id`"],
-            ["UNDERSCORE_CHARSET", "_utf8"],
-            ["identifier", "`id`"],
-            ["schemaRef", "sakila"],
-            ["tableRef", "sakila.actor"],
-            ["columnRef", "sakila.actor.actor_id"],
-        ]);
+    const genOutputChannel = window.createOutputChannel("Sentence Generation");
+    context.subscriptions.push(commands.registerTextEditorCommand("antlr.tools.generateSentences",
+        (textEditor: TextEditor, edit: TextEditorEdit) => {
+            const ruleMappings: RuleMappings = new Map([
+                ["A", "A"],
+                ["B", "B"],
+                ["C", "C"],
+                ["D", "D"],
+                ["E", "E"],
+                ["F", "F"],
+                ["G", "G"],
+                ["H", "H"],
+                ["I", "I"],
+                ["J", "J"],
+                ["K", "K"],
+                ["L", "L"],
+                ["M", "M"],
+                ["N", "N"],
+                ["O", "O"],
+                ["P", "P"],
+                ["Q", "Q"],
+                ["R", "R"],
+                ["S", "S"],
+                ["T", "T"],
+                ["U", "U"],
+                ["V", "V"],
+                ["W", "W"],
+                ["X", "X"],
+                ["Y", "Y"],
+                ["Z", "Z"],
+                ["NOT2_SYMBOL", "NOT"],
+                ["CONCAT_PIPES_SYMBOL", "||"],
+                ["INT_NUMBER", "-1111111111"],
+                ["LONG_NUMBER", "1111111111"],
+                ["ULONGLONG_NUMBER", "18446744073709551614"],
+                ["DOUBLE_QUOTED_TEXT", "\"text\""],
+                ["SINGLE_QUOTED_TEXT", "'text'"],
+                ["BACK_TICK_QUOTED_ID", "`id`"],
+                ["UNDERSCORE_CHARSET", "_utf8"],
+                ["identifier", "`id`"],
+                ["schemaRef", "sakila"],
+                ["tableRef", "sakila.actor"],
+                ["columnRef", "sakila.actor.actor_id"],
+            ]);
 
-        let fileName = editor.document.uri.fsPath;
-        let caret = editor.selection.active;
-        let [ruleName, _] = backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+            const fileName = textEditor.document.uri.fsPath;
+            const caret = textEditor.selection.active;
+            const [ruleName] = backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
 
-        if (!ruleName) {
-            console.log("ANTLR4 sentence generation: no rule selected");
-        }
-
-        let basePath = path.dirname(fileName);
-        let actionFile = workspace.getConfiguration("antlr4.sentenceGeneration")["actionFile"];
-        if (actionFile) {
-            if (!path.isAbsolute(actionFile)) {
-                actionFile = path.join(basePath, actionFile);
+            if (!ruleName) {
+                // TODO: convert that to an error dialog or diagnostic entry.
+                console.log("ANTLR4 sentence generation: no rule selected");
             }
-        }
 
-        for (let i = 0; i < 20; ++i) {
-            let sentence = backend.generateSentence(fileName, {
-                startRule: ruleName!,
-                maxParserIterations: 3,
-                maxLexerIterations: 10,
-                maxRecursions: 1,
-                convergenceFactor: 0.15,
-            }, ruleMappings, actionFile);
-            genOutputChannel.appendLine(sentence);
-        }
-    }));
+            const basePath = path.dirname(fileName);
+            let actionFile = workspace.getConfiguration("antlr4.sentenceGeneration").actionFile as string;
+            if (actionFile) {
+                if (!path.isAbsolute(actionFile)) {
+                    actionFile = path.join(basePath, actionFile);
+                }
+            }
+
+            for (let i = 0; i < 20; ++i) {
+                const sentence = backend.generateSentence(fileName, {
+                    startRule: ruleName!,
+                    maxParserIterations: 3,
+                    maxLexerIterations: 10,
+                    maxRecursions: 1,
+                    convergenceFactor: 0.15,
+                }, ruleMappings, actionFile);
+                genOutputChannel.appendLine(sentence);
+            }
+        }),
+    );
 
     // Debugging support.
-    context.subscriptions.push(debug.registerDebugConfigurationProvider('antlr-debug', new AntlrDebugConfigurationProvider()));
+    context.subscriptions.push(debug.registerDebugConfigurationProvider("antlr-debug",
+        new AntlrDebugConfigurationProvider()));
 
     importsProvider = new ImportsProvider(backend);
     context.subscriptions.push(window.registerTreeDataProvider("antlr4.imports", importsProvider));
@@ -226,27 +267,25 @@ export function activate(context: ExtensionContext) {
     parseTreeProvider = new AntlrParseTreeProvider(backend, context);
 
     // Initialize certain providers.
-    let editor = window.activeTextEditor;
+    const editor = window.activeTextEditor;
     if (editor && isGrammarFile(editor.document)) {
         updateTreeProviders(editor.document);
     }
 
     // Helper commands.
     context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
-        workspace.openTextDocument(grammar).then((document) => {
-            window.showTextDocument(document, 0, false);
-        });
+        void workspace.openTextDocument(grammar).then((document) => window.showTextDocument(document, 0, false));
     }));
 
     context.subscriptions.push(commands.registerCommand("antlr.selectGrammarRange", (range: LexicalRange) => {
         if (window.activeTextEditor) {
             window.activeTextEditor.selection = new Selection(
                 range.start.row - 1, range.start.column,
-                range.end.row - 1, range.end.column + 1
+                range.end.row - 1, range.end.column + 1,
             );
             window.activeTextEditor.revealRange(
                 new Range(range.start.row - 1, range.start.column, range.end.row - 1, range.end.column + 1),
-                TextEditorRevealType.InCenterIfOutsideViewport
+                TextEditorRevealType.InCenterIfOutsideViewport,
             );
         }
     }));
@@ -265,14 +304,14 @@ export function activate(context: ExtensionContext) {
             backend.releaseGrammar(document.fileName);
             diagnosticCollection.set(document.uri, []);
         }
-    })
+    });
 
-    let changeTimers: Map<string, any> = new Map(); // Keyed by file name.
+    const changeTimers = new Map<string, any>(); // Keyed by file name.
 
     workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
         if (event.contentChanges.length > 0 && isGrammarFile(event.document)) {
 
-            let fileName = event.document.fileName;
+            const fileName = event.document.fileName;
             backend.setText(fileName, event.document.getText());
             if (changeTimers.has(fileName)) {
                 clearTimeout(changeTimers.get(fileName));
@@ -287,7 +326,7 @@ export function activate(context: ExtensionContext) {
                 codeLensProvider.refresh();
             }, 300));
         }
-    })
+    });
 
     workspace.onDidSaveTextDocument((document: TextDocument) => {
         if (isGrammarFile(document)) {
@@ -303,58 +342,65 @@ export function activate(context: ExtensionContext) {
         }
     });
 
-    window.onDidChangeActiveTextEditor((editor: TextEditor) => {
-        if (isGrammarFile(editor.document)) {
-            let info = backend.getContextDetails(editor.document.fileName);1
-            Utils.switchVsCodeContext("antlr4.isLexer", info.type == GrammarType.Lexer);
-            Utils.switchVsCodeContext("antlr4.isParser", info.type == GrammarType.Parser);
-            Utils.switchVsCodeContext("antlr4.isCombined", info.type == GrammarType.Combined);
+    window.onDidChangeActiveTextEditor((textEditor: TextEditor) => {
+        if (isGrammarFile(textEditor.document)) {
+            const info = backend.getContextDetails(textEditor.document.fileName); 1;
+            void Utils.switchVsCodeContext("antlr4.isLexer", info.type === GrammarType.Lexer);
+            void Utils.switchVsCodeContext("antlr4.isParser", info.type === GrammarType.Parser);
+            void Utils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);
 
-            Utils.switchVsCodeContext("antlr4.hasImports", info.imports.length > 0);
+            void Utils.switchVsCodeContext("antlr4.hasImports", info.imports.length > 0);
         } else {
-            Utils.switchVsCodeContext("antlr4.isLexer", false);
-            Utils.switchVsCodeContext("antlr4.isParser", false);
-            Utils.switchVsCodeContext("antlr4.isCombined", false);
-            Utils.switchVsCodeContext("antlr4.hasImports", false);
+            void Utils.switchVsCodeContext("antlr4.isLexer", false);
+            void Utils.switchVsCodeContext("antlr4.isParser", false);
+            void Utils.switchVsCodeContext("antlr4.isCombined", false);
+            void Utils.switchVsCodeContext("antlr4.hasImports", false);
         }
-        updateTreeProviders(editor.document);
+        updateTreeProviders(textEditor.document);
     });
 
-    function processDiagnostic(document: TextDocument) {
-        var diagnostics = [];
-        let entries = backend.getDiagnostics(document.fileName);
-        for (let entry of entries) {
-            let startRow = entry.range.start.row == 0 ? 0 : entry.range.start.row - 1;
-            let endRow = entry.range.end.row == 0 ? 0 : entry.range.end.row - 1;
-            let range = new Range(startRow, entry.range.start.column, endRow, entry.range.end.column);
-            var diagnostic = new Diagnostic(range, entry.message, DiagnosticTypeMap.get(entry.type));
+    /**
+     * Convert diagnostic information for the given file to show in vscode.
+     *
+     * @param document The document for which this should happen.
+     */
+    const processDiagnostic = (document: TextDocument) => {
+        const diagnostics = [];
+        const entries = backend.getDiagnostics(document.fileName);
+        for (const entry of entries) {
+            const startRow = entry.range.start.row === 0 ? 0 : entry.range.start.row - 1;
+            const endRow = entry.range.end.row === 0 ? 0 : entry.range.end.row - 1;
+            const range = new Range(startRow, entry.range.start.column, endRow, entry.range.end.column);
+            const diagnostic = new Diagnostic(range, entry.message, DiagnosticTypeMap.get(entry.type));
             diagnostics.push(diagnostic);
         }
         diagnosticCollection.set(document.uri, diagnostics);
-    }
+    };
 
     /**
      * For certain services we have to (re)generate files from grammars in the background:
      * - syntactic + semantic grammar analysis by the ANTLR tool
      * - generate interpreter data (for debugging + ATN views)
+     *
+     * @param document For which to generate the data.
      */
-    function regenerateBackgroundData(document: TextDocument) {
-        if (workspace.getConfiguration("antlr4.generation")["mode"] === "none") {
+    const regenerateBackgroundData = (document: TextDocument): void => {
+        if (workspace.getConfiguration("antlr4.generation").mode === "none") {
             return;
         }
 
-        let externalMode = workspace.getConfiguration("antlr4.generation")["mode"] === "external";
+        const externalMode = workspace.getConfiguration("antlr4.generation").mode === "external";
 
         progress.startAnimation();
-        let basePath = path.dirname(document.fileName);
-        let antlrPath = path.join(basePath, ".antlr");
+        const basePath = path.dirname(document.fileName);
+        const antlrPath = path.join(basePath, ".antlr");
 
         // In internal mode we generate files with the default target language into our .antlr folder.
         // In external mode the files are generated into the given output folder (or the folder where the
         // main grammar is). In this case we have to move the interpreter data to our .antlr folder.
         let outputDir = antlrPath;
         if (externalMode) {
-            outputDir = workspace.getConfiguration("antlr4.generation")["outputDir"];
+            outputDir = workspace.getConfiguration("antlr4.generation").outputDir as string;
             if (!outputDir) {
                 outputDir = basePath;
             } else {
@@ -368,50 +414,53 @@ export function activate(context: ExtensionContext) {
             fs.ensureDirSync(outputDir);
         } catch (error) {
             progress.stopAnimation();
-            window.showErrorMessage("Cannot create output folder: " + error);
+            void window.showErrorMessage("Cannot create output folder: " + (error as string));
+
             return;
         }
 
-        let options: GenerationOptions = {
+        const options: GenerationOptions = {
             baseDir: basePath,
-            libDir: workspace.getConfiguration("antlr4.generation")["importDir"],
-            outputDir: outputDir,
+            libDir: workspace.getConfiguration("antlr4.generation").importDir as string,
+            outputDir,
             listeners: false,
             visitors: false,
-            alternativeJar: workspace.getConfiguration("antlr4.generation")["alternativeJar"],
-            additionalParameters: workspace.getConfiguration("antlr4.generation")["additionalParameters"]
+            alternativeJar: workspace.getConfiguration("antlr4.generation").alternativeJar as string,
+            additionalParameters: workspace.getConfiguration("antlr4.generation").additionalParameters as string,
         };
 
         if (externalMode) {
-            options.language = workspace.getConfiguration("antlr4.generation")["language"];
-            options.package = workspace.getConfiguration("antlr4.generation")["package"];
-            options.listeners = workspace.getConfiguration("antlr4.generation")["listeners"];
-            options.visitors = workspace.getConfiguration("antlr4.generation")["visitors"];
+            options.language = workspace.getConfiguration("antlr4.generation").language as string;
+            options.package = workspace.getConfiguration("antlr4.generation").package as string;
+            options.listeners = workspace.getConfiguration("antlr4.generation").listeners as boolean;
+            options.visitors = workspace.getConfiguration("antlr4.generation").visitors as boolean;
         }
 
-        let result = backend.generate(document.fileName, options);
+        const result = backend.generate(document.fileName, options);
         result.then((affectedFiles: string[]) => {
-            for (let file of affectedFiles) {
-                let fullPath = path.resolve(basePath, file);
-                workspace.textDocuments.forEach(document => {
-                    if (document.fileName === fullPath) {
-                        processDiagnostic(document);
+            for (const file of affectedFiles) {
+                const fullPath = path.resolve(basePath, file);
+                workspace.textDocuments.forEach((textDocument) => {
+                    if (textDocument.fileName === fullPath) {
+                        processDiagnostic(textDocument);
                     }
                 });
             }
 
             // Finally move interpreter files to our internal folder and reload that.
-            if (externalMode && antlrPath != outputDir) {
+            if (externalMode && antlrPath !== outputDir) {
                 try {
-                    let files = fs.readdirSync(outputDir);
-                    for (let file of files) {
+                    const files = fs.readdirSync(outputDir);
+                    for (const file of files) {
                         if (file.endsWith(".interp")) {
-                            let sourceFile = path.join(outputDir, file);
+                            const sourceFile = path.join(outputDir, file);
                             fs.moveSync(sourceFile, path.join(antlrPath, file), { overwrite: true });
                         }
                     }
-                } catch (error) {
-                    window.showErrorMessage("Error while transfering interpreter data: " + error);
+                } catch (reason) {
+                    progress.stopAnimation();
+                    outputChannel.appendLine(reason);
+                    outputChannel.show(true);
                 }
             }
 
@@ -420,64 +469,49 @@ export function activate(context: ExtensionContext) {
                 updateTreeProviders(document);
 
                 progress.stopAnimation();
+            }).catch((reason) => {
+                progress.stopAnimation();
+                outputChannel.appendLine(reason);
+                outputChannel.show(true);
             });
 
-        }).catch(error => {
+        }).catch((reason) => {
             progress.stopAnimation();
-            outputChannel.appendLine(error);
+            outputChannel.appendLine(reason);
             outputChannel.show(true);
         });
-    }
-
-    function updateTreeProviders(document: TextDocument) {
-        lexerSymbolsProvider.refresh(document);
-        parserSymbolsProvider.refresh(document);
-        importsProvider.refresh(document);
-        channelsProvider.refresh(document);
-        modesProvider.refresh(document);
-        actionsProvider.refresh(document);
-    }
-
-    function isGrammarFile(document: TextDocument): boolean {
-        return document.languageId === "antlr" && document.uri.scheme === "file";
-    }
-
-} // activate() function
-
-export function deactivate() {
-}
+    };
+}; // activate() function
 
 /**
  * Validates launch configuration for grammar debugging.
  */
 class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
-    constructor() { }
+    private server?: Net.Server;
 
-    resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
+    public resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
         token?: CancellationToken): ProviderResult<DebugConfiguration> {
 
-        if (workspace.getConfiguration("antlr4.generation")["mode"] === "none") {
+        if (workspace.getConfiguration("antlr4.generation").mode === "none") {
             return window.showErrorMessage("Interpreter data generation is disabled in the preferences (see " +
-                "'antlr4.generation'). Set this at least to 'internal' to enable debugging.").then(_ => {
-                    return undefined;
-                });
+                "'antlr4.generation'). Set this at least to 'internal' to enable debugging.").then((_) => undefined);
         }
 
         if (!this.server) {
-            this.server = Net.createServer(socket => {
-                socket.on('end', () => {
+            this.server = Net.createServer((socket) => {
+                socket.on("end", () => {
                     //console.error('>> ANTLR debugging client connection closed\n');
                 });
 
                 const session = new AntlrDebugSession(folder, backend, [
-                    parseTreeProvider
+                    parseTreeProvider,
                 ]);
                 session.setRunAsServer(true);
                 session.start(<NodeJS.ReadableStream>socket, socket);
             }).listen(0);
         }
 
-        let info = this.server.address() as Net.AddressInfo;
+        const info = this.server.address() as Net.AddressInfo;
         if (info) {
             config.debugServer = info.port;
         } else {
@@ -487,12 +521,9 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
         return config;
     }
 
-    dispose() {
+    public dispose() {
         if (this.server) {
             this.server.close();
         }
     }
-
-    private server?: Net.Server;
-    private port?: number;
 }

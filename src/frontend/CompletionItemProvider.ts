@@ -1,16 +1,15 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017 Mike Lischke
+ * Copyright (c) 2017, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
 import {
-    TextDocument, Position, CancellationToken, Location, CompletionItem, CompletionItemKind, ProviderResult,
-    CompletionList
-} from 'vscode';
-import { AntlrFacade, SymbolKind } from '../backend/facade';
-import { translateCompletionKind } from './Symbol';
+    TextDocument, Position, CancellationToken,  CompletionItem, ProviderResult, CompletionList,
+} from "vscode";
+import { AntlrFacade, SymbolKind } from "../backend/facade";
+import { translateCompletionKind } from "./Symbol";
 
 // Determines the sort order in the completion list. One value for each SymbolKind.
 const sortKeys = [
@@ -34,36 +33,38 @@ const sortKeys = [
 
 // Descriptions for each symbol kind.
 const details = [
-    "Keyword", // Keyword
-    undefined, // TokenVocab
-    undefined, // Import
-    "Built-in lexer token", // BuiltInLexerToken
-    "Virtual lexer token", // VirtualLexerToken
-    "Fragment lexer token", // FragmentLexerToken
-    "Lexer token", // LexerToken
-    "Built-in lexer mode", // BuiltInMode
-    "Lexer mode", // LexerMode
+    "Keyword",                // Keyword
+    undefined,                // TokenVocab
+    undefined,                // Import
+    "Built-in lexer token",   // BuiltInLexerToken
+    "Virtual lexer token",    // VirtualLexerToken
+    "Fragment lexer token",   // FragmentLexerToken
+    "Lexer token",            // LexerToken
+    "Built-in lexer mode",    // BuiltInMode
+    "Lexer mode",             // LexerMode
     "Built-in token channel", // BuiltInChannel
-    "Token channel", // TokenChannel
-    "Parser rule", // ParserRule
-    "Action", // Action
-    "Predicate", // Predicate
-    "Operator", // Operators usually come with an own description from the backend.
-    "Grammar option"
+    "Token channel",          // TokenChannel
+    "Parser rule",            // ParserRule
+    "Action",                 // Action
+    "Predicate",              // Predicate
+    "Operator",               // Operators usually come with an own description from the backend.
+    "Grammar option",
 ];
 
 export class AntlrCompletionItemProvider {
-    constructor(private backend: AntlrFacade) { }
+    public constructor(private backend: AntlrFacade) { }
 
-    public provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<CompletionList> {
+    public provideCompletionItems(document: TextDocument, position: Position,
+        token: CancellationToken): ProviderResult<CompletionList> {
 
-        let candidates = this.backend.getCodeCompletionCandidates(document.fileName, position.character, position.line + 1);
-        let completionList: CompletionItem[] = [];
+        const candidates = this.backend.getCodeCompletionCandidates(document.fileName, position.character,
+            position.line + 1);
+        const completionList: CompletionItem[] = [];
 
-        candidates.forEach(info => {
-            let item = new CompletionItem(info.name, translateCompletionKind(info.kind));
+        candidates.forEach((info) => {
+            const item = new CompletionItem(info.name, translateCompletionKind(info.kind));
             item.sortText = sortKeys[info.kind] + info.name;
-            item.detail = (info.description != undefined) ? info.description : details[info.kind];
+            item.detail = (info.description !== undefined) ? info.description : details[info.kind];
             switch (info.kind) {
                 case SymbolKind.Keyword:
                     break;
@@ -77,7 +78,7 @@ export class AntlrCompletionItemProvider {
                     break;
                 case SymbolKind.FragmentLexerToken:
                     break;
-                case SymbolKind.LexerToken:
+                case SymbolKind.LexerRule:
                     break;
                 case SymbolKind.BuiltInMode:
                     break;
@@ -93,10 +94,14 @@ export class AntlrCompletionItemProvider {
                     break;
                 case SymbolKind.Predicate:
                     break;
+
+                default: {
+                    break;
+                }
             }
             completionList.push(item);
         });
 
         return new CompletionList(completionList, false);
-    };
+    }
 }

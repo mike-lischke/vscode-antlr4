@@ -1,13 +1,18 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2019, Mike Lischke
+ * Copyright (c) 2016, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
+// I want to keep all related class (most of them really small) in a single place.
+/* eslint-disable max-classes-per-file */
+
+/* eslint-disable no-underscore-dangle */
+
 import {
     LexerInterpreter, ParserInterpreter, TokenStream, CommonToken, ParserRuleContext, RecognitionException,
-    ANTLRErrorListener, Recognizer, Token, Lexer, RuleContext, CharStream
+    ANTLRErrorListener, Recognizer, Token, Lexer, RuleContext, CharStream,
 } from "antlr4ts";
 
 import { RuleStartState, ATNState, ATNStateType, TransitionType, Transition } from "antlr4ts/atn";
@@ -16,26 +21,44 @@ import { Symbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
-    ContextSymbolTable, ActionSymbol, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, AlternativeSymbol
+    ContextSymbolTable, ActionSymbol, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, AlternativeSymbol,
 } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 import { LexerElementContext, ElementContext } from "../parser/ANTLRv4Parser";
 import { PredicateEvaluator } from "./facade";
 
+export enum RunMode {
+    Normal,
+    StepIn,
+    StepOver,
+    StepOut
+}
+
+export interface InternalStackFrame {
+    name: string;
+    source?: string;
+    current: Symbol[];
+    next: Symbol[];
+}
+
 export class GrammarLexerInterpreter extends LexerInterpreter {
-    constructor(
+    private predicates: ActionSymbol[];
+
+    public constructor(
         private evaluator: PredicateEvaluator | undefined,
         private mainContext: SourceContext,
         grammarFileName: string,
         lexerData: InterpreterData,
         input: CharStream) {
 
-        super(grammarFileName, lexerData.vocabulary, lexerData.ruleNames, lexerData.channels, lexerData.modes, lexerData.atn, input);
+        super(grammarFileName, lexerData.vocabulary, lexerData.ruleNames, lexerData.channels, lexerData.modes,
+            lexerData.atn, input);
+
         this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol)
-            .filter((action => action.isPredicate && action.context!.parent instanceof LexerElementContext));
+            .filter(((action) => action.isPredicate && action.context!.parent instanceof LexerElementContext));
     }
 
-    sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
+    public sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
         if (this.evaluator) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.text;
@@ -43,21 +66,25 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
                 try {
                     return this.evaluator.evaluateLexerPredicate(this, ruleIndex, predIndex, predicate);
                 } catch (e) {
-                    throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);
+                    throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` +
+                        (e as string));
                 }
             }
         }
+
         return true;
     }
-
-    private predicates: ActionSymbol[];
 }
 
 export class GrammarParserInterpreter extends ParserInterpreter {
-    public breakPoints: Set<ATNState> = new Set<ATNState>();
+    public breakPoints = new Set<ATNState>();
     public callStack: InternalStackFrame[];
     public pauseRequested = false;
-    constructor(
+
+    private startIsPrecedenceRule: boolean;
+    private predicates: ActionSymbol[];
+
+    public constructor(
         private eventSink: (event: string | symbol, ...args: any[]) => void,
         private evaluator: PredicateEvaluator | undefined,
         private mainContext: SourceContext,
@@ -65,34 +92,39 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         input: TokenStream) {
 
         super(mainContext.fileName, parserData.vocabulary, parserData.ruleNames, parserData.atn, input);
+
         this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol)
-            .filter((action => action.isPredicate && action.context!.parent instanceof ElementContext));
+            .filter(((action) => action.isPredicate && action.context!.parent instanceof ElementContext));
     }
 
-    start(startRuleIndex: number) {
+    public start(startRuleIndex: number): void {
         this.pauseRequested = false;
         this.callStack = [];
-        let startRuleStartState: RuleStartState = this._atn.ruleToStartState[startRuleIndex];
+        const startRuleStartState: RuleStartState = this.atn.ruleToStartState[startRuleIndex];
         this._rootContext = this.createInterpreterRuleContext(undefined, ATNState.INVALID_STATE_NUMBER, startRuleIndex);
         if (startRuleStartState.isPrecedenceRule) {
-            this.enterRecursionRule(this._rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
+            this.enterRecursionRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
         } else {
-            this.enterRule(this._rootContext, startRuleStartState.stateNumber, startRuleIndex);
+            this.enterRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex);
         }
         this.startIsPrecedenceRule = startRuleStartState.isPrecedenceRule;
     }
 
     /**
      * Resume parsing from the current ATN state until the end or we hit a breakpoint.
+     *
+     * @param runMode The mode to use for further run.
+     *
+     * @returns The context with which we ended the run.
      */
-    continue(runMode: RunMode): ParserRuleContext {
+    public continue(runMode: RunMode): ParserRuleContext {
         // Need the current step depth for step over/out.
-        let stackDepth = this.callStack.length;
+        const stackDepth = this.callStack.length;
 
         // If we are not going to jump into a rule then make step over a step in.
         // This way we can use step over exclusively for rule processing.
         let p = this.atnState;
-        if (p.transition(0).serializationType != TransitionType.RULE && runMode == RunMode.StepOver) {
+        if (p.transition(0).serializationType !== TransitionType.RULE && runMode === RunMode.StepOver) {
             runMode = RunMode.StepIn;
         }
 
@@ -104,7 +136,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 runMode = RunMode.StepIn; // Stop at next possible position.
             }
 
-            if (this.breakPoints.has(p) && p.stateType != ATNStateType.RULE_STOP) {
+            if (this.breakPoints.has(p) && p.stateType !== ATNStateType.RULE_STOP) {
                 // Don't mark a pending rule end break point here. That has already been handled.
                 breakPointPending = true;
                 runMode = RunMode.StepIn;
@@ -115,22 +147,24 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                     if (this._ctx.isEmpty) {
                         // End of start rule.
                         if (this.startIsPrecedenceRule) {
-                            let result: ParserRuleContext = this._ctx;
-                            let parentContext = this._parentContextStack.pop()!;
+                            const result: ParserRuleContext = this._ctx;
+                            const parentContext = this._parentContextStack.pop()!;
                             this.unrollRecursionContexts(parentContext[0]);
                             this.eventSink("end");
+
                             return result;
                         } else {
                             this.exitRule();
                             this.eventSink("end");
-                            return this._rootContext;
+
+                            return this.rootContext;
                         }
                     }
 
                     this.callStack.pop();
                     this.visitRuleStopState(p);
-                    if ((runMode == RunMode.StepOut && stackDepth == this.callStack.length + 1)
-                        || (runMode == RunMode.StepOver && stackDepth == this.callStack.length)) {
+                    if ((runMode === RunMode.StepOut && stackDepth === this.callStack.length + 1)
+                        || (runMode === RunMode.StepOver && stackDepth === this.callStack.length)) {
                         // Reached the rule end right before a step over/out.
                         // Continue with step-in to stop at the next work item.
                         runMode = RunMode.StepIn;
@@ -139,21 +173,19 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 }
 
                 case ATNStateType.RULE_START: {
-                    let frame = new InternalStackFrame();
-                    let ruleName = this.ruleNameFromIndex(this.atnState.ruleIndex);
+                    const ruleName = this.ruleNameFromIndex(this.atnState.ruleIndex);
                     if (ruleName) {
-                        let ruleSymbol = this.mainContext.resolveSymbol(ruleName);
+                        const ruleSymbol = this.mainContext.resolveSymbol(ruleName);
                         if (ruleSymbol) {
                             // Get the source name from the symbol's symbol table (which doesn't
                             // necessarily correspond to the one we have set for the debugger).
-                            let st = ruleSymbol.symbolTable as ContextSymbolTable;
-                            if (st.owner) {
-                                frame.source = st.owner.fileName;
-                            }
-                            frame.name = ruleName;
-                            frame.current = [ruleSymbol];
-                            frame.next = [ruleSymbol];
-                            this.callStack.push(frame);
+                            const st = ruleSymbol.symbolTable as ContextSymbolTable;
+                            this.callStack.push({
+                                name: ruleName,
+                                current: [ruleSymbol],
+                                next: [ruleSymbol],
+                                source: st.owner ? st.owner.fileName : undefined,
+                            });
                         } else {
                             throw new Error("Cannot find rule \"" + ruleName + "\" - debugging aborted.");
                         }
@@ -179,8 +211,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
             // Update the list of next symbols if there's a label or rule ahead.
             p = this.atnState;
-            if (p.numberOfTransitions == 1) {
-                let transition = p.transition(0);
+            if (p.numberOfTransitions === 1) {
+                const transition = p.transition(0);
                 switch (transition.serializationType) {
                     case TransitionType.RULE:
                     case TransitionType.ATOM:
@@ -188,26 +220,26 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                     case TransitionType.RANGE:
                     case TransitionType.SET:
                     case TransitionType.WILDCARD: {
-                        let lastStackFrame = this.callStack[this.callStack.length - 1];
+                        const lastStackFrame = this.callStack[this.callStack.length - 1];
                         lastStackFrame.current = lastStackFrame.next;
                         this.computeNextSymbols(lastStackFrame, transition);
-                        if (runMode == RunMode.StepIn) {
+                        if (runMode === RunMode.StepIn) {
                             if (breakPointPending) {
                                 this.eventSink("stopOnBreakpoint");
                             } else {
                                 this.eventSink("stopOnStep");
                             }
 
-                            return this._rootContext;
+                            return this.rootContext;
                         }
                         break;
                     }
 
                     case TransitionType.EPSILON: { // Stop on the rule's semicolon.
-                        if (transition.target.stateType == ATNStateType.RULE_STOP) {
-                            let isBreakPoint = this.breakPoints.has(transition.target);
-                            if (runMode == RunMode.StepIn || isBreakPoint) {
-                                let lastStackFrame = this.callStack[this.callStack.length - 1];
+                        if (transition.target.stateType === ATNStateType.RULE_STOP) {
+                            const isBreakPoint = this.breakPoints.has(transition.target);
+                            if (runMode === RunMode.StepIn || isBreakPoint) {
+                                const lastStackFrame = this.callStack[this.callStack.length - 1];
                                 lastStackFrame.current = lastStackFrame.next;
                                 this.computeNextSymbols(lastStackFrame, transition);
                                 if (isBreakPoint) {
@@ -216,16 +248,20 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                                     this.eventSink("stopOnStep");
                                 }
 
-                                return this._rootContext;
+                                return this.rootContext;
                             }
                         }
+                    }
+
+                    default: {
+                        break;
                     }
                 }
             }
         }
     }
 
-    sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
+    public sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
         if (this.evaluator) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.text;
@@ -233,21 +269,24 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 try {
                     return this.evaluator.evaluateParserPredicate(this, ruleIndex, predIndex, predicate);
                 } catch (e) {
-                    throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` + e);
+                    throw Error(`There was an error while evaluating predicate "${predicate}". ` +
+                        "Evaluation returned: " + e);
                 }
             }
         }
+
         return true;
     }
 
-    action(_localctx: RuleContext | undefined, ruleIndex: number, actionIndex: number): void {
-        let i = 0;
+    public action(_localctx: RuleContext | undefined, ruleIndex: number, actionIndex: number): void {
+        // not used yet
     }
 
     private ruleNameFromIndex(ruleIndex: number): string | undefined {
         if (ruleIndex < 0 || ruleIndex >= this.ruleNames.length) {
             return;
         }
+
         return this.ruleNames[ruleIndex];
     }
 
@@ -263,24 +302,24 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         frame.next = [];
 
         let targetRule = "";
-        if (transition.target.stateType == ATNStateType.RULE_START) {
+        if (transition.target.stateType === ATNStateType.RULE_START) {
             targetRule = this.ruleNameFromIndex(transition.target.ruleIndex)!;
         }
 
-        for (let source of frame.current) {
-            let candidates = this.nextCandidates(source);
-            for (let candidate of candidates) {
+        for (const source of frame.current) {
+            const candidates = this.nextCandidates(source);
+            for (const candidate of candidates) {
                 if (candidate instanceof RuleReferenceSymbol) {
-                    if (candidate.name == targetRule) {
+                    if (candidate.name === targetRule) {
                         frame.next.push(candidate);
                     }
                 } else {
-                    if (candidate.name == ";") { // Special case: end of rule.
+                    if (candidate.name === ";") { // Special case: end of rule.
                         frame.next.push(candidate);
                     } else if (candidate.context instanceof TerminalNode) {
-                        let type = this.tokenIndexFromName(candidate.context.symbol.text!);
-                        let currentType = this.inputStream.LA(1);
-                        if (type == currentType
+                        const type = this.tokenIndexFromName(candidate.context.symbol.text!);
+                        const currentType = this.inputStream.LA(1);
+                        if (type === currentType
                             && transition.matches(currentType, Lexer.MIN_CHAR_VALUE, Lexer.MAX_CHAR_VALUE)) {
                             frame.next.push(candidate);
                         }
@@ -292,10 +331,11 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     }
 
     /**
-     * Returns a list of reachable leaf symbols from the given symbol.
+     * @param start The symbol to start searching from.
+     * @returns A list of reachable leaf symbols from the given symbol.
      */
     private nextCandidates(start: Symbol): Symbol[] {
-        let result: Symbol[] = [];
+        const result: Symbol[] = [];
 
         // We can get a rule symbol as start, which means we want to get the candidates
         // from the rule's block, instead its sibling (which is another rule).
@@ -309,14 +349,19 @@ export class GrammarParserInterpreter extends ParserInterpreter {
             // Check EBNF suffixes first.
             if (next instanceof EbnfSuffixSymbol) {
                 switch (next.name[0]) {
-                    case '?': { // The previous symbol was optional. We are done with it.
+                    case "?": { // The previous symbol was optional. We are done with it.
                         next = next.nextSibling;
                         break;
                     }
-                    case '+':
-                    case '*': { // A loop - the previous symbol is again a candidate.
+
+                    case "+":
+                    case "*": { // A loop - the previous symbol is again a candidate.
                         result.push(start);
                         next = next.nextSibling;
+                        break;
+                    }
+
+                    default: {
                         break;
                     }
                 }
@@ -331,7 +376,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 next = next.nextSibling;
 
                 // If the next symbol is a question mark, this block is actually a predicate.
-                if (next && next.name == "?") {
+                if (next && next.name === "?") {
                     next = next.nextSibling;
                 }
             }
@@ -342,6 +387,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 while (true) {
                     if (block.parent instanceof RuleSymbol) {
                         result.push(block.lastSibling); // The semicolon.
+
                         return result;
                     }
 
@@ -350,15 +396,20 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                     if (next) {
                         if (next instanceof EbnfSuffixSymbol) {
                             switch (next.name[0]) {
-                                case '?': {
+                                case "?": {
                                     next = next.nextSibling;
                                     break;
                                 }
-                                case '+':
-                                case '*': {
+
+                                case "+":
+                                case "*": {
                                     // Include the candidates from the previous block again.
                                     result.push(...this.candidatesFromBlock(block as ScopedSymbol));
                                     next = next.nextSibling;
+                                    break;
+                                }
+
+                                default: {
                                     break;
                                 }
                             }
@@ -381,8 +432,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         // Check cardinality which allows optional elements.
         next = next.nextSibling;
         if (next instanceof EbnfSuffixSymbol) {
-            if (next.name[0] == '?' || next.name[0] == '*') {
-                let subResult = this.nextCandidates(next);
+            if (next.name[0] === "?" || next.name[0] === "*") {
+                const subResult = this.nextCandidates(next);
                 result.push(...subResult);
             }
         }
@@ -391,8 +442,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     }
 
     private candidatesFromBlock(block: ScopedSymbol): Symbol[] {
-        let result: Symbol[] = [];
-        for (let alt of block.children) {
+        const result: Symbol[] = [];
+        for (const alt of block.children) {
             let next: Symbol | undefined = (alt as AlternativeSymbol).children[0];
             if (next instanceof VariableSymbol) { // Jump over variable assignments.
                 next = next.nextSibling;
@@ -401,7 +452,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 }
             } else if (next instanceof ActionSymbol) { // Actions/predicates.
                 next = next.nextSibling;
-                if (next && next.name == "?") {
+                if (next && next.name === "?") {
                     next = next.nextSibling;
                 }
             }
@@ -416,8 +467,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 // Check cardinality which allows optional elements.
                 next = next.nextSibling;
                 if (next instanceof EbnfSuffixSymbol) {
-                    if (next.name[0] == '?' || next.name[0] == '*') {
-                        let subResult = this.nextCandidates(next);
+                    if (next.name[0] === "?" || next.name[0] === "*") {
+                        const subResult = this.nextCandidates(next);
                         result.push(...subResult);
                     }
                 }
@@ -428,9 +479,9 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     }
 
     private tokenIndexFromName(tokenName: string): number {
-        let vocab = this.vocabulary;
+        const vocab = this.vocabulary;
         for (let i = 0; i <= vocab.maxTokenType; ++i) {
-            if (vocab.getSymbolicName(i) == tokenName) {
+            if (vocab.getSymbolicName(i) === tokenName) {
                 return i;
             }
         }
@@ -438,7 +489,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         // Implicit literals don't have a symbolic name.
         // Therefor we do another search run here for the literal "name".
         for (let i = 0; i <= vocab.maxTokenType; ++i) {
-            if (vocab.getLiteralName(i) == tokenName) {
+            if (vocab.getLiteralName(i) === tokenName) {
                 return i;
             }
         }
@@ -446,39 +497,26 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         return -1;
     }
 
-    private startIsPrecedenceRule: boolean;
-    private predicates: ActionSymbol[];
-}
-
-export enum RunMode {
-    Normal,
-    StepIn,
-    StepOver,
-    StepOut
-}
-
-export class InternalStackFrame {
-    name: string;
-    source: string;
-    current: Symbol[];
-    next: Symbol[];
 }
 
 export class InterpreterLexerErrorListener implements ANTLRErrorListener<number> {
-    constructor(private eventSink: (event: string | symbol, ...args: any[]) => void) {
+    public constructor(private eventSink: (event: string | symbol, ...args: any[]) => void) {
     }
 
-    syntaxError<T extends number>(recognizer: Recognizer<T, any>, offendingSymbol: T | undefined, line: number,
+    public syntaxError<T extends number>(recognizer: Recognizer<T, any>, offendingSymbol: T | undefined, line: number,
         charPositionInLine: number, msg: string, e: RecognitionException | undefined): void {
-        this.eventSink("output", `Lexer error (${line}, ${charPositionInLine + 1}): ${msg}`, recognizer.inputStream!.sourceName, line, charPositionInLine, true);
+        this.eventSink("output", `Lexer error (${line}, ${charPositionInLine + 1}): ${msg}`,
+            recognizer.inputStream!.sourceName, line, charPositionInLine, true);
     }
 }
 
 export class InterpreterParserErrorListener implements ANTLRErrorListener<CommonToken> {
-    constructor(private eventSink: (event: string | symbol, ...args: any[]) => void) {
+    public constructor(private eventSink: (event: string | symbol, ...args: any[]) => void) {
     }
 
-    syntaxError<T extends Token>(recognizer: Recognizer<T, any>, offendingSymbol: T | undefined, line: number, charPositionInLine: number, msg: string, e: RecognitionException | undefined): void {
-        this.eventSink("output", `Parser error (${line}, ${charPositionInLine + 1}): ${msg}`, recognizer.inputStream!.sourceName, line, charPositionInLine, true);
+    public syntaxError<T extends Token>(recognizer: Recognizer<T, any>, offendingSymbol: T | undefined, line: number,
+        charPositionInLine: number, msg: string, e: RecognitionException | undefined): void {
+        this.eventSink("output", `Parser error (${line}, ${charPositionInLine + 1}): ${msg}`,
+            recognizer.inputStream!.sourceName, line, charPositionInLine, true);
     }
 }

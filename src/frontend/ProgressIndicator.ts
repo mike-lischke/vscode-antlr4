@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2019, Mike Lischke
+ * Copyright (c) 2017, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -8,28 +8,28 @@
 import { StatusBarAlignment, StatusBarItem, window } from "vscode";
 
 export class ProgressIndicator {
-    private static progressChars: string = "⠁⠃⠅⡁⢁⠡⠑⠉⠁⠃⠇⡃⢃⠣⠓⠋⠃⠃⠇⡇⢇⠧⠗⠏⠇⠇⠇⡇⣇⡧⡗⡏⡇⡇⡇⡇⣇⣧⣗⣏⣇⣇⣇⣇⣇⣧⣷⣯⣧⣧⣧⣧⣧⣧⣷⣿⣿⣿⣿⣿⣿⣿⣿";
+    private static progressChars = "⠁⠃⠅⡁⢁⠡⠑⠉⠁⠃⠇⡃⢃⠣⠓⠋⠃⠃⠇⡇⢇⠧⠗⠏⠇⠇⠇⡇⣇⡧⡗⡏⡇⡇⡇⡇⣇⣧⣗⣏⣇⣇⣇⣇⣇⣧⣷⣯⣧⣧⣧⣧⣧⣧⣷⣿⣿⣿⣿⣿⣿⣿⣿";
 
     private statusBarItem: StatusBarItem;
     private timer: any;
     private progress = 0;
 
-    constructor() {
+    public constructor() {
         this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 0);
         this.statusBarItem.hide();
         this.statusBarItem.tooltip = "ANTLR4 generating interpreter data";
     }
 
-    startAnimation() {
+    public startAnimation(): void {
         this.statusBarItem.show();
         this.timer = setInterval(() => {
-            let index = this.progress % ProgressIndicator.progressChars.length;
+            const index = this.progress % ProgressIndicator.progressChars.length;
             this.statusBarItem.text = "ANTLR " + ProgressIndicator.progressChars.charAt(index);
             this.progress++;
         }, 50);
     }
 
-    stopAnimation() {
+    public stopAnimation(): void {
         clearInterval(this.timer);
         this.timer = null;
         this.statusBarItem.hide();

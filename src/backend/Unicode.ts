@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2019, Mike Lischke
+ * Copyright (c) 2019, 2020, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -288,7 +288,7 @@ const UnicodeBlocks: Array<[Interval, string, number]> = [
     [new Interval(0x2CEB0, 0x2EBEF), "CJK Unified Ideographs Extension F", 5],
     [new Interval(0x2F800, 0x2FA1F), "CJK Compatibility Ideographs Supplement", 5],
     [new Interval(0xE0000, 0xE007F), "Tags", 1],
-    [new Interval(0xE0100, 0xE01EF), "Variation Selectors Supplement", 1]
+    [new Interval(0xE0100, 0xE01EF), "Variation Selectors Supplement", 1],
 ];
 
 let predefinedWeightSum = 0;
@@ -311,37 +311,45 @@ export interface UnicodeOptions {
 
     // Exclude any character beyond the basic multilingual pane (0x10000 and higher).
     limitToBMP?: boolean;
-};
+}
 
 /**
  * Creates an interval set with all printable Unicode characters.
  *
  * @param options Values that specify the Unicode set to create.
+ *
+ * @returns A set of intervals with the requested Unicode code points.
  */
-export function printableUnicodePoints(options: UnicodeOptions): IntervalSet {
+export const printableUnicodePoints = (options: UnicodeOptions): IntervalSet => {
     if (!assignedIntervals) {
         // Create a set with all Unicode code points that are assigned and not in categories with unprintable chars,
         // surrogate pairs, formatting + private codes.
-        let intervalsToExclude = codePointsToIntervals('General_Category/Unassigned/code-points.js');
-        intervalsToExclude = codePointsToIntervals('General_Category/Control/code-points.js', intervalsToExclude);
-        intervalsToExclude = codePointsToIntervals('General_Category/Format/code-points.js', intervalsToExclude);
-        intervalsToExclude = codePointsToIntervals('General_Category/Surrogate/code-points.js', intervalsToExclude);
-        intervalsToExclude = codePointsToIntervals('General_Category/Private_Use/code-points.js', intervalsToExclude);
+        let intervalsToExclude = codePointsToIntervals("General_Category/Unassigned/code-points.js");
+        intervalsToExclude = codePointsToIntervals("General_Category/Control/code-points.js", intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("General_Category/Format/code-points.js", intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("General_Category/Surrogate/code-points.js", intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("General_Category/Private_Use/code-points.js", intervalsToExclude);
 
         if (options.excludeCJK) {
-            intervalsToExclude = codePointsToIntervals('Block/CJK_Unified_Ideographs/code-points.js', intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals('Block/CJK_Unified_Ideographs_Extension_A/code-points.js', intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals('Block/CJK_Compatibility_Ideographs/code-points.js', intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals('Block/Hangul_Syllables/code-points.js', intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals('Block/Yi_Syllables/code-points.js', intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Block/CJK_Unified_Ideographs/code-points.js",
+                intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Block/CJK_Unified_Ideographs_Extension_A/code-points.js",
+                intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Block/CJK_Compatibility_Ideographs/code-points.js",
+                intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Block/Hangul_Syllables/code-points.js", intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Block/Yi_Syllables/code-points.js", intervalsToExclude);
         }
 
         if (options.excludeRTL) {
             // Note: there are also a few top-to-bottom scripts (e.g. mongolian), but these are not considered here.
-            intervalsToExclude = codePointsToIntervals('Bidi_Class/Right_To_Left/code-points.js', intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals('Bidi_Class/Right_To_Left_Embedding/code-points.js', intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals('Bidi_Class/Right_To_Left_Isolate/code-points.js', intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals('Bidi_Class/Right_To_Left_Override/code-points.js', intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left/code-points.js", intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Embedding/code-points.js",
+                intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Isolate/code-points.js",
+                intervalsToExclude);
+            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Override/code-points.js",
+                intervalsToExclude);
         }
 
         let sourceIntervals: IntervalSet;
@@ -353,18 +361,20 @@ export function printableUnicodePoints(options: UnicodeOptions): IntervalSet {
 
         assignedIntervals = intervalsToExclude.complement(sourceIntervals);
     }
+
     return assignedIntervals;
-}
+};
 
 /**
  * Returns a random Unicode code block, based on the predefined weights and the overrides given as parameter.
  *
  * @param blockOverrides Optionally contains name/value pairs to specify custom weights for code blocks.
+ *
  * @returns An interval containing start and stop values for a random code block.
  */
-export function randomCodeBlock(blockOverrides?: Map<string, number>): Interval {
+export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval => {
     if (predefinedWeightSum === 0) {
-        for (let entry of UnicodeBlocks) {
+        for (const entry of UnicodeBlocks) {
             predefinedWeightSum += entry[2];
         }
     }
@@ -373,7 +383,7 @@ export function randomCodeBlock(blockOverrides?: Map<string, number>): Interval 
     if (!blockOverrides) {
         weightSum = predefinedWeightSum;
     } else {
-        for (let entry of UnicodeBlocks) {
+        for (const entry of UnicodeBlocks) {
             if (blockOverrides.has(entry[1])) {
                 weightSum += blockOverrides.get(entry[1])!;
             } else {
@@ -383,7 +393,7 @@ export function randomCodeBlock(blockOverrides?: Map<string, number>): Interval 
     }
 
     let randomValue = Math.random() * weightSum;
-    for (let entry of UnicodeBlocks) {
+    for (const entry of UnicodeBlocks) {
         let weight = entry[2];
         if (blockOverrides && blockOverrides.has(entry[1])) {
             weight = blockOverrides.get(entry[1])!;
@@ -395,22 +405,28 @@ export function randomCodeBlock(blockOverrides?: Map<string, number>): Interval 
     }
 
     return new Interval(0, 0);
-}
+};
 
 /**
  * Converts the code points from the given file to an interval set.
+ *
+ * @param dataFile The name of a file to import.
+ * @param existing Optionally specifies an interval set with previously red values (to merge with the new ones).
+ *
+ * @returns A new set of Unicode code points.
  */
-function codePointsToIntervals(dataFile: string, existing?: IntervalSet): IntervalSet {
-    let charsToExclude = require('unicode-11.0.0/' + dataFile);
-    let result = existing ? existing : new IntervalSet([]);
+const codePointsToIntervals = (dataFile: string, existing?: IntervalSet): IntervalSet => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
+    const charsToExclude: number[] = require("unicode-11.0.0/" + dataFile);
+    const result = existing ? existing : new IntervalSet([]);
 
     // Code points are sorted in increasing order, which we can use to speed up insertion.
     let start = charsToExclude[0];
     let end = start;
     for (let i = 1; i < charsToExclude.length; ++i) {
-        let code = charsToExclude[i];
-        if (end + 1 == code) {
-            ++end
+        const code = charsToExclude[i];
+        if (end + 1 === code) {
+            ++end;
             continue;
         }
 
@@ -422,4 +438,4 @@ function codePointsToIntervals(dataFile: string, existing?: IntervalSet): Interv
     result.add(start, end);
 
     return result;
-}
+};
