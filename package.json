@@ -7,7 +7,7 @@
         "color": "#2789e1",
         "theme": "dark"
     },
-    "version": "2.2.3",
+    "version": "2.2.4",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -19,7 +19,7 @@
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.38.0"
+        "vscode": "^1.46.0"
     },
     "categories": [
         "Programming Languages",
@@ -572,7 +572,7 @@
         "chai": "^4.2.0",
         "eslint": "^7.2.0",
         "eslint-plugin-import": "^2.21.2",
-        "eslint-plugin-jsdoc": "^27.0.6",
+        "eslint-plugin-jsdoc": "^27.0.7",
         "eslint-plugin-prefer-arrow": "^1.2.1",
         "mocha": "^8.0.1",
         "tslint": "^6.1.2",

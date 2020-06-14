@@ -14,7 +14,7 @@
 
 ## What's New
 
-All ANTLR4 functionality is now bundled in an own sidebar. Also, predicates with native (JS) code are now supported. See also the [Release Notes](#release-notes) for further details.
+The parser generation process has been improved by using the latest official ANTLR4 jar and by adding two settings which allow to specify an own jar and additional parameters to pass on during generation.
 
 ## Features
 
@@ -25,7 +25,7 @@ All ANTLR4 functionality is now bundled in an own sidebar. Also, predicates with
 * Syntax coloring for ANTLR grammars (.g and .g4 files)
 >![Syntax Coloring](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-5.png)
 
-* Comes with an own beautiful color theme, which not only includes all the [recommended groups](http://manual.macromates.com/en/language_grammars), but also some special rules for grammar elements that you won't find in other themes (e.g. alt labels and options). They are, unmodestly, named `Complete Dark` and `Complete Light`.
+* Comes with an own beautiful color theme, which not only includes all the [recommended groups](http://manual.macromates.com/en/language_grammars), but also some special rules for grammar elements that you won't find in other themes (e.g. alt labels and options). They are, immodestly, named `Complete Dark` and `Complete Light`.
 
 ### Code Completion + Symbol Information
 
@@ -72,19 +72,30 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
+Note: there are sometimes holes between release numbers, which are caused by the need of re-releasing a version due to release problems. The do not change anything in the extension code.
+
+### 2.2.4
+- You can now specify an alternative ANTLR4 jar file for parser generation and also use custom parameters. Both values can be set in the generation settings of the extension.
+- Handling of debug configuration has been changed to what is the preferred way by the vscode team, supporting so variables there now.
+- Further work has been done on the sentence generation feature, but it is still not enabled in the extension, due to a number of issues. Help is welcome to finished that, if someone has a rather urgent need for this.
+- The extension view for ANTLR4 grammars now shows only relevant views for a specific grammar (e.g. no lexer modes, if a parser grammar is active).
+- Code evaluation for grammar predicates has been changed to use an own VM for isolation. Plays now better with vscode (no need anymore to manually modify the imports cache).
+- Updated ANTLR4 jar to latest version (4.8.0). It's no longer a custom build, but the official release.
+- ESList has been enabled and the entire code base has been overhauled to fix any linter error/warning.
+
 ### 2.2.0
-- Update to latest antlr4ts version.
+- Update to latest `antlr4ts` version.
 - Added a new view container with sidebar icon for ANTLR4 files.
 - Added lists of actions and predicates in a grammar to the sidebar.
 - Added support for predicates in grammars. Code must be written in Javascript.
-- Improved stacktrace display in debug view.
+- Improved stack trace display in debug view.
 - Reorganized documentation, with individual documents for specific aspects like debugging.
 - Enhanced parsing support for tests, with an overhaul of the lexer and parser interpreters.
 - Textual parse trees now include a list of recognized tokens.
 - Improved sentence generation, using weight based ATN graph traveling. Added full Unicode support for identifier generation and a dedicated test for this. Still, the sentence generator is not yet available in the editor.
 - Overhaul of most of the used extension icons (with support for light + dark themes).
 - Added a reference provider.
-- Fixed Bug #87: Omitting startrule doesn't fallback to first parser rule (when debugging)
+- Fixed Bug #87: Omitting start rule doesn't fallback to first parser rule (when debugging)
 - Graphs no longer need an internet connection (to load D3.js). Instead it's taken from the D3 node module.
 - Added content security policies to all graphs, as required by vscode.
 
