@@ -539,7 +539,7 @@
     },
     "scripts": {
         "publish": "vsce publish",
-        "test": "tsc && mocha ./out/test/backend/test.js",
+        "test": "tsc && ./node_modules/mocha/bin/_mocha ./out/test/backend/test.js",
         "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\""
     },
@@ -573,6 +573,7 @@
         "eslint-plugin-import": "^2.21.2",
         "eslint-plugin-jsdoc": "^27.0.6",
         "eslint-plugin-prefer-arrow": "^1.2.1",
+        "mocha": "^8.0.1",
         "tslint": "^6.1.2",
         "typescript": "^3.9.5",
         "typescript-eslint-parser": "22.0.0",

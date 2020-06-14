@@ -7,7 +7,7 @@
             "protocol": "inspector",
             "request": "launch",
             "preLaunchTask": "tsc",
-            "program": "/usr/local/lib/node_modules/mocha/bin/mocha",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": ["--no-timeouts", "--colors", "${workspaceRoot}/out/test/**/*.js"],
             "stopOnEntry": false,
             "runtimeExecutable": null,
