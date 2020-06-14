@@ -374,6 +374,11 @@ export class GrammarDebugger extends EventEmitter {
                 start: this.convertToken(tree.start as CommonToken),
                 stop: this.convertToken(tree.stop as CommonToken),
                 id: this.computeHash(tree),
+                range: {
+                    startIndex: tree.sourceInterval.a,
+                    stopIndex: tree.sourceInterval.b,
+                    length: tree.sourceInterval.length,
+                },
                 children,
             };
         } else if (tree instanceof ErrorNode) {
