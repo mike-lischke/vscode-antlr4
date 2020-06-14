@@ -825,8 +825,6 @@ describe("vscode-antlr4-backend:", function () {
         // For running it you must copy the ANTLR4 grammar directory into "test/backend/formatting/grammars-v4"
         // (or adjust the path in this test).
         xit("ANTLR grammar directory", () => {
-            this.timeout(20000);
-
             const files = glob.sync("test/backend/formatting/grammars-v4/**/*.g4", {});
             for (const file of files) {
                 const [text] = backend.formatGrammar(file, {
@@ -847,12 +845,11 @@ describe("vscode-antlr4-backend:", function () {
                 const expected = fs.readFileSync(output, { encoding: "utf8" });
                 expect(expected, "Test 1").to.equal(text);
             }
-        });
+        }).timeout(20000);
     });
 
     describe("Debugger:", () => {
         it("Run interpreter", async () => {
-            this.timeout(20000);
             await backend.generate("test/backend/CPP14.g4", { outputDir: "generated", language: "Java" });
             try {
                 const code = fs.readFileSync("test/backend/code.cpp", { encoding: "utf8" });
@@ -867,7 +864,7 @@ describe("vscode-antlr4-backend:", function () {
                 backend.releaseGrammar("test/backend/CPP14.g4");
                 fs.removeSync("generated");
             }
-        });
+        }).timeout(20000);
     });
 });
 
