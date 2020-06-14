@@ -540,6 +540,7 @@
     "scripts": {
         "publish": "vsce publish",
         "test": "tsc && ./node_modules/mocha/bin/_mocha ./out/test/backend/test.js",
+        "test-win": "tsc.cmd && mocha ./out/test/backend/test.js",
         "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\""
     },

@@ -20,6 +20,29 @@
             "sourceMaps": true
         },
         {
+            "name": "Mocha Tests on Win",
+            "type": "pwa-node",
+            "request": "launch",
+            "preLaunchTask": "tsc-win",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "tdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "${workspaceFolder}/out/test"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "NODE_ENV": "testing"
+            },
+            "outFiles": [
+                "${workspaceRoot}/out/test/**/*.js"
+            ],
+            "sourceMaps": true
+        },
+        {
             "type": "extensionHost",
             "request": "launch",
             "name": "Extension starten",

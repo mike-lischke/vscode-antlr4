@@ -1,15 +1,47 @@
 {
     "version": "2.0.0",
-    "command": "tsc",
-    "args": ["-w", "-p", ".", "--outDir", "./out"],
-    "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared",
-        "showReuseMessage": true,
-        "clear": false
-    },
-    "isBackground": true,
-    "problemMatcher": "$tsc-watch"
+    "tasks": [
+        {
+            "label": "tsc",
+            "command": "tsc",
+            "args": [
+                "-w",
+                "-p",
+                ".",
+                "--outDir",
+                "./out"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "isBackground": true,
+            "problemMatcher": "$tsc-watch"
+        },
+        {
+            "label": "tsc-win",
+            "command": "tsc.cmd",
+            "args": [
+                "-w",
+                "-p",
+                ".",
+                "--outDir",
+                "./out"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "isBackground": true,
+            "problemMatcher": "$tsc-watch"
+        }
+    ]
 }
