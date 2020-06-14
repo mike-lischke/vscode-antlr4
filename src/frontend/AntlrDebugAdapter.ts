@@ -517,7 +517,7 @@ export class AntlrDebugSession extends DebugSession {
             const text: string = args[0];
 
             const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
-            e.body.source = this.createSource(filePath);
+            e.body.source = filePath ? this.createSource(filePath) : undefined;
             e.body.line = line;
             e.body.column = column;
             e.body.category = isError ? "stderr" : "stdout";
