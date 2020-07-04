@@ -77,15 +77,15 @@ export const activate = (context: ExtensionContext): void => {
      *
      * @returns True if this is indeed a grammar file.
      */
-    const isGrammarFile = (document: TextDocument): boolean =>
-        document.languageId === "antlr" && document.uri.scheme === "file";
+    const isGrammarFile = (document: TextDocument | undefined): boolean =>
+        document ? (document.languageId === "antlr" && document.uri.scheme === "file") : false;
 
     /**
      * Updates all used tree providers for the given document.
      *
      * @param document The source for the updates.
      */
-    const updateTreeProviders = (document: TextDocument): void => {
+    const updateTreeProviders = (document: TextDocument | undefined): void => {
         lexerSymbolsProvider.refresh(document);
         parserSymbolsProvider.refresh(document);
         importsProvider.refresh(document);
@@ -342,9 +342,9 @@ export const activate = (context: ExtensionContext): void => {
         }
     });
 
-    window.onDidChangeActiveTextEditor((textEditor: TextEditor) => {
-        if (isGrammarFile(textEditor.document)) {
-            const info = backend.getContextDetails(textEditor.document.fileName); 1;
+    window.onDidChangeActiveTextEditor((textEditor: TextEditor | undefined) => {
+        if (isGrammarFile(textEditor?.document)) {
+            const info = backend.getContextDetails(textEditor!.document.fileName); 1;
             void Utils.switchVsCodeContext("antlr4.isLexer", info.type === GrammarType.Lexer);
             void Utils.switchVsCodeContext("antlr4.isParser", info.type === GrammarType.Parser);
             void Utils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);
@@ -356,7 +356,7 @@ export const activate = (context: ExtensionContext): void => {
             void Utils.switchVsCodeContext("antlr4.isCombined", false);
             void Utils.switchVsCodeContext("antlr4.hasImports", false);
         }
-        updateTreeProviders(textEditor.document);
+        updateTreeProviders(textEditor?.document);
     });
 
     /**
