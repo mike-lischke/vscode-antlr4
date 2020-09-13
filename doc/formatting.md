@@ -1,4 +1,4 @@
-# Parser Generation
+# Grammar Formatting
 
 The extension is able to format grammar source code, considering a [large set of options](extension-settings.md#grammar-formatting). The [clang-format](http://clang.llvm.org/docs/ClangFormatStyleOptions.html) tool acted as a model for option naming and some settings that have been taken over. Beside the usual things like block formatting, empty lines and comment formatting, there's a powerful alignment implementation. It allows to align certain grammar elements (trailing comments, lexer commands, alt labels, predicates and others) between consecutive lines that contain this grammar element (when grouped alignment is on) or for the entire file. There can even be multiple alignments on a line:
 
