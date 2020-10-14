@@ -73,7 +73,10 @@
                     "description": "Enable/disable the references code lens"
                 },
                 "antlr4.customcss": {
-                    "type": [],
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
                     "default": [],
                     "description": "List of custom CSS URIs for diagram SVG files"
                 },
@@ -164,7 +167,7 @@
                         },
                         "additionalParameters": {
                             "type": "string",
-                            "description": "Any other commandline parameters you want to send to the ANTLR4 jar"
+                            "description": "Any other command line parameters you want to send to the ANTLR4 jar"
                         }
                     }
                 },
