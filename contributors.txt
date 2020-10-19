@@ -50,3 +50,4 @@ YYYY/MM/DD, github id, Full name, email
 2019/04/16, mike-lischke, Mike Lischke, mike@lischke-online.de
 2019/04/20, WopsS, Octavian Dima, Wo**S@users.noreply.github.com
 2019/10/26, mrd1996, Miguel Dias, mrd1996@hotmail.com
+2020/10/19, serras, Alejandro Serrano Mena, trupill@gmail.com

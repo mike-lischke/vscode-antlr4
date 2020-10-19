@@ -29,48 +29,38 @@ Grammars sometimes contain code in the target language of the generated lexer/pa
 
 This is possible by using a Javascript file, which contains code to evaluate semantic predicates (see the [Setup section](#setup) for how to enable it). That means however, the predicates must be written in valid JS code. Since predicates are usually short and use simple expressions (like `{version < 1000}` or `{doesItBlend()}` it should be easy to use what's originally written for another language (JS, C++, TS, Java etc. which all share a very similar expression syntax) without changes in the grammar. If an expression doesn't work in JS, you will have to change it however, temporarily.
 
-On each start of the debugger the extension loads the specified file freshly (no caching takes place to support changes in that file between debugger runs) using a Node.js `require()` call. It then looks for an exported class named `PredicateEvaluator`, which can be used for evaluation. This class has a very simple structure and usually uses the JS `eval()` function to parse and run the predicate code. Here's a typical example:
+On each start of the debugger the extension loads the specified file freshly (no caching takes place to support changes in that file between debugger runs) using a Node.js [`vm.runInThisContext`](https://nodejs.org/api/vm.html#vm_vm_runinthiscontext_code_options) call. You should _return_ an object which could be casted into `PredicateEvaluator`. This class has a very simple structure and usually uses the JS `eval()` function to parse and run the predicate code. Here's a typical example:
 
 ```Javascript
-export class PredicateEvaluator {
-    constructor () {
-        // Initialize variables here.
-        this.version = 123;
-    }
+class PredicateEvaluator {
+  constructor () {
+      // Initialize variables here.
+      this.version = 123;
+  }
 
-    evaluateLexerPredicate(lexer, ruleIndex, actionIndex, predicate) {
-        return eval(predicate);
-    }
+  evaluateLexerPredicate(lexer, ruleIndex, actionIndex, predicate) {
+      return eval(predicate);
+  }
 
-    evaluateParserPredicate(parser, ruleIndex, actionIndex, predicate) {
-        return eval(predicate);
-    }
+  evaluateParserPredicate(parser, ruleIndex, actionIndex, predicate) {
+      return eval(predicate);
+  }
 
-    // Add here any function you need for evaluation.
-    doesItBlend() { return true; }
+  // Add here any function you need for evaluation.
+  doesItBlend() { return true; }
 }
 ```
 
-Only 2 functions here are mandatory in this class, namely `evaluateLexerPredicate` and `evaluateParserPredicate`. Everything else is up to you and depends on what is required in the grammar. A class is convenient and self contained, but in JS it requires to qualify each access to members with a `this.` prefix, which might require to change expressions in the grammar. In order to avoid that there's an alternative way to specify the evaluation functions.
-
-If the `PredicateEvaluator` class cannot be found in the module's exports the extension looks for 2 exported standalone functions with the same names as the mandatory functions in that class. Here's an example implementation:
+Another possibility is to simply make the result of the code to be an object containing the required functions (the weird parentheses around the whole expression care for Node.js not interpreting the brackets as code block, but rather as an object literal):
 
 ```Javascript
-"use strict"
-
-var serverVersion = 123;
-function doesItBlend() { return true; }
-
-module.exports.evaluateLexerPredicate = function (lexer, ruleIndex, actionIndex, predicate) {
-    return eval(predicate);
-}
-
-module.exports.evaluateParserPredicate = function (parser, ruleIndex, actionIndex, predicate) {
-    return eval(predicate);
-}
+({
+  evaluateLexerPredicate: (lexer, ruleIndex, actionIndex, predicate) => eval(predicate),
+  evaluateParserPredicate: (parser, ruleIndex, actionIndex, predicate) => eval(predicate)
+})
 ```
 
-These functions use then members from the module itself and hence need no `this.` prefix. This ensures maximum compatibility with expression in other programming languages. If both the class and the standalone functions are given, the class takes precedence. The passed in parameters are:
+In both cases, only 2 functions here are mandatory , namely `evaluateLexerPredicate` and `evaluateParserPredicate`. The passed in parameters are:
 
 * lexer/parser: the currently executing lexer or parser interpreter instance
 * ruleIndex: the index of the lexer or parser rule
@@ -80,6 +70,18 @@ These functions use then members from the module itself and hence need no `this.
 With that action JS file in place you can then use semantic predicates as shown in this animation:
 
 ![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/predicate-debugging.gif)
+
+Everything else is up to you and depends on what is required in the grammar.  A class is convenient and self contained, but in JS it requires to qualify each access to members with a `this.` prefix, which might require to change expressions in the grammar. Note that due to the way `vm.runInThisContext` works, you can _not_ declare more functions outside of the scope of the class or object, or the plug-in would complain about re-defining values. The suggestion is to use a class, or the usual trick of wrapping everything in a function which is immediately called:
+
+```Javascript
+(function() {
+  const g = () => 123;
+  return {
+    evaluateLexerPredicate: (lexer, ruleIndex, actionIndex, predicate) => eval(predicate),
+    evaluateParserPredicate: (parser, ruleIndex, actionIndex, predicate) => eval(predicate)
+  }
+})()
+```
 
 ## Setup
 What is needed to debug a grammar?
