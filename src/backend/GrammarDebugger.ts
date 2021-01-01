@@ -7,15 +7,13 @@
 
 import { EventEmitter } from "events";
 
-import {
-    CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, Parser,
-} from "antlr4ts";
+import { CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token } from "antlr4ts";
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
-    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, PredicateEvaluator,
+    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, PredicateFunction,
 } from "./facade";
 
 import { RuleSymbol } from "./ContextSymbolTable";
@@ -45,13 +43,6 @@ export interface GrammarStackFrame {
  * This class provides debugging support for a grammar.
  */
 export class GrammarDebugger extends EventEmitter {
-    // Evaluation is possible either via an evaluator class or 2 evaluator functions.
-    public predicateEvaluator?: PredicateEvaluator;
-    public evaluateLexerPredicate?: (lexer: Lexer, ruleIndex: number, actionIndex: number,
-        predicate: string) => boolean;
-    public evaluateParserPredicate?: (parser: Parser, ruleIndex: number, actionIndex: number,
-        predicate: string) => boolean;
-
     // Interpreter data for the main grammar as well as all imported grammars.
     private lexerData: InterpreterData | undefined;
     private parserData: InterpreterData | undefined;
@@ -71,9 +62,15 @@ export class GrammarDebugger extends EventEmitter {
             return;
         }
 
+        let predicateFunction;
+
         if (actionFile) {
-            const code = fs.readFileSync(actionFile, { encoding: "utf-8" });
-            this.predicateEvaluator = vm.runInThisContext(code) as PredicateEvaluator;
+            const code = fs.readFileSync(actionFile, { encoding: "utf-8" }) + `
+            const runPredicate = (predicate) => eval(predicate);
+            runPredicate;
+            `;
+
+            predicateFunction = vm.runInThisContext(code) as PredicateFunction;
         }
 
         // The context list contains all dependencies of the main grammar (which is the first entry).
@@ -102,7 +99,7 @@ export class GrammarDebugger extends EventEmitter {
 
             if (this.lexerData) {
                 const stream = CharStreams.fromString("");
-                this.lexer = new GrammarLexerInterpreter(this.predicateEvaluator, this.contexts[0], lexerName,
+                this.lexer = new GrammarLexerInterpreter(predicateFunction, this.contexts[0], lexerName,
                     this.lexerData, stream);
                 this.lexer.removeErrorListeners();
                 this.lexer.addErrorListener(new InterpreterLexerErrorListener(eventSink));
@@ -110,7 +107,7 @@ export class GrammarDebugger extends EventEmitter {
             }
 
             if (this.parserData) {
-                this.parser = new GrammarParserInterpreter(eventSink, this.predicateEvaluator, this.contexts[0],
+                this.parser = new GrammarParserInterpreter(eventSink, predicateFunction, this.contexts[0],
                     this.parserData, this.tokenStream);
                 this.parser.buildParseTree = true;
                 this.parser.removeErrorListeners();

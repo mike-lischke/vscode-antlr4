@@ -4,7 +4,7 @@ The vscode-antlr4 extension can be configured in many ways to support your prefe
 ## General
 
 * **antlr4.referencesCodeLens.enabled**, boolean (default: false), if true enables the reference count display via Code Lens
-* **antlr4.customcss**, array of string (no default), list of absolute CSS file names for diagrams/graphs
+* **antlr4.customCSS**, array of string (no default), list of absolute CSS file names for diagrams/graphs
 * **antlr4.rrd.saveDir**, string (no default), default export target folder for railroad (syntax) diagrams
 * **antlr4.call-graph.saveDir**, string (no default), default export target folder for call graphs
 * **antlr4.atn.saveDir**, string (no default), default export target folder for atn graph

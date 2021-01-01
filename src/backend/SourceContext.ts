@@ -6,7 +6,7 @@
  */
 
 // This file contains the handling for a single source file. It provides syntactic and semantic
-// informations, symbol lookups and more.
+// information, symbol lookups and more.
 
 import * as child_process from "child_process";
 import * as path from "path";
@@ -18,7 +18,8 @@ import {
     Vocabulary,
 } from "antlr4ts";
 import {
-    PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState,
+    PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState, ActionTransition,
+    PredicateTransition, PrecedencePredicateTransition,
 } from "antlr4ts/atn";
 import { ParseCancellationException, IntervalSet, Interval } from "antlr4ts/misc";
 import { ParseTreeWalker, TerminalNode, ParseTree, ParseTreeListener } from "antlr4ts/tree";
@@ -32,7 +33,7 @@ import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
 import {
     SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
-    SentenceGenerationOptions, FormattingOptions, Definition, RuleMappings, ContextDetails,
+    SentenceGenerationOptions, FormattingOptions, Definition, ContextDetails, PredicateFunction, ATNLink,
 } from "./facade";
 
 import { ContextErrorListener } from "./ContextErrorListener";
@@ -493,7 +494,7 @@ export class SourceContext {
             }
         });
 
-        candidates.rules.forEach((callStack, key) => {
+        candidates.rules.forEach((candidateRule, key) => {
             switch (key) {
                 case ANTLRv4Parser.RULE_argActionBlock: {
                     result.push({
@@ -516,8 +517,9 @@ export class SourceContext {
                     });
 
                     // Include predicates only when we are in a lexer or parser element.
-                    if (callStack[callStack.length - 1] === ANTLRv4Parser.RULE_lexerElement
-                        || callStack[callStack.length - 1] === ANTLRv4Parser.RULE_element) {
+                    const list = candidateRule.ruleList;
+                    if (list[list.length - 1] === ANTLRv4Parser.RULE_lexerElement
+                        || list[list.length - 1] === ANTLRv4Parser.RULE_element) {
                         result.push({
                             kind: SymbolKind.Predicate,
                             name: "{ predicate }?",
@@ -552,7 +554,8 @@ export class SourceContext {
                     });
 
                     // Include fragment rules only when referenced from a lexer rule.
-                    if (callStack[callStack.length - 1] === ANTLRv4Parser.RULE_lexerAtom) {
+                    const list = candidateRule.ruleList;
+                    if (list[list.length - 1] === ANTLRv4Parser.RULE_lexerAtom) {
                         this.symbolTable.getAllSymbols(FragmentTokenSymbol).forEach((symbol) => {
                             result.push({
                                 kind: SymbolKind.FragmentLexerToken,
@@ -606,7 +609,8 @@ export class SourceContext {
                 case ANTLRv4Parser.RULE_identifier: {
                     // Identifiers can be a lot of things. We only handle special cases here.
                     // More concrete identifiers should be captured by rules further up in the call chain.
-                    switch (callStack[callStack.length - 1]) {
+                    const list = candidateRule.ruleList;
+                    switch (list[list.length - 1]) {
                         case ANTLRv4Parser.RULE_option: {
                             ["superClass", "tokenVocab", "TokenLabelType", "contextSuperClass", "exportMacro"]
                                 .forEach((symbol) => {
@@ -1049,20 +1053,37 @@ export class SourceContext {
             links: [],
             nodes: [],
         };
+
+        // Maps an ATN state to its index in the rules list.
         const stateToIndex = new Map<number, number>();
         let currentRuleIndex = -1;
 
-        // First collect all ATN states that belong to this rule, so we can reference them in our links list.
-        for (const state of atn.states) {
-            if (state.ruleIndex === ruleIndex) {
-                stateToIndex.set(state.stateNumber, result.nodes.length);
-                result.nodes.push({ id: state.stateNumber, name: state.stateNumber.toString(), type: state.stateType });
-
+        /**
+         * Checks the list of used ATN nodes for the given id and adds a new ATN node if no entry could be found.
+         *
+         * @param id The state identifier (usually the state number).
+         * @param state The ATN state represented by the ATN node, if a new node must be added.
+         *
+         * @returns The index of the ATN node for the given state.
+         */
+        const ensureATNNode = (id: number, state: ATNState): number => {
+            let index = stateToIndex.get(id);
+            if (index === undefined) {
                 const transitions = state.getTransitions();
+
+                index = result.nodes.length;
+                stateToIndex.set(id, index);
+                result.nodes.push({
+                    id,
+                    name: id.toString(),
+                    type: state.stateType,
+                });
+
                 // If this state transits to a new rule create also a fake node for that rule.
                 if (transitions.length === 1 && transitions[0].target.stateType === ATNStateType.RULE_START) {
                     const marker = state.stateNumber * transitions[0].target.stateNumber;
                     stateToIndex.set(marker, result.nodes.length);
+
                     // Type 13 is a fake type denoting a rule. It's one beyond the highest ATNStateType values.
                     result.nodes.push({
                         id: currentRuleIndex--,
@@ -1071,13 +1092,14 @@ export class SourceContext {
                     });
                 }
             }
-        }
+
+            return index;
+        };
 
         while (pipeline.length > 0) {
             const state = pipeline.shift()!;
 
-            const nodeIndex = stateToIndex.get(state.stateNumber)!; // Must exist.
-
+            const sourceIndex = ensureATNNode(state.stateNumber, state);
             for (const transition of state.getTransitions()) {
                 // Rule stop states usually point to the follow state in the calling rule, but can also
                 // point to a state in itself if the rule is left recursive. In any case we don't need to follow
@@ -1088,24 +1110,51 @@ export class SourceContext {
 
                 const transitsToRule = transition.target.stateType === ATNStateType.RULE_START;
                 const marker = transition.target.stateNumber * (transitsToRule ? state.stateNumber : 1);
+                const targetIndex = ensureATNNode(marker, transition.target);
+
                 const labels: string[] = [];
-                const link = {
-                    source: nodeIndex,
-                    target: stateToIndex.get(marker)!,
+                const link: ATNLink = {
+                    source: sourceIndex,
+                    target: targetIndex,
                     type: transition.serializationType,
                     labels,
                 };
-                if (transition.isEpsilon) {
-                    labels.push("ε");
-                } else if (transition.label) {
-                    if (isLexerRule) {
-                        // Lexer rules can be defined for a large range of characters (even the full Unicode range).
-                        // We hence return a compact form here instead of listing every character.
-                        link.labels = this.intervalSetToStrings(transition.label);
-                    } else {
-                        for (const label of transition.label.toArray()) {
-                            link.labels.push(vocabulary.getDisplayName(label));
+
+                switch (transition.serializationType) {
+                    case TransitionType.ACTION: {
+                        const actionTransition = transition as ActionTransition;
+                        labels.push(`<action ${actionTransition.actionIndex}>`);
+                        break;
+                    }
+
+                    case TransitionType.PREDICATE: {
+                        const predicateTransition = transition as PredicateTransition;
+                        labels.push(`<predicate ${predicateTransition.predIndex}>`);
+                        break;
+                    }
+
+                    case TransitionType.PRECEDENCE: {
+                        const precedenceTransition = transition as PrecedencePredicateTransition;
+                        labels.push(`<precedence predicate ${precedenceTransition.precedence}>`);
+                        break;
+                    }
+
+                    default: {
+                        if (transition.isEpsilon) {
+                            labels.push("ε");
+                        } else if (transition.label) {
+                            if (isLexerRule) {
+                                // Lexer rules can be defined for a large range of characters (even the full Unicode range).
+                                // We hence return a compact form here instead of listing every character.
+                                link.labels = this.intervalSetToStrings(transition.label);
+                            } else {
+                                for (const label of transition.label.toArray()) {
+                                    link.labels.push(vocabulary.getDisplayName(label));
+                                }
+                            }
                         }
+
+                        break;
                     }
                 }
 
@@ -1114,18 +1163,24 @@ export class SourceContext {
                 let nextState: ATNState;
                 if (transitsToRule) {
                     // Target is a state in a different rule (or this rule if left recursive).
-                    // Add a backlink from that sub rule into ours.
+                    // Add a back link from that sub rule into ours.
                     nextState = (transition as RuleTransition).followState;
-                    const nodeLink = {
-                        source: stateToIndex.get(marker)!, target: stateToIndex.get(nextState.stateNumber)!,
-                        type: TransitionType.RULE, labels: ["ε"],
+                    const returnIndex = ensureATNNode(nextState.stateNumber, nextState);
+
+                    const nodeLink: ATNLink = {
+                        source: targetIndex,
+                        target: returnIndex,
+                        type: TransitionType.RULE,
+                        labels: ["ε"],
                     };
                     result.links.push(nodeLink);
                 } else {
                     nextState = transition.target;
                 }
 
-                if (seenStates.has(nextState)) { continue; }
+                if (seenStates.has(nextState)) {
+                    continue;
+                }
 
                 seenStates.add(nextState);
                 pipeline.push(nextState);
@@ -1139,20 +1194,26 @@ export class SourceContext {
      * Generates strings that are valid input for the managed grammar.
      *
      * @param dependencies All source contexts on which this one depends (usually the lexer, if this is a split grammar).
+     * @param rule The rule to generate a sentence for.
      * @param options The settings controlling the generation.
-     * @param ruleDefinitions Defines replacement strings to be used for rule names.
-     * @param actionFile The name of a file that allows executing predicates/actions.
-     *
-     * @returns A list of strings with sentences that this grammar would successfully parse.
+     * @param callback A function to call for each generated sentence.
      */
-    public generateSentence(dependencies: Set<SourceContext>, options: SentenceGenerationOptions,
-        ruleDefinitions: RuleMappings | undefined, actionFile: string | undefined): string {
+    public generateSentence(dependencies: Set<SourceContext>, rule: string,
+        options: SentenceGenerationOptions, callback: (sentence: string, index: number) => void): void {
         if (!this.isInterpreterDataLoaded) {
             // Requires a generation run.
-            return "[No grammar data available]";
+            callback("[No grammar data available]", 0);
+
+            return;
         }
 
-        const isLexerRule = options.startRule[0] === options.startRule[0].toUpperCase();
+        if (rule.length === 0) {
+            callback("[No rule specified]", 0);
+
+            return;
+        }
+
+        const isLexerRule = rule[0] === rule[0].toUpperCase();
         let lexerData: InterpreterData | undefined;
         let parserData: InterpreterData | undefined;
 
@@ -1185,31 +1246,46 @@ export class SourceContext {
         }
 
         if (!lexerData) { // Lexer data must always exist.
-            return "[No lexer data available]";
+            callback("[No lexer data available]", 0);
+
+            return;
         }
 
         if (!isLexerRule && !parserData) { // Parser data is only required for parser sentence generation.
-            return "[No parser data available]";
+            callback("[No parser data available]", 0);
+
+            return;
         }
 
         let start: RuleStartState;
         if (isLexerRule) {
-            const index = this.grammarLexerRuleMap.get(options.startRule);
+            const index = this.grammarLexerRuleMap.get(rule);
             if (index === undefined) {
-                return "[Virtual or undefined token]";
+                callback("[Virtual or undefined token]", 0);
+
+                return;
             }
             start = lexerData.atn.ruleToStartState[index];
         } else {
-            const index = this.grammarParserRuleMap.get(options.startRule);
+            const index = this.grammarParserRuleMap.get(rule);
             if (index === undefined) {
-                return "[Undefined rule]";
+                callback("[Undefined rule]", 0);
+
+                return;
             }
             start = parserData!.atn.ruleToStartState[index];
         }
 
-        const generator = new SentenceGenerator(this, lexerData, parserData, actionFile);
+        try {
+            const generator = new SentenceGenerator(this, lexerData, parserData, options.actionFile);
 
-        return generator.generate(options, start, ruleDefinitions);
+            const count = Math.max(options.count ?? 1, 1);
+            for (let i = 0; i < count; ++i) {
+                callback(generator.generate(options, start), i);
+            }
+        } catch (e) {
+            callback(e, 0);
+        }
     }
 
     /**
@@ -1225,15 +1301,18 @@ export class SourceContext {
         let error = "";
 
         if (this.grammarLexerData) {
-            let predicateEvaluator;
+            let predicateFunction;
             if (actionFile) {
-                const code = fs.readFileSync(actionFile, { encoding: "utf-8" });
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                predicateEvaluator = vm.runInThisContext(code);
+                const code = fs.readFileSync(actionFile, { encoding: "utf-8" }) + `
+                const runPredicate = (predicate) => eval(predicate);
+                runPredicate;
+                `;
+
+                predicateFunction = vm.runInThisContext(code) as PredicateFunction;
             }
 
             const stream = CharStreams.fromString(input);
-            const lexer = new GrammarLexerInterpreter(predicateEvaluator, this, "<unnamed>",
+            const lexer = new GrammarLexerInterpreter(predicateFunction, this, "<unnamed>",
                 this.grammarLexerData, stream);
             lexer.removeErrorListeners();
 
@@ -1272,11 +1351,14 @@ export class SourceContext {
             return ["No interpreter data available"];
         }
 
-        let predicateEvaluator;
+        let predicateFunction;
         if (actionFile) {
-            const code = fs.readFileSync(actionFile, { encoding: "utf-8" });
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            predicateEvaluator = vm.runInThisContext(code);
+            const code = fs.readFileSync(actionFile, { encoding: "utf-8" }) + `
+            const runPredicate = (predicate) => eval(predicate);
+            runPredicate;
+            `;
+
+            predicateFunction = vm.runInThisContext(code) as PredicateFunction;
         }
 
         const eventSink = (event: string | symbol, ...args: any[]): void => {
@@ -1284,14 +1366,14 @@ export class SourceContext {
         };
 
         const stream = CharStreams.fromString(input);
-        const lexer = new GrammarLexerInterpreter(predicateEvaluator, this, "<unnamed>", this.grammarLexerData, stream);
+        const lexer = new GrammarLexerInterpreter(predicateFunction, this, "<unnamed>", this.grammarLexerData, stream);
         lexer.removeErrorListeners();
 
         lexer.addErrorListener(new InterpreterLexerErrorListener(eventSink));
         const tokenStream = new CommonTokenStream(lexer);
         tokenStream.fill();
 
-        const parser = new GrammarParserInterpreter(eventSink, predicateEvaluator, this, this.grammarParserData,
+        const parser = new GrammarParserInterpreter(eventSink, predicateFunction, this, this.grammarParserData,
             tokenStream);
         parser.buildParseTree = true;
         parser.removeErrorListeners();

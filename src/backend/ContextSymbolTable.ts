@@ -14,8 +14,6 @@ import { SymbolKind, SymbolGroupKind, SymbolInfo } from "../backend/facade";
 import { SourceContext } from "./SourceContext";
 import { ParseTree, TerminalNode } from "antlr4ts/tree";
 
-type SymbolStore = Map<SymbolKind, Map<string, ParserRuleContext | undefined>>;
-
 export class ContextSymbolTable extends SymbolTable {
     public tree: ParserRuleContext; // Set by the owning source context after each parse run.
 
@@ -225,7 +223,7 @@ export class ContextSymbolTable extends SymbolTable {
         }
     }
 
-    public getSymbolOccurences(symbolName: string, localOnly: boolean): SymbolInfo[] {
+    public getSymbolOccurrences(symbolName: string, localOnly: boolean): SymbolInfo[] {
         const result: SymbolInfo[] = [];
 
         const symbols = this.getAllSymbols(Symbol, localOnly);

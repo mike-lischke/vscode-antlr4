@@ -264,7 +264,7 @@ describe("vscode-antlr4-backend:", function () {
         });
     });
 
-    describe("Advanced Symbol Informations:", () => {
+    describe("Advanced Symbol Information:", () => {
 
         it("RRD diagram", () => {
             let diagram = backend.getRRDScript("test/backend/TLexer.g4", "Any");
@@ -288,7 +288,7 @@ describe("vscode-antlr4-backend:", function () {
             );
         });
 
-        it("Reference Graph", () =>  {
+        it("Reference Graph", () => {
             const graph = backend.getReferenceGraph("test/backend/TParser.g4");
             expect(graph.size, "Test 1").to.equal(48);
 
@@ -633,21 +633,19 @@ describe("vscode-antlr4-backend:", function () {
         // sentences are ambiguous. Hence we only test that such generated content can be parsed error free.
         it("Simple lexer sentence generation", () => {
             // A grammar made specifically for sentence generation.
+            const tester = (sentence: string) => {
+                //console.log(symbolicName + ": " + sentence);
+                const [error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
+                expect(error).to.be.empty;
+            };
+
             const vocabulary = backend.getLexerVocabulary("test/backend/sentences.g4")!;
             for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
                 const symbolicName = vocabulary.getSymbolicName(i);
-                for (let j = 0; j < 20; ++j) {
-                    const sentence = backend.generateSentence("test/backend/sentences.g4", {
-                        startRule: symbolicName!,
-                        maxLexerIterations: 15,
-                        maxParserIterations: 15,
-                    }, undefined, undefined);
-
-                    //console.log(symbolicName + ": " + sentence);
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const [tokenNames, error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
-                    expect(error).to.be.empty;
-                }
+                backend.generateSentence("test/backend/sentences.g4", symbolicName!, {
+                    maxLexerIterations: 15,
+                    maxParserIterations: 15,
+                }, tester);
             }
         });
 
@@ -665,49 +663,50 @@ describe("vscode-antlr4-backend:", function () {
                 "ID",
             ];
 
+            const tester = (sentence: string) => {
+                //console.log(token + ": " + sentence);
+                expect(sentence.length, "Empty sentence generated").to.be.greaterThan(0);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
+                expect(error).to.be.empty;
+
+            };
+
             for (const token of lexerTokens) {
-                for (let i = 0; i < 5; ++i) {
-                    const sentence = backend.generateSentence("grammars/ANTLRv4Lexer.g4", {
-                        startRule: token,
-                        maxLexerIterations: 10,
-                        maxParserIterations: 10,
-                    }, undefined, undefined);
-
-                    //console.log(token + ": " + sentence);
-                    expect(sentence.length, "Empty sentence generated").to.be.greaterThan(0);
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
-                    expect(error).to.be.empty;
-                }
+                backend.generateSentence("grammars/ANTLRv4Lexer.g4", token, {
+                    count: 5,
+                    maxLexerIterations: 10,
+                    maxParserIterations: 10,
+                }, tester);
             }
-
         });
 
         it("Parser sentence generation", () => {
             this.slow(30000);
             this.timeout(60000);
 
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                if (errors.length > 0) {
+                    console.log("errors:");
+                    for (const error of errors) {
+                        console.log("\t" + error + "\n");
+                    }
+                }
+                expect(errors.length, "Test 5").to.equal(0);
+
+            };
+
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
             for (const rule of rules) {
-                for (let i = 0; i < 100; ++i) {
-                    const sentence = backend.generateSentence("test/backend/sentences.g4", {
-                        startRule: rule,
-                        minLexerIterations: 3,
-                        maxLexerIterations: 10,
-                        minParserIterations: 0,
-                        maxParserIterations: 3,
-                    }, undefined, undefined);
-
-                    //console.log(rule + ": " + sentence);
-                    const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
-                    if (errors.length > 0) {
-                        console.log("errors:");
-                        for (const error of errors) {
-                            console.log("\t" + error + "\n");
-                        }
-                    }
-                    expect(errors.length, "Test 5").to.equal(0);
-                }
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 100,
+                    minLexerIterations: 3,
+                    maxLexerIterations: 10,
+                    minParserIterations: 0,
+                    maxParserIterations: 3,
+                }, tester.bind(this, rule));
             }
         });
 
@@ -721,38 +720,39 @@ describe("vscode-antlr4-backend:", function () {
                 ["UnicodeIdentifier", "µπåƒ"],
             ]);
 
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                if (errors.length > 0) {
+                    console.log("errors:");
+                    for (const error of errors) {
+                        console.log("\t" + error + "\n");
+                    }
+                }
+                expect(errors.length, "Test 1").to.equal(0);
+
+                // In addition to error free generation check also that only known elements are in the sentence.
+                sentence = sentence.replace(/12345/g, "");
+                sentence = sentence.replace(/DEADBEEF/g, "");
+                sentence = sentence.replace(/Mike/g, "");
+                sentence = sentence.replace(/µπåƒ/g, "");
+                sentence = sentence.replace(/red/g, "");
+                sentence = sentence.replace(/green/g, "");
+                sentence = sentence.replace(/blue/g, "");
+                sentence = sentence.replace(/[0-9{},.:]/g, "");
+                sentence = sentence.trim();
+                //console.log(rule + ": " + sentence);
+                expect(sentence.length, "Test 2").to.equal(0);
+            };
+
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
             for (const rule of rules) {
-                for (let i = 0; i < 10; ++i) {
-                    let sentence = backend.generateSentence("test/backend/sentences.g4", {
-                        startRule: rule,
-                        maxLexerIterations: 7,
-                        maxParserIterations: 7,
-                    }, ruleMappings, undefined);
-
-                    //console.log(rule + ": " + sentence);
-                    const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
-                    if (errors.length > 0) {
-                        console.log("errors:");
-                        for (const error of errors) {
-                            console.log("\t" + error + "\n");
-                        }
-                    }
-                    expect(errors.length, "Test 1").to.equal(0);
-
-                    // In addition to error free generation check also that only known elements are in the sentence.
-                    sentence = sentence.replace(/12345/g, "");
-                    sentence = sentence.replace(/DEADBEEF/g, "");
-                    sentence = sentence.replace(/Mike/g, "");
-                    sentence = sentence.replace(/µπåƒ/g, "");
-                    sentence = sentence.replace(/red/g, "");
-                    sentence = sentence.replace(/green/g, "");
-                    sentence = sentence.replace(/blue/g, "");
-                    sentence = sentence.replace(/[0-9{},.:]/g, "");
-                    sentence = sentence.trim();
-                    //console.log(rule + ": " + sentence);
-                    expect(sentence.length, "Test 2").to.equal(0);
-                }
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 10,
+                    maxLexerIterations: 7,
+                    maxParserIterations: 7,
+                    ruleMappings,
+                }, tester.bind(this, rule));
             }
         });
 
@@ -972,7 +972,7 @@ const createAlignmentGrammar = (): void => {
 };
 
 /**
- * Converts the given position in the text to a character index (assuming 4 chars tabwidth).
+ * Converts the given position in the text to a character index (assuming 4 chars tab width).
  *
  * @param text The text for which to convert the position.
  * @param column The position in the text line.
@@ -1012,7 +1012,7 @@ const positionToIndex = (text: string, column: number, row: number): number => {
 };
 
 /**
- * Converts the given character index into a column/row pair (assuming 4 chars tabwidth).
+ * Converts the given character index into a column/row pair (assuming 4 chars tab width).
  *
  * @param text The text for which to convert the index.
  * @param index The character index in the text.

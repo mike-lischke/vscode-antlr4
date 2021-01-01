@@ -23,8 +23,8 @@ export class AntlrReferenceProvider implements ReferenceProvider {
         }
 
         const result: Location[] = [];
-        const occurences = this.backend.getSymbolOccurences(document.fileName, info.name);
-        for (const symbol of occurences) {
+        const occurrences = this.backend.getSymbolOccurrences(document.fileName, info.name);
+        for (const symbol of occurrences) {
             if (symbol.definition) {
                 const range = new Range(
                     symbol.definition.range.start.row - 1, symbol.definition.range.start.column,

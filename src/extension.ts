@@ -40,7 +40,9 @@ import { AntlrRenameProvider } from "./frontend/RenameProvider";
 import { ProgressIndicator } from "./frontend/ProgressIndicator";
 import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
 
-import { DiagnosticType, AntlrFacade, GenerationOptions, LexicalRange, RuleMappings } from "./backend/facade";
+import {
+    DiagnosticType, AntlrFacade, GenerationOptions, LexicalRange, SentenceGenerationOptions,
+} from "./backend/facade";
 import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
 import { Utils } from "./frontend/Utils";
 import { GrammarType } from "./backend/SourceContext";
@@ -70,30 +72,6 @@ let codeLensProvider: AntlrCodeLensProvider;
  * @param context The extension context from vscode.
  */
 export const activate = (context: ExtensionContext): void => {
-    /**
-     * Checks if the given document is actually a grammar file.
-     *
-     * @param document The document to check.
-     *
-     * @returns True if this is indeed a grammar file.
-     */
-    const isGrammarFile = (document: TextDocument | undefined): boolean =>
-        document ? (document.languageId === "antlr" && document.uri.scheme === "file") : false;
-
-    /**
-     * Updates all used tree providers for the given document.
-     *
-     * @param document The source for the updates.
-     */
-    const updateTreeProviders = (document: TextDocument | undefined): void => {
-        lexerSymbolsProvider.refresh(document);
-        parserSymbolsProvider.refresh(document);
-        importsProvider.refresh(document);
-        channelsProvider.refresh(document);
-        modesProvider.refresh(document);
-        actionsProvider.refresh(document);
-    };
-
     DiagnosticTypeMap.set(DiagnosticType.Hint, DiagnosticSeverity.Hint);
     DiagnosticTypeMap.set(DiagnosticType.Info, DiagnosticSeverity.Information);
     DiagnosticTypeMap.set(DiagnosticType.Warning, DiagnosticSeverity.Warning);
@@ -101,7 +79,7 @@ export const activate = (context: ExtensionContext): void => {
 
     backend = new AntlrFacade(workspace.getConfiguration("antlr4.generation").importDir || "");
     progress = new ProgressIndicator();
-    outputChannel = window.createOutputChannel("ANTLR Exceptions");
+    outputChannel = window.createOutputChannel("ANTLR4 Errors");
 
     // Load interpreter + cache data for each open document, if there's any.
     for (const document of workspace.textDocuments) {
@@ -167,78 +145,63 @@ export const activate = (context: ExtensionContext): void => {
     );
 
     // Sentence generation.
-    const genOutputChannel = window.createOutputChannel("Sentence Generation");
+    const sentenceOutputChannel = window.createOutputChannel("ANTLR4 Sentence Generation");
     context.subscriptions.push(commands.registerTextEditorCommand("antlr.tools.generateSentences",
         (textEditor: TextEditor, edit: TextEditorEdit) => {
-            const ruleMappings: RuleMappings = new Map([
-                ["A", "A"],
-                ["B", "B"],
-                ["C", "C"],
-                ["D", "D"],
-                ["E", "E"],
-                ["F", "F"],
-                ["G", "G"],
-                ["H", "H"],
-                ["I", "I"],
-                ["J", "J"],
-                ["K", "K"],
-                ["L", "L"],
-                ["M", "M"],
-                ["N", "N"],
-                ["O", "O"],
-                ["P", "P"],
-                ["Q", "Q"],
-                ["R", "R"],
-                ["S", "S"],
-                ["T", "T"],
-                ["U", "U"],
-                ["V", "V"],
-                ["W", "W"],
-                ["X", "X"],
-                ["Y", "Y"],
-                ["Z", "Z"],
-                ["NOT2_SYMBOL", "NOT"],
-                ["CONCAT_PIPES_SYMBOL", "||"],
-                ["INT_NUMBER", "-1111111111"],
-                ["LONG_NUMBER", "1111111111"],
-                ["ULONGLONG_NUMBER", "18446744073709551614"],
-                ["DOUBLE_QUOTED_TEXT", "\"text\""],
-                ["SINGLE_QUOTED_TEXT", "'text'"],
-                ["BACK_TICK_QUOTED_ID", "`id`"],
-                ["UNDERSCORE_CHARSET", "_utf8"],
-                ["identifier", "`id`"],
-                ["schemaRef", "sakila"],
-                ["tableRef", "sakila.actor"],
-                ["columnRef", "sakila.actor.actor_id"],
-            ]);
+            const grammarFileName = textEditor.document.uri.fsPath;
+            const configFileName = grammarFileName.replace(path.extname(grammarFileName), ".json");
 
-            const fileName = textEditor.document.uri.fsPath;
-            const caret = textEditor.selection.active;
-            const [ruleName] = backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
+            // Try to load generation configuration from a side json file.
+            let config: SentenceGenerationOptions = {};
+            if (fs.existsSync(configFileName)) {
+                const content = fs.readFileSync(configFileName, "utf-8");
+                try {
+                    config = JSON.parse(content, (key, value): any => {
+                        // Convert the rule mappings array to a real map.
+                        if (key === "ruleMappings") {
+                            if (Array.isArray(value)) {
+                                return new Map(value);
+                            }
 
-            if (!ruleName) {
-                // TODO: convert that to an error dialog or diagnostic entry.
-                console.log("ANTLR4 sentence generation: no rule selected");
-            }
+                            return undefined;
+                        }
 
-            const basePath = path.dirname(fileName);
-            let actionFile = workspace.getConfiguration("antlr4.sentenceGeneration").actionFile as string;
-            if (actionFile) {
-                if (!path.isAbsolute(actionFile)) {
-                    actionFile = path.join(basePath, actionFile);
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                        return value;
+                    }) as SentenceGenerationOptions;
+                } catch (reason) {
+                    outputChannel.appendLine("Cannot parse sentence generation config file:");
+                    outputChannel.appendLine((reason as SyntaxError).message);
+                    outputChannel.show(true);
+
+                    return;
                 }
             }
 
-            for (let i = 0; i < 20; ++i) {
-                const sentence = backend.generateSentence(fileName, {
-                    startRule: ruleName!,
-                    maxParserIterations: 3,
-                    maxLexerIterations: 10,
-                    maxRecursions: 1,
-                    convergenceFactor: 0.15,
-                }, ruleMappings, actionFile);
-                genOutputChannel.appendLine(sentence);
+            if (config.actionFile) {
+                if (!path.isAbsolute(config.actionFile)) {
+                    config.actionFile = path.join(path.dirname(grammarFileName), config.actionFile);
+                }
             }
+
+            const caret = textEditor.selection.active;
+            const [ruleName] = backend.ruleFromPosition(grammarFileName, caret.character, caret.line + 1);
+
+            if (!ruleName) {
+                outputChannel.appendLine("ANTLR4 sentence generation: no rule selected");
+                outputChannel.show(true);
+
+                return;
+            }
+
+            if (config.clear) {
+                sentenceOutputChannel.clear();
+            }
+
+            backend.generateSentence(grammarFileName, ruleName, config, (sentence: string, index: number) => {
+                sentenceOutputChannel.appendLine(`${index}) ⋙${sentence}⋘`);
+                sentenceOutputChannel.show(true);
+            });
         }),
     );
 
@@ -269,6 +232,7 @@ export const activate = (context: ExtensionContext): void => {
     // Initialize certain providers.
     const editor = window.activeTextEditor;
     if (editor && isGrammarFile(editor.document)) {
+        updateVsCodeContext(editor.document);
         updateTreeProviders(editor.document);
     }
 
@@ -343,19 +307,7 @@ export const activate = (context: ExtensionContext): void => {
     });
 
     window.onDidChangeActiveTextEditor((textEditor: TextEditor | undefined) => {
-        if (isGrammarFile(textEditor?.document)) {
-            const info = backend.getContextDetails(textEditor!.document.fileName); 1;
-            void Utils.switchVsCodeContext("antlr4.isLexer", info.type === GrammarType.Lexer);
-            void Utils.switchVsCodeContext("antlr4.isParser", info.type === GrammarType.Parser);
-            void Utils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);
-
-            void Utils.switchVsCodeContext("antlr4.hasImports", info.imports.length > 0);
-        } else {
-            void Utils.switchVsCodeContext("antlr4.isLexer", false);
-            void Utils.switchVsCodeContext("antlr4.isParser", false);
-            void Utils.switchVsCodeContext("antlr4.isCombined", false);
-            void Utils.switchVsCodeContext("antlr4.hasImports", false);
-        }
+        updateVsCodeContext(textEditor?.document);
         updateTreeProviders(textEditor?.document);
     });
 
@@ -527,3 +479,48 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
         }
     }
 }
+
+/**
+ * Checks if the given document is actually a grammar file.
+ *
+ * @param document The document to check.
+ *
+ * @returns True if this is indeed a grammar file.
+ */
+const isGrammarFile = (document?: TextDocument | undefined): boolean =>
+    document ? (document.languageId === "antlr" && document.uri.scheme === "file") : false;
+
+/**
+ * Updates all used tree providers for the given document.
+ *
+ * @param document The source for the updates.
+ */
+const updateTreeProviders = (document: TextDocument | undefined): void => {
+    lexerSymbolsProvider.refresh(document);
+    parserSymbolsProvider.refresh(document);
+    importsProvider.refresh(document);
+    channelsProvider.refresh(document);
+    modesProvider.refresh(document);
+    actionsProvider.refresh(document);
+};
+
+/**
+ * Enables/disables certain VS Code contexts depending on which file is currently active.
+ *
+ * @param document The source for the updates.
+ */
+const updateVsCodeContext = (document: TextDocument | undefined): void => {
+    if (document && isGrammarFile(document)) {
+        const info = backend.getContextDetails(document.fileName); 1;
+        void Utils.switchVsCodeContext("antlr4.isLexer", info.type === GrammarType.Lexer);
+        void Utils.switchVsCodeContext("antlr4.isParser", info.type === GrammarType.Parser);
+        void Utils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);
+
+        void Utils.switchVsCodeContext("antlr4.hasImports", info.imports.length > 0);
+    } else {
+        void Utils.switchVsCodeContext("antlr4.isLexer", false);
+        void Utils.switchVsCodeContext("antlr4.isParser", false);
+        void Utils.switchVsCodeContext("antlr4.isCombined", false);
+        void Utils.switchVsCodeContext("antlr4.hasImports", false);
+    }
+};

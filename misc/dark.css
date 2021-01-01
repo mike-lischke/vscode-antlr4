@@ -1,6 +1,6 @@
 /*
  * This file contains all default CSS rules for the dark vscode them, used for various diagrams and graphs.
- * Use the "antlr4.customcss" setting in vscode to specify your own file, if you like to override some rules.
+ * Use the "antlr4.customCSS" setting in vscode to specify your own file, if you like to override some rules.
  *
  * Usually most of the appearance is defined in light.css and here we only have some adjustments for
  * the dark theme.

@@ -7,9 +7,4 @@
         "out": true // set this to false to include "out" folder in search results
     },
     "typescript.tsdk": "./node_modules/typescript/lib",
-    "cSpell.words": [
-        "Parens",
-        "antlr",
-        "customcss"
-    ]
 }

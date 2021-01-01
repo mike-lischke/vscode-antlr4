@@ -5,6 +5,7 @@
  * See LICENSE file for more info.
  */
 
+import * as vm from "vm";
 import * as fs from "fs";
 
 import {
@@ -12,7 +13,7 @@ import {
     RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState, PredicateTransition,
 } from "antlr4ts/atn";
 
-import { SentenceGenerationOptions, RuleMappings, PredicateEvaluator } from "./facade";
+import { SentenceGenerationOptions, RuleMappings, PredicateFunction } from "./facade";
 import { IntervalSet } from "antlr4ts/misc";
 
 import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
@@ -26,7 +27,7 @@ import { SourceContext } from "./SourceContext";
  */
 export class SentenceGenerator {
     // Allow evaluating predicates.
-    public predicateEvaluator?: PredicateEvaluator;
+    public runPredicate?: PredicateFunction;
 
     private lexerPredicates: ActionSymbol[];
     private parserPredicates: ActionSymbol[];
@@ -45,7 +46,8 @@ export class SentenceGenerator {
     private maxLexerIterations: number;
     private maxRecursions: number;
     private ruleInvocations = new Map<string, number>();
-    private ruleDefinitions: RuleMappings = new Map<string, string>();
+
+    private ruleMappings?: RuleMappings;
 
     // To limit recursions we need to track through which rules we are walking currently.
     private parserStack: number[] = [];
@@ -62,7 +64,12 @@ export class SentenceGenerator {
         private parserData: InterpreterData | undefined,
         actionFile: string | undefined) {
 
-        this.printableUnicode = printableUnicodePoints({ excludeCJK: true, excludeRTL: true, limitToBMP: false });
+        this.printableUnicode = printableUnicodePoints({
+            excludeCJK: true,
+            excludeRTL: true,
+            limitToBMP: false,
+            includeLineTerminators: true,
+        });
 
         // Get the symbols for all predicates (to enable predicate evaluation).
         this.lexerPredicates = context.symbolTable.getNestedSymbolsOfType(ActionSymbol)
@@ -70,25 +77,31 @@ export class SentenceGenerator {
         this.parserPredicates = context.symbolTable.getNestedSymbolsOfType(ActionSymbol)
             .filter(((action) => action.isPredicate && action.context!.parent instanceof ElementContext));
 
+        this.parserPredicates.forEach((value, index) => {
+            console.log(`${index}: ${value.context!.text}`);
+        });
+
         // Need to disable a number of linter checks in order to allow importing the action file.
-        if (actionFile && fs.existsSync(actionFile)) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, no-shadow, @typescript-eslint/no-var-requires
-            const { PredicateEvaluator, evaluateLexerPredicate, evaluateParserPredicate } = require(actionFile);
-            if (PredicateEvaluator) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-                this.predicateEvaluator = new PredicateEvaluator();
-            } else {
-                this.predicateEvaluator = {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    evaluateLexerPredicate,
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    evaluateParserPredicate,
-                };
-            }
+        if (actionFile) {
+            const code = fs.readFileSync(actionFile, { encoding: "utf-8" }) + `
+            const runPredicate = (predicate) => eval(predicate);
+            runPredicate;
+            `;
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            this.runPredicate = vm.runInNewContext(code) as PredicateFunction;
         }
     }
 
-    public generate(options: SentenceGenerationOptions, start: RuleStartState, ruleDefinitions?: RuleMappings): string {
+    /**
+     * Generates a single sentence for the given rule.
+     *
+     * @param options A number of settings that control the generation process.
+     * @param start The ATN start state of the rule for which to generate the sentence.
+     *
+     * @returns A string that can successfully be parsed by the rule.
+     */
+    public generate(options: SentenceGenerationOptions, start: RuleStartState): string {
 
         this.convergenceFactor = options.convergenceFactor || 0.25;
 
@@ -123,46 +136,39 @@ export class SentenceGenerator {
         this.maxRecursions = (!options.maxRecursions || options.maxRecursions < 1) ? 3 : options.maxRecursions;
 
         this.ruleInvocations.clear();
-        this.ruleDefinitions.clear();
-        if (ruleDefinitions) {
-            this.ruleDefinitions = ruleDefinitions;
-        }
+        this.ruleMappings = options.ruleMappings;
 
         this.lexerDecisionCounts = new Map<number, number[]>();
         this.parserDecisionCounts = new Map<number, number[]>();
 
         this.parserStack.length = 0;
 
-        const [result ] = this.generateFromATNSequence(start, start.stopState, true);
+        const [result] = this.generateFromATNSequence(start, start.stopState, start.atn === this.lexerData.atn);
 
-        return result.trim();
+        return result;
     }
 
     public sempred(ruleIndex: number, predIndex: number, inLexer: boolean): boolean {
-        if (this.predicateEvaluator) {
+        if (this.runPredicate) {
+            let predicate = "";
             if (inLexer) {
                 if (predIndex < this.lexerPredicates.length) {
-                    let predicate = this.lexerPredicates[predIndex].context!.text;
-                    predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
-                    try {
-                        return this.predicateEvaluator.evaluateLexerPredicate(undefined, ruleIndex, predIndex,
-                            predicate);
-                    } catch (e) {
-                        throw Error(`There was an error while evaluating predicate "${predicate}". ` +
-                            "Evaluation returned: " + e);
-                    }
+                    predicate = this.lexerPredicates[predIndex].context!.text;
                 }
             } else {
                 if (predIndex < this.parserPredicates.length) {
-                    let predicate = this.parserPredicates[predIndex].context!.text;
-                    predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
-                    try {
-                        return this.predicateEvaluator.evaluateParserPredicate(undefined, ruleIndex, predIndex,
-                            predicate);
-                    } catch (e) {
-                        throw Error(`There was an error while evaluating predicate "${predicate}". ` +
-                            "Evaluation returned: " + e);
-                    }
+                    predicate = this.parserPredicates[predIndex].context!.text;
+                }
+            }
+
+            if (predicate.length > 2) {
+                predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                try {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                    return this.runPredicate(predicate);
+                } catch (e) {
+                    throw Error(`There was an error while evaluating predicate "${predicate}". ` +
+                        "Evaluation returned: " + e);
                 }
             }
         }
@@ -212,7 +218,7 @@ export class SentenceGenerator {
 
     /**
      * Remove one invocation step for the given rule. If the count is zero after that, then the rule is removed
-     * from the invocation list alltogether.
+     * from the invocation list altogether.
      *
      * @param name The name of the rule.
      */
@@ -249,13 +255,13 @@ export class SentenceGenerator {
                 return ["", false];
             }
 
-            const mapping = this.ruleDefinitions.get(ruleName);
+            const mapping = this.ruleMappings?.get(ruleName);
             if (mapping) {
                 return [addSpace ? mapping + " " : mapping, false];
             }
 
             if (!this.invokeRule(ruleName)) {
-                return [addSpace ? "42 " : "42", false];
+                return [addSpace ? "⨱ " : "⨱", false];
             }
         }
 
@@ -305,7 +311,7 @@ export class SentenceGenerator {
                         case TransitionType.RULE: { // Transition into a sub rule.
                             run = (transition as RuleTransition).followState;
                             const ruleStart = transition.target as RuleStartState;
-                            const [text ] = this.generateFromATNSequence(ruleStart, ruleStart.stopState, !inLexer);
+                            const [text] = this.generateFromATNSequence(ruleStart, ruleStart.stopState, !inLexer);
                             result += text;
 
                             break;
@@ -316,13 +322,13 @@ export class SentenceGenerator {
                             if (inLexer) {
                                 // Any char from the entire Unicode range. The generator takes care to pick only
                                 // valid characters.
-                                [text ] = this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
+                                [text] = this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
                             } else {
                                 // Pick a random lexer rule.
                                 const ruleIndex = Math.floor(Math.random() *
                                     this.lexerData.atn.ruleToStartState.length);
                                 const state: RuleStartState = this.lexerData.atn.ruleToStartState[ruleIndex];
-                                [text ] = this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                [text] = this.generateFromATNSequence(state, state.stopState, !inLexer);
 
                             }
                             result += text;
@@ -357,20 +363,22 @@ export class SentenceGenerator {
                                     const token = this.getIntervalElement(transition.label, randomIndex);
                                     const tokenIndex = this.lexerData.atn.ruleToTokenType.indexOf(token);
                                     if (tokenIndex === -1) {
-                                        // If there's no token type then it means we have a virtual token here.
-                                        // See if there's a mapping for it.
+                                        // Found a virtual token. Either use its mapping as value or
+                                        // its name for the output.
                                         const tokenName = this.lexerData.vocabulary.getSymbolicName(token);
                                         if (tokenName) {
-                                            const mapping = this.ruleDefinitions.get(tokenName);
+                                            const mapping = this.ruleMappings?.get(tokenName);
                                             if (mapping) {
                                                 result += addSpace ? mapping + " " : mapping;
+                                            } else {
+                                                result += addSpace ? tokenName + " " : tokenName;
                                             }
                                         } else {
                                             result += `[Cannot generate value for virtual token ${token}]`;
                                         }
                                     } else {
                                         const state = this.lexerData.atn.ruleToStartState[tokenIndex];
-                                        const [text ] = this.generateFromATNSequence(state, state.stopState, !inLexer);
+                                        const [text] = this.generateFromATNSequence(state, state.stopState, !inLexer);
                                         result += text;
                                     }
                                 }
@@ -536,6 +544,9 @@ export class SentenceGenerator {
 
     private getRandomCharacterFromInterval(set: IntervalSet): String {
         const validSet = this.printableUnicode.and(set);
+        if (validSet.size === 0) {
+            return "✖︎";
+        }
 
         return String.fromCodePoint(this.getIntervalElement(validSet, Math.floor(Math.random() * validSet.size)));
     }

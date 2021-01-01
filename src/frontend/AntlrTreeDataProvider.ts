@@ -33,8 +33,6 @@ export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
     }
 
     public getChildren(element?: T): ProviderResult<T[]> {
-        return new Promise((resolve) => {
-            resolve([]);
-        });
+        return undefined;
     }
 }

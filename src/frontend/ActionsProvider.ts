@@ -33,11 +33,10 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
             return;
         }
+
         const predicate = Utils.findInListFromPosition(this.predicates, position.character, position.line + 1);
         if (predicate) {
             void this.actionTree.reveal(predicate, { select: true });
-
-            return;
         }
     }
 
@@ -54,62 +53,62 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
     }
 
     public getChildren(element?: TreeItem): ProviderResult<TreeItem[]> {
-        if (!element) {
-            const childList: RootEntry[] = [];
+        return new Promise((resolve, reject) => {
+            if (!element) {
+                const childList: RootEntry[] = [];
 
-            this.actionsTreeItem = new RootEntry("(Named) Actions", "0");
-            childList.push(this.actionsTreeItem);
-            this.predicatesTreeItem = new RootEntry("Semantic Predicates", "1");
-            childList.push(this.predicatesTreeItem );
+                this.actionsTreeItem = new RootEntry("(Named) Actions", "0");
+                this.actionsTreeItem.tooltip = "A list of named actions for native code parts and code actions to " +
+                    "execute during parsing/lexing";
+                childList.push(this.actionsTreeItem);
+                this.predicatesTreeItem = new RootEntry("Semantic + Precedence Predicates", "1");
+                this.predicatesTreeItem.tooltip = "A list of semantic predicates used in this grammar and precedence " +
+                    "predicates used internally by direct left recursive rules.";
+                childList.push(this.predicatesTreeItem);
 
-            return new Promise((resolve) => {
                 resolve(childList);
-            });
-        }
-
-        let actions: SymbolInfo[] = [];
-        const returnPredicates = element.id === "1";
-        if (this.currentFile) {
-            actions = this.backend.listActions(this.currentFile);
-            actions = actions.filter((action) => action.isPredicate === returnPredicates);
-        }
-
-        const list: TreeItem[] = [];
-        let index = 0;
-        for (const action of actions) {
-            let caption = index++ + ": ";
-            const content = action.description!.substr(1, action.description!.length - 2);
-            if (content.includes("\n")) {
-                caption += "<multi line block>";
             } else {
-                caption += content;
+                let actions: SymbolInfo[] = [];
+                const returnPredicates = element.id === "1";
+                if (this.currentFile) {
+                    actions = this.backend.listActions(this.currentFile);
+                    actions = actions.filter((action) => action.isPredicate === returnPredicates);
+                }
+
+                const list: TreeItem[] = [];
+                let index = 0;
+                for (const action of actions) {
+                    let caption = index++ + ": ";
+                    const content = action.description!.substr(1, action.description!.length - 2);
+                    if (content.includes("\n")) {
+                        caption += "<multi line block>";
+                    } else {
+                        caption += content;
+                    }
+
+                    const command = {
+                        title: "Select Grammar Range",
+                        command: "antlr.selectGrammarRange",
+                        arguments: [action.definition!.range],
+                    };
+
+                    let item: TreeItem;
+                    if (returnPredicates) {
+                        item = new PredicateEntry(caption.trim(), action.definition!.range, command);
+                    } else {
+                        item = new ActionEntry(caption.trim(), action.definition!.range, command);
+                    }
+                    list.push(item);
+                }
+
+                if (returnPredicates) {
+                    this.predicates = list as PredicateEntry[];
+                } else {
+                    this.actions = list as ActionEntry[];
+                }
+
+                resolve(list);
             }
-
-            let item: TreeItem;
-            if (returnPredicates) {
-                item = new PredicateEntry(caption.trim(), action.definition!.range, {
-                    title: "",
-                    command: "antlr.selectGrammarRange",
-                    arguments: [action.definition!.range],
-                });
-            } else {
-                item = new ActionEntry(caption.trim(), action.definition!.range, {
-                    title: "",
-                    command: "antlr.selectGrammarRange",
-                    arguments: [action.definition!.range],
-                });
-            }
-            list.push(item);
-        }
-
-        if (returnPredicates) {
-            this.predicates = list as PredicateEntry[];
-        } else {
-            this.actions = list as ActionEntry[];
-        }
-
-        return new Promise((resolve) => {
-            resolve(list);
         });
     }
 }
