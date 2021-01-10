@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -32,6 +32,7 @@ export enum SymbolKind {
     TokenChannel,
     ParserRule,
     Action,
+    NamedAction,
     Predicate,
     Operator,
     Option,
@@ -64,7 +65,6 @@ export interface SymbolInfo {
     source: string;
     definition?: Definition;
     description?: string;  // Used for code completion. Provides a small description for certain symbols.
-    isPredicate?: boolean; // Used only for actions.
 }
 
 export enum DiagnosticType {
@@ -167,6 +167,13 @@ export interface ATNLink {
 export interface ATNGraphData {
     nodes: ATNNode[];
     links: ATNLink[];
+}
+
+export enum CodeActionType {
+    Named,
+    Parser,
+    Lexer,
+    Predicate,
 }
 
 /**
@@ -503,16 +510,17 @@ export class AntlrFacade {
     }
 
     /**
-     * Returns a list of actions + predicates found in the given file.
+     * Returns a list of actions found in the given file.
      *
      * @param fileName The grammar file name.
+     * @param type The of actions to return.
      *
-     * @returns The list of actions + predicates.
+     * @returns The list of actions.
      */
-    public listActions(fileName: string): SymbolInfo[] {
+    public listActions(fileName: string, type: CodeActionType): SymbolInfo[] {
         const context = this.getContext(fileName);
 
-        return context.listActions();
+        return context.listActions(type);
     }
 
     public getCodeCompletionCandidates(fileName: string, column: number, row: number): SymbolInfo[] {

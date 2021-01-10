@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -19,7 +19,7 @@ import {
 } from "antlr4ts";
 import {
     PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState, ActionTransition,
-    PredicateTransition, PrecedencePredicateTransition,
+    PredicateTransition, PrecedencePredicateTransition, LexerAction, LexerActionType, LexerCustomAction,
 } from "antlr4ts/atn";
 import { ParseCancellationException, IntervalSet, Interval } from "antlr4ts/misc";
 import { ParseTreeWalker, TerminalNode, ParseTree, ParseTreeListener } from "antlr4ts/tree";
@@ -34,6 +34,7 @@ import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 import {
     SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
     SentenceGenerationOptions, FormattingOptions, Definition, ContextDetails, PredicateFunction, ATNLink,
+    CodeActionType,
 } from "./facade";
 
 import { ContextErrorListener } from "./ContextErrorListener";
@@ -48,7 +49,8 @@ import { ErrorParser } from "./ErrorParser";
 import {
     ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
     VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol,
-    LexerModeSymbol, TokenChannelSymbol, ActionSymbol, OperatorSymbol,
+    LexerModeSymbol, TokenChannelSymbol, ActionSymbol, OperatorSymbol, LexerActionSymbol, PredicateSymbol,
+    NamedActionSymbol,
 } from "./ContextSymbolTable";
 
 import { SentenceGenerator } from "./SentenceGenerator";
@@ -74,11 +76,25 @@ export class SourceContext {
         [TokenChannelSymbol, SymbolKind.TokenChannel],
         [RuleSymbol, SymbolKind.ParserRule],
         [ActionSymbol, SymbolKind.Action],
-        //[ActionSymbol, SymbolKind.Predicate],
+        [NamedActionSymbol, SymbolKind.NamedAction],
+        [LexerActionSymbol, SymbolKind.Action],
+        [PredicateSymbol, SymbolKind.Predicate],
         [OperatorSymbol, SymbolKind.Operator],
         [TokenReferenceSymbol, SymbolKind.TokenReference],
         [RuleReferenceSymbol, SymbolKind.RuleReference],
     ]);
+
+    // Human readable descriptions for lexer action types.
+    private static lexerActionDescription = [
+        "Channel action",
+        "", // Custom actions are defined by their content.
+        "Mode action",
+        "More action",
+        "Pop Mode action",
+        "Push Mode action",
+        "Skip action",
+        "Type action",
+    ];
 
     public symbolTable: ContextSymbolTable;
     public sourceId: string;
@@ -129,10 +145,15 @@ export class SourceContext {
         if (symbol.name === "tokenVocab") {
             return SymbolKind.TokenVocab;
         }
-        const kind = this.symbolToKindMap.get(symbol.constructor as typeof Symbol);
-        if (kind === SymbolKind.Action && (symbol as ActionSymbol).isPredicate) {
-            return SymbolKind.Predicate;
+
+        if (symbol instanceof ActionSymbol) {
+            // Could be a named action.
+            if (symbol.parent instanceof NamedActionSymbol) {
+                symbol = symbol.parent;
+            }
         }
+
+        const kind = this.symbolToKindMap.get(symbol.constructor as typeof Symbol);
 
         return kind!;
     }
@@ -166,7 +187,7 @@ export class SourceContext {
 
             // For mode definitions we only need the init line, not all the lexer rules following it.
             if (ctx.ruleIndex === ANTLRv4Parser.RULE_modeSpec) {
-                const modeSpec: ModeSpecContext = <ModeSpecContext>ctx;
+                const modeSpec = ctx as ModeSpecContext;
                 range.b = modeSpec.SEMI().symbol.stopIndex;
                 result.range.end.column = modeSpec.SEMI().symbol.charPositionInLine;
                 result.range.end.row = modeSpec.SEMI().symbol.line;
@@ -223,13 +244,31 @@ export class SourceContext {
 
         switch (parent.ruleIndex) {
             case ANTLRv4Parser.RULE_ruleref:
-            case ANTLRv4Parser.RULE_terminalRule:
+            case ANTLRv4Parser.RULE_terminalRule: {
+                let symbol = this.symbolTable.symbolContainingContext(terminal);
+                if (symbol) {
+                    // This is only the reference to a symbol. See if that symbol exists actually.
+                    symbol = this.resolveSymbol(symbol.name);
+                    if (symbol) {
+                        return this.getSymbolInfo(symbol);
+                    }
+                }
+
+                break;
+            }
+
+            case ANTLRv4Parser.RULE_actionBlock:
             case ANTLRv4Parser.RULE_lexerCommandExpr:
             case ANTLRv4Parser.RULE_optionValue:
             case ANTLRv4Parser.RULE_delegateGrammar:
             case ANTLRv4Parser.RULE_modeSpec:
             case ANTLRv4Parser.RULE_setElement: {
-                return this.getSymbolInfo(terminal.text);
+                const symbol = this.symbolTable.symbolContainingContext(terminal);
+                if (symbol) {
+                    return this.getSymbolInfo(symbol);
+                }
+
+                break;
             }
 
             default: {
@@ -307,8 +346,35 @@ export class SourceContext {
         }
     }
 
-    public listActions(): SymbolInfo[] {
-        return this.symbolTable.listActions();
+    public listActions(type: CodeActionType): SymbolInfo[] {
+        const actions = this.symbolTable.listActions(type);
+
+        if (type === CodeActionType.Lexer) {
+            // For lexer actions we have to modify the symbol information to incorporate details
+            // not directly available from the parser grammar (i.e. generated data from ANTLR).
+            if (this.grammarLexerData) {
+                const internalActions = this.grammarLexerData.atn.lexerActions;
+
+                // The number of parsed actions and generated actions must be equal.
+                // For error search we return no actions at all if that's not the case.
+                if (actions.length !== internalActions.length) {
+                    return [];
+                }
+
+                internalActions.forEach((value: LexerAction, index: number) => {
+                    if (value.actionType === LexerActionType.CUSTOM) {
+                        // Lexer action transitions are one-based, so we have to add 1.
+                        const actionIndex = (value as LexerCustomAction).actionIndex + 1;
+                        actions[index].description = actionIndex + ": " + actions[index].description;
+                    } else {
+                        actions[index].description = SourceContext.lexerActionDescription[value.actionType];
+                    }
+
+                });
+            }
+        }
+
+        return actions;
     }
 
     public getCodeCompletionCandidates(column: number, row: number): SymbolInfo[] {
@@ -708,6 +774,7 @@ export class SourceContext {
 
         this.symbolTable.clear();
         this.symbolTable.addDependencies(SourceContext.globalSymbols);
+
         try {
             this.tree = this.parser.grammarSpec();
         } catch (e) {
@@ -1123,7 +1190,13 @@ export class SourceContext {
                 switch (transition.serializationType) {
                     case TransitionType.ACTION: {
                         const actionTransition = transition as ActionTransition;
-                        labels.push(`<action ${actionTransition.actionIndex}>`);
+                        const index = actionTransition.actionIndex === 0xFFFF ? -1 : actionTransition.actionIndex;
+                        if (isLexerRule) {
+                            labels.push(`<lexer action ${index}>`);
+                        } else {
+                            labels.push(`<parser action ${index}>`);
+                        }
+
                         break;
                     }
 

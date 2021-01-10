@@ -307,8 +307,10 @@ export const activate = (context: ExtensionContext): void => {
     });
 
     window.onDidChangeActiveTextEditor((textEditor: TextEditor | undefined) => {
-        updateVsCodeContext(textEditor?.document);
-        updateTreeProviders(textEditor?.document);
+        if (textEditor) {
+            updateVsCodeContext(textEditor.document);
+            updateTreeProviders(textEditor.document);
+        }
     });
 
     /**
@@ -417,7 +419,9 @@ export const activate = (context: ExtensionContext): void => {
             }
 
             backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true }).then(() => {
-                atnGraphProvider.update(window.activeTextEditor!, true);
+                if (window.activeTextEditor?.document.fileName === document.fileName) {
+                    atnGraphProvider.update(window.activeTextEditor, true);
+                }
                 updateTreeProviders(document);
 
                 progress.stopAnimation();
@@ -517,10 +521,5 @@ const updateVsCodeContext = (document: TextDocument | undefined): void => {
         void Utils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);
 
         void Utils.switchVsCodeContext("antlr4.hasImports", info.imports.length > 0);
-    } else {
-        void Utils.switchVsCodeContext("antlr4.isLexer", false);
-        void Utils.switchVsCodeContext("antlr4.isParser", false);
-        void Utils.switchVsCodeContext("antlr4.isCombined", false);
-        void Utils.switchVsCodeContext("antlr4.hasImports", false);
     }
 };

@@ -454,7 +454,7 @@
                 },
                 {
                     "id": "antlr4.actions",
-                    "name": "Actions & Semantic Predicates",
+                    "name": "Actions & Predicates",
                     "when": "antlr4.isLexer || antlr4.isParser || antlr4.isCombined"
                 }
             ]

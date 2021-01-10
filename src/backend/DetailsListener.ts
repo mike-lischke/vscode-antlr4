@@ -8,246 +8,332 @@
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener";
 import {
     LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,
-    ModeSpecContext, DelegateGrammarContext, OptionContext, TerminalRuleContext, RulerefContext,
-    OptionValueContext, BlockContext, AlternativeContext, RuleBlockContext, EbnfSuffixContext,
+    ModeSpecContext, DelegateGrammarContext, TerminalRuleContext, RulerefContext,
+    BlockContext, AlternativeContext, RuleBlockContext, EbnfSuffixContext,
     OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledElementContext,
-    LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext,
+    LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext, NamedActionContext,
+    ExceptionHandlerContext, FinallyClauseContext, RuleActionContext, LexerCommandContext, OptionContext,
+    OptionValueContext,
 } from "../parser/ANTLRv4Parser";
 
 import {
     ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
-    VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol,
-    AlternativeSymbol, EbnfSuffixSymbol, OptionsSymbol, ActionSymbol, ArgumentSymbol, OperatorSymbol, OptionSymbol,
-    PredicateMarkerSymbol,
+    VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, AlternativeSymbol, EbnfSuffixSymbol,
+    ArgumentSymbol, OperatorSymbol, NamedActionSymbol,
+    ExceptionHandlerSymbol, FinallyClauseSymbol, ParserActionSymbol, LexerActionSymbol, ActionSymbol, OptionsSymbol,
+    OptionSymbol,
+    PredicateSymbol,
 } from "./ContextSymbolTable";
 
 import { SourceContext } from "./SourceContext";
 
 import { ScopedSymbol, LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
+import { ParseTree } from "antlr4ts/tree";
 
 export class DetailsListener implements ANTLRv4ParserListener {
-    private currentSymbol: Symbol | undefined;
+    private symbolStack: Symbol[] = [];
 
     public constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
+
+    public enterParserRuleSpec(ctx: ParserRuleSpecContext): void {
+        this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF().text);
+    }
+
+    public exitParserRuleSpec(ctx: ParserRuleSpecContext): void {
+        this.popSymbol();
+    }
+
+    public enterRuleBlock(ctx: RuleBlockContext): void {
+        this.pushNewSymbol(BlockSymbol, ctx, "");
+    }
+
+    public exitRuleBlock(): void {
+        this.popSymbol();
+    }
 
     public enterLexerRuleSpec(ctx: LexerRuleSpecContext): void {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
             if (ctx.FRAGMENT()) {
-                this.currentSymbol = this.symbolTable.addNewSymbolOfType(FragmentTokenSymbol, undefined, tokenRef.text);
-                this.currentSymbol.context = ctx;
+                this.pushNewSymbol(FragmentTokenSymbol, ctx, tokenRef.text);
             } else {
-                this.currentSymbol = this.symbolTable.addNewSymbolOfType(TokenSymbol, undefined, tokenRef.text);
-                this.currentSymbol.context = ctx;
+                this.pushNewSymbol(TokenSymbol, ctx, tokenRef.text);
             }
         }
     }
 
-    public enterParserRuleSpec(ctx: ParserRuleSpecContext): void {
-        this.currentSymbol = this.symbolTable.addNewSymbolOfType(RuleSymbol, undefined, ctx.RULE_REF().text);
-        this.currentSymbol.context = ctx;
-    }
-
-    public exitParserRuleSpec(ctx: ParserRuleSpecContext): void {
-        const symbol = this.symbolTable.addNewSymbolOfType(TokenSymbol, this.currentSymbol as ScopedSymbol, ";");
-        try {
-            symbol.context = ctx.SEMI();
-        } catch (e) {
-            // ignore
-        }
-
-        if (this.currentSymbol) {
-            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
-        }
-    }
-
-    public enterRuleBlock(ctx: RuleBlockContext): void {
-        this.currentSymbol = this.symbolTable.addNewSymbolOfType(BlockSymbol, this.currentSymbol as ScopedSymbol, "");
-    }
-
-    public exitRuleBlock(ctx: RuleBlockContext): void {
-        if (this.currentSymbol) {
-            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
-        }
+    public exitLexerRuleSpec(): void {
+        this.popSymbol();
     }
 
     public enterLexerRuleBlock(ctx: LexerRuleBlockContext): void {
-        this.currentSymbol = this.symbolTable.addNewSymbolOfType(BlockSymbol, this.currentSymbol as ScopedSymbol, "");
+        this.pushNewSymbol(BlockSymbol, ctx, "");
     }
 
     public exitLexerRuleBlock(ctx: LexerRuleBlockContext): void {
-        if (this.currentSymbol) {
-            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
-        }
+        this.popSymbol();
     }
 
     public enterBlock(ctx: BlockContext): void {
-        this.currentSymbol = this.symbolTable.addNewSymbolOfType(BlockSymbol, this.currentSymbol as ScopedSymbol, "");
-        this.currentSymbol.context = ctx;
+        this.pushNewSymbol(BlockSymbol, ctx, "");
     }
 
     public exitBlock(ctx: BlockContext): void {
-        if (this.currentSymbol) {
-            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
-        }
+        this.popSymbol();
     }
 
     public enterAlternative(ctx: AlternativeContext): void {
-        this.currentSymbol = this.symbolTable.addNewSymbolOfType(AlternativeSymbol,
-            this.currentSymbol as ScopedSymbol, "");
-        this.currentSymbol.context = ctx;
+        this.pushNewSymbol(AlternativeSymbol, ctx, "");
     }
 
     public exitAlternative(ctx: AlternativeContext): void {
-        if (this.currentSymbol) {
-            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
-        }
+        this.popSymbol();
     }
 
     public enterLexerAlt(ctx: LexerAltContext): void {
-        this.currentSymbol = this.symbolTable.addNewSymbolOfType(AlternativeSymbol,
-            this.currentSymbol as ScopedSymbol, "");
-        this.currentSymbol.context = ctx;
+        this.pushNewSymbol(AlternativeSymbol, ctx, "");
     }
 
     public exitLexerAlt(ctx: LexerAltContext): void {
-        if (this.currentSymbol) {
-            this.currentSymbol = this.currentSymbol.parent as ScopedSymbol;
-        }
+        this.popSymbol();
     }
 
-    public enterTokensSpec(ctx: TokensSpecContext): void {
+    public exitTokensSpec(ctx: TokensSpecContext): void {
         const idList = ctx.idList();
         if (idList) {
             for (const identifier of idList.identifier()) {
-                const symbol = this.symbolTable.addNewSymbolOfType(VirtualTokenSymbol, undefined, identifier.text);
-                symbol.context = ctx;
+                this.addNewSymbol(VirtualTokenSymbol, ctx, identifier.text);
             }
         }
     }
 
-    public enterTerminalRule(ctx: TerminalRuleContext): void {
-        if (this.currentSymbol) {
-            if (ctx.TOKEN_REF()) {
-                const refName = ctx.TOKEN_REF()!.text;
-                const symbol = this.symbolTable.addNewSymbolOfType(TokenReferenceSymbol,
-                    this.currentSymbol as ScopedSymbol, refName);
-                symbol.context = ctx.TOKEN_REF();
-            } else {
-                // Must be a string literal then.
-                const refName = unquote(ctx.STRING_LITERAL()!.text, "'");
-                const symbol = this.symbolTable.addNewSymbolOfType(LiteralSymbol, this.currentSymbol as ScopedSymbol,
-                    refName, refName);
-                symbol.context = ctx.STRING_LITERAL();
-            }
-        }
-    }
-
-    public enterRuleref(ctx: RulerefContext): void {
-        if (ctx.RULE_REF() && this.currentSymbol) {
-            const refName = ctx.RULE_REF()!.text;
-            const symbol = this.symbolTable.addNewSymbolOfType(RuleReferenceSymbol, this.currentSymbol as ScopedSymbol,
-                refName);
-            symbol.context = ctx.RULE_REF();
-        }
-    }
-
-    public enterChannelsSpec(ctx: ChannelsSpecContext): void {
+    public exitChannelsSpec(ctx: ChannelsSpecContext): void {
         const idList = ctx.idList();
         if (idList) {
             for (const identifier of idList.identifier()) {
-                const symbol = this.symbolTable.addNewSymbolOfType(TokenChannelSymbol, undefined, identifier.text);
-                symbol.context = ctx;
+                this.addNewSymbol(TokenChannelSymbol, ctx, identifier.text);
             }
+        }
+    }
+
+    public exitTerminalRule(ctx: TerminalRuleContext): void {
+        let token = ctx.TOKEN_REF();
+        if (token) {
+            this.addNewSymbol(TokenReferenceSymbol, ctx, token.text);
+        } else {
+            // Must be a string literal then.
+            token = ctx.STRING_LITERAL();
+            if (token) {
+                const refName = unquote(token.text, "'");
+                this.addNewSymbol(LiteralSymbol, token, refName, refName);
+            }
+        }
+    }
+
+    public exitRuleref(ctx: RulerefContext): void {
+        const token = ctx.RULE_REF();
+        if (token) {
+            this.addNewSymbol(RuleReferenceSymbol, ctx, token.text);
         }
     }
 
     public exitModeSpec(ctx: ModeSpecContext): void {
-        const symbol = this.symbolTable.addNewSymbolOfType(LexerModeSymbol, undefined, ctx.identifier().text);
-        symbol.context = ctx;
+        this.addNewSymbol(LexerModeSymbol, ctx, ctx.identifier().text);
     }
 
     public exitDelegateGrammar(ctx: DelegateGrammarContext): void {
         const context = ctx.identifier()[ctx.identifier().length - 1];
         if (context) {
             const name = SourceContext.definitionForContext(context, false)!.text;
-            const symbol = this.symbolTable.addNewSymbolOfType(ImportSymbol, undefined, name);
-            symbol.context = ctx;
+            this.addNewSymbol(ImportSymbol, context, name);
             this.imports.push(name);
         }
     }
 
     public enterOptionsSpec(ctx: OptionsSpecContext): void {
-        this.currentSymbol = this.symbolTable.addNewSymbolOfType(OptionsSymbol, undefined, "options");
-        this.currentSymbol.context = ctx;
+        this.pushNewSymbol(OptionsSymbol, ctx, "");
+    }
+
+    public exitOptionsSpec(ctx: OptionsSpecContext): void {
+        this.popSymbol();
     }
 
     public exitOption(ctx: OptionContext): void {
         const option = ctx.identifier().text;
-        const value = ctx.tryGetRuleContext(0, OptionValueContext);
-        if (value) {
-            const symbol = this.symbolTable.addNewSymbolOfType(OptionSymbol, this.currentSymbol as ScopedSymbol,
-                option);
-            symbol.value = value.text;
-            symbol.context = ctx;
+        const valueContext = ctx.tryGetRuleContext(0, OptionValueContext);
+        if (valueContext && valueContext.childCount > 0) {
+            const symbol = this.addNewSymbol(OptionSymbol, valueContext.getChild(0), option);
+            symbol.value = valueContext.text;
             if (option === "tokenVocab") {
-                this.imports.push(value.text);
+                this.imports.push(valueContext.text);
             }
         }
     }
 
-    public enterEbnfSuffix(ctx: EbnfSuffixContext): void {
-        const symbol = this.symbolTable.addNewSymbolOfType(EbnfSuffixSymbol, this.currentSymbol as ScopedSymbol,
-            ctx.text);
-        symbol.context = ctx;
+    public enterNamedAction(ctx: NamedActionContext): void {
+        this.pushNewSymbol(NamedActionSymbol, ctx, "");
     }
 
-    public enterActionBlock(ctx: ActionBlockContext): void {
-        const symbol = this.symbolTable.addNewSymbolOfType(ActionSymbol, this.currentSymbol as ScopedSymbol, "action");
-        symbol.context = ctx;
+    public exitNamedAction(): void {
+        const action = this.popSymbol() as NamedActionSymbol;
+        this.symbolTable.defineNamedAction(action.lastChild!);
     }
 
-    public enterArgActionBlock(ctx: ArgActionBlockContext): void {
-        const symbol = this.symbolTable.addNewSymbolOfType(ArgumentSymbol, this.currentSymbol as ScopedSymbol,
-            "argument");
-        symbol.context = ctx;
+    public enterExceptionHandler(ctx: ExceptionHandlerContext): void {
+        this.pushNewSymbol(ExceptionHandlerSymbol, ctx, "");
     }
 
-    public enterLabeledElement(ctx: LabeledElementContext): void {
-        const symbol = this.symbolTable.addNewSymbolOfType(VariableSymbol, this.currentSymbol as ScopedSymbol,
-            ctx.identifier().text);
-        symbol.context = ctx;
+    public exitExceptionHandler(ctx: ExceptionHandlerContext): void {
+        const action = this.popSymbol() as NamedActionSymbol;
+        this.symbolTable.defineParserAction(action.lastChild!);
+    }
+
+    public enterFinallyClause(ctx: FinallyClauseContext): void {
+        this.pushNewSymbol(FinallyClauseSymbol, ctx, "");
+    }
+
+    public exitFinallyClause(ctx: FinallyClauseContext): void {
+        const action = this.popSymbol() as FinallyClauseSymbol;
+        this.symbolTable.defineParserAction(action.lastChild!);
+    }
+
+    public enterRuleAction(ctx: RuleActionContext): void {
+        this.pushNewSymbol(ParserActionSymbol, ctx, "");
+    }
+
+    public exitRuleAction(ctx: RuleActionContext): void {
+        const action = this.popSymbol() as ParserActionSymbol;
+        this.symbolTable.defineParserAction(action.lastChild!);
+    }
+
+    public exitEbnfSuffix(ctx: EbnfSuffixContext): void {
+        this.addNewSymbol(EbnfSuffixSymbol, ctx, ctx.text);
+    }
+
+    public exitActionBlock(ctx: ActionBlockContext): void {
+        const parent = ctx.parent;
+        if (parent) {
+            parent.children?.forEach((tree, index) => {
+                if (tree === ctx) {
+                    if (index + 1 < parent.childCount) {
+                        const next = parent.getChild(index + 1);
+                        if (next.text === "?") {
+                            // This is actually a predicate.
+                            this.addNewSymbol(PredicateSymbol, ctx, "");
+                        }
+                    }
+                }
+            });
+        }
+
+        this.addNewSymbol(ActionSymbol, ctx, "");
+    }
+
+    public exitLexerCommand(ctx: LexerCommandContext): void {
+        const command = this.addNewSymbol(LexerActionSymbol, ctx, ctx.lexerCommandName().text);
+        this.symbolTable.defineLexerAction(command);
+    }
+
+    public exitArgActionBlock(ctx: ArgActionBlockContext): void {
+        this.addNewSymbol(ArgumentSymbol, ctx, "");
+    }
+
+    public exitLabeledElement(ctx: LabeledElementContext): void {
+        this.addNewSymbol(VariableSymbol, ctx, ctx.identifier().text);
 
         if (ctx.childCount > 1) {
-            const operator = this.symbolTable.addNewSymbolOfType(OperatorSymbol, this.currentSymbol as ScopedSymbol,
-                ctx.getChild(1).text);
-            operator.context = ctx.getChild(1);
+            this.addNewSymbol(OperatorSymbol, ctx, ctx.getChild(1).text);
         }
     }
 
+    /**
+     * Checks if the element is an action or predicate and (if so) defines it in the symbol table as such.
+     *
+     * @param ctx The context for the element.
+     */
     public exitElement(ctx: ElementContext): void {
-        if (ctx.QUESTION() && this.currentSymbol) {
-            const child = (this.currentSymbol as ScopedSymbol).lastChild;
-            if (child instanceof ActionSymbol) {
-                child.isPredicate = true;
-                const questionMark = this.symbolTable.addNewSymbolOfType(PredicateMarkerSymbol,
-                    this.currentSymbol as ScopedSymbol, "?");
-                questionMark.context = ctx.QUESTION();
+        // We must have an action symbol in the symbol table already and the owning alternative on the TOS,
+        // if there's an action block in the element context.
+        if (ctx.actionBlock()) {
+            // Pure action or predicate?
+            const child = this.currentSymbol<AlternativeSymbol>()!.lastChild!;
+            if (ctx.QUESTION()) {
+                this.symbolTable.definePredicate(child);
+            } else {
+                this.symbolTable.defineParserAction(child);
             }
         }
     }
 
+    /**
+     * Checks if the lexer element is an action or predicate. Same handling as for parser elements.
+     *
+     * @param ctx The context for the element.
+     */
     public exitLexerElement(ctx: LexerElementContext): void {
-        if (ctx.QUESTION() && this.currentSymbol) {
-            const child = (this.currentSymbol as ScopedSymbol).lastChild;
-            if (child instanceof ActionSymbol) {
-                child.isPredicate = true;
-                const questionMark = this.symbolTable.addNewSymbolOfType(PredicateMarkerSymbol,
-                    this.currentSymbol as ScopedSymbol, "?");
-                questionMark.context = ctx.QUESTION();
+        if (ctx.actionBlock()) {
+            const element = this.currentSymbol<AlternativeSymbol>()!.lastChild!;
+            if (ctx.QUESTION() && element.previousSibling) {
+                this.symbolTable.definePredicate(element.previousSibling);
+            } else {
+                this.symbolTable.defineLexerAction(element);
             }
         }
     }
+
+    /**public visitTerminal = (node: TerminalNode): string => {
+        this.addNewSymbol(Symbol, node, node.text);
+
+        return node.text;
+    };*/
+
+    private currentSymbol<T extends Symbol>(): T | undefined {
+        if (this.symbolStack.length === 0) {
+            return undefined;
+        }
+
+        return this.symbolStack[this.symbolStack.length - 1] as T;
+    }
+
+    /**
+     * Adds a new symbol to the current symbol TOS.
+     *
+     * @param type The type of the symbol to add.
+     * @param context The symbol's parse tree, to allow locating it.
+     * @param args The actual arguments for the new symbol.
+     *
+     * @returns The new symbol.
+     */
+    private addNewSymbol<T extends Symbol>(type: new (...args: any[]) => T, context: ParseTree,
+        ...args: any[]): T {
+        const symbol = this.symbolTable.addNewSymbolOfType(type, this.currentSymbol(), ...args);
+        symbol.context = context;
+
+        return symbol;
+    }
+
+    /**
+     * Creates a new symbol and starts a new scope with it on the symbol stack.
+     *
+     * @param type The type of the symbol to add.
+     * @param context The symbol's parse tree, to allow locating it.
+     * @param args The actual arguments for the new symbol.
+     *
+     * @returns The new scoped symbol.
+     */
+    private pushNewSymbol<T extends ScopedSymbol>(type: new (...args: any[]) => T, context: ParseTree,
+        ...args: any[]): ScopedSymbol {
+        const symbol = this.symbolTable.addNewSymbolOfType<T>(type, this.currentSymbol(), ...args);
+        symbol.context = context;
+        this.symbolStack.push(symbol);
+
+        return symbol;
+    }
+
+    private popSymbol(): Symbol | undefined {
+        return this.symbolStack.pop();
+    }
+
 }
 
 /**

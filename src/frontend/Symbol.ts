@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -50,6 +50,15 @@ export const symbolDescriptionFromEnum = (kind: SymbolKind): string => {
         }
         case SymbolKind.TokenVocab: {
             return "Token Vocabulary";
+        }
+        case SymbolKind.Action: {
+            return "Native Action";
+        }
+        case SymbolKind.Predicate: {
+            return "Semantic Predicate";
+        }
+        case SymbolKind.NamedAction: {
+            return "Named Native Action";
         }
 
         default: {

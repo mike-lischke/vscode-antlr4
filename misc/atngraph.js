@@ -231,7 +231,7 @@ function endCoordinate(horizontal, element) {
         }
     }
 
-    // Fore circle nodes or when the center of the source node is within the bounds of the target node rect.
+    // For circle nodes or when the center of the source node is within the bounds of the target node rect.
     return horizontal ? element.target.x : element.target.y;
 }
 

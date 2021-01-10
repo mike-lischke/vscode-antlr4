@@ -10,14 +10,20 @@
 import { ParserRuleContext } from "antlr4ts";
 import { SymbolTable, Symbol, ScopedSymbol, SymbolTableOptions } from "antlr4-c3";
 
-import { SymbolKind, SymbolGroupKind, SymbolInfo } from "../backend/facade";
+import { SymbolKind, SymbolGroupKind, SymbolInfo, CodeActionType } from "../backend/facade";
 import { SourceContext } from "./SourceContext";
-import { ParseTree, TerminalNode } from "antlr4ts/tree";
+import { ParseTree } from "antlr4ts/tree";
 
 export class ContextSymbolTable extends SymbolTable {
     public tree: ParserRuleContext; // Set by the owning source context after each parse run.
 
     private symbolReferences = new Map<string, number>();
+
+    // Caches with reverse lookup for indexed symbols.
+    private namedActions: Symbol[] = [];
+    private parserActions: Symbol[] = [];
+    private lexerActions: Symbol[] = [];
+    private predicates: Symbol[] = [];
 
     public constructor(name: string, options: SymbolTableOptions, public owner?: SourceContext) {
         super(name, options);
@@ -32,7 +38,13 @@ export class ContextSymbolTable extends SymbolTable {
                 }
             }
         }
+
         this.symbolReferences.clear();
+        this.namedActions = [];
+        this.parserActions = [];
+        this.lexerActions = [];
+        this.predicates = [];
+
         super.clear();
     }
 
@@ -166,28 +178,49 @@ export class ContextSymbolTable extends SymbolTable {
         return result;
     }
 
-    public listActions(): SymbolInfo[] {
+    /**
+     * Collects a list of action symbols.
+     *
+     * @param type The type of actions to return.
+     *
+     * @returns Symbol information for each defined action.
+     */
+    public listActions(type: CodeActionType): SymbolInfo[] {
         const result: SymbolInfo[] = [];
-        const actions = this.getNestedSymbolsOfType(ActionSymbol);
-        for (const action of actions) {
-            const definition = SourceContext.definitionForContext(action.context, true);
-            if (action.isPredicate) {
-                // Extend the range to the following QUESTION token, if this action is actually a predicate.
-                const questionMark = action.nextSibling;
-                if (questionMark) {
-                    const context = questionMark.context as TerminalNode;
-                    definition!.range.end.row = context.symbol.line;
-                    definition!.range.end.column = context.symbol.charPositionInLine;
-                }
+
+        try {
+            let list;
+            if (type === CodeActionType.Named) {
+                list = this.namedActions;
+            } else if (type === CodeActionType.Parser) {
+                list = this.parserActions;
+            } else if (type === CodeActionType.Lexer) {
+                list = this.lexerActions;
+            } else {
+                list = this.predicates;
             }
 
+            for (const entry of list) {
+                const definition = SourceContext.definitionForContext(entry.context, true);
+                if (definition && entry.name.toLowerCase() === "skip") {
+                    // Seems there's a bug for the skip action where the parse tree indicates a single letter source range.
+                    definition.range.end.column = definition.range.start.column + 3;
+                }
+
+                result.push({
+                    kind: SourceContext.getKindFromSymbol(entry),
+                    name: entry.name,
+                    source: this.owner ? this.owner.fileName : "",
+                    definition,
+                    description: entry.context!.text,
+                });
+            }
+        } catch (e) {
             result.push({
-                kind: SourceContext.getKindFromSymbol(action),
-                name: action.name,
-                source: this.owner ? this.owner.fileName : "",
-                definition,
-                isPredicate: action.isPredicate,
-                description: action.context!.text,
+                kind: SymbolKind.Action,
+                name: "Error getting actions list",
+                description: "Internal error occurred while collecting the list of defined actions",
+                source: "",
             });
         }
 
@@ -266,6 +299,79 @@ export class ContextSymbolTable extends SymbolTable {
         return result;
     }
 
+    /**
+     * Stores the given symbol in the named action cache.
+     *
+     * @param action The symbol representing the action.
+     */
+    public defineNamedAction(action: Symbol): void {
+        this.namedActions.push(action);
+    }
+
+    /**
+     * Stores the given symbol in the parser action cache.
+     *
+     * @param action The symbol representing the action.
+     */
+    public defineParserAction(action: Symbol): void {
+        this.parserActions.push(action);
+    }
+
+    /**
+     * Stores the given symbol in the lexer action cache. Lexer actions actually have an index (well, custom lexer
+     * actions have), but at this point we don't know it yet, so we keep the action in a set.
+     * Later we can correlate that with the ATN.lexerActions field.
+     *
+     * @param action The symbol representing the action.
+     */
+    public defineLexerAction(action: Symbol): void {
+        this.lexerActions.push(action);
+    }
+
+    /**
+     * Stores the given symbol in the predicate cache, if it isn't already there. The current size of the cache
+     * defines its index, as used in predicate evaluation.
+     *
+     * @param predicate The symbol representing the predicate.
+     */
+    public definePredicate(predicate: Symbol): void {
+        this.predicates.push(predicate);
+    }
+
+    /**
+     * Does a depth-first search in the table for a symbol which contains the given context.
+     * The search is based on the token indices which the context covers and goes down as much as possible to find
+     * the closes covering symbol.
+     *
+     * @param context The context to search for.
+     *
+     * @returns The symbol covering the given context or undefined if nothing was found.
+     */
+    public symbolContainingContext(context: ParseTree): Symbol | undefined {
+        const findRecursive = (parent: ScopedSymbol): Symbol | undefined => {
+            for (const symbol of parent.children) {
+                if (!symbol.context || symbol.context === context) {
+                    continue;
+                }
+
+                if (symbol.context.sourceInterval.properlyContains(context.sourceInterval)) {
+                    let child;
+                    if (symbol instanceof ScopedSymbol) {
+                        child = findRecursive(symbol);
+
+                    }
+                    if (child) {
+                        return child;
+                    } else {
+                        return symbol;
+                    }
+                }
+            }
+        };
+
+        return findRecursive(this);
+    }
+
     private symbolsOfType<T extends Symbol>(t: new (...args: any[]) => T, localOnly = false): SymbolInfo[] {
         const result: SymbolInfo[] = [];
 
@@ -330,6 +436,7 @@ export class ContextSymbolTable extends SymbolTable {
 
         return undefined;
     }
+
 }
 
 export class OptionSymbol extends Symbol {
@@ -353,9 +460,11 @@ export class EbnfSuffixSymbol extends Symbol { }
 export class OptionsSymbol extends ScopedSymbol { }
 export class ArgumentSymbol extends ScopedSymbol { }
 export class OperatorSymbol extends Symbol { }
-
-export class ActionSymbol extends ScopedSymbol {
-    public isPredicate = false;
-}
-
+export class NamedActionSymbol extends ScopedSymbol { }
+export class LexerActionSymbol extends ScopedSymbol { }
+export class ExceptionHandlerSymbol extends ScopedSymbol { }
+export class FinallyClauseSymbol extends ScopedSymbol { }
+export class ParserActionSymbol extends ScopedSymbol { }
+export class PredicateSymbol extends Symbol { }
 export class PredicateMarkerSymbol extends Symbol { }
+export class ActionSymbol extends Symbol { }

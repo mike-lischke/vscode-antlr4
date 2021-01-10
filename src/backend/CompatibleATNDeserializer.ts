@@ -1,6 +1,8 @@
 /*
- * Parts of this file not copied from the original ATNDeserializer.ts file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Parts of this file not copied from the original ATNDeserializer.ts file are released under the MIT license.
+ *
+ * Copyright (c) 2016, 2021, Mike Lischke
+ *
  * All copied parts are released under the BSD-3-Clause.
  * Copyright 2016 The ANTLR Project. All rights reserved.
  *
@@ -109,7 +111,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
     private static inlineSetRules2(atn: ATN): number {
         let inlinedCalls = 0;
 
-        const ruleToInlineTransition: Transition[] = new Array<Transition>(atn.ruleToStartState.length);
+        const ruleToInlineTransition = new Array<Transition | undefined>(atn.ruleToStartState.length);
         for (let i = 0; i < atn.ruleToStartState.length; i++) {
             const startState: RuleStartState = atn.ruleToStartState[i];
             let middleState: ATNState = startState;
@@ -158,7 +160,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
             for (let i = 0; i < state.numberOfOptimizedTransitions; i++) {
                 const transition: Transition = state.getOptimizedTransition(i);
                 if (!(transition instanceof RuleTransition)) {
-                    if (optimizedTransitions != null) {
+                    if (optimizedTransitions !== undefined) {
                         optimizedTransitions.push(transition);
                     }
 
@@ -168,7 +170,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                 const ruleTransition: RuleTransition = transition;
                 const effective: Transition = ruleToInlineTransition[ruleTransition.target.ruleIndex];
                 if (effective == null) {
-                    if (optimizedTransitions != null) {
+                    if (optimizedTransitions !== undefined) {
                         optimizedTransitions.push(transition);
                     }
 
@@ -209,7 +211,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                 }
             }
 
-            if (optimizedTransitions != null) {
+            if (optimizedTransitions !== undefined) {
                 if (state.isOptimized) {
                     while (state.numberOfOptimizedTransitions > 0) {
                         state.removeOptimizedTransition(state.numberOfOptimizedTransitions - 1);
@@ -246,7 +248,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                     || (transition as EpsilonTransition).outermostPrecedenceReturn !== -1
                     || intermediate.stateType !== ATNStateType.BASIC
                     || !intermediate.onlyHasEpsilonTransitions) {
-                    if (optimizedTransitions != null) {
+                    if (optimizedTransitions !== undefined) {
                         optimizedTransitions.push(transition);
                     }
 
@@ -257,7 +259,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                     if (intermediate.getOptimizedTransition(j).serializationType !== TransitionType.EPSILON
                         || (intermediate.getOptimizedTransition(j) as EpsilonTransition)
                             .outermostPrecedenceReturn !== -1) {
-                        if (optimizedTransitions != null) {
+                        if (optimizedTransitions !== undefined) {
                             optimizedTransitions.push(transition);
                         }
 
@@ -279,7 +281,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                 }
             }
 
-            if (optimizedTransitions != null) {
+            if (optimizedTransitions !== undefined) {
                 if (state.isOptimized) {
                     while (state.numberOfOptimizedTransitions > 0) {
                         state.removeOptimizedTransition(state.numberOfOptimizedTransitions - 1);
@@ -724,7 +726,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                 }
 
                 // block end states can only be associated to a single block start state
-                if (state.endState.startState != null) {
+                if (state.endState.startState !== undefined) {
                     throw new Error("IllegalStateException");
                 }
 
