@@ -7,7 +7,7 @@
 
 import { IntervalSet, Interval } from "antlr4ts/misc";
 
-// This structure constains all currently defined Unicode blocks (according to https://unicode-table.com/en/blocks/)
+// This structure contains all currently defined Unicode blocks (according to https://unicode-table.com/en/blocks/)
 // together with a weight value that determines the probability to select a given block in the random block selection.
 const UnicodeBlocks: Array<[Interval, string, number]> = [
     [new Interval(0x0000, 0x001F), "Control character", 0],
@@ -298,11 +298,12 @@ export const FULL_UNICODE_SET = new IntervalSet([new Interval(0, 0x10FFFF)]);
 
 export interface UnicodeOptions {
     // The CJK scripts consist of so many code points, any generated random string will contain mostly CJK
-    // characters (Chinese/Japanese/Korean), if not excluded. However, only the largest scripts are removed by this setting, namely:
-    // - CJK Unified Ideographs (+ Extension A)
-    // - Yi Syllables
-    // - Hangul Syllables
-    // - CJK Compatibility Ideographs
+    // characters (Chinese/Japanese/Korean), if not excluded. However, only the largest scripts are
+    // removed by this setting, namely:
+    //   - CJK Unified Ideographs (+ Extension A)
+    //   - Yi Syllables
+    //   - Hangul Syllables
+    //   - CJK Compatibility Ideographs
     excludeCJK?: boolean;
 
     // Right-to-left characters don't fit well in the standard left-to-right direction, especially when
@@ -311,6 +312,9 @@ export interface UnicodeOptions {
 
     // Exclude any character beyond the basic multilingual pane (0x10000 and higher).
     limitToBMP?: boolean;
+
+    // When set to true include all Unicode line terminators (LF, VT, FF, CR, NEL, LS, PS) as valid output.
+    includeLineTerminators?: boolean;
 }
 
 /**
@@ -350,6 +354,17 @@ export const printableUnicodePoints = (options: UnicodeOptions): IntervalSet => 
                 intervalsToExclude);
             intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Override/code-points.js",
                 intervalsToExclude);
+        }
+
+        if (options.includeLineTerminators) {
+            // Unicode line terminators are implicitly taken out by the above code, so we add them in here.
+            intervalsToExclude.remove(0x0A); // NL, New Line.
+            intervalsToExclude.remove(0x0B); // VT, Vertical Tab
+            intervalsToExclude.remove(0x0C); // FF, Form Feed
+            intervalsToExclude.remove(0x0D); // CR, Carriage Return
+            intervalsToExclude.remove(0x85); // NEL, Next Line
+            intervalsToExclude.remove(0x2028); // LS, Line Separator
+            intervalsToExclude.remove(0x2029); // PS, Paragraph Separator
         }
 
         let sourceIntervals: IntervalSet;
@@ -418,7 +433,7 @@ export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval 
 const codePointsToIntervals = (dataFile: string, existing?: IntervalSet): IntervalSet => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
     const charsToExclude: number[] = require("unicode-11.0.0/" + dataFile);
-    const result = existing ? existing : new IntervalSet([]);
+    const result = existing ?? new IntervalSet([]);
 
     // Code points are sorted in increasing order, which we can use to speed up insertion.
     let start = charsToExclude[0];

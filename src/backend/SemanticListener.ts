@@ -27,7 +27,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
             const symbol = tokenRef.text;
-            this.checkSymbolExistance(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference",
+            this.checkSymbolExistence(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference",
                 tokenRef.symbol);
             this.symbolTable.incrementSymbolRefCount(symbol);
         }
@@ -38,7 +38,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         const ruleRef = ctx.RULE_REF();
         if (ruleRef) {
             const symbol = ruleRef.text;
-            this.checkSymbolExistance(true, SymbolGroupKind.RuleRef, symbol, "Unknown parser rule", ruleRef.symbol);
+            this.checkSymbolExistence(true, SymbolGroupKind.RuleRef, symbol, "Unknown parser rule", ruleRef.symbol);
             this.symbolTable.incrementSymbolRefCount(symbol);
         }
     };
@@ -48,7 +48,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
             const symbol = tokenRef.text;
-            this.checkSymbolExistance(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference",
+            this.checkSymbolExistence(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference",
                 tokenRef.symbol);
             this.symbolTable.incrementSymbolRefCount(symbol);
         }
@@ -70,7 +70,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
                 kind = SymbolGroupKind.TokenChannel;
             }
             const symbol = lexerCommandExprId.text;
-            this.checkSymbolExistance(true, kind, symbol, "Unknown " + name, lexerCommandExprId.start);
+            this.checkSymbolExistence(true, kind, symbol, "Unknown " + name, lexerCommandExprId.start);
             this.symbolTable.incrementSymbolRefCount(symbol);
         }
     };
@@ -124,7 +124,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         }
     };
 
-    protected checkSymbolExistance(mustExist: boolean, kind: SymbolGroupKind, symbol: string, message: string,
+    protected checkSymbolExistence(mustExist: boolean, kind: SymbolGroupKind, symbol: string, message: string,
         offendingToken: Token): void {
         if (this.symbolTable.symbolExistsInGroup(symbol, kind, false) !== mustExist) {
             const entry: DiagnosticEntry = {

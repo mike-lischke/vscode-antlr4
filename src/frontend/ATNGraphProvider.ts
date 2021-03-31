@@ -67,11 +67,11 @@ export class AntlrATNGraphProvider extends WebviewProvider {
         html = html.replace("##d3path##", graphLibPath);
 
         html = html.replace(/##objectName##/g, this.currentRule.replace(/\$/g, "$$"));
-        html = html.replace(/##index##/g, this.currentRuleIndex ? "" + this.currentRuleIndex : "?");
+        html = html.replace(/##index##/g, this.currentRuleIndex !== undefined ? "" + this.currentRuleIndex : "?");
 
         const maxLabelCount = workspace.getConfiguration("antlr4.atn").maxLabelCount as number;
         html = html.replace("##maxLabelCount##", (maxLabelCount > 1 ? maxLabelCount : 5).toString());
-        html += "  var width = 1000, height = 1000;\n\n";
+        html += "  const width = 1000, height = 1000;\n\n";
 
         const data = this.backend.getATNGraph(uri.fsPath, this.currentRule);
         if (data) {
@@ -107,23 +107,23 @@ export class AntlrATNGraphProvider extends WebviewProvider {
 
             }
 
-            html += "  var nodes = " + JSON.stringify(data.nodes) + "\n";
-            html += "  var links = " + JSON.stringify(data.links) + "\n\n";
+            html += "  const nodes = " + JSON.stringify(data.nodes) + "\n";
+            html += "  const links = " + JSON.stringify(data.links) + "\n\n";
 
-            html += `  var initialScale = ${scale};\n`;
-            html += `  var initialTranslateX = ${transX};\n`;
-            html += `  var initialTranslateY = ${transY};\n`;
+            html += `  const initialScale = ${scale};\n`;
+            html += `  const initialTranslateX = ${transX};\n`;
+            html += `  const initialTranslateY = ${transY};\n`;
 
             const nonce = new Date().getTime() + "" + new Date().getMilliseconds();
             html += `${code}\n</script>\n${this.getScripts(nonce, scripts)}</div></body>`;
 
         } else {
-            html += "  var nodes = []\n";
-            html += "  var links = []\n\n";
+            html += "  const nodes = []\n";
+            html += "  const links = []\n\n";
 
-            html += "  var initialScale = 1;\n";
-            html += "  var initialTranslateX = 0;\n";
-            html += "  var initialTranslateY = 0;\n";
+            html += "  const initialScale = 1;\n";
+            html += "  const initialTranslateX = 0;\n";
+            html += "  const initialTranslateY = 0;\n";
 
             html += `</script><br/><span style="color: #808080; font-size: 16pt;">No ATN data found
                     (code generation must run at least once in internal or external mode)</span></div></body>`;
@@ -146,21 +146,18 @@ export class AntlrATNGraphProvider extends WebviewProvider {
 
             // Update content only if this is the first invocation, editors were switched or
             // the currently selected rule changed.
+            this.currentEditor = editor;
+            this.currentRule = currentRule;
+            this.currentRuleIndex = ruleIndex;
             if (this.currentEditor) {
                 if (this.sendMessage(editor.document.uri, {
                     command: "cacheATNLayout",
                     file: editor.document.fileName,
                     rule: this.currentRule,
                 })) {
-                    this.currentEditor = editor;
-                    this.currentRule = currentRule;
-                    this.currentRuleIndex = ruleIndex;
                     super.update(editor);
                 }
             } else {
-                this.currentEditor = editor;
-                this.currentRule = currentRule;
-                this.currentRuleIndex = ruleIndex;
                 super.update(editor);
             }
         }

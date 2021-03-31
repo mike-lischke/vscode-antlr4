@@ -264,7 +264,7 @@ describe("vscode-antlr4-backend:", function () {
         });
     });
 
-    describe("Advanced Symbol Informations:", () => {
+    describe("Advanced Symbol Information:", () => {
 
         it("RRD diagram", () => {
             let diagram = backend.getRRDScript("test/backend/TLexer.g4", "Any");
@@ -288,7 +288,7 @@ describe("vscode-antlr4-backend:", function () {
             );
         });
 
-        it("Reference Graph", () =>  {
+        it("Reference Graph", () => {
             const graph = backend.getReferenceGraph("test/backend/TParser.g4");
             expect(graph.size, "Test 1").to.equal(48);
 
@@ -323,28 +323,28 @@ describe("vscode-antlr4-backend:", function () {
                 expect(graph!.nodes.length, "Test 2").to.equal(4);
                 expect(graph!.nodes[0].name, "Test 3").to.equal("56");
                 expect(graph!.nodes[0].type, "Test 4").to.equal(2);
-                expect(graph!.nodes[1].name, "Test 5").to.equal("57");
-                expect(graph!.nodes[1].type, "Test 6").to.equal(7);
-                expect(graph!.nodes[2].name, "Test 7").to.equal("364");
-                expect(graph!.nodes[2].type, "Test 8").to.equal(1);
-                expect(graph!.nodes[3].name, "Test 9").to.equal("365");
-                expect(graph!.nodes[3].type, "Test 10").to.equal(1);
+                expect(graph!.nodes[1].name, "Test 5").to.equal("364");
+                expect(graph!.nodes[1].type, "Test 6").to.equal(1);
+                expect(graph!.nodes[2].name, "Test 7").to.equal("365");
+                expect(graph!.nodes[2].type, "Test 7").to.equal(1);
+                expect(graph!.nodes[3].name, "Test 9").to.equal("57");
+                expect(graph!.nodes[3].type, "Test 10").to.equal(7);
 
                 expect(graph!.links.length, "Test 11").to.equal(3);
                 expect(graph!.links[0].source, "Test 12").to.equal(0);
-                expect(graph!.links[0].target, "Test 13").to.equal(2);
+                expect(graph!.links[0].target, "Test 13").to.equal(1);
                 expect(graph!.links[0].type, "Test 14").to.equal(1);
                 expect(graph!.links[0].labels.length, "Test 15").to.equal(1);
                 expect(graph!.links[0].labels[0], "Test 16").to.equal("ε");
 
-                expect(graph!.links[1].source, "Test 17").to.equal(2);
-                expect(graph!.links[1].target, "Test 18").to.equal(3);
+                expect(graph!.links[1].source, "Test 17").to.equal(1);
+                expect(graph!.links[1].target, "Test 18").to.equal(2);
                 expect(graph!.links[1].type, "Test 19").to.equal(7);
                 expect(graph!.links[1].labels.length, "Test 20").to.equal(4);
                 expect(graph!.links[1].labels[3], "Test 21").to.equal("'private'");
 
-                expect(graph!.links[2].source, "Test 22").to.equal(3);
-                expect(graph!.links[2].target, "Test 23").to.equal(1);
+                expect(graph!.links[2].source, "Test 22").to.equal(2);
+                expect(graph!.links[2].target, "Test 23").to.equal(3);
                 expect(graph!.links[2].type, "Test 24").to.equal(1);
                 expect(graph!.links[2].labels.length, "Test 25").to.equal(1);
                 expect(graph!.links[2].labels[0], "Test 26").to.equal("ε");
@@ -406,28 +406,28 @@ describe("vscode-antlr4-backend:", function () {
                 expect(dollarGraph!.nodes.length, "Test 5").to.equal(7);
                 expect(dollarGraph!.nodes[0].name, "Test 6").to.equal("45");
                 expect(dollarGraph!.nodes[0].type, "Test 7").to.equal(2);
-                expect(dollarGraph!.nodes[2].name, "Test 8").to.equal("140");
-                expect(dollarGraph!.nodes[2].type, "Test 9").to.equal(1);
-                expect(dollarGraph!.nodes[5].name, "Test 10").to.equal("143");
-                expect(dollarGraph!.nodes[5].type, "Test 11").to.equal(1);
-                expect(dollarGraph!.nodes[6].name, "Test 12").to.equal("144");
-                expect(dollarGraph!.nodes[6].type, "Test 13").to.equal(1);
+                expect(dollarGraph!.nodes[1].name, "Test 8").to.equal("140");
+                expect(dollarGraph!.nodes[1].type, "Test 9").to.equal(1);
+                expect(dollarGraph!.nodes[4].name, "Test 10").to.equal("143");
+                expect(dollarGraph!.nodes[4].type, "Test 11").to.equal(1);
+                expect(dollarGraph!.nodes[5].name, "Test 12").to.equal("144");
+                expect(dollarGraph!.nodes[5].type, "Test 13").to.equal(1);
 
                 expect(dollarGraph!.links.length, "Test 14").to.equal(6);
-                expect(dollarGraph!.links[1].source, "Test 15").to.equal(2);
-                expect(dollarGraph!.links[1].target, "Test 16").to.equal(3);
+                expect(dollarGraph!.links[1].source, "Test 15").to.equal(1);
+                expect(dollarGraph!.links[1].target, "Test 16").to.equal(2);
                 expect(dollarGraph!.links[1].type, "Test 17").to.equal(5);
                 expect(dollarGraph!.links[1].labels.length, "Test 18").to.equal(1);
                 expect(dollarGraph!.links[1].labels[0], "Test 19").to.equal("'$'");
 
-                expect(dollarGraph!.links[2].source, "Test 20").to.equal(3);
-                expect(dollarGraph!.links[2].target, "Test 21").to.equal(4);
+                expect(dollarGraph!.links[2].source, "Test 20").to.equal(2);
+                expect(dollarGraph!.links[2].target, "Test 21").to.equal(3);
                 expect(dollarGraph!.links[2].type, "Test 22").to.equal(1);
                 expect(dollarGraph!.links[2].labels.length, "Test 232").to.equal(1);
                 expect(dollarGraph!.links[2].labels[0], "Test 24").to.equal("ε");
 
-                expect(dollarGraph!.links[5].source, "Test 25").to.equal(6);
-                expect(dollarGraph!.links[5].target, "Test 26").to.equal(1);
+                expect(dollarGraph!.links[5].source, "Test 25").to.equal(5);
+                expect(dollarGraph!.links[5].target, "Test 26").to.equal(6);
                 expect(dollarGraph!.links[5].type, "Test 27").to.equal(1);
                 expect(dollarGraph!.links[5].labels.length, "Test 28").to.equal(1);
                 expect(dollarGraph!.links[5].labels[0], "Test 29").to.equal("ε");
@@ -437,38 +437,38 @@ describe("vscode-antlr4-backend:", function () {
                 expect(statGraph!.nodes[0].id.toString(), "Test 32").to.equal(statGraph!.nodes[0].name);
                 expect(statGraph!.nodes[0].name, "Test 32").to.equal("12");
                 expect(statGraph!.nodes[0].type, "Test 33").to.equal(2);
-                expect(statGraph!.nodes[7].id.toString(), "Test 34").to.equal(statGraph!.nodes[7].name);
-                expect(statGraph!.nodes[7].name, "Test 34").to.equal("82");
-                expect(statGraph!.nodes[7].type, "Test 35").to.equal(1);
-                expect(statGraph!.nodes[11].name, "Test 36").to.equal("85");
-                expect(statGraph!.nodes[11].type, "Test 37").to.equal(1);
-                expect(statGraph!.nodes[14].name, "Test 38").to.equal("88");
-                expect(statGraph!.nodes[14].type, "Test 39").to.equal(8);
-                expect(statGraph!.nodes[3].name, "Test 38").to.equal("expr");
-                expect(statGraph!.nodes[3].id, "Test 39").to.equal(-1);
-                expect(statGraph!.nodes[6].name, "Test 38").to.equal("expr");
-                expect(statGraph!.nodes[6].id, "Test 39").to.equal(-2);
-                expect(statGraph!.nodes[10].name, "Test 38").to.equal("expr");
-                expect(statGraph!.nodes[10].id, "Test 39").to.equal(-3);
+                expect(statGraph!.nodes[6].id.toString(), "Test 34").to.equal(statGraph!.nodes[6].name);
+                expect(statGraph!.nodes[6].name, "Test 34").to.equal("80");
+                expect(statGraph!.nodes[6].type, "Test 35").to.equal(1);
+                expect(statGraph!.nodes[10].name, "Test 36").to.equal("86");
+                expect(statGraph!.nodes[10].type, "Test 37").to.equal(1);
+                expect(statGraph!.nodes[13].name, "Test 38").to.equal("83");
+                expect(statGraph!.nodes[13].type, "Test 39").to.equal(1);
+                expect(statGraph!.nodes[2].name, "Test 38").to.equal("79");
+                expect(statGraph!.nodes[2].id, "Test 39").to.equal(79);
+                expect(statGraph!.nodes[5].name, "Test 40").to.equal("expr");
+                expect(statGraph!.nodes[5].id, "Test 41").to.equal(-2);
+                expect(statGraph!.nodes[9].name, "Test 42").to.equal("expr");
+                expect(statGraph!.nodes[9].id, "Test 43").to.equal(-3);
 
-                expect(statGraph!.links.length, "Test 40").to.equal(15);
-                expect(statGraph!.links[1].source, "Test 41").to.equal(13);
-                expect(statGraph!.links[1].target, "Test 42").to.equal(2);
-                expect(statGraph!.links[1].type, "Test 43").to.equal(1);
-                expect(statGraph!.links[1].labels.length, "Test 44").to.equal(1);
-                expect(statGraph!.links[1].labels[0], "Test 45").to.equal("ε");
+                expect(statGraph!.links.length, "Test 44").to.equal(15);
+                expect(statGraph!.links[1].source, "Test 45").to.equal(1);
+                expect(statGraph!.links[1].target, "Test 46").to.equal(2);
+                expect(statGraph!.links[1].type, "Test 47").to.equal(1);
+                expect(statGraph!.links[1].labels.length, "Test 48").to.equal(1);
+                expect(statGraph!.links[1].labels[0], "Test 49").to.equal("ε");
 
-                expect(statGraph!.links[4].source, "Test46").to.equal(3);
-                expect(statGraph!.links[4].target, "Test 47").to.equal(4);
-                expect(statGraph!.links[4].type, "Test 48").to.equal(3);
-                expect(statGraph!.links[4].labels.length, "Test 49").to.equal(1);
-                expect(statGraph!.links[4].labels[0], "Test 50").to.equal("ε");
+                expect(statGraph!.links[4].source, "Test50").to.equal(3);
+                expect(statGraph!.links[4].target, "Test 51").to.equal(6);
+                expect(statGraph!.links[4].type, "Test 52").to.equal(3);
+                expect(statGraph!.links[4].labels.length, "Test 53").to.equal(1);
+                expect(statGraph!.links[4].labels[0], "Test 54").to.equal("ε");
 
-                expect(statGraph!.links[12].source, "Test 51").to.equal(7);
-                expect(statGraph!.links[12].target, "Test 52").to.equal(8);
-                expect(statGraph!.links[12].type, "Test 53").to.equal(5);
-                expect(statGraph!.links[12].labels.length, "Test 54").to.equal(1);
-                expect(statGraph!.links[12].labels[0], "Test 55").to.equal("';'");
+                expect(statGraph!.links[12].source, "Test 55").to.equal(11);
+                expect(statGraph!.links[12].target, "Test 56").to.equal(13);
+                expect(statGraph!.links[12].type, "Test 57").to.equal(5);
+                expect(statGraph!.links[12].labels.length, "Test 58").to.equal(1);
+                expect(statGraph!.links[12].labels[0], "Test 59").to.equal("';'");
             } finally {
                 backend.releaseGrammar("test/backend/TParser.g4");
                 backend.releaseGrammar("test/backend/TLexer.g4");
@@ -633,21 +633,19 @@ describe("vscode-antlr4-backend:", function () {
         // sentences are ambiguous. Hence we only test that such generated content can be parsed error free.
         it("Simple lexer sentence generation", () => {
             // A grammar made specifically for sentence generation.
+            const tester = (sentence: string) => {
+                //console.log(symbolicName + ": " + sentence);
+                const [error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
+                expect(error).to.be.empty;
+            };
+
             const vocabulary = backend.getLexerVocabulary("test/backend/sentences.g4")!;
             for (let i = 1; i <= vocabulary.maxTokenType; ++i) {
                 const symbolicName = vocabulary.getSymbolicName(i);
-                for (let j = 0; j < 20; ++j) {
-                    const sentence = backend.generateSentence("test/backend/sentences.g4", {
-                        startRule: symbolicName!,
-                        maxLexerIterations: 15,
-                        maxParserIterations: 15,
-                    }, undefined, undefined);
-
-                    //console.log(symbolicName + ": " + sentence);
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const [tokenNames, error] = backend.lexTestInput("test/backend/sentences.g4", sentence);
-                    expect(error).to.be.empty;
-                }
+                backend.generateSentence("test/backend/sentences.g4", symbolicName!, {
+                    maxLexerIterations: 15,
+                    maxParserIterations: 15,
+                }, tester);
             }
         });
 
@@ -665,49 +663,50 @@ describe("vscode-antlr4-backend:", function () {
                 "ID",
             ];
 
+            const tester = (sentence: string) => {
+                //console.log(token + ": " + sentence);
+                expect(sentence.length, "Empty sentence generated").to.be.greaterThan(0);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
+                expect(error).to.be.empty;
+
+            };
+
             for (const token of lexerTokens) {
-                for (let i = 0; i < 5; ++i) {
-                    const sentence = backend.generateSentence("grammars/ANTLRv4Lexer.g4", {
-                        startRule: token,
-                        maxLexerIterations: 10,
-                        maxParserIterations: 10,
-                    }, undefined, undefined);
-
-                    //console.log(token + ": " + sentence);
-                    expect(sentence.length, "Empty sentence generated").to.be.greaterThan(0);
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
-                    expect(error).to.be.empty;
-                }
+                backend.generateSentence("grammars/ANTLRv4Lexer.g4", token, {
+                    count: 5,
+                    maxLexerIterations: 10,
+                    maxParserIterations: 10,
+                }, tester);
             }
-
         });
 
         it("Parser sentence generation", () => {
             this.slow(30000);
             this.timeout(60000);
 
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                if (errors.length > 0) {
+                    console.log("errors:");
+                    for (const error of errors) {
+                        console.log("\t" + error + "\n");
+                    }
+                }
+                expect(errors.length, "Test 5").to.equal(0);
+
+            };
+
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
             for (const rule of rules) {
-                for (let i = 0; i < 100; ++i) {
-                    const sentence = backend.generateSentence("test/backend/sentences.g4", {
-                        startRule: rule,
-                        minLexerIterations: 3,
-                        maxLexerIterations: 10,
-                        minParserIterations: 0,
-                        maxParserIterations: 3,
-                    }, undefined, undefined);
-
-                    //console.log(rule + ": " + sentence);
-                    const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
-                    if (errors.length > 0) {
-                        console.log("errors:");
-                        for (const error of errors) {
-                            console.log("\t" + error + "\n");
-                        }
-                    }
-                    expect(errors.length, "Test 5").to.equal(0);
-                }
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 100,
+                    minLexerIterations: 3,
+                    maxLexerIterations: 10,
+                    minParserIterations: 0,
+                    maxParserIterations: 3,
+                }, tester.bind(this, rule));
             }
         });
 
@@ -721,38 +720,39 @@ describe("vscode-antlr4-backend:", function () {
                 ["UnicodeIdentifier", "µπåƒ"],
             ]);
 
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                if (errors.length > 0) {
+                    console.log("errors:");
+                    for (const error of errors) {
+                        console.log("\t" + error + "\n");
+                    }
+                }
+                expect(errors.length, "Test 1").to.equal(0);
+
+                // In addition to error free generation check also that only known elements are in the sentence.
+                sentence = sentence.replace(/12345/g, "");
+                sentence = sentence.replace(/DEADBEEF/g, "");
+                sentence = sentence.replace(/Mike/g, "");
+                sentence = sentence.replace(/µπåƒ/g, "");
+                sentence = sentence.replace(/red/g, "");
+                sentence = sentence.replace(/green/g, "");
+                sentence = sentence.replace(/blue/g, "");
+                sentence = sentence.replace(/[0-9{},.:]/g, "");
+                sentence = sentence.trim();
+                //console.log(rule + ": " + sentence);
+                expect(sentence.length, "Test 2").to.equal(0);
+            };
+
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
             for (const rule of rules) {
-                for (let i = 0; i < 10; ++i) {
-                    let sentence = backend.generateSentence("test/backend/sentences.g4", {
-                        startRule: rule,
-                        maxLexerIterations: 7,
-                        maxParserIterations: 7,
-                    }, ruleMappings, undefined);
-
-                    //console.log(rule + ": " + sentence);
-                    const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
-                    if (errors.length > 0) {
-                        console.log("errors:");
-                        for (const error of errors) {
-                            console.log("\t" + error + "\n");
-                        }
-                    }
-                    expect(errors.length, "Test 1").to.equal(0);
-
-                    // In addition to error free generation check also that only known elements are in the sentence.
-                    sentence = sentence.replace(/12345/g, "");
-                    sentence = sentence.replace(/DEADBEEF/g, "");
-                    sentence = sentence.replace(/Mike/g, "");
-                    sentence = sentence.replace(/µπåƒ/g, "");
-                    sentence = sentence.replace(/red/g, "");
-                    sentence = sentence.replace(/green/g, "");
-                    sentence = sentence.replace(/blue/g, "");
-                    sentence = sentence.replace(/[0-9{},.:]/g, "");
-                    sentence = sentence.trim();
-                    //console.log(rule + ": " + sentence);
-                    expect(sentence.length, "Test 2").to.equal(0);
-                }
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 10,
+                    maxLexerIterations: 7,
+                    maxParserIterations: 7,
+                    ruleMappings,
+                }, tester.bind(this, rule));
             }
         });
 
@@ -972,7 +972,7 @@ const createAlignmentGrammar = (): void => {
 };
 
 /**
- * Converts the given position in the text to a character index (assuming 4 chars tabwidth).
+ * Converts the given position in the text to a character index (assuming 4 chars tab width).
  *
  * @param text The text for which to convert the position.
  * @param column The position in the text line.
@@ -1012,7 +1012,7 @@ const positionToIndex = (text: string, column: number, row: number): number => {
 };
 
 /**
- * Converts the given character index into a column/row pair (assuming 4 chars tabwidth).
+ * Converts the given character index into a column/row pair (assuming 4 chars tab width).
  *
  * @param text The text for which to convert the index.
  * @param index The character index in the text.

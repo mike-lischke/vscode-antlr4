@@ -78,7 +78,7 @@ export class WebviewProvider {
                 case "saveSVG": {
                     const css: string[] = [];
                     css.push(Utils.getMiscPath("light.css", this.context));
-                    const customStyles = workspace.getConfiguration("antlr4").customcss as string | string[];
+                    const customStyles = workspace.getConfiguration("antlr4").customCSS as string | string[];
                     if (customStyles && Array.isArray(customStyles)) {
                         for (const style of customStyles) {
                             css.push(style);
@@ -109,7 +109,7 @@ export class WebviewProvider {
                     const css: string[] = [];
                     css.push(Utils.getMiscPath("light.css", this.context));
                     css.push(Utils.getMiscPath("dark.css", this.context));
-                    const customStyles = workspace.getConfiguration("antlr4").customcss as string | string[];
+                    const customStyles = workspace.getConfiguration("antlr4").customCSS as string | string[];
                     if (customStyles && Array.isArray(customStyles)) {
                         for (const style of customStyles) {
                             css.push(style);
@@ -183,7 +183,7 @@ export class WebviewProvider {
 
         const defaults = baseStyles.map((link) => `<link rel="stylesheet" type="text/css" href="${link}">`).join("\n");
 
-        const paths = workspace.getConfiguration("antlr4").customcss as string | string[];
+        const paths = workspace.getConfiguration("antlr4").customCSS as string | string[];
         if (paths && Array.isArray(paths) && paths.length > 0) {
             return defaults + "\n" + paths.map((stylePath) =>
                 `<link rel="stylesheet" href="${webView.asWebviewUri(Uri.parse(stylePath)).toString()}" ` +

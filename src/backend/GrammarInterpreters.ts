@@ -25,7 +25,7 @@ import {
 } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 import { LexerElementContext, ElementContext } from "../parser/ANTLRv4Parser";
-import { PredicateEvaluator } from "./facade";
+import { PredicateFunction } from "./facade";
 
 export enum RunMode {
     Normal,
@@ -45,7 +45,7 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
     private predicates: ActionSymbol[];
 
     public constructor(
-        private evaluator: PredicateEvaluator | undefined,
+        private runPredicate: PredicateFunction | undefined,
         private mainContext: SourceContext,
         grammarFileName: string,
         lexerData: InterpreterData,
@@ -59,15 +59,17 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
     }
 
     public sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
-        if (this.evaluator) {
+        if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.text;
-                predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
-                try {
-                    return this.evaluator.evaluateLexerPredicate(this, ruleIndex, predIndex, predicate);
-                } catch (e) {
-                    throw Error(`There was an error while evaluating predicate "${predicate}". Evaluation returned: ` +
-                        (e as string));
+                if (predicate.length > 2) {
+                    predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                    try {
+                        return this.runPredicate(predicate);
+                    } catch (e) {
+                        throw Error(`There was an error while evaluating predicate "${predicate}". ` +
+                            "Evaluation returned: " + e);
+                    }
                 }
             }
         }
@@ -86,7 +88,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
     public constructor(
         private eventSink: (event: string | symbol, ...args: any[]) => void,
-        private evaluator: PredicateEvaluator | undefined,
+        private runPredicate: PredicateFunction | undefined,
         private mainContext: SourceContext,
         parserData: InterpreterData,
         input: TokenStream) {
@@ -262,15 +264,17 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     }
 
     public sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
-        if (this.evaluator) {
+        if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.text;
-                predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
-                try {
-                    return this.evaluator.evaluateParserPredicate(this, ruleIndex, predIndex, predicate);
-                } catch (e) {
-                    throw Error(`There was an error while evaluating predicate "${predicate}". ` +
-                        "Evaluation returned: " + e);
+                if (predicate.length > 2) {
+                    predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                    try {
+                        return this.runPredicate(predicate);
+                    } catch (e) {
+                        throw Error(`There was an error while evaluating predicate "${predicate}". ` +
+                            "Evaluation returned: " + e);
+                    }
                 }
             }
         }

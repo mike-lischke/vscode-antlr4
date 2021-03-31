@@ -13,7 +13,7 @@ import { ExtensionContext, Uri, window, Webview, commands } from "vscode";
 import { LexicalRange } from "../backend/facade";
 
 export interface RangeHolder {
-    range: LexicalRange;
+    range?: LexicalRange;
 }
 
 export class Utils {
@@ -140,7 +140,7 @@ export class Utils {
      * and returns that (or undefined if not found).
      *
      * @param list The list to search through.
-     * @param column The postion in the target line.
+     * @param column The position in the target line.
      * @param row The line to search for.
      *
      * @returns The list entry at the given position or undefined if nothing could be found.

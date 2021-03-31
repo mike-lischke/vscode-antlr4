@@ -19,8 +19,8 @@ export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
         return this.changeEvent.event;
     }
 
-    public refresh(document: TextDocument): void {
-        if (document.languageId === "antlr" && document.uri.scheme === "file") {
+    public refresh(document: TextDocument | undefined): void {
+        if (document && document.languageId === "antlr" && document.uri.scheme === "file") {
             this.currentFile = document.fileName;
         } else {
             this.currentFile = undefined;
@@ -33,8 +33,6 @@ export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
     }
 
     public getChildren(element?: T): ProviderResult<T[]> {
-        return new Promise((resolve) => {
-            resolve([]);
-        });
+        return undefined;
     }
 }
