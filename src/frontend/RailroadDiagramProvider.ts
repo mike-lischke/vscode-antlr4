@@ -60,7 +60,7 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
                     || symbol.kind === SymbolKind.ParserRule
                     || symbol.kind === SymbolKind.FragmentLexerToken) {
                     const script = this.backend.getRRDScript(fileName, symbol.name);
-                    diagram += `<h3>${symbol.name}</h3>\n<script>${script}</script>\n\n`;
+                    diagram += `<h3 class=\"${symbol.name}-class\">${symbol.name}</h3>\n<script>${script}</script>\n\n`;
                 }
             }
             diagram += "</div>";
