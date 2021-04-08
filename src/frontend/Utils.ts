@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2020, Mike Lischke
+ * Copyright (c) 2017, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import * as path from "path";
 
-import { ExtensionContext, Uri, window, Webview, commands } from "vscode";
+import { ExtensionContext, Uri, window, Webview, commands, ProviderResult } from "vscode";
 import { LexicalRange } from "../backend/facade";
 
 export interface RangeHolder {
@@ -111,7 +111,7 @@ export class Utils {
      * overwrite it, if so. Also copies a number extra files to the target folder.
      *
      * @param fileName A default file name the user can change, if wanted.
-     * @param filter The file type filter as used in showSaveDialog.
+     * @param filters The file type filter as used in showSaveDialog.
      * @param data The data to write.
      * @param extraFiles Files to copy to the target folder (e.g. css).
      */
@@ -174,9 +174,9 @@ export class Utils {
      * @param key The name of the context value to switch.
      * @param enable True or false to enabled/disable.
      *
-     * @returns The thenable returned from the command execution.
+     * @returns The result returned from the command execution.
      */
-    public static switchVsCodeContext(key: string, enable: boolean): Thenable<unknown> {
+    public static switchVsCodeContext(key: string, enable: boolean): ProviderResult<unknown> {
         return commands.executeCommand("setContext", key, enable);
     }
 }

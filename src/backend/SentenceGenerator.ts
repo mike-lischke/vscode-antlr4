@@ -18,8 +18,7 @@ import { IntervalSet } from "antlr4ts/misc";
 
 import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
 import { InterpreterData } from "./InterpreterDataReader";
-import { ActionSymbol } from "./ContextSymbolTable";
-import { LexerElementContext, ElementContext } from "../parser/ANTLRv4Parser";
+import { LexerPredicateSymbol, ParserPredicateSymbol } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 
 /**
@@ -29,8 +28,8 @@ export class SentenceGenerator {
     // Allow evaluating predicates.
     public runPredicate?: PredicateFunction;
 
-    private lexerPredicates: ActionSymbol[];
-    private parserPredicates: ActionSymbol[];
+    private lexerPredicates: LexerPredicateSymbol[];
+    private parserPredicates: ParserPredicateSymbol[];
 
     private printableUnicode: IntervalSet;
 
@@ -72,10 +71,8 @@ export class SentenceGenerator {
         });
 
         // Get the symbols for all predicates (to enable predicate evaluation).
-        this.lexerPredicates = context.symbolTable.getNestedSymbolsOfType(ActionSymbol)
-            .filter(((action) => action.isPredicate && action.context!.parent instanceof LexerElementContext));
-        this.parserPredicates = context.symbolTable.getNestedSymbolsOfType(ActionSymbol)
-            .filter(((action) => action.isPredicate && action.context!.parent instanceof ElementContext));
+        this.lexerPredicates = context.symbolTable.getNestedSymbolsOfType(LexerPredicateSymbol);
+        this.parserPredicates = context.symbolTable.getNestedSymbolsOfType(ParserPredicateSymbol);
 
         this.parserPredicates.forEach((value, index) => {
             console.log(`${index}: ${value.context!.text}`);

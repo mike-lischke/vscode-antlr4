@@ -1,4 +1,4 @@
-// Generated from grammars/ANTLRv4Parser.g4 by ANTLR 4.7.3-SNAPSHOT
+// Generated from grammars/ANTLRv4Parser.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
 import { ATN } from "antlr4ts/atn/ATN";
@@ -204,6 +204,10 @@ export class ANTLRv4Parser extends Parser {
 
 	// @Override
 	public get serializedATN(): string { return ANTLRv4Parser._serializedATN; }
+
+	protected createFailedPredicateException(predicate?: string, message?: string): FailedPredicateException {
+		return new FailedPredicateException(this, predicate, message);
+	}
 
 	constructor(input: TokenStream) {
 		super(input);

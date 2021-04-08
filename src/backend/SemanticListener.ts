@@ -124,6 +124,16 @@ export class SemanticListener implements ANTLRv4ParserListener {
         }
     };
 
+    /**
+     * This method exists purely to make TS happy. Without it we get a warning that this listener has nothing in
+     * common with the ParseTreeListener interface (which we actually implement here).
+     *
+     * @param node A node.
+     */
+    public visitTerminal = (node: TerminalNode): void => {
+        // Nothing to do here.
+    };
+
     protected checkSymbolExistence(mustExist: boolean, kind: SymbolGroupKind, symbol: string, message: string,
         offendingToken: Token): void {
         if (this.symbolTable.symbolExistsInGroup(symbol, kind, false) !== mustExist) {

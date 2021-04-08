@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -23,7 +23,8 @@ export class ContextSymbolTable extends SymbolTable {
     private namedActions: Symbol[] = [];
     private parserActions: Symbol[] = [];
     private lexerActions: Symbol[] = [];
-    private predicates: Symbol[] = [];
+    private parserPredicates: Symbol[] = [];
+    private lexerPredicates: Symbol[] = [];
 
     public constructor(name: string, options: SymbolTableOptions, public owner?: SourceContext) {
         super(name, options);
@@ -43,7 +44,8 @@ export class ContextSymbolTable extends SymbolTable {
         this.namedActions = [];
         this.parserActions = [];
         this.lexerActions = [];
-        this.predicates = [];
+        this.parserPredicates = [];
+        this.lexerPredicates = [];
 
         super.clear();
     }
@@ -124,22 +126,45 @@ export class ContextSymbolTable extends SymbolTable {
             symbol = temp;
         }
 
-        const kind = SourceContext.getKindFromSymbol(symbol);
-        const name = (symbol).name;
+        let kind = SourceContext.getKindFromSymbol(symbol);
+        const name = symbol.name;
 
-        // Special handling for imports.
-        if (kind === SymbolKind.TokenVocab || kind === SymbolKind.Import) {
-            // Get the source id from a dependent module.
-            this.dependencies.forEach((table: ContextSymbolTable) => {
-                if (table.owner && table.owner.sourceId.includes(name)) {
-                    return { // TODO: implement a best match search.
-                        kind,
-                        name,
-                        source: table.owner.fileName,
-                        definition: SourceContext.definitionForContext(table.tree, true),
-                    };
-                }
-            });
+        // Special handling for certain symbols.
+        switch (kind) {
+            case SymbolKind.TokenVocab:
+            case SymbolKind.Import: {
+                // Get the source id from a dependent module.
+                this.dependencies.forEach((table: ContextSymbolTable) => {
+                    if (table.owner && table.owner.sourceId.includes(name)) {
+                        return { // TODO: implement a best match search.
+                            kind,
+                            name,
+                            source: table.owner.fileName,
+                            definition: SourceContext.definitionForContext(table.tree, true),
+                        };
+                    }
+                });
+
+                break;
+            }
+
+            case SymbolKind.Operator:
+            case SymbolKind.Terminal: {
+                // These are references to a depending grammar.
+                this.dependencies.forEach((table: ContextSymbolTable) => {
+                    const actualSymbol = table.resolve(name);
+                    if (actualSymbol) {
+                        symbol = actualSymbol;
+                        kind = SourceContext.getKindFromSymbol(actualSymbol);
+                    }
+                });
+
+                break;
+            }
+
+            default: {
+                break;
+            }
         }
 
         const symbolTable = symbol.symbolTable as ContextSymbolTable;
@@ -189,21 +214,12 @@ export class ContextSymbolTable extends SymbolTable {
         const result: SymbolInfo[] = [];
 
         try {
-            let list;
-            if (type === CodeActionType.Named) {
-                list = this.namedActions;
-            } else if (type === CodeActionType.Parser) {
-                list = this.parserActions;
-            } else if (type === CodeActionType.Lexer) {
-                list = this.lexerActions;
-            } else {
-                list = this.predicates;
-            }
-
+            const list = this.actionListOfType(type);
             for (const entry of list) {
                 const definition = SourceContext.definitionForContext(entry.context, true);
                 if (definition && entry.name.toLowerCase() === "skip") {
-                    // Seems there's a bug for the skip action where the parse tree indicates a single letter source range.
+                    // Seems there's a bug for the skip action where the parse tree indicates a
+                    // single letter source range.
                     definition.range.end.column = definition.range.start.column + 3;
                 }
 
@@ -217,12 +233,29 @@ export class ContextSymbolTable extends SymbolTable {
             }
         } catch (e) {
             result.push({
-                kind: SymbolKind.Action,
+                kind: SymbolKind.Unknown,
                 name: "Error getting actions list",
                 description: "Internal error occurred while collecting the list of defined actions",
                 source: "",
             });
         }
+
+        return result;
+    }
+
+    public getActionCounts(): Map<CodeActionType, number> {
+        const result = new Map<CodeActionType, number>();
+
+        let list = this.namedActions.filter((symbol) => symbol instanceof LocalNamedActionSymbol);
+        result.set(CodeActionType.LocalNamed, list.length);
+
+        list = this.namedActions.filter((symbol) => symbol instanceof GlobalNamedActionSymbol);
+        result.set(CodeActionType.GlobalNamed, list.length);
+
+        result.set(CodeActionType.ParserAction, this.parserActions.length);
+        result.set(CodeActionType.LexerAction, this.lexerActions.length);
+        result.set(CodeActionType.ParserPredicate, this.parserPredicates.length);
+        result.set(CodeActionType.LexerPredicate, this.lexerPredicates.length);
 
         return result;
     }
@@ -318,9 +351,7 @@ export class ContextSymbolTable extends SymbolTable {
     }
 
     /**
-     * Stores the given symbol in the lexer action cache. Lexer actions actually have an index (well, custom lexer
-     * actions have), but at this point we don't know it yet, so we keep the action in a set.
-     * Later we can correlate that with the ATN.lexerActions field.
+     * Stores the given symbol in the lexer action cache.
      *
      * @param action The symbol representing the action.
      */
@@ -329,13 +360,17 @@ export class ContextSymbolTable extends SymbolTable {
     }
 
     /**
-     * Stores the given symbol in the predicate cache, if it isn't already there. The current size of the cache
+     * Stores the given symbol in the predicate cache. The current size of the cache
      * defines its index, as used in predicate evaluation.
      *
      * @param predicate The symbol representing the predicate.
      */
     public definePredicate(predicate: Symbol): void {
-        this.predicates.push(predicate);
+        if (predicate instanceof LexerPredicateSymbol) {
+            this.lexerPredicates.push(predicate);
+        } else {
+            this.parserPredicates.push(predicate);
+        }
     }
 
     /**
@@ -350,7 +385,7 @@ export class ContextSymbolTable extends SymbolTable {
     public symbolContainingContext(context: ParseTree): Symbol | undefined {
         const findRecursive = (parent: ScopedSymbol): Symbol | undefined => {
             for (const symbol of parent.children) {
-                if (!symbol.context || symbol.context === context) {
+                if (!symbol.context) {
                     continue;
                 }
 
@@ -360,6 +395,7 @@ export class ContextSymbolTable extends SymbolTable {
                         child = findRecursive(symbol);
 
                     }
+
                     if (child) {
                         return child;
                     } else {
@@ -370,6 +406,43 @@ export class ContextSymbolTable extends SymbolTable {
         };
 
         return findRecursive(this);
+    }
+
+    /**
+     * Collects a list of action symbols.
+     *
+     * @param type The type of actions to return.
+     *
+     * @returns Symbol information for each defined action.
+     */
+    private actionListOfType(type: CodeActionType): Symbol[] {
+        switch (type) {
+            case CodeActionType.LocalNamed: {
+                return this.namedActions.filter((symbol) => symbol instanceof LocalNamedActionSymbol);
+            }
+
+            case CodeActionType.ParserAction: {
+                return this.parserActions;
+            }
+
+            case CodeActionType.LexerAction: {
+                return this.lexerActions;
+
+            }
+
+            case CodeActionType.ParserPredicate: {
+                return this.parserPredicates;
+
+            }
+
+            case CodeActionType.LexerPredicate: {
+                return this.lexerPredicates;
+            }
+
+            default: {
+                return this.namedActions.filter((symbol) => symbol instanceof GlobalNamedActionSymbol);
+            }
+        }
     }
 
     private symbolsOfType<T extends Symbol>(t: new (...args: any[]) => T, localOnly = false): SymbolInfo[] {
@@ -460,11 +533,20 @@ export class EbnfSuffixSymbol extends Symbol { }
 export class OptionsSymbol extends ScopedSymbol { }
 export class ArgumentSymbol extends ScopedSymbol { }
 export class OperatorSymbol extends Symbol { }
-export class NamedActionSymbol extends ScopedSymbol { }
-export class LexerActionSymbol extends ScopedSymbol { }
-export class ExceptionHandlerSymbol extends ScopedSymbol { }
-export class FinallyClauseSymbol extends ScopedSymbol { }
-export class ParserActionSymbol extends ScopedSymbol { }
-export class PredicateSymbol extends Symbol { }
-export class PredicateMarkerSymbol extends Symbol { }
-export class ActionSymbol extends Symbol { }
+export class TerminalSymbol extends Symbol { }          // Any other terminal but operators.
+export class LexerCommandSymbol extends Symbol { }      // Commands in lexer rules after the -> introducer.
+
+// Symbols for all kind of native code blocks in a grammar.
+export class GlobalNamedActionSymbol extends Symbol { } // Top level actions prefixed with @.
+export class LocalNamedActionSymbol extends Symbol { }  // Rule level actions prefixed with @.
+
+export class ExceptionActionSymbol extends Symbol { }   // Action code in exception blocks.
+export class FinallyActionSymbol extends Symbol { }     // Ditto for finally clauses.
+
+export class ParserActionSymbol extends Symbol { }      // Simple code blocks in rule alts for a parser rule.
+export class LexerActionSymbol extends Symbol { }       // Ditto for lexer rules.
+
+export class ParserPredicateSymbol extends Symbol { }   // Predicate code in a parser rule.
+export class LexerPredicateSymbol extends Symbol { }    // Ditto for lexer rules.
+
+export class ArgumentsSymbol extends Symbol { }          // Native code for argument blocks and local variables.

@@ -14,25 +14,89 @@ import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 import { LexicalRange, CodeActionType } from "../backend/facade";
 import { Utils, RangeHolder } from "./Utils";
 
+export class RootEntry extends TreeItem {
+
+    public contextValue = "actions";
+
+    public constructor(label: string, id: string) {
+        super(label, TreeItemCollapsibleState.Expanded);
+        this.id = id;
+    }
+}
+
+export class ChildEntry extends TreeItem implements RangeHolder {
+
+    private static imageBaseNames: Map<CodeActionType, string> = new Map([
+        [CodeActionType.GlobalNamed, "named-action"],
+        [CodeActionType.LocalNamed, "named-action"],
+        [CodeActionType.ParserAction, "parser-action"],
+        [CodeActionType.LexerAction, "parser-action"],
+        [CodeActionType.ParserPredicate, "predicate"],
+        [CodeActionType.LexerPredicate, "predicate"],
+    ]);
+
+    public contextValue = "action";
+
+    public constructor(
+        public readonly parent: RootEntry,
+        label: string,
+        type: CodeActionType,
+        public readonly range?: LexicalRange,
+        command?: Command) {
+
+        super(label, TreeItemCollapsibleState.None);
+        this.command = command;
+
+        const baseName = ChildEntry.imageBaseNames.get(type);
+        if (baseName) {
+            this.contextValue = baseName;
+            this.iconPath = {
+                light: path.join(__dirname, "..", "..", "..", "misc", baseName + "-light.svg"),
+                dark: path.join(__dirname, "..", "..", "..", "misc", baseName + "-dark.svg"),
+            };
+        }
+
+    }
+}
+
 export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
     public actionTree: TreeView<TreeItem>;
 
-    private namedActionsRoot: RootEntry;
+    private globalNamedActionsRoot: RootEntry;
+    private localNamedActionsRoot: RootEntry;
     private parserActionsRoot: RootEntry;
     private lexerActionsRoot: RootEntry;
-    private predicatesRoot: RootEntry;
+    private parserPredicatesRoot: RootEntry;
+    private lexerPredicatesRoot: RootEntry;
 
-    private namedActions: ChildEntry[] = [];
+    private globalNamedActions: ChildEntry[] = [];
+    private localNamedActions: ChildEntry[] = [];
     private parserActions: ChildEntry[] = [];
     private lexerActions: ChildEntry[] = [];
-    private predicates: ChildEntry[] = [];
+    private parserPredicates: ChildEntry[] = [];
+    private lexerPredicates: ChildEntry[] = [];
 
     public update(editor: TextEditor): void {
         const position = editor.selection.active;
 
-        const list = [...this.namedActions, ...this.parserActions, ...this.lexerActions, ...this.predicates];
-        const action = Utils.findInListFromPosition(list, position.character, position.line + 1);
+        let action = Utils.findInListFromPosition(this.globalNamedActions, position.character, position.line + 1);
+        if (!action) {
+            action = Utils.findInListFromPosition(this.localNamedActions, position.character, position.line + 1);
+        }
+        if (!action) {
+            action = Utils.findInListFromPosition(this.parserActions, position.character, position.line + 1);
+        }
+        if (!action) {
+            action = Utils.findInListFromPosition(this.lexerActions, position.character, position.line + 1);
+        }
+        if (!action) {
+            action = Utils.findInListFromPosition(this.parserPredicates, position.character, position.line + 1);
+        }
+        if (!action) {
+            action = Utils.findInListFromPosition(this.lexerPredicates, position.character, position.line + 1);
+        }
+
         if (action) {
             void this.actionTree.reveal(action, { select: true });
         }
@@ -47,6 +111,10 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
     }
 
     public getChildren(element?: TreeItem): ProviderResult<TreeItem[]> {
+        if (!this.currentFile) {
+            return null;
+        }
+
         if (!element) {
             return this.createRootEntries();
         }
@@ -62,11 +130,12 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
                 let listType: CodeActionType;
                 let parent: RootEntry;
                 let list: ChildEntry[];
+
                 switch (element.id) {
                     case "parserActions": {
                         this.parserActions = [];
                         list = this.parserActions;
-                        listType = CodeActionType.Parser;
+                        listType = CodeActionType.ParserAction;
                         parent = this.parserActionsRoot;
 
                         break;
@@ -75,25 +144,44 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
                     case "lexerActions": {
                         this.lexerActions = [];
                         list = this.lexerActions;
-                        listType = CodeActionType.Lexer;
-                        parent = this.parserActionsRoot;
+                        listType = CodeActionType.LexerAction;
+                        parent = this.lexerActionsRoot;
 
                         break;
                     }
 
-                    case "semanticPredicates": {
-                        this.predicates = [];
-                        list = this.predicates;
-                        listType = CodeActionType.Predicate;
-                        parent = this.parserActionsRoot;
+                    case "parserPredicates": {
+                        this.parserPredicates = [];
+                        list = this.parserPredicates;
+                        listType = CodeActionType.ParserPredicate;
+                        parent = this.parserPredicatesRoot;
+
+                        break;
+                    }
+
+                    case "lexerPredicates": {
+                        this.lexerPredicates = [];
+                        list = this.lexerPredicates;
+                        listType = CodeActionType.LexerPredicate;
+                        parent = this.lexerPredicatesRoot;
+
+                        break;
+                    }
+
+                    case "globalNamedActions": {
+                        this.globalNamedActions = [];
+                        list = this.globalNamedActions;
+                        listType = CodeActionType.GlobalNamed;
+                        parent = this.globalNamedActionsRoot;
+
                         break;
                     }
 
                     default: {
-                        this.namedActions = [];
-                        list = this.namedActions;
-                        listType = CodeActionType.Named;
-                        parent = this.parserActionsRoot;
+                        this.localNamedActions = [];
+                        list = this.localNamedActions;
+                        listType = CodeActionType.LocalNamed;
+                        parent = this.localNamedActionsRoot;
 
                         break;
                     }
@@ -101,23 +189,22 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
                 const actions = this.backend.listActions(this.currentFile, listType);
 
-                actions.forEach((action) => {
-                    /*                    let caption = action
-                        ? action.description!.substr(1, action.description!.length - 2)
-                        : "<unused>";*/
-                    let caption;
-                    if (action.description!.includes("\n")) {
-                        caption = "<multi line block>";
-                    } else {
-                        caption = action.description!;
+                actions.forEach((action, index) => {
+                    let caption = action.name.length > 0 ? action.name : String(index);
+                    if (action.description) {
+                        if (action.description.includes("\n")) {
+                            caption += ": <multi line block>";
+                        } else {
+                            caption += ": " + action.description;
+                        }
                     }
 
+                    const range = action && action.definition ? action.definition.range : undefined;
                     const command = action ? {
                         title: "Select Grammar Range",
                         command: "antlr.selectGrammarRange",
-                        arguments: [action.definition!.range],
+                        arguments: [range],
                     } : undefined;
-                    const range = action ? action.definition!.range : undefined;
 
                     const item = new ChildEntry(parent, caption.trim(), listType, range, command);
                     list.push(item);
@@ -137,32 +224,64 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
      */
     private createRootEntries(): ProviderResult<TreeItem[]> {
         return new Promise((resolve, reject) => {
+            if (!this.currentFile) {
+                return null;
+            }
+
             try {
                 const rootList: RootEntry[] = [];
 
-                this.namedActionsRoot = new RootEntry("Named Actions", "namedActions");
-                this.namedActionsRoot.tooltip = "Code which is embedded into the generated files " +
-                    "at specific locations (like the head of the file). " +
-                    "This code does not take part in the parsing process and is not represented in the ATN.";
-                rootList.push(this.namedActionsRoot);
+                const counts = this.backend.getActionCounts(this.currentFile);
 
-                this.parserActionsRoot = new RootEntry("Parser Actions", "parserActions");
-                this.parserActionsRoot.tooltip = "Code which is embedded into the generated parser " +
-                    "code and executed as part of the parsing process. There are also a transition for each " +
-                    "action, but they are not used from the generated parser (all action indices are -1).";
-                rootList.push(this.parserActionsRoot);
+                if ((counts.get(CodeActionType.GlobalNamed) ?? 0) > 0) {
+                    this.globalNamedActionsRoot = new RootEntry("Global Named Actions", "globalNamedActions");
+                    this.globalNamedActionsRoot.tooltip = "Code which is embedded into the generated files " +
+                        "at specific locations (like the head of the file).\n\n" +
+                        "This code does not take part in the parsing process and is not represented in the ATN.";
+                    rootList.push(this.globalNamedActionsRoot);
+                }
 
-                this.lexerActionsRoot = new RootEntry("Lexer Actions", "lexerActions");
-                this.lexerActionsRoot.tooltip = "Lexer rules are executed purely as a state machine without " +
-                    "any embedded code. Instead lexer actions are held in a list and executed using the action index " +
-                    "given in the action transition.";
-                rootList.push(this.lexerActionsRoot);
+                if ((counts.get(CodeActionType.LocalNamed) ?? 0) > 0) {
+                    this.localNamedActionsRoot = new RootEntry("Local Named Actions", "localNamedActions");
+                    this.localNamedActionsRoot.tooltip = "Code which is embedded into the generated parser code " +
+                        "for a rule, like initialization code (@init). \n\n" +
+                        "This code is directly executed during the parsing process, but is not represented in the ATN.";
+                    rootList.push(this.localNamedActionsRoot);
+                }
 
-                this.predicatesRoot = new RootEntry("Semantic Predicates", "semanticPredicates");
-                this.predicatesRoot.tooltip = "Semantic predicates are code snippets which can enable or disable " +
-                    "a specific alternative in a rule. They are also not embedded and addressed by an index " +
-                    "like lexer actions. Their ATN representation is a predicate transition.";
-                rootList.push(this.predicatesRoot);
+                if ((counts.get(CodeActionType.ParserAction) ?? 0) > 0) {
+                    this.parserActionsRoot = new RootEntry("Parser Actions", "parserActions");
+                    this.parserActionsRoot.tooltip = "Code which is embedded into the generated parser " +
+                        "code and executed as part of the parsing process. There are also transitions in the ATN for " +
+                        "each action, but they are not used from the generated parser (all action indices are -1).";
+                    rootList.push(this.parserActionsRoot);
+                }
+
+                if ((counts.get(CodeActionType.LexerAction) ?? 0) > 0) {
+                    this.lexerActionsRoot = new RootEntry("Lexer Actions", "lexerActions");
+                    this.lexerActionsRoot.tooltip = "Lexer rules are executed in a state machine without " +
+                        "any embedded code. However lexer actions are held in generated private methods addressed " +
+                        "by an action index given in the action transition between 2 ATN nodes.";
+                    rootList.push(this.lexerActionsRoot);
+                }
+
+                if ((counts.get(CodeActionType.ParserPredicate) ?? 0) > 0) {
+                    this.parserPredicatesRoot = new RootEntry("Parser Predicates", "parserPredicates");
+                    this.parserPredicatesRoot.tooltip = "Semantic predicates are code snippets which can enable or " +
+                        "disable a specific alternative in a rule. They are generated in separate methods and are " +
+                        "addressed by an index just like lexer actions.\n\n" +
+                        "The ATN representation of a predicate is a predicate transition between 2 ATN nodes.";
+                    rootList.push(this.parserPredicatesRoot);
+                }
+
+                if ((counts.get(CodeActionType.LexerPredicate) ?? 0) > 0) {
+                    this.lexerPredicatesRoot = new RootEntry("Lexer Predicates", "lexerPredicates");
+                    this.lexerPredicatesRoot.tooltip = "Semantic predicates are code snippets which can enable or " +
+                        "disable a specific alternative in a rule. They are generated in separate methods and are " +
+                        "addressed by an index just like lexer actions.\n\n" +
+                        "The ATN representation of a predicate is a predicate transition between 2 ATN nodes.";
+                    rootList.push(this.lexerPredicatesRoot);
+                }
 
                 resolve(rootList);
             } catch (e) {
@@ -172,45 +291,3 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
     }
 }
 
-export class RootEntry extends TreeItem {
-
-    public contextValue = "actions";
-
-    public constructor(label: string, id: string) {
-        super(label, TreeItemCollapsibleState.Expanded);
-        this.id = id;
-    }
-}
-
-export class ChildEntry extends TreeItem implements RangeHolder {
-
-    private static imageBaseNames: Map<CodeActionType, string> = new Map([
-        [CodeActionType.Named, "named-action"],
-        [CodeActionType.Parser, "parser-action"],
-        [CodeActionType.Lexer, "lexer-action"],
-        [CodeActionType.Predicate, "predicate"],
-    ]);
-
-    public contextValue = "action";
-
-    public constructor(
-        public readonly parent: RootEntry,
-        label: string,
-        type: CodeActionType,
-        public readonly range?: LexicalRange,
-        command_?: Command) {
-
-        super(label, TreeItemCollapsibleState.None);
-        this.command = command_;
-
-        const baseName = ChildEntry.imageBaseNames.get(type);
-        if (baseName) {
-            this.contextValue = baseName;
-            this.iconPath = {
-                light: path.join(__dirname, "..", "..", "..", "misc", baseName + "-light.svg"),
-                dark: path.join(__dirname, "..", "..", "..", "misc", baseName + "-dark.svg"),
-            };
-        }
-
-    }
-}

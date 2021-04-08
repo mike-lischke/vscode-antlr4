@@ -18,6 +18,7 @@
         "citi",
         "debugadapter",
         "deseret",
+        "Deserialization",
         "duployan",
         "ebnf",
         "elbasan",
@@ -69,6 +70,7 @@
         "sinhala",
         "sompeng",
         "soyombo",
+        "Struct",
         "syloti",
         "tagbanwa",
         "takri",
@@ -138,5 +140,8 @@
         "xdescribe",
         "xexact",
         "µπåƒ"
+    ],
+    "ignorePaths": [
+        "node_modules"
     ]
 }

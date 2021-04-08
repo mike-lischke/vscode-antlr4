@@ -313,7 +313,15 @@ describe("vscode-antlr4-backend:", function () {
         it("ATN Rule Graph, split grammar", async () => {
             // Need code generation here. Details will be tested later. The ATN retrieval will fail
             // anyway when generation fails.
-            await backend.generate("grammars/ANTLRv4Parser.g4", { outputDir: "generated", language: "Cpp" });
+            const files = await backend.generate("grammars/ANTLRv4Parser.g4",
+                { outputDir: "generated", language: "Typescript" });
+            files.forEach((file) => {
+                const diagnostics = backend.getDiagnostics(file);
+                if (diagnostics.length > 0) {
+                    console.log(JSON.stringify(diagnostics, undefined, 4));
+                }
+                expect(diagnostics.length).to.equal(0);
+            });
 
             const graph = backend.getATNGraph("grammars/ANTLRv4Parser.g4", "ruleModifier");
 
@@ -357,6 +365,7 @@ describe("vscode-antlr4-backend:", function () {
 
     describe("Code Generation:", () => {
         it("A standard generation run (CSharp), split grammar", async () => {
+
             const result = await backend.generate("test/backend/TParser.g4",
                 { outputDir: "generated", language: "CSharp" });
             expect(result, "Test 1").to.eql(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);

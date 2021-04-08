@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -21,10 +21,10 @@ import { Symbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 
 import { InterpreterData } from "./InterpreterDataReader";
 import {
-    ContextSymbolTable, ActionSymbol, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, AlternativeSymbol,
+    ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, AlternativeSymbol, LexerPredicateSymbol,
+    ParserPredicateSymbol, LexerActionSymbol, ParserActionSymbol,
 } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
-import { LexerElementContext, ElementContext } from "../parser/ANTLRv4Parser";
 import { PredicateFunction } from "./facade";
 
 export enum RunMode {
@@ -42,7 +42,7 @@ export interface InternalStackFrame {
 }
 
 export class GrammarLexerInterpreter extends LexerInterpreter {
-    private predicates: ActionSymbol[];
+    private predicates: LexerPredicateSymbol[];
 
     public constructor(
         private runPredicate: PredicateFunction | undefined,
@@ -54,8 +54,7 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         super(grammarFileName, lexerData.vocabulary, lexerData.ruleNames, lexerData.channels, lexerData.modes,
             lexerData.atn, input);
 
-        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol)
-            .filter(((action) => action.isPredicate && action.context!.parent instanceof LexerElementContext));
+        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(LexerPredicateSymbol);
     }
 
     public sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
@@ -84,7 +83,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     public pauseRequested = false;
 
     private startIsPrecedenceRule: boolean;
-    private predicates: ActionSymbol[];
+    private predicates: ParserPredicateSymbol[];
 
     public constructor(
         private eventSink: (event: string | symbol, ...args: any[]) => void,
@@ -95,8 +94,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
         super(mainContext.fileName, parserData.vocabulary, parserData.ruleNames, parserData.atn, input);
 
-        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ActionSymbol)
-            .filter(((action) => action.isPredicate && action.context!.parent instanceof ElementContext));
+        this.predicates = this.mainContext.symbolTable.getNestedSymbolsOfType(ParserPredicateSymbol);
     }
 
     public start(startRuleIndex: number): void {
@@ -375,12 +373,13 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 if (next) {
                     next = next.nextSibling;
                 }
-            } else if (next instanceof ActionSymbol) {
+            } else if (next instanceof ParserActionSymbol || next instanceof LexerActionSymbol) {
                 // Also skip over action blocks.
                 next = next.nextSibling;
-
-                // If the next symbol is a question mark, this block is actually a predicate.
-                if (next && next.name === "?") {
+            } else if (next instanceof ParserPredicateSymbol || next instanceof LexerPredicateSymbol) {
+                // Need 2 skips for predicates.
+                next = next.nextSibling;
+                if (next) {
                     next = next.nextSibling;
                 }
             }
@@ -454,9 +453,13 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 if (next) {
                     next = next.nextSibling;
                 }
-            } else if (next instanceof ActionSymbol) { // Actions/predicates.
+            } else if (next instanceof ParserActionSymbol || next instanceof LexerActionSymbol) {
+                // Also skip over action blocks.
                 next = next.nextSibling;
-                if (next && next.name === "?") {
+            } else if (next instanceof ParserPredicateSymbol || next instanceof LexerPredicateSymbol) {
+                // Need 2 skips for predicates.
+                next = next.nextSibling;
+                if (next) {
                     next = next.nextSibling;
                 }
             }

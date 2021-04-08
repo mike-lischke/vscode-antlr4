@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2020, Mike Lischke
+ * Copyright (c) 2017, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -8,7 +8,7 @@
 import {
     TextDocument, Position, CancellationToken,  CompletionItem, ProviderResult, CompletionList,
 } from "vscode";
-import { AntlrFacade, SymbolKind } from "../backend/facade";
+import { AntlrFacade } from "../backend/facade";
 import { translateCompletionKind } from "./Symbol";
 
 // Determines the sort order in the completion list. One value for each SymbolKind.
@@ -65,40 +65,7 @@ export class AntlrCompletionItemProvider {
             const item = new CompletionItem(info.name, translateCompletionKind(info.kind));
             item.sortText = sortKeys[info.kind] + info.name;
             item.detail = (info.description !== undefined) ? info.description : details[info.kind];
-            switch (info.kind) {
-                case SymbolKind.Keyword:
-                    break;
-                case SymbolKind.TokenVocab:
-                    break;
-                case SymbolKind.Import:
-                    break;
-                case SymbolKind.BuiltInLexerToken:
-                    break;
-                case SymbolKind.VirtualLexerToken:
-                    break;
-                case SymbolKind.FragmentLexerToken:
-                    break;
-                case SymbolKind.LexerRule:
-                    break;
-                case SymbolKind.BuiltInMode:
-                    break;
-                case SymbolKind.LexerMode:
-                    break;
-                case SymbolKind.BuiltInChannel:
-                    break;
-                case SymbolKind.TokenChannel:
-                    break;
-                case SymbolKind.ParserRule:
-                    break;
-                case SymbolKind.Action:
-                    break;
-                case SymbolKind.Predicate:
-                    break;
 
-                default: {
-                    break;
-                }
-            }
             completionList.push(item);
         });
 

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -12,23 +12,24 @@ import {
     BlockContext, AlternativeContext, RuleBlockContext, EbnfSuffixContext,
     OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledElementContext,
     LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext, NamedActionContext,
-    ExceptionHandlerContext, FinallyClauseContext, RuleActionContext, LexerCommandContext, OptionContext,
-    OptionValueContext,
+    LexerCommandContext, OptionContext, OptionValueContext, ANTLRv4Parser,
 } from "../parser/ANTLRv4Parser";
 
 import {
     ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
     VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, AlternativeSymbol, EbnfSuffixSymbol,
-    ArgumentSymbol, OperatorSymbol, NamedActionSymbol,
-    ExceptionHandlerSymbol, FinallyClauseSymbol, ParserActionSymbol, LexerActionSymbol, ActionSymbol, OptionsSymbol,
-    OptionSymbol,
-    PredicateSymbol,
+    ArgumentSymbol, OperatorSymbol, GlobalNamedActionSymbol, ExceptionActionSymbol, FinallyActionSymbol,
+    ParserActionSymbol, LexerActionSymbol, OptionsSymbol, OptionSymbol, LexerPredicateSymbol,
+    ParserPredicateSymbol, LocalNamedActionSymbol,
+    LexerCommandSymbol,
+    TerminalSymbol,
 } from "./ContextSymbolTable";
 
 import { SourceContext } from "./SourceContext";
 
-import { ScopedSymbol, LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
-import { ParseTree } from "antlr4ts/tree";
+import { LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
+import { ParseTree, TerminalNode } from "antlr4ts/tree";
+import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
 export class DetailsListener implements ANTLRv4ParserListener {
     private symbolStack: Symbol[] = [];
@@ -52,13 +53,10 @@ export class DetailsListener implements ANTLRv4ParserListener {
     }
 
     public enterLexerRuleSpec(ctx: LexerRuleSpecContext): void {
-        const tokenRef = ctx.TOKEN_REF();
-        if (tokenRef) {
-            if (ctx.FRAGMENT()) {
-                this.pushNewSymbol(FragmentTokenSymbol, ctx, tokenRef.text);
-            } else {
-                this.pushNewSymbol(TokenSymbol, ctx, tokenRef.text);
-            }
+        if (ctx.FRAGMENT()) {
+            this.pushNewSymbol(FragmentTokenSymbol, ctx, ctx.TOKEN_REF().text);
+        } else {
+            this.pushNewSymbol(TokenSymbol, ctx, ctx.TOKEN_REF().text);
         }
     }
 
@@ -151,7 +149,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
     }
 
     public enterOptionsSpec(ctx: OptionsSpecContext): void {
-        this.pushNewSymbol(OptionsSymbol, ctx, "");
+        this.pushNewSymbol(OptionsSymbol, ctx, "options");
     }
 
     public exitOptionsSpec(ctx: OptionsSpecContext): void {
@@ -170,122 +168,213 @@ export class DetailsListener implements ANTLRv4ParserListener {
         }
     }
 
-    public enterNamedAction(ctx: NamedActionContext): void {
-        this.pushNewSymbol(NamedActionSymbol, ctx, "");
+    /**
+     * Handles all types of native actions in various locations, instead of doing that in individual listener methods.
+     *
+     * @param ctx The parser context for the action block.
+     */
+    public exitActionBlock(ctx: ActionBlockContext): void {
+        let run = ctx.parent;
+
+        while (run) {
+            switch (run.ruleIndex) {
+                case ANTLRv4Parser.RULE_optionValue: {
+                    // The grammar allows to assign a native action block to an option variable, but ANTLR4 itself
+                    // doesn't accept that. So we ignore it here too.
+                    return;
+                }
+
+                case ANTLRv4Parser.RULE_namedAction: {
+                    // Global level named action, like @parser.
+                    const localContext = run as NamedActionContext;
+                    let prefix = "";
+                    if (localContext.actionScopeName()) {
+                        prefix = localContext.actionScopeName()?.text + "::";
+                    }
+
+                    const symbol = this.addNewSymbol(GlobalNamedActionSymbol, ctx,
+                        prefix + localContext.identifier().text);
+                    this.symbolTable.defineNamedAction(symbol);
+
+                    return;
+                }
+
+                case ANTLRv4Parser.RULE_exceptionHandler: {
+                    this.addNewSymbol(ExceptionActionSymbol, ctx);
+
+                    return;
+                }
+
+                case ANTLRv4Parser.RULE_finallyClause: {
+                    this.addNewSymbol(FinallyActionSymbol, ctx);
+
+                    return;
+                }
+
+                case ANTLRv4Parser.RULE_ruleAction: {
+                    // Rule level named actions, like @init.
+                    const symbol = this.addNewSymbol(LocalNamedActionSymbol, ctx, this.ruleName);
+                    this.symbolTable.defineNamedAction(symbol);
+
+                    return;
+                }
+
+                case ANTLRv4Parser.RULE_lexerElement: {
+                    // Lexer inline action or predicate.
+                    const localContext = run as LexerElementContext;
+                    if (localContext.QUESTION()) {
+                        const symbol = this.addNewSymbol(LexerPredicateSymbol, ctx);
+                        this.symbolTable.definePredicate(symbol);
+                    } else {
+                        const symbol = this.addNewSymbol(LexerActionSymbol, ctx);
+                        this.symbolTable.defineLexerAction(symbol);
+                    }
+
+                    return;
+                }
+
+                case ANTLRv4Parser.RULE_element: {
+                    // Parser inline action or predicate.
+                    const localContext = run as ElementContext;
+                    if (localContext.QUESTION()) {
+                        const symbol = this.addNewSymbol(ParserPredicateSymbol, ctx);
+                        this.symbolTable.definePredicate(symbol);
+                    } else {
+                        const symbol = this.addNewSymbol(ParserActionSymbol, ctx);
+                        this.symbolTable.defineParserAction(symbol);
+                    }
+
+                    return;
+                }
+
+                default: {
+                    run = run.parent;
+
+                    break;
+                }
+            }
+        }
     }
 
-    public exitNamedAction(): void {
-        const action = this.popSymbol() as NamedActionSymbol;
-        this.symbolTable.defineNamedAction(action.lastChild!);
-    }
+    /**
+     * Handles argument action code blocks.
+     *
+     * @param ctx The parser context for the action block.
+     */
+    public exitArgActionBlock(ctx: ArgActionBlockContext): void {
+        if (this.symbolStack.length === 0) {
+            return;
+        }
 
-    public enterExceptionHandler(ctx: ExceptionHandlerContext): void {
-        this.pushNewSymbol(ExceptionHandlerSymbol, ctx, "");
-    }
+        let run = ctx.parent;
+        while (run && run !== this.symbolStack[0].context) {
+            run = run.parent;
+        }
 
-    public exitExceptionHandler(ctx: ExceptionHandlerContext): void {
-        const action = this.popSymbol() as NamedActionSymbol;
-        this.symbolTable.defineParserAction(action.lastChild!);
-    }
+        if (run) {
+            switch (run.ruleIndex) {
+                case ANTLRv4Parser.RULE_exceptionHandler: {
+                    this.addNewSymbol(ArgumentSymbol, ctx, "exceptionHandler");
 
-    public enterFinallyClause(ctx: FinallyClauseContext): void {
-        this.pushNewSymbol(FinallyClauseSymbol, ctx, "");
-    }
+                    break;
+                }
 
-    public exitFinallyClause(ctx: FinallyClauseContext): void {
-        const action = this.popSymbol() as FinallyClauseSymbol;
-        this.symbolTable.defineParserAction(action.lastChild!);
-    }
+                case ANTLRv4Parser.RULE_finallyClause: {
+                    this.addNewSymbol(ArgumentSymbol, ctx, "finallyClause");
 
-    public enterRuleAction(ctx: RuleActionContext): void {
-        this.pushNewSymbol(ParserActionSymbol, ctx, "");
-    }
+                    break;
+                }
 
-    public exitRuleAction(ctx: RuleActionContext): void {
-        const action = this.popSymbol() as ParserActionSymbol;
-        this.symbolTable.defineParserAction(action.lastChild!);
+                case ANTLRv4Parser.RULE_ruleReturns: {
+                    this.addNewSymbol(ArgumentSymbol, ctx, "ruleReturns");
+
+                    break;
+                }
+
+                case ANTLRv4Parser.RULE_localsSpec: {
+                    this.addNewSymbol(ArgumentSymbol, ctx, "localsSpec");
+
+                    break;
+                }
+
+                case ANTLRv4Parser.RULE_ruleref: {
+                    this.addNewSymbol(ArgumentSymbol, ctx, "ruleRef");
+
+                    break;
+                }
+
+                case ANTLRv4Parser.RULE_parserRuleSpec: {
+                    this.addNewSymbol(ArgumentSymbol, ctx, "parserRuleSpec");
+
+                    break;
+                }
+
+                default: {
+                    break;
+                }
+            }
+        }
     }
 
     public exitEbnfSuffix(ctx: EbnfSuffixContext): void {
         this.addNewSymbol(EbnfSuffixSymbol, ctx, ctx.text);
     }
 
-    public exitActionBlock(ctx: ActionBlockContext): void {
-        const parent = ctx.parent;
-        if (parent) {
-            parent.children?.forEach((tree, index) => {
-                if (tree === ctx) {
-                    if (index + 1 < parent.childCount) {
-                        const next = parent.getChild(index + 1);
-                        if (next.text === "?") {
-                            // This is actually a predicate.
-                            this.addNewSymbol(PredicateSymbol, ctx, "");
-                        }
-                    }
-                }
-            });
-        }
-
-        this.addNewSymbol(ActionSymbol, ctx, "");
+    public enterLexerCommand(ctx: LexerCommandContext): void {
+        this.pushNewSymbol(LexerCommandSymbol, ctx, ctx.lexerCommandName().text);
     }
 
     public exitLexerCommand(ctx: LexerCommandContext): void {
-        const command = this.addNewSymbol(LexerActionSymbol, ctx, ctx.lexerCommandName().text);
-        this.symbolTable.defineLexerAction(command);
-    }
-
-    public exitArgActionBlock(ctx: ArgActionBlockContext): void {
-        this.addNewSymbol(ArgumentSymbol, ctx, "");
+        this.popSymbol();
     }
 
     public exitLabeledElement(ctx: LabeledElementContext): void {
         this.addNewSymbol(VariableSymbol, ctx, ctx.identifier().text);
-
-        if (ctx.childCount > 1) {
-            this.addNewSymbol(OperatorSymbol, ctx, ctx.getChild(1).text);
-        }
     }
 
-    /**
-     * Checks if the element is an action or predicate and (if so) defines it in the symbol table as such.
-     *
-     * @param ctx The context for the element.
-     */
-    public exitElement(ctx: ElementContext): void {
-        // We must have an action symbol in the symbol table already and the owning alternative on the TOS,
-        // if there's an action block in the element context.
-        if (ctx.actionBlock()) {
-            // Pure action or predicate?
-            const child = this.currentSymbol<AlternativeSymbol>()!.lastChild!;
-            if (ctx.QUESTION()) {
-                this.symbolTable.definePredicate(child);
-            } else {
-                this.symbolTable.defineParserAction(child);
+    public visitTerminal = (node: TerminalNode): void => {
+        // Ignore individual terminals under certain circumstances.
+        if (this.currentSymbol() instanceof LexerCommandSymbol) {
+            return;
+        }
+
+        switch (node.symbol.type) {
+            case ANTLRv4Lexer.COLON:
+            case ANTLRv4Lexer.COLONCOLON:
+            case ANTLRv4Lexer.COMMA:
+            case ANTLRv4Lexer.SEMI:
+            case ANTLRv4Lexer.LPAREN:
+            case ANTLRv4Lexer.RPAREN:
+            case ANTLRv4Lexer.LBRACE:
+            case ANTLRv4Lexer.RBRACE:
+            case ANTLRv4Lexer.RARROW:
+            case ANTLRv4Lexer.LT:
+            case ANTLRv4Lexer.GT:
+            case ANTLRv4Lexer.ASSIGN:
+            case ANTLRv4Lexer.QUESTION:
+            case ANTLRv4Lexer.STAR:
+            case ANTLRv4Lexer.PLUS_ASSIGN:
+            case ANTLRv4Lexer.PLUS:
+            case ANTLRv4Lexer.OR:
+            case ANTLRv4Lexer.DOLLAR:
+            case ANTLRv4Lexer.RANGE:
+            case ANTLRv4Lexer.DOT:
+            case ANTLRv4Lexer.AT:
+            case ANTLRv4Lexer.POUND:
+            case ANTLRv4Lexer.NOT: {
+                this.addNewSymbol(OperatorSymbol, node, node.text);
+                break;
+            }
+
+            default: {
+                if (node.symbol.type !== ANTLRv4Lexer.ACTION_CONTENT) {
+                    this.addNewSymbol(TerminalSymbol, node, node.text);
+                }
+
+                break;
             }
         }
-    }
-
-    /**
-     * Checks if the lexer element is an action or predicate. Same handling as for parser elements.
-     *
-     * @param ctx The context for the element.
-     */
-    public exitLexerElement(ctx: LexerElementContext): void {
-        if (ctx.actionBlock()) {
-            const element = this.currentSymbol<AlternativeSymbol>()!.lastChild!;
-            if (ctx.QUESTION() && element.previousSibling) {
-                this.symbolTable.definePredicate(element.previousSibling);
-            } else {
-                this.symbolTable.defineLexerAction(element);
-            }
-        }
-    }
-
-    /**public visitTerminal = (node: TerminalNode): string => {
-        this.addNewSymbol(Symbol, node, node.text);
-
-        return node.text;
-    };*/
+    };
 
     private currentSymbol<T extends Symbol>(): T | undefined {
         if (this.symbolStack.length === 0) {
@@ -321,8 +410,8 @@ export class DetailsListener implements ANTLRv4ParserListener {
      *
      * @returns The new scoped symbol.
      */
-    private pushNewSymbol<T extends ScopedSymbol>(type: new (...args: any[]) => T, context: ParseTree,
-        ...args: any[]): ScopedSymbol {
+    private pushNewSymbol<T extends Symbol>(type: new (...args: any[]) => T, context: ParseTree,
+        ...args: any[]): Symbol {
         const symbol = this.symbolTable.addNewSymbolOfType<T>(type, this.currentSymbol(), ...args);
         symbol.context = context;
         this.symbolStack.push(symbol);
@@ -332,6 +421,18 @@ export class DetailsListener implements ANTLRv4ParserListener {
 
     private popSymbol(): Symbol | undefined {
         return this.symbolStack.pop();
+    }
+
+    /**
+     * The symbol stack usually contains entries beginning with a rule context, followed by a number of blocks and alts
+     * as well as additional parts like actions or predicates.
+     * This function returns the name of the first symbol, which represents the rule (parser/lexer) which we are
+     * currently walking over.
+     *
+     * @returns The rule name from the start symbol.
+     */
+    private get ruleName(): string {
+        return this.symbolStack.length === 0 ? "" : this.symbolStack[0].name;
     }
 
 }

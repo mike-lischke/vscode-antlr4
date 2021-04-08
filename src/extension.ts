@@ -463,7 +463,7 @@ class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
                     parseTreeProvider,
                 ]);
                 session.setRunAsServer(true);
-                session.start(<NodeJS.ReadableStream>socket, socket);
+                session.start(socket, socket);
             }).listen(0);
         }
 

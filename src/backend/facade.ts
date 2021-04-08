@@ -19,6 +19,9 @@ export enum SymbolGroupKind { // Multiple symbol kinds can be involved in a symb
 }
 
 export enum SymbolKind {
+    Unknown,
+
+    Terminal,
     Keyword,
     TokenVocab,
     Import,
@@ -31,13 +34,21 @@ export enum SymbolKind {
     BuiltInChannel,
     TokenChannel,
     ParserRule,
-    Action,
-    NamedAction,
-    Predicate,
     Operator,
     Option,
     TokenReference,
-    RuleReference
+    RuleReference,
+    LexerCommand,
+
+    // Native code.
+    NamedAction,
+    ExceptionAction,
+    FinallyAction,
+    ParserAction,
+    LexerAction,
+    ParserPredicate,
+    LexerPredicate,
+    Arguments
 }
 
 // Import modules that depend on these enums after their definition, to allow for static initializations.
@@ -170,27 +181,48 @@ export interface ATNGraphData {
 }
 
 export enum CodeActionType {
-    Named,
-    Parser,
-    Lexer,
-    Predicate,
+    GlobalNamed,
+    LocalNamed,
+    ParserAction,
+    LexerAction,
+    ParserPredicate,
+    LexerPredicate,
 }
 
 /**
  * Options used by the parser files generation.
  */
 export interface GenerationOptions {
-    baseDir?: string;    // The folder in which to run the generation process.
-    // Should be an absolute path for predictable results. Used internally only.
-    libDir?: string;     // Search path for the ANTLR tool.
-    outputDir?: string;  // The folder where to place generated files in (relative to baseDir or absolute). (default: grammar dir)
-    package?: string;    // Package or namespace name for generated files. (default: none)
-    language?: string;   // The target language for the generated files. (default: what's given in the grammar or Java)
-    listeners?: boolean; // Generate listener files if set. (default: true)
-    visitors?: boolean;  // Generate visitor files if set. (default: false)
-    loadOnly?: boolean;  // Don't generate anything. Just try to load interpreter data and do interpreter setup.
-    alternativeJar?: string;        // Use this jar for work instead of the built-in one(s).
-    additionalParameters?: string;  // Any additional parameter you want to send to ANTLR4 for generation (e.g. "-XdbgST").
+    // The folder in which to run the generation process. Should be an absolute path for predictable results.
+    // Used internally only.
+    baseDir?: string;
+
+    // Search path for the ANTLR tool.
+    libDir?: string;
+
+    // The folder where to place generated files in (relative to baseDir or absolute) (default: grammar dir),
+    outputDir?: string;
+
+    // Package or namespace name for generated files (default: none).
+    package?: string;
+
+    // The target language for the generated files. (default: what's given in the grammar or Java).
+    language?: string;
+
+    // Generate listener files if set (default: true).
+    listeners?: boolean;
+
+    // Generate visitor files if set (default: false).
+    visitors?: boolean;
+
+    // Don't generate anything. Just try to load interpreter data and do interpreter setup.
+    loadOnly?: boolean;
+
+    // Use this jar for work instead of the built-in one(s).
+    alternativeJar?: string;
+
+    // Any additional parameter you want to send to ANTLR4 for generation (e.g. "-XdbgST").
+    additionalParameters?: string;
 }
 
 /**
@@ -521,6 +553,12 @@ export class AntlrFacade {
         const context = this.getContext(fileName);
 
         return context.listActions(type);
+    }
+
+    public getActionCounts(fileName: string): Map<CodeActionType, number> {
+        const context = this.getContext(fileName);
+
+        return context.getActionCounts();
     }
 
     public getCodeCompletionCandidates(fileName: string, column: number, row: number): SymbolInfo[] {

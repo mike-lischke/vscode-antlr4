@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020 Mike Lischke
+ * Copyright (c) 2016, 2021 Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -8,7 +8,7 @@
 /* eslint-disable max-classes-per-file */
 
 import {
-    workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, EventEmitter, Event,
+    workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, EventEmitter, Event, ProviderResult,
 } from "vscode";
 import { SymbolInfo, AntlrFacade, SymbolKind } from "../backend/facade";
 
@@ -32,7 +32,7 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
         this.changeEvent.fire();
     }
 
-    public provideCodeLenses(document: TextDocument, token: CancellationToken): CodeLens[] | Thenable<CodeLens[]> {
+    public provideCodeLenses(document: TextDocument, token: CancellationToken): ProviderResult<CodeLens[]> {
         if (workspace.getConfiguration("antlr4.referencesCodeLens").enabled !== true) {
             return [];
         }
@@ -62,7 +62,7 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
         return lenses;
     }
 
-    public resolveCodeLens(codeLens: CodeLens, token: CancellationToken): CodeLens | Thenable<CodeLens> {
+    public resolveCodeLens(codeLens: CodeLens, token: CancellationToken): ProviderResult<CodeLens> {
         const refs = this.backend.countReferences(this.documentName, (codeLens as SymbolCodeLens).symbol.name);
         codeLens.command = {
             title: (refs === 1) ? "1 reference" : refs + " references",

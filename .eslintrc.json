@@ -1,7 +1,8 @@
+/* cSpell: disable */
 {
     "env": {
         "node": true,
-        "es2020": true,
+        "es2021": true,
         "mocha": true
     },
     "extends": [
@@ -31,6 +32,7 @@
     "settings": {
     },
     "globals": {
+        "NodeJS": true
     },
     "rules": {
         "no-explicit-any": "off",
@@ -421,12 +423,7 @@
         "no-magic-numbers": "off",
         "no-multiple-empty-lines": "error",
         "no-return-await": "error",
-        "no-shadow": [
-            "error",
-            {
-                "hoist": "all"
-            }
-        ],
+        "no-shadow": "off", // Handled in typescript rule.
         "no-trailing-spaces": "error",
         "no-undef-init": "error",
         "no-underscore-dangle": "error",
@@ -530,6 +527,7 @@
         ],
         "@typescript-eslint/prefer-regexp-exec": "off",
         "@typescript-eslint/restrict-plus-operands": "off",
+        "@typescript-eslint/no-shadow": ["error"],
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "off",
         "jsdoc/newline-after-description": "error",

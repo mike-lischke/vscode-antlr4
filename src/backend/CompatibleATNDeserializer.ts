@@ -9,6 +9,8 @@
  * See LICENSE file for more info.
  */
 
+/* spell-checker: disable */
+
 import {
     ATNDeserializer, ATNDeserializationOptions, ATN, ATNType, LoopEndState, BlockStartState, ATNStateType,
     InvalidState, ATNState, BlockEndState, DecisionState, RuleStartState, RuleStopState, TokensStartState, Transition,
@@ -168,7 +170,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                 }
 
                 const ruleTransition: RuleTransition = transition;
-                const effective: Transition = ruleToInlineTransition[ruleTransition.target.ruleIndex];
+                const effective = ruleToInlineTransition[ruleTransition.target.ruleIndex];
                 if (effective == null) {
                     if (optimizedTransitions !== undefined) {
                         optimizedTransitions.push(transition);

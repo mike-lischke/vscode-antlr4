@@ -19,10 +19,10 @@ import {
 } from "antlr4ts";
 import {
     PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState, ActionTransition,
-    PredicateTransition, PrecedencePredicateTransition, LexerAction, LexerActionType, LexerCustomAction,
+    PredicateTransition, PrecedencePredicateTransition,
 } from "antlr4ts/atn";
 import { ParseCancellationException, IntervalSet, Interval } from "antlr4ts/misc";
-import { ParseTreeWalker, TerminalNode, ParseTree, ParseTreeListener } from "antlr4ts/tree";
+import { ParseTreeWalker, TerminalNode, ParseTree } from "antlr4ts/tree";
 
 import { CodeCompletionCore, Symbol, LiteralSymbol } from "antlr4-c3";
 
@@ -49,8 +49,11 @@ import { ErrorParser } from "./ErrorParser";
 import {
     ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
     VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol,
-    LexerModeSymbol, TokenChannelSymbol, ActionSymbol, OperatorSymbol, LexerActionSymbol, PredicateSymbol,
-    NamedActionSymbol,
+    LexerModeSymbol, TokenChannelSymbol, OperatorSymbol, ArgumentsSymbol, ExceptionActionSymbol,
+    FinallyActionSymbol, LexerActionSymbol, LexerPredicateSymbol, ParserActionSymbol,
+    ParserPredicateSymbol,
+    LexerCommandSymbol,
+    TerminalSymbol,
 } from "./ContextSymbolTable";
 
 import { SentenceGenerator } from "./SentenceGenerator";
@@ -59,7 +62,12 @@ import {
     GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
 } from "./GrammarInterpreters";
 
-export enum GrammarType { Unknown, Parser, Lexer, Combined }
+export enum GrammarType {
+    Unknown,
+    Parser,
+    Lexer,
+    Combined
+}
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
@@ -75,13 +83,19 @@ export class SourceContext {
         [BuiltInChannelSymbol, SymbolKind.BuiltInChannel],
         [TokenChannelSymbol, SymbolKind.TokenChannel],
         [RuleSymbol, SymbolKind.ParserRule],
-        [ActionSymbol, SymbolKind.Action],
-        [NamedActionSymbol, SymbolKind.NamedAction],
-        [LexerActionSymbol, SymbolKind.Action],
-        [PredicateSymbol, SymbolKind.Predicate],
         [OperatorSymbol, SymbolKind.Operator],
+        [TerminalSymbol, SymbolKind.Terminal],
         [TokenReferenceSymbol, SymbolKind.TokenReference],
         [RuleReferenceSymbol, SymbolKind.RuleReference],
+        [LexerCommandSymbol, SymbolKind.LexerCommand],
+
+        [ExceptionActionSymbol, SymbolKind.ExceptionAction],
+        [FinallyActionSymbol, SymbolKind.FinallyAction],
+        [ParserActionSymbol, SymbolKind.ParserAction],
+        [LexerActionSymbol, SymbolKind.LexerAction],
+        [ParserPredicateSymbol, SymbolKind.ParserPredicate],
+        [LexerPredicateSymbol, SymbolKind.LexerPredicate],
+        [ArgumentsSymbol, SymbolKind.Arguments],
     ]);
 
     // Human readable descriptions for lexer action types.
@@ -146,16 +160,7 @@ export class SourceContext {
             return SymbolKind.TokenVocab;
         }
 
-        if (symbol instanceof ActionSymbol) {
-            // Could be a named action.
-            if (symbol.parent instanceof NamedActionSymbol) {
-                symbol = symbol.parent;
-            }
-        }
-
-        const kind = this.symbolToKindMap.get(symbol.constructor as typeof Symbol);
-
-        return kind!;
+        return this.symbolToKindMap.get(symbol.constructor as typeof Symbol) || SymbolKind.Unknown;
     }
 
     /**
@@ -203,8 +208,17 @@ export class SourceContext {
                 result.range.start.row = grammarSpec.grammarType().start.line;
             }
 
-            const cs = ctx.start.tokenSource!.inputStream;
-            result.text = cs!.getText(range);
+            if (ctx.start.tokenSource?.inputStream) {
+                const stream = ctx.start.tokenSource.inputStream;
+                try {
+                    result.text = stream.getText(range);
+                } catch (e) {
+                    // The method getText uses an unreliable JS String API which can throw on larger texts.
+                    // In this case we cannot return the text of the given context.
+                    // A context with such a large size is probably an error case anyway (unfinished multi line comment
+                    // or unfinished action).
+                }
+            }
         } else if (ctx instanceof TerminalNode) {
             result.text = ctx.text;
 
@@ -214,7 +228,9 @@ export class SourceContext {
             result.range.end.row = ctx.symbol.line;
         }
 
-        if (keepQuotes || result.text.length < 2) { return result; }
+        if (keepQuotes || result.text.length < 2) {
+            return result;
+        }
 
         const quoteChar = result.text[0];
         if ((quoteChar === '"' || quoteChar === "`" || quoteChar === "'")
@@ -263,6 +279,16 @@ export class SourceContext {
             case ANTLRv4Parser.RULE_delegateGrammar:
             case ANTLRv4Parser.RULE_modeSpec:
             case ANTLRv4Parser.RULE_setElement: {
+                const symbol = this.symbolTable.symbolContainingContext(terminal);
+                if (symbol) {
+                    return this.getSymbolInfo(symbol);
+                }
+
+                break;
+            }
+
+            case ANTLRv4Parser.RULE_lexerCommand:
+            case ANTLRv4Parser.RULE_lexerCommandName: {
                 const symbol = this.symbolTable.symbolContainingContext(terminal);
                 if (symbol) {
                     return this.getSymbolInfo(symbol);
@@ -346,35 +372,24 @@ export class SourceContext {
         }
     }
 
+    /**
+     * Returns a list of actions of a specific kind from the context's symbol table.
+     *
+     * @param type The type of list to return.
+     *
+     * @returns The list of actions.
+     */
     public listActions(type: CodeActionType): SymbolInfo[] {
-        const actions = this.symbolTable.listActions(type);
+        return this.symbolTable.listActions(type);
+    }
 
-        if (type === CodeActionType.Lexer) {
-            // For lexer actions we have to modify the symbol information to incorporate details
-            // not directly available from the parser grammar (i.e. generated data from ANTLR).
-            if (this.grammarLexerData) {
-                const internalActions = this.grammarLexerData.atn.lexerActions;
-
-                // The number of parsed actions and generated actions must be equal.
-                // For error search we return no actions at all if that's not the case.
-                if (actions.length !== internalActions.length) {
-                    return [];
-                }
-
-                internalActions.forEach((value: LexerAction, index: number) => {
-                    if (value.actionType === LexerActionType.CUSTOM) {
-                        // Lexer action transitions are one-based, so we have to add 1.
-                        const actionIndex = (value as LexerCustomAction).actionIndex + 1;
-                        actions[index].description = actionIndex + ": " + actions[index].description;
-                    } else {
-                        actions[index].description = SourceContext.lexerActionDescription[value.actionType];
-                    }
-
-                });
-            }
-        }
-
-        return actions;
+    /**
+     * Returns numbers of registered actions of each kind.
+     *
+     * @returns An object containing the individual action counts.
+     */
+    public getActionCounts(): Map<CodeActionType, number> {
+        return this.symbolTable.getActionCounts();
     }
 
     public getCodeCompletionCandidates(column: number, row: number): SymbolInfo[] {
@@ -428,7 +443,7 @@ export class SourceContext {
             ANTLRv4Lexer.ACTION_CONTENT,
             ANTLRv4Lexer.UNTERMINATED_CHAR_SET,
             ANTLRv4Lexer.EOF,
-            -2, // Erroneously inserted. Needs fix in antlr4-c3.
+            -2, // TODO: Erroneously inserted. Needs fix in antlr4-c3.
         ]);
 
         core.preferredRules = new Set([
@@ -564,7 +579,7 @@ export class SourceContext {
             switch (key) {
                 case ANTLRv4Parser.RULE_argActionBlock: {
                     result.push({
-                        kind: SymbolKind.Action,
+                        kind: SymbolKind.Arguments,
                         name: "[ argument action code ]",
                         source: this.fileName,
                         definition: undefined,
@@ -575,7 +590,7 @@ export class SourceContext {
 
                 case ANTLRv4Parser.RULE_actionBlock: {
                     result.push({
-                        kind: SymbolKind.Action,
+                        kind: SymbolKind.ParserAction,
                         name: "{ action code }",
                         source: this.fileName,
                         definition: undefined,
@@ -584,16 +599,24 @@ export class SourceContext {
 
                     // Include predicates only when we are in a lexer or parser element.
                     const list = candidateRule.ruleList;
-                    if (list[list.length - 1] === ANTLRv4Parser.RULE_lexerElement
-                        || list[list.length - 1] === ANTLRv4Parser.RULE_element) {
+                    if (list[list.length - 1] === ANTLRv4Parser.RULE_lexerElement) {
                         result.push({
-                            kind: SymbolKind.Predicate,
+                            kind: SymbolKind.LexerPredicate,
+                            name: "{ predicate }?",
+                            source: this.fileName,
+                            definition: undefined,
+                            description: undefined,
+                        });
+                    } else if (list[list.length - 1] === ANTLRv4Parser.RULE_element) {
+                        result.push({
+                            kind: SymbolKind.ParserPredicate,
                             name: "{ predicate }?",
                             source: this.fileName,
                             definition: undefined,
                             description: undefined,
                         });
                     }
+
                     break;
                 }
 
@@ -803,9 +826,10 @@ export class SourceContext {
                 // ignored
             }
         }
+
         this.symbolTable.tree = this.tree;
-        const listener: DetailsListener = new DetailsListener(this.symbolTable, this.info.imports);
-        ParseTreeWalker.DEFAULT.walk(listener as ParseTreeListener, this.tree);
+        const listener = new DetailsListener(this.symbolTable, this.info.imports);
+        ParseTreeWalker.DEFAULT.walk(listener, this.tree);
 
         this.info.unreferencedRules = this.symbolTable.getUnreferencedSymbols();
 
@@ -1016,9 +1040,9 @@ export class SourceContext {
             } else {
                 if (options.language?.toLowerCase() === "typescript") {
                     parameters.push(path.join(__dirname,
-                        "../../../antlr/antlr4-typescript-4.7.3-SNAPSHOT-complete.jar"));
+                        "../../../antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar"));
                 } else {
-                    parameters.push(path.join(__dirname, "../../../antlr/antlr-4.8-complete.jar"));
+                    parameters.push(path.join(__dirname, "../../../antlr/antlr-4.9.2-complete.jar"));
                 }
             }
 
@@ -1571,7 +1595,7 @@ export class SourceContext {
             //this.diagnostics.length = 0; Don't, we would lose our syntax errors from last parse run.
             this.rrdScripts = new Map<string, string>();
             const semanticListener = new SemanticListener(this.diagnostics, this.symbolTable);
-            ParseTreeWalker.DEFAULT.walk(semanticListener as ParseTreeListener, this.tree!);
+            ParseTreeWalker.DEFAULT.walk(semanticListener, this.tree!);
 
             const visitor = new RuleVisitor(this.rrdScripts);
             visitor.visit(this.tree!);
