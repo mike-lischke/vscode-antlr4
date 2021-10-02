@@ -37,6 +37,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             Utils.getMiscPath("utils.js", this.context, webView),
             Utils.getMiscPath("parse-tree.js", this.context, webView),
         ];
+        const graphLibPath = Utils.getNodeModulesPath("d3/dist/d3.js", this.context);
 
         const settings = vscode.workspace.getConfiguration("antlr4.debug");
         const horizontal = settings.visualParseTreeHorizontal ? 1 : 0;
@@ -49,7 +50,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
                     ${this.generateContentSecurityPolicy(uri)}
                     ${this.getStyles(webView)}
                     <base target="_blank">
-                    <script src="https://d3js.org/d3.v4.min.js"></script>
+                    <script src="${graphLibPath}"></script>
                     <script>
                         var parseTreeData = ${JSON.stringify(graph)};
                         var useCluster = ${clustered};
