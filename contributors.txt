@@ -52,3 +52,4 @@ YYYY/MM/DD, github id, Full name, email
 2019/10/26, mrd1996, Miguel Dias, mrd1996@hotmail.com
 2020/10/19, serras, Alejandro Serrano Mena, trupill@gmail.com
 2021/03/31, oab, Ole Jørgen Abusdal, ole.jorgen.abusdal@gmail.com
+2021/10/02, hazmat345, Matt Patrick, ha**@gmail.com
