@@ -7,7 +7,7 @@
         "color": "#2789e1",
         "theme": "dark"
     },
-    "version": "2.2.4",
+    "version": "2.2.4-markdown",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN LICENSE.txt",
     "repository": {
@@ -19,7 +19,7 @@
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.46.0"
+        "vscode": "^1.55.0"
     },
     "categories": [
         "Programming Languages",
@@ -43,6 +43,9 @@
                 ],
                 "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
                 "configuration": "./antlr.configuration.json"
+            },
+            {
+                "id": "antlr-injection"
             }
         ],
         "grammars": [
