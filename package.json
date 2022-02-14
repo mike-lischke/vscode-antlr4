@@ -19,7 +19,7 @@
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.55.0"
+        "vscode": "^1.46.0"
     },
     "categories": [
         "Programming Languages",
