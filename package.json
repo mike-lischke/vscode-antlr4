@@ -43,6 +43,9 @@
                 ],
                 "firstLine": "^(lexer|parser)?\\s*grammar\\s*\\w+\\s*;",
                 "configuration": "./antlr.configuration.json"
+            },
+            {
+                "id": "antlr-injection"
             }
         ],
         "grammars": [
@@ -50,6 +53,17 @@
                 "language": "antlr",
                 "scopeName": "source.antlr",
                 "path": "./syntaxes/antlr.json"
+            },
+            {
+                "language": "antlr-injection",
+                "scopeName": "markdown.antlr.codeblock",
+                "path": "./syntaxes/antlr.codeblock.json",
+                "injectTo": [
+                    "text.html.markdown"
+                ],
+                "embeddedLanguages": {
+                    "meta.embedded.block.antlr": "antlr"
+                }
             }
         ],
         "themes": [
