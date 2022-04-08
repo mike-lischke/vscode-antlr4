@@ -1,12 +1,12 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2021, Mike Lischke
+ * Copyright (c) 2017, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
 import {
-    TextDocument, Position, CancellationToken,  CompletionItem, ProviderResult, CompletionList,
+    TextDocument, Position, CancellationToken, CompletionItem, ProviderResult, CompletionList,
 } from "vscode";
 import { AntlrFacade } from "../backend/facade";
 import { translateCompletionKind } from "./Symbol";
@@ -55,20 +55,24 @@ export class AntlrCompletionItemProvider {
     public constructor(private backend: AntlrFacade) { }
 
     public provideCompletionItems(document: TextDocument, position: Position,
-        token: CancellationToken): ProviderResult<CompletionList> {
+        _token: CancellationToken): ProviderResult<CompletionList> {
 
-        const candidates = this.backend.getCodeCompletionCandidates(document.fileName, position.character,
-            position.line + 1);
-        const completionList: CompletionItem[] = [];
+        return new Promise((resolve, reject) => {
+            this.backend.getCodeCompletionCandidates(document.fileName, position.character, position.line + 1)
+                .then((candidates) => {
+                    const completionList: CompletionItem[] = [];
+                    candidates.forEach((info) => {
+                        const item = new CompletionItem(info.name, translateCompletionKind(info.kind));
+                        item.sortText = sortKeys[info.kind] + info.name;
+                        item.detail = (info.description !== undefined) ? info.description : details[info.kind];
 
-        candidates.forEach((info) => {
-            const item = new CompletionItem(info.name, translateCompletionKind(info.kind));
-            item.sortText = sortKeys[info.kind] + info.name;
-            item.detail = (info.description !== undefined) ? info.description : details[info.kind];
+                        completionList.push(item);
+                    });
 
-            completionList.push(item);
+                    resolve(new CompletionList(completionList, false));
+                }).catch((reason) => {
+                    reject(reason);
+                });
         });
-
-        return new CompletionList(completionList, false);
     }
 }

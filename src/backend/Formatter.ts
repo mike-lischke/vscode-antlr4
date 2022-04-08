@@ -1,11 +1,11 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
-import { FormattingOptions } from "../backend/facade";
+import { IFormattingOptions } from "../backend/facade";
 
 import { Token } from "antlr4ts";
 import { Interval } from "antlr4ts/misc";
@@ -43,8 +43,9 @@ const formatIntroducer = "$antlr-format";
  *
  * @returns True if the marker is a range marker.
  */
-const isRangeBlock = (marker: InsertMarker): boolean =>
-    (marker <= InsertMarker.Range) && (marker > InsertMarker.Alignment);
+const isRangeBlock = (marker: InsertMarker): boolean => {
+    return (marker <= InsertMarker.Range) && (marker > InsertMarker.Alignment);
+};
 
 /**
  * Tests if the marker belongs to the whitespace block.
@@ -53,7 +54,7 @@ const isRangeBlock = (marker: InsertMarker): boolean =>
  *
  * @returns True if the marker is a whitespace marker.
  */
-const isWhitespaceBlock = (marker: InsertMarker): boolean => (marker <= InsertMarker.WhitespaceBlock);
+const isWhitespaceBlock = (marker: InsertMarker): boolean => { return (marker <= InsertMarker.WhitespaceBlock); };
 
 // Enum used to address a specific alignment status in the alignment map.
 enum AlignmentType {
@@ -67,18 +68,20 @@ enum AlignmentType {
 }
 
 // All alignments in the order they will be evaluated.
-const allAlignments = [AlignmentType.Colon, AlignmentType.FirstToken, AlignmentType.Label, AlignmentType.Action,
-    AlignmentType.LexerCommand, AlignmentType.TrailingComment, AlignmentType.Trailers];
+const allAlignments = [
+    AlignmentType.Colon, AlignmentType.FirstToken, AlignmentType.Label, AlignmentType.Action,
+    AlignmentType.LexerCommand, AlignmentType.TrailingComment, AlignmentType.Trailers,
+];
 
 // Holds line number and group index for a specific alignment. For each alignment type there's an own
 // status, to allow multiple alignments per line and ordered processing.
-interface AlignmentStatus {
+interface IAlignmentStatus {
     lastLine: number;   // The line number of the last alignment entry in the current group (if there's one currently).
     groups: number[][]; // A list of output pipeline indices for groups of alignments.
 }
 
 export class GrammarFormatter {
-    private options: FormattingOptions;
+    private options: IFormattingOptions;
 
     // The pipeline contains markers for constructing the final text.
     // A marker is either an index in the token list (if >= 0) or one of the special markers
@@ -91,8 +94,8 @@ export class GrammarFormatter {
     private currentLine: number;
     private currentColumn: number;
 
-    // When a block has been determined to fit as a whole on a single line (relevant only if allowShortBlocksOnASingleLine is true),
-    // this var directs line break handling.
+    // When a block has been determined to fit as a whole on a single line (relevant only if
+    // allowShortBlocksOnASingleLine is true), this var directs line break handling.
     // Note: counting begins on the most outer block that can be formatted on a single line, which is not necessarily
     //       the rule itself.
     private singleLineBlockNesting: number;
@@ -105,7 +108,7 @@ export class GrammarFormatter {
 
     // For each possible alignment type (colon, first token, trailing predicate, trailing comment etc.)
     // there's one status record in this map.
-    private alignments = new Map<AlignmentType, AlignmentStatus>();
+    private alignments = new Map<AlignmentType, IAlignmentStatus>();
     private whitespaceList: string[]; // A list of strings containing whitespaces to insert for alignment.
 
     public constructor(private tokens: Token[]) { }
@@ -119,7 +122,7 @@ export class GrammarFormatter {
      * @returns A tuple containing the formatted text as well as new start/stop indices that should be used
      *          to replace the old text range.
      */
-    public formatGrammar(options: FormattingOptions, start: number, stop: number): [string, number, number] {
+    public formatGrammar(options: IFormattingOptions, start: number, stop: number): [string, number, number] {
         if (this.tokens.length === 0) {
             return ["", -1, -1];
         }
@@ -364,7 +367,8 @@ export class GrammarFormatter {
                     }
                     this.removeTrailingWhitespaces();
 
-                    this.outputPipeline.push(...Array(breakCount).fill(InsertMarker.LineBreak));
+                    const lineBreaks: number[] = Array(breakCount).fill(InsertMarker.LineBreak);
+                    this.outputPipeline.push(...lineBreaks);
                     this.currentLine += breakCount;
                     this.currentColumn = 0;
 
@@ -529,7 +533,7 @@ export class GrammarFormatter {
                 case ANTLRv4Lexer.LINE_COMMENT:
                 case ANTLRv4Lexer.BLOCK_COMMENT: {
                     this.processFormattingCommands(i);
-                    // fall through
+                    // [falls-through]
                 }
 
                 case ANTLRv4Lexer.DOC_COMMENT: {
@@ -739,7 +743,7 @@ export class GrammarFormatter {
                     if (!inNamedAction && !inBraces) {
                         inRule = true;
                     }
-                    // fall through
+                    // [falls-through]
                 }
 
                 case ANTLRv4Lexer.OPTIONS:
@@ -1301,11 +1305,13 @@ export class GrammarFormatter {
         }
 
         if (this.options.useTab) {
-            this.outputPipeline.push(...Array(this.currentIndentation).fill(InsertMarker.Tab));
+            const tabs: number[] = Array(this.currentIndentation).fill(InsertMarker.Tab);
+            this.outputPipeline.push(...tabs);
             this.currentColumn = this.currentIndentation * this.options.tabWidth!;
         } else {
-            this.outputPipeline.push(...Array(this.currentIndentation * this.options.indentWidth!)
-                .fill(InsertMarker.Space));
+            const spaces: number[] = Array(this.currentIndentation * (this.options.indentWidth ?? 4))
+                .fill(InsertMarker.Space);
+            this.outputPipeline.push(...spaces);
             this.currentColumn = this.currentIndentation * this.options.indentWidth!;
         }
     }
@@ -1324,7 +1330,8 @@ export class GrammarFormatter {
         if (this.options.useTab) {
             this.outputPipeline.push(InsertMarker.Tab);
         } else {
-            this.outputPipeline.push(...Array(this.options.continuationIndentWidth).fill(InsertMarker.Space));
+            const spaces: number[] = Array(this.options.continuationIndentWidth).fill(InsertMarker.Space);
+            this.outputPipeline.push(...spaces);
         }
         this.currentColumn += this.options.continuationIndentWidth!;
     }
@@ -1397,8 +1404,8 @@ export class GrammarFormatter {
                                 // after the word wrapping.
                                 // In cases where alignment moves text beyond the column limit, we don't do
                                 // another word wrapping round. Instead we let alignments overrule the column limit.
-                                // The same applies for exceeding of the column limit caused by deep/large indentation, where
-                                // the indentation already goes beyond that limit.
+                                // The same applies for exceeding of the column limit caused by deep/large indentation,
+                                // where the indentation already goes beyond that limit.
                                 if (this.lineHasNonWhitespaceContent()) {
                                     this.applyLineContinuation();
                                 }
@@ -1544,7 +1551,8 @@ export class GrammarFormatter {
                 }
             }
 
-            this.outputPipeline.push(...Array(lineBreakCount).fill(InsertMarker.LineBreak));
+            const lineBreaks: number[] = Array(lineBreakCount).fill(InsertMarker.LineBreak);
+            this.outputPipeline.push(...lineBreaks);
             this.currentLine += lineBreakCount;
             if (lineBreakCount > 0) {
                 this.currentColumn = 0;
@@ -1926,9 +1934,10 @@ export class GrammarFormatter {
     }
 
     /**
-     * Goes through the alignment groups for each alignment type. Each member is examined to find the column to align to.
-     * The alignment markers in the output pipeline are replaced by indices into our whitespace list, which gets the text
-     * to insert for a specific position. This way we don't change the output pipeline (which would invalidate group indices).
+     * Goes through the alignment groups for each alignment type. Each member is examined to find the column to
+     * align to. The alignment markers in the output pipeline are replaced by indices into our whitespace list, which
+     * gets the text to insert for a specific position. This way we don't change the output pipeline (which would
+     * invalidate group indices).
      */
     private computeAlignments(): void {
         for (const type of allAlignments) {
@@ -2077,7 +2086,9 @@ export class GrammarFormatter {
         const lines = comment.split("\n");
 
         let lineIndex = 0;
-        let pipeline = lines[lineIndex++].split(/ |\t/).filter((entry: string) => entry.length > 0);
+        let pipeline = lines[lineIndex++].split(/ |\t/).filter((entry: string) => {
+            return entry.length > 0;
+        });
         let line: string;
 
         // We use a leading star only if the second line has one. Otherwise they are all removed (if any).
@@ -2125,7 +2136,9 @@ export class GrammarFormatter {
                 break;
             }
 
-            pipeline = lines[lineIndex++].split(/ |\t/).filter((entry: string) => entry.length > 0);
+            pipeline = lines[lineIndex++].split(/ |\t/).filter((entry: string) => {
+                return entry.length > 0;
+            });
             index = 0;
 
             if (pipeline.length > 0) {
@@ -2162,9 +2175,6 @@ export class GrammarFormatter {
 
         if (line.length > 0) {
             result.push(line.slice(0, -1));
-            //if (type !== ANTLRv4Lexer.LINE_COMMENT) {
-            //    result.push("");
-            //}
         }
 
         if (type !== ANTLRv4Lexer.LINE_COMMENT) {

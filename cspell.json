@@ -26,6 +26,7 @@
         "gurmukhi",
         "hanunoo",
         "hatran",
+        "IATN",
         "jamo",
         "jing",
         "kaithi",
@@ -83,11 +84,13 @@
         "treeview",
         "viet",
         "warang",
+        "Whitespaces",
         "xuan",
         "yijing",
         "zanabazar"
     ],
     "ignoreWords": [
+        "Dname",
         "antl",
         "atngraph",
         "baselistenerdeclarations",

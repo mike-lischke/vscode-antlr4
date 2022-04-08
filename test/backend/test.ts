@@ -1,10 +1,9 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
-
 
 import fs = require("fs-extra");
 import glob = require("glob");
@@ -12,10 +11,11 @@ import glob = require("glob");
 import { expect, assert } from "chai";
 import { AntlrFacade, SymbolKind, RuleMappings } from "../../src/backend/facade";
 import { SourceContext } from "../../src/backend/SourceContext";
+import { positionToIndex, indexToPosition } from "./test-helpers";
 
 let backend: AntlrFacade;
 
-interface TestRange {
+interface ITestRange {
     source: {
         start: {
             column: number;
@@ -77,8 +77,8 @@ describe("vscode-antlr4-backend:", function () {
     });
 
     describe("Symbol Info Retrieval (t.g4):", () => {
-        it("infoForSymbol", () => {
-            const info = backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
+        it("infoForSymbol", async () => {
+            const info = await backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
             assert(info);
             expect(info!.name, "Test 1").to.equal("B");
             expect(info!.source, "Test 2").to.equal("test/backend/t.g4");
@@ -91,8 +91,8 @@ describe("vscode-antlr4-backend:", function () {
             expect(info!.definition!.range.end.row, "Test 8").to.equal(7);
         });
 
-        it("listTopLevelSymbols", () => {
-            const symbols = backend.listTopLevelSymbols("test/backend/t.g4", true);
+        it("listTopLevelSymbols", async () => {
+            const symbols = await backend.listTopLevelSymbols("test/backend/t.g4", true);
             expect(symbols.length, "Test 1").to.equal(10);
 
             const info = symbols[8];
@@ -170,9 +170,9 @@ describe("vscode-antlr4-backend:", function () {
     });
 
     describe("Symbol Info Retrieval (TParser.g4):", () => {
-        it("Symbol Listing", () => {
+        it("Symbol Listing", async () => {
             backend.loadGrammar("test/backend/TParser.g4");
-            const symbols = backend.listTopLevelSymbols("test/backend/TParser.g4", true);
+            const symbols = await backend.listTopLevelSymbols("test/backend/TParser.g4", true);
             expect(symbols.length, "Test 1").to.equal(56);
 
             const info = symbols[38];
@@ -193,7 +193,7 @@ describe("vscode-antlr4-backend:", function () {
             [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 2, 119)!;
             expect(ruleName, "Test 13").to.equal("any");
             [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 103, 82)!;
-            expect(ruleName, "Test 14").to.equal("unused");
+            expect(ruleName, "Test 14").to.equal("special");
             [ruleName] = backend.ruleFromPosition("test/backend/TParser.g4", 64, 68);
             expect(ruleName, "Test 15").to.be.undefined;
 
@@ -210,7 +210,8 @@ describe("vscode-antlr4-backend:", function () {
             backend.setText("test/backend/TParser.g4", source + "\nblah: any idarray;");
             backend.reparse("test/backend/TParser.g4");
 
-            const parserDiags = backend.getDiagnostics("test/backend/TParser.g4"); // This also updates the symbol reference counts.
+            // This also updates the symbol reference counts.
+            const parserDiags = backend.getDiagnostics("test/backend/TParser.g4");
             expect(parserDiags.length, "Test 1").to.be.equal(0);
         });
 
@@ -226,8 +227,8 @@ describe("vscode-antlr4-backend:", function () {
             backend.releaseGrammar("test/backend/TParser.g4");
         });
 
-        it("Symbol ranges", () => {
-            let symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 100, 4); // options {} block
+        it("Symbol ranges", async () => {
+            let symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 100, 4); // options {} block
             expect(symbol, "Test 1").not.to.be.undefined;
             expect(symbol!.definition, "Test 2").not.to.be.undefined;
             expect(symbol!.definition!.range.start.row, "Test 3").to.equal(3);
@@ -235,7 +236,7 @@ describe("vscode-antlr4-backend:", function () {
             expect(symbol!.definition!.range.end.row, "Test 5").to.equal(5);
             expect(symbol!.definition!.range.end.column, "Test 6").to.equal(0);
 
-            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 9, 34); // action block
+            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 9, 34); // action block
             expect(symbol, "Test 10").not.to.be.undefined;
             expect(symbol!.definition, "Test 11").not.to.be.undefined;
             expect(symbol!.definition!.range.start.row, "Test 12").to.equal(30);
@@ -243,18 +244,20 @@ describe("vscode-antlr4-backend:", function () {
             expect(symbol!.definition!.range.end.row, "Test 14").to.equal(37);
             expect(symbol!.definition!.range.end.column, "Test 15").to.equal(0);
 
-            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 1000, 1000); // beyond EOF
+            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 1000, 1000); // beyond EOF
             expect(symbol, "Test 20").to.be.undefined;
 
-            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82); // argument action block
+            // argument action block
+            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82);
             expect(symbol, "Test 21").not.to.be.undefined;
             expect(symbol!.definition, "Test 22").not.to.be.undefined;
             expect(symbol!.definition!.range.start.row, "Test 23").to.equal(82);
-            expect(symbol!.definition!.range.start.column, "Test 24").to.equal(62);
+            expect(symbol!.definition!.range.start.column, "Test 24").to.equal(63);
             expect(symbol!.definition!.range.end.row, "Test 25").to.equal(82);
-            expect(symbol!.definition!.range.end.column, "Test 26").to.equal(88);
+            expect(symbol!.definition!.range.end.column, "Test 26").to.equal(89);
 
-            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82, true); // same pos, rule context
+            // same pos, rule context
+            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82, true);
             expect(symbol, "Test 30").not.to.be.undefined;
             expect(symbol!.definition, "Test 31").not.to.be.undefined;
             expect(symbol!.definition!.range.start.row, "Test 32").to.equal(82);
@@ -288,8 +291,8 @@ describe("vscode-antlr4-backend:", function () {
             );
         });
 
-        it("Reference Graph", () => {
-            const graph = backend.getReferenceGraph("test/backend/TParser.g4");
+        it("Reference Graph", async () => {
+            const graph = await backend.getReferenceGraph("test/backend/TParser.g4");
             expect(graph.size, "Test 1").to.equal(48);
 
             let element = graph.get("TParser.expr");
@@ -327,35 +330,38 @@ describe("vscode-antlr4-backend:", function () {
 
             try {
                 expect(graph, "Test 1").not.to.be.undefined;
+                if (graph) {
+                    expect(graph.nodes.length, "Test 2").to.equal(4);
+                    expect(graph.nodes[0].name, "Test 3").to.equal("56");
+                    expect(graph.nodes[0].type, "Test 4").to.equal(2);
+                    expect(graph.nodes[1].name, "Test 5").to.equal("364");
+                    expect(graph.nodes[1].type, "Test 6").to.equal(1);
+                    expect(graph.nodes[2].name, "Test 7").to.equal("365");
+                    expect(graph.nodes[2].type, "Test 7").to.equal(1);
+                    expect(graph.nodes[3].name, "Test 9").to.equal("57");
+                    expect(graph.nodes[3].type, "Test 10").to.equal(7);
 
-                expect(graph!.nodes.length, "Test 2").to.equal(4);
-                expect(graph!.nodes[0].name, "Test 3").to.equal("56");
-                expect(graph!.nodes[0].type, "Test 4").to.equal(2);
-                expect(graph!.nodes[1].name, "Test 5").to.equal("364");
-                expect(graph!.nodes[1].type, "Test 6").to.equal(1);
-                expect(graph!.nodes[2].name, "Test 7").to.equal("365");
-                expect(graph!.nodes[2].type, "Test 7").to.equal(1);
-                expect(graph!.nodes[3].name, "Test 9").to.equal("57");
-                expect(graph!.nodes[3].type, "Test 10").to.equal(7);
+                    expect(graph.links.length, "Test 11").to.equal(3);
+                    expect(graph.links[0].source, "Test 12").to.equal(0);
+                    expect(graph.links[0].target, "Test 13").to.equal(1);
+                    expect(graph.links[0].type, "Test 14").to.equal(1);
+                    expect(graph.links[0].labels.length, "Test 15").to.equal(1);
+                    expect(graph.links[0].labels[0], "Test 16").to.deep.equal({ content: "ε" });
 
-                expect(graph!.links.length, "Test 11").to.equal(3);
-                expect(graph!.links[0].source, "Test 12").to.equal(0);
-                expect(graph!.links[0].target, "Test 13").to.equal(1);
-                expect(graph!.links[0].type, "Test 14").to.equal(1);
-                expect(graph!.links[0].labels.length, "Test 15").to.equal(1);
-                expect(graph!.links[0].labels[0], "Test 16").to.equal("ε");
+                    expect(graph.links[1].source, "Test 17").to.equal(1);
+                    expect(graph.links[1].target, "Test 18").to.equal(2);
+                    expect(graph.links[1].type, "Test 19").to.equal(7);
+                    expect(graph.links[1].labels.length, "Test 20").to.equal(5);
+                    expect(graph.links[1].labels[0], "Test 21")
+                        .to.deep.equal({ content: "Set Transition", class: "heading" });
+                    expect(graph.links[1].labels[3], "Test 21").to.deep.equal({ content: "'public'" });
 
-                expect(graph!.links[1].source, "Test 17").to.equal(1);
-                expect(graph!.links[1].target, "Test 18").to.equal(2);
-                expect(graph!.links[1].type, "Test 19").to.equal(7);
-                expect(graph!.links[1].labels.length, "Test 20").to.equal(4);
-                expect(graph!.links[1].labels[3], "Test 21").to.equal("'private'");
-
-                expect(graph!.links[2].source, "Test 22").to.equal(2);
-                expect(graph!.links[2].target, "Test 23").to.equal(3);
-                expect(graph!.links[2].type, "Test 24").to.equal(1);
-                expect(graph!.links[2].labels.length, "Test 25").to.equal(1);
-                expect(graph!.links[2].labels[0], "Test 26").to.equal("ε");
+                    expect(graph.links[2].source, "Test 22").to.equal(2);
+                    expect(graph.links[2].target, "Test 23").to.equal(3);
+                    expect(graph.links[2].type, "Test 24").to.equal(1);
+                    expect(graph.links[2].labels.length, "Test 25").to.equal(1);
+                    expect(graph.links[2].labels[0], "Test 26").to.deep.equal({ content: "ε" });
+                }
             } finally {
                 fs.removeSync("generated");
                 backend.releaseGrammar("grammars/ANTLRv4Parser.g4");
@@ -365,7 +371,6 @@ describe("vscode-antlr4-backend:", function () {
 
     describe("Code Generation:", () => {
         it("A standard generation run (CSharp), split grammar", async () => {
-
             const result = await backend.generate("test/backend/TParser.g4",
                 { outputDir: "generated", language: "CSharp" });
             expect(result, "Test 1").to.eql(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);
@@ -411,73 +416,80 @@ describe("vscode-antlr4-backend:", function () {
 
             try {
                 expect(dollarGraph, "Test 4").not.to.be.undefined;
+                if (dollarGraph) {
+                    expect(dollarGraph.nodes.length, "Test 5").to.equal(7);
+                    expect(dollarGraph.nodes[0].name, "Test 6").to.equal("45");
+                    expect(dollarGraph.nodes[0].type, "Test 7").to.equal(2);
+                    expect(dollarGraph.nodes[1].name, "Test 8").to.equal("140");
+                    expect(dollarGraph.nodes[1].type, "Test 9").to.equal(1);
+                    expect(dollarGraph.nodes[4].name, "Test 10").to.equal("143");
+                    expect(dollarGraph.nodes[4].type, "Test 11").to.equal(1);
+                    expect(dollarGraph.nodes[5].name, "Test 12").to.equal("144");
+                    expect(dollarGraph.nodes[5].type, "Test 13").to.equal(1);
 
-                expect(dollarGraph!.nodes.length, "Test 5").to.equal(7);
-                expect(dollarGraph!.nodes[0].name, "Test 6").to.equal("45");
-                expect(dollarGraph!.nodes[0].type, "Test 7").to.equal(2);
-                expect(dollarGraph!.nodes[1].name, "Test 8").to.equal("140");
-                expect(dollarGraph!.nodes[1].type, "Test 9").to.equal(1);
-                expect(dollarGraph!.nodes[4].name, "Test 10").to.equal("143");
-                expect(dollarGraph!.nodes[4].type, "Test 11").to.equal(1);
-                expect(dollarGraph!.nodes[5].name, "Test 12").to.equal("144");
-                expect(dollarGraph!.nodes[5].type, "Test 13").to.equal(1);
+                    expect(dollarGraph.links.length, "Test 14").to.equal(6);
+                    expect(dollarGraph.links[1].source, "Test 15").to.equal(1);
+                    expect(dollarGraph.links[1].target, "Test 16").to.equal(2);
+                    expect(dollarGraph.links[1].type, "Test 17").to.equal(5);
+                    expect(dollarGraph.links[1].labels.length, "Test 18").to.equal(2);
+                    expect(dollarGraph.links[1].labels[0], "Test 19")
+                        .to.deep.equal({ content: "Atom Transition", class: "heading" });
+                    expect(dollarGraph.links[1].labels[1], "Test 19").to.deep.equal({ content: "'$'" });
 
-                expect(dollarGraph!.links.length, "Test 14").to.equal(6);
-                expect(dollarGraph!.links[1].source, "Test 15").to.equal(1);
-                expect(dollarGraph!.links[1].target, "Test 16").to.equal(2);
-                expect(dollarGraph!.links[1].type, "Test 17").to.equal(5);
-                expect(dollarGraph!.links[1].labels.length, "Test 18").to.equal(1);
-                expect(dollarGraph!.links[1].labels[0], "Test 19").to.equal("'$'");
+                    expect(dollarGraph.links[2].source, "Test 20").to.equal(2);
+                    expect(dollarGraph.links[2].target, "Test 21").to.equal(3);
+                    expect(dollarGraph.links[2].type, "Test 22").to.equal(1);
+                    expect(dollarGraph.links[2].labels.length, "Test 232").to.equal(1);
+                    expect(dollarGraph.links[2].labels[0], "Test 24").to.deep.equal({ content: "ε" });
 
-                expect(dollarGraph!.links[2].source, "Test 20").to.equal(2);
-                expect(dollarGraph!.links[2].target, "Test 21").to.equal(3);
-                expect(dollarGraph!.links[2].type, "Test 22").to.equal(1);
-                expect(dollarGraph!.links[2].labels.length, "Test 232").to.equal(1);
-                expect(dollarGraph!.links[2].labels[0], "Test 24").to.equal("ε");
+                    expect(dollarGraph.links[5].source, "Test 25").to.equal(5);
+                    expect(dollarGraph.links[5].target, "Test 26").to.equal(6);
+                    expect(dollarGraph.links[5].type, "Test 27").to.equal(1);
+                    expect(dollarGraph.links[5].labels.length, "Test 28").to.equal(1);
+                    expect(dollarGraph.links[5].labels[0], "Test 29").to.deep.equal({ content: "ε" });
+                }
 
-                expect(dollarGraph!.links[5].source, "Test 25").to.equal(5);
-                expect(dollarGraph!.links[5].target, "Test 26").to.equal(6);
-                expect(dollarGraph!.links[5].type, "Test 27").to.equal(1);
-                expect(dollarGraph!.links[5].labels.length, "Test 28").to.equal(1);
-                expect(dollarGraph!.links[5].labels[0], "Test 29").to.equal("ε");
+                if (statGraph) {
+                    expect(statGraph, "Test 30").not.to.be.undefined;
+                    expect(statGraph.nodes.length, "Test 31").to.equal(15);
+                    expect(statGraph.nodes[0].id.toString(), "Test 32").to.equal(statGraph.nodes[0].name);
+                    expect(statGraph.nodes[0].name, "Test 32").to.equal("12");
+                    expect(statGraph.nodes[0].type, "Test 33").to.equal(2);
+                    expect(statGraph.nodes[6].id.toString(), "Test 34").to.equal(statGraph.nodes[6].name);
+                    expect(statGraph.nodes[6].name, "Test 34").to.equal("80");
+                    expect(statGraph.nodes[6].type, "Test 35").to.equal(1);
+                    expect(statGraph.nodes[10].name, "Test 36").to.equal("86");
+                    expect(statGraph.nodes[10].type, "Test 37").to.equal(1);
+                    expect(statGraph.nodes[13].name, "Test 38").to.equal("83");
+                    expect(statGraph.nodes[13].type, "Test 39").to.equal(1);
+                    expect(statGraph.nodes[2].name, "Test 38").to.equal("79");
+                    expect(statGraph.nodes[2].id, "Test 39").to.equal(79);
+                    expect(statGraph.nodes[5].name, "Test 40").to.equal("expr");
+                    expect(statGraph.nodes[5].id, "Test 41").to.equal(-2);
+                    expect(statGraph.nodes[9].name, "Test 42").to.equal("expr");
+                    expect(statGraph.nodes[9].id, "Test 43").to.equal(-3);
 
-                expect(statGraph, "Test 30").not.to.be.undefined;
-                expect(statGraph!.nodes.length, "Test 31").to.equal(15);
-                expect(statGraph!.nodes[0].id.toString(), "Test 32").to.equal(statGraph!.nodes[0].name);
-                expect(statGraph!.nodes[0].name, "Test 32").to.equal("12");
-                expect(statGraph!.nodes[0].type, "Test 33").to.equal(2);
-                expect(statGraph!.nodes[6].id.toString(), "Test 34").to.equal(statGraph!.nodes[6].name);
-                expect(statGraph!.nodes[6].name, "Test 34").to.equal("80");
-                expect(statGraph!.nodes[6].type, "Test 35").to.equal(1);
-                expect(statGraph!.nodes[10].name, "Test 36").to.equal("86");
-                expect(statGraph!.nodes[10].type, "Test 37").to.equal(1);
-                expect(statGraph!.nodes[13].name, "Test 38").to.equal("83");
-                expect(statGraph!.nodes[13].type, "Test 39").to.equal(1);
-                expect(statGraph!.nodes[2].name, "Test 38").to.equal("79");
-                expect(statGraph!.nodes[2].id, "Test 39").to.equal(79);
-                expect(statGraph!.nodes[5].name, "Test 40").to.equal("expr");
-                expect(statGraph!.nodes[5].id, "Test 41").to.equal(-2);
-                expect(statGraph!.nodes[9].name, "Test 42").to.equal("expr");
-                expect(statGraph!.nodes[9].id, "Test 43").to.equal(-3);
+                    expect(statGraph.links.length, "Test 44").to.equal(15);
+                    expect(statGraph.links[1].source, "Test 45").to.equal(1);
+                    expect(statGraph.links[1].target, "Test 46").to.equal(2);
+                    expect(statGraph.links[1].type, "Test 47").to.equal(1);
+                    expect(statGraph.links[1].labels.length, "Test 48").to.equal(1);
+                    expect(statGraph.links[1].labels[0], "Test 49").to.deep.equal({ content: "ε" });
 
-                expect(statGraph!.links.length, "Test 44").to.equal(15);
-                expect(statGraph!.links[1].source, "Test 45").to.equal(1);
-                expect(statGraph!.links[1].target, "Test 46").to.equal(2);
-                expect(statGraph!.links[1].type, "Test 47").to.equal(1);
-                expect(statGraph!.links[1].labels.length, "Test 48").to.equal(1);
-                expect(statGraph!.links[1].labels[0], "Test 49").to.equal("ε");
+                    expect(statGraph.links[4].source, "Test50").to.equal(3);
+                    expect(statGraph.links[4].target, "Test 51").to.equal(6);
+                    expect(statGraph.links[4].type, "Test 52").to.equal(3);
+                    expect(statGraph.links[4].labels.length, "Test 53").to.equal(1);
+                    expect(statGraph.links[4].labels[0], "Test 54").to.deep.equal({ content: "ε" });
 
-                expect(statGraph!.links[4].source, "Test50").to.equal(3);
-                expect(statGraph!.links[4].target, "Test 51").to.equal(6);
-                expect(statGraph!.links[4].type, "Test 52").to.equal(3);
-                expect(statGraph!.links[4].labels.length, "Test 53").to.equal(1);
-                expect(statGraph!.links[4].labels[0], "Test 54").to.equal("ε");
-
-                expect(statGraph!.links[12].source, "Test 55").to.equal(11);
-                expect(statGraph!.links[12].target, "Test 56").to.equal(13);
-                expect(statGraph!.links[12].type, "Test 57").to.equal(5);
-                expect(statGraph!.links[12].labels.length, "Test 58").to.equal(1);
-                expect(statGraph!.links[12].labels[0], "Test 59").to.equal("';'");
+                    expect(statGraph.links[12].source, "Test 55").to.equal(11);
+                    expect(statGraph.links[12].target, "Test 56").to.equal(13);
+                    expect(statGraph.links[12].type, "Test 57").to.equal(5);
+                    expect(statGraph.links[12].labels.length, "Test 58").to.equal(2);
+                    expect(statGraph.links[12].labels[0], "Test 59")
+                        .to.deep.equal({ content: "Atom Transition", class: "heading" });
+                    expect(statGraph.links[12].labels[1], "Test 60").to.deep.equal({ content: "';'" });
+                }
             } finally {
                 backend.releaseGrammar("test/backend/TParser.g4");
                 backend.releaseGrammar("test/backend/TLexer.g4");
@@ -497,7 +509,8 @@ describe("vscode-antlr4-backend:", function () {
 
         it("A generation run with settings, split grammar (typescript, cpp)", async () => {
             // The typescript target requires a different tool jar.
-            // TODO: currently we have to create the lib folder manually (until a pending path handling patch is included in ANTLR).
+            // TODO: currently we have to create the lib folder manually (until a pending path handling patch is
+            //       included in ANTLR).
             fs.ensureDirSync("generated/typescript");
 
             let result = await backend.generate("test/backend/TParser.g4", {
@@ -589,19 +602,20 @@ describe("vscode-antlr4-backend:", function () {
     });
 
     describe("Test for Bugs:", () => {
-        it("Lexer token in a set-element context", () => {
-            const info = backend.symbolInfoAtPosition("test/backend/TParser.g4", 48, 93, true);
+        it("Lexer token in a set-element context", async () => {
+            const info = await backend.symbolInfoAtPosition("test/backend/TParser.g4", 30, 93, true);
             assert(info, "Test 1");
-            expect(info!.name, "Test 2").to.equal("Semicolon");
-            expect(info!.source, "Test 3").to.equal("test/backend/TLexer.g4");
-            expect(info!.kind, "Test 4").to.equal(SymbolKind.LexerRule);
-            assert(info!.definition, "Test 5");
-            expect(info!.definition!.text, "Test 6").to.equal("Semicolon: ';';");
-            expect(info!.definition!.range.start.column, "Test 7").to.equal(0);
-            expect(info!.definition!.range.start.row, "Test 8").to.equal(59);
-            expect(info!.definition!.range.end.column, "Test 9").to.equal(14);
-            expect(info!.definition!.range.end.row, "Test 10").to.equal(59);
-
+            if (info) {
+                expect(info.name, "Test 2").to.equal("Semicolon");
+                expect(info.source, "Test 3").to.equal("test/backend/TLexer.g4");
+                expect(info.kind, "Test 4").to.equal(SymbolKind.LexerRule);
+                assert(info.definition, "Test 5");
+                expect(info.definition!.text, "Test 6").to.equal("Semicolon: ';';");
+                expect(info.definition!.range.start.column, "Test 7").to.equal(0);
+                expect(info.definition!.range.start.row, "Test 8").to.equal(59);
+                expect(info.definition!.range.end.column, "Test 9").to.equal(14);
+                expect(info.definition!.range.end.row, "Test 10").to.equal(59);
+            }
             backend.releaseGrammar("test/backend/TParser.g4");
             const selfDiags = backend.getSelfDiagnostics();
             expect(selfDiags.contextCount, "Test 11").to.equal(0);
@@ -612,14 +626,20 @@ describe("vscode-antlr4-backend:", function () {
     // Due to the nature of language definition by rules, we often generate invalid content.
     // This need investigation.
     xdescribe("Sentence Generation:", () => {
-        before(async () => {
+        this.beforeAll(async () => {
             this.timeout(10000);
+            console.log(process.cwd());
             let result = await backend.generate("grammars/ANTLRv4Parser.g4",
-                { outputDir: "generated", language: "CSharp" });
+                { outputDir: "test/backend/generated", language: "CSharp" });
+
             for (const file of result) {
                 const diagnostics = backend.getDiagnostics(file);
                 if (diagnostics.length > 0) {
-                    console.log("Generation error: " + diagnostics[0].message);
+                    if (diagnostics[0].message.includes("no non-fragment rules")) {
+                        diagnostics.shift();
+                    } else {
+                        console.log("Generation error: " + diagnostics[0].message);
+                    }
                 }
                 expect(diagnostics.length, "Test 1").to.equal(0);
             }
@@ -715,7 +735,8 @@ describe("vscode-antlr4-backend:", function () {
                     maxLexerIterations: 10,
                     minParserIterations: 0,
                     maxParserIterations: 3,
-                }, tester.bind(this, rule));
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                }, tester.bind(rule));
             }
         });
 
@@ -761,7 +782,8 @@ describe("vscode-antlr4-backend:", function () {
                     maxLexerIterations: 7,
                     maxParserIterations: 7,
                     ruleMappings,
-                }, tester.bind(this, rule));
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                }, tester.bind(rule));
             }
         });
 
@@ -804,7 +826,7 @@ describe("vscode-antlr4-backend:", function () {
             expect(targetStop, "Test 0c").to.equal(4);
 
             const rangeTests = JSON.parse(fs.readFileSync("test/backend/formatting/ranges.json",
-                { encoding: "utf8" })) as TestRange[];
+                { encoding: "utf8" })) as ITestRange[];
             const source = fs.readFileSync("test/backend/formatting/raw.g4", { encoding: "utf8" });
             for (let i = 1; i <= rangeTests.length; ++i) {
                 const rangeTest = rangeTests[i - 1];
@@ -824,8 +846,8 @@ describe("vscode-antlr4-backend:", function () {
                 //fs.writeFileSync("test/backend/formatting-results/" + rangeTest.result, text, "utf8");
                 const expected = fs.readFileSync("test/backend/formatting-results/" + rangeTest.result,
                     { encoding: "utf8" });
-                expect(range, "Range Test " + i + "a").to.deep.equal(rangeTest.target);
-                expect(expected, "Test " + i + "b").to.equal(text);
+                expect(range, `Range Test${i}a`).to.deep.equal(rangeTest.target);
+                expect(expected, `Range Test${i}b`).to.equal(text);
             }
         });
 
@@ -876,180 +898,3 @@ describe("vscode-antlr4-backend:", function () {
         }).timeout(20000);
     });
 });
-
-/**
- * Generates the alignment.g4 grammar from formatting options in the alignment-template.g4 file.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const createAlignmentGrammar = (): void => {
-    let grammar = "grammar alignment;\n\n// $antlr-format reset, columnLimit 200\n";
-    const template = fs.readFileSync("test/backend/formatting/alignment-template.g4", { encoding: "utf8" });
-    const sections = template.split("\n");
-
-    // For each section create 100 rules with some random parts.
-    for (const section of sections) {
-        grammar += "\n" + section + "\n";
-
-        // Make it 30 lexer rules and 20 parser rules (less parser rules as we always use grouped alignments for them).
-        for (let i = 0; i < 30; ++i) {
-            if (i === 0) {
-                grammar += "// $antlr-format groupedAlignments off\n";
-            } else if (i === 15) {
-                grammar += "// $antlr-format groupedAlignments on\n";
-            }
-
-            const ruleNameFillCount = Math.random() * 25 + 1;
-            const useLexerAction = Math.random() < 0.5;
-            const useComment = Math.random() < 0.5;
-            const usePredicate = Math.random() < 0.5;
-            const useAction = Math.random() < 0.5;
-
-            const filler = "_".repeat(ruleNameFillCount);
-            let line = "Keyword" + filler + i + ":'Keyword" + filler + i + "'";
-
-            if (useAction) {
-                if (usePredicate) {
-                    // Both, action and predicate. Make order random too.
-                    if (Math.random() < 0.5) {
-                        line += "{domeSomething($text);} ";
-                        line += "{doesItBlend()}? ";
-                    } else {
-                        line += "{doesItBlend()}? ";
-                        line += "{domeSomething($text);} ";
-                    }
-                } else {
-                    line += "{domeSomething($text);} ";
-                }
-            } else if (usePredicate) {
-                line += "{doesItBlend()}? ";
-            }
-
-            if (useLexerAction) {
-                const type = Math.random() < 0.5 ? "mode" : "type";
-                line += "-> " + type + "(SomethingReallyMeaningful) ";
-            }
-
-            line += ";";
-            if (useComment) {
-                line += " // Specified in the interest of formatting.";
-            }
-
-            grammar += line + "\n";
-        }
-
-        grammar += "// $antlr-format groupedAlignments on\n";
-        for (let i = 0; i < 20; ++i) {
-            if (i === 0) {
-                grammar += "// $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine false\n";
-            } else if (i === 10) {
-                grammar += "// $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true\n";
-            }
-
-            const ruleNameFillCount = Math.random() * 25 + 1;
-            const useComment = Math.random() < 0.25;
-            const action = Math.random() < 0.25 ? "{doSomething($text);}" : " ";
-            const predicate = Math.random() < 0.25 ? "{doesItBlend}?" : " ";
-            const useLabels = Math.random() < 0.5;
-
-            let line = "rule" + "_".repeat(ruleNameFillCount) + i + ": (";
-
-            if (useComment) {
-                line += predicate + "alt1" + action + "ruleA// Mom look, a trailing comment.\n";
-                line += "|" + predicate + "____alt2" + action + "ruleB// And another comment.\n";
-                line += "|" + predicate + "____alt3" + action + "ruleB/* Not aligned comment.*/\n";
-            } else {
-                line += predicate + "alt1" + action + "ruleA|____alt2" + action + "ruleB";
-            }
-            line += ")";
-
-            if (!useLabels) {
-                line += "rule_ | rule__ | rule____ | rule________ ";
-            } else {
-                line += "rule_ # label_ | rule__ # label__ | rule____ #label____| rule________#label________ ";
-            }
-
-            line += action + predicate + ";";
-            if (useComment) {
-                line += " // Final trailing comment.";
-            }
-
-            grammar += line + "\n";
-        }
-    }
-
-    fs.writeFileSync("test/backend/formatting/alignment.g4", grammar, "utf8");
-};
-
-/**
- * Converts the given position in the text to a character index (assuming 4 chars tab width).
- *
- * @param text The text for which to convert the position.
- * @param column The position in the text line.
- * @param row The line in the text.
- *
- * @returns The character index in the text for the given position.
- */
-const positionToIndex = (text: string, column: number, row: number): number => {
-    let currentRow = 1; // Remember: row numbers in ANTLR4 are one-based.
-    let currentColumn = 0;
-
-    for (let i = 0; i < text.length; ++i) {
-        if (row < currentRow) { // Happens when the column value was greater than previous column width.
-            return i - 1;
-        }
-
-        if (currentRow === row && currentColumn === column) {
-            return i;
-        }
-        switch (text[i]) {
-            case "\n": {
-                currentColumn = 0;
-                ++currentRow;
-                break;
-            }
-            case "\t": {
-                currentColumn += 4 - (currentColumn % 4);
-                break;
-            }
-            default:
-                ++currentColumn;
-                break;
-        }
-    }
-
-    return text.length;
-};
-
-/**
- * Converts the given character index into a column/row pair (assuming 4 chars tab width).
- *
- * @param text The text for which to convert the index.
- * @param index The character index in the text.
- *
- * @returns A [column, row] tuple with the position of the given index.
- */
-const indexToPosition = (text: string, index: number): [number, number] => {
-    let currentRow = 1;
-    let currentColumn = 0;
-    for (let i = 0; i < text.length; ++i) {
-        if (i === index) {
-            return [currentColumn, currentRow];
-        }
-        switch (text[i]) {
-            case "\n": {
-                currentColumn = 0;
-                ++currentRow;
-                break;
-            }
-            case "\t": {
-                currentColumn += 4 - (currentColumn % 4);
-                break;
-            }
-            default:
-                ++currentColumn;
-                break;
-        }
-    }
-
-    return [currentColumn, currentRow];
-};

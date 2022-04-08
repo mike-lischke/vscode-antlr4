@@ -1,7 +1,7 @@
 /*
  * Parts of this file not copied from the original ATNDeserializer.ts file are released under the MIT license.
  *
- * Copyright (c) 2016, 2021, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * All copied parts are released under the BSD-3-Clause.
  * Copyright 2016 The ANTLR Project. All rights reserved.
@@ -10,6 +10,8 @@
  */
 
 /* spell-checker: disable */
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 import {
     ATNDeserializer, ATNDeserializationOptions, ATN, ATNType, LoopEndState, BlockStartState, ATNStateType,
@@ -23,7 +25,7 @@ import { NotNull } from "antlr4ts/Decorators";
 import { Token } from "antlr4ts";
 import { DFA } from "antlr4ts/dfa/DFA";
 
-interface UnicodeDeserializer {
+interface IUnicodeDeserializer {
     // Work around Java not allowing mutation of captured variables
     // by returning amount by which to increment p after each read
     readonly size: number;
@@ -88,23 +90,25 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
      * introduced; otherwise, `false`.
      */
     public static isFeatureSupported(feature: UUID, actualUuid: UUID): boolean {
-        const featureIndex = CompatibleATNDeserializer.SUPPORTED_UUIDS2.findIndex((e) => e.equals(feature));
+        const featureIndex = CompatibleATNDeserializer.SUPPORTED_UUIDS2.findIndex((e) => { return e.equals(feature); });
         if (featureIndex < 0) {
             return false;
         }
 
-        return CompatibleATNDeserializer.SUPPORTED_UUIDS2.findIndex((e) => e.equals(actualUuid)) >= featureIndex;
+        return CompatibleATNDeserializer.SUPPORTED_UUIDS2.findIndex((e) => {
+            return e.equals(actualUuid);
+        }) >= featureIndex;
     }
 
-    private static getUnicodeDeserializer2(mode: UnicodeDeserializingMode): UnicodeDeserializer {
+    private static getUnicodeDeserializer2(mode: UnicodeDeserializingMode): IUnicodeDeserializer {
         if (mode === UnicodeDeserializingMode.UNICODE_BMP) {
             return {
-                readUnicode: (data: Uint16Array, p: number): number => ATNDeserializer.toInt(data[p]),
+                readUnicode: (data: Uint16Array, p: number): number => { return ATNDeserializer.toInt(data[p]); },
                 size: 1,
             };
         } else {
             return {
-                readUnicode: (data: Uint16Array, p: number): number => ATNDeserializer.toInt32(data, p),
+                readUnicode: (data: Uint16Array, p: number): number => { return ATNDeserializer.toInt32(data, p); },
                 size: 2,
             };
         }
@@ -227,7 +231,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         }
 
         if (ParserATNSimulator.debug) {
-            console.log("ATN runtime optimizer removed " + inlinedCalls + " rule invocations by inlining sets.");
+            console.log(`ATN runtime optimizer removed ${inlinedCalls} rule invocations by inlining sets.`);
         }
 
         return inlinedCalls;
@@ -297,8 +301,8 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         }
 
         if (ParserATNSimulator.debug) {
-            console.log("ATN runtime optimizer removed " + removedEdges +
-                " transitions by combining chained epsilon transitions.");
+            console.log(`ATN runtime optimizer removed ${removedEdges} transitions by combining chained epsilon ` +
+                `transitions.`);
         }
 
         return removedEdges;
@@ -399,7 +403,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         }
 
         if (ParserATNSimulator.debug) {
-            console.log("ATN runtime optimizer removed " + removedPaths + " paths by collapsing sets.");
+            console.log(`ATN runtime optimizer removed ${removedPaths} paths by collapsing sets.`);
         }
 
         return removedPaths;
@@ -477,8 +481,6 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
     }
 
     public deserialize(@NotNull data: Uint16Array): ATN {
-        data = data.slice(0);
-
         // Each Uint16 value in data is shifted by +2 at the entry to this method. This is an encoding optimization
         // targeting the serialized values 0 and -1 (serialized to 0xFFFF), each of which are very common in the
         // serialized form of the ATN. In the modified UTF-8 that Java uses for compiled string literals, these two
@@ -488,33 +490,34 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         //
         // As a special case, note that the first element of data is not adjusted because it contains the major version
         // number of the serialized ATN, which was fixed at 3 at the time the value shifting was implemented.
-        for (let i = 1; i < data.length; i++) {
-            data[i] = (data[i] - 2) & 0xFFFF;
-        }
-
-        let p = 0;
-        const version: number = ATNDeserializer.toInt(data[p++]);
+        const version: number = data[0];
         if (version !== ATNDeserializer.SERIALIZED_VERSION) {
             const reason =
                 `Could not deserialize ATN with version ${version} (expected ${ATNDeserializer.SERIALIZED_VERSION}).`;
             throw new Error(reason);
         }
 
+        data.forEach((value, index, array) => {
+            array[index] = (value - 2) & 0xFFFF;
+        });
+
+        let p = 1;
+
         const uuid: UUID = ATNDeserializer.toUUID(data, p);
         p += 8;
-        if (CompatibleATNDeserializer.SUPPORTED_UUIDS2.findIndex((e) => e.equals(uuid)) < 0) {
+        if (CompatibleATNDeserializer.SUPPORTED_UUIDS2.findIndex((e) => { return e.equals(uuid); }) < 0) {
             const reason = `Could not deserialize ATN with UUID ${uuid.toString()} (expected ` +
                 `${CompatibleATNDeserializer.SERIALIZED_UUID2.toString()} or a legacy UUID).`;
             throw new Error(reason);
         }
         const generatedByOriginalANTLR4 = uuid.equals(CompatibleATNDeserializer.ADDED_UNICODE_SMP_ORIGINAL);
 
-        const supportsLexerActions: boolean = CompatibleATNDeserializer.isFeatureSupported(
+        const supportsLexerActions = CompatibleATNDeserializer.isFeatureSupported(
             CompatibleATNDeserializer.ADDED_LEXER_ACTIONS2, uuid,
         );
 
-        const grammarType: ATNType = ATNDeserializer.toInt(data[p++]);
-        const maxTokenType: number = ATNDeserializer.toInt(data[p++]);
+        const grammarType: ATNType = data[p++];
+        const maxTokenType: number = data[p++];
         const atn: ATN = new ATN(grammarType, maxTokenType);
 
         //
@@ -522,26 +525,26 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         //
         const loopBackStateNumbers: Array<[LoopEndState, number]> = [];
         const endStateNumbers: Array<[BlockStartState, number]> = [];
-        const nstates: number = ATNDeserializer.toInt(data[p++]);
+        const nstates: number = data[p++];
         for (let i = 0; i < nstates; i++) {
-            const stype: ATNStateType = ATNDeserializer.toInt(data[p++]);
+            const stype: ATNStateType = data[p++];
             // ignore bad type of states
             if (stype === ATNStateType.INVALID_TYPE) {
                 atn.addState(new InvalidState());
                 continue;
             }
 
-            let ruleIndex: number = ATNDeserializer.toInt(data[p++]);
+            let ruleIndex: number = data[p++];
             if (ruleIndex === 0xFFFF) {
                 ruleIndex = -1;
             }
 
             const s: ATNState = this.stateFactory(stype, ruleIndex);
             if (stype === ATNStateType.LOOP_END) { // special case
-                const loopBackStateNumber: number = ATNDeserializer.toInt(data[p++]);
+                const loopBackStateNumber: number = data[p++];
                 loopBackStateNumbers.push([s as LoopEndState, loopBackStateNumber]);
             } else if (s instanceof BlockStartState) {
-                const endStateNumber: number = ATNDeserializer.toInt(data[p++]);
+                const endStateNumber: number = data[p++];
                 endStateNumbers.push([s, endStateNumber]);
             }
             atn.addState(s);
@@ -556,44 +559,44 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
             pair[0].endState = atn.states[pair[1]] as BlockEndState;
         }
 
-        const numNonGreedyStates: number = ATNDeserializer.toInt(data[p++]);
+        const numNonGreedyStates: number = data[p++];
         for (let i = 0; i < numNonGreedyStates; i++) {
-            const stateNumber: number = ATNDeserializer.toInt(data[p++]);
+            const stateNumber: number = data[p++];
             (atn.states[stateNumber] as DecisionState).nonGreedy = true;
         }
 
         if (!generatedByOriginalANTLR4) {
-            const numSllDecisions: number = ATNDeserializer.toInt(data[p++]);
+            const numSllDecisions: number = data[p++];
             for (let i = 0; i < numSllDecisions; i++) {
-                const stateNumber: number = ATNDeserializer.toInt(data[p++]);
+                const stateNumber: number = data[p++];
                 (atn.states[stateNumber] as DecisionState).sll = true;
             }
         }
 
-        const numPrecedenceStates: number = ATNDeserializer.toInt(data[p++]);
+        const numPrecedenceStates: number = data[p++];
         for (let i = 0; i < numPrecedenceStates; i++) {
-            const stateNumber: number = ATNDeserializer.toInt(data[p++]);
+            const stateNumber: number = data[p++];
             (atn.states[stateNumber] as RuleStartState).isPrecedenceRule = true;
         }
 
         //
         // RULES
         //
-        const nrules: number = ATNDeserializer.toInt(data[p++]);
+        const nrules: number = data[p++];
         if (atn.grammarType === ATNType.LEXER) {
             atn.ruleToTokenType = new Int32Array(nrules);
         }
 
         atn.ruleToStartState = new Array<RuleStartState>(nrules);
         for (let i = 0; i < nrules; i++) {
-            const s: number = ATNDeserializer.toInt(data[p++]);
+            const s: number = data[p++];
             const startState: RuleStartState = atn.states[s] as RuleStartState;
             if (!generatedByOriginalANTLR4) {
-                startState.leftFactored = ATNDeserializer.toInt(data[p++]) !== 0;
+                startState.leftFactored = data[p++] !== 0;
             }
             atn.ruleToStartState[i] = startState;
             if (atn.grammarType === ATNType.LEXER) {
-                let tokenType: number = ATNDeserializer.toInt(data[p++]);
+                let tokenType: number = data[p++];
                 if (tokenType === 0xFFFF) {
                     tokenType = Token.EOF;
                 }
@@ -604,7 +607,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
                     CompatibleATNDeserializer.ADDED_LEXER_ACTIONS2, uuid)) {
                     // this piece of unused metadata was serialized prior to the
                     // addition of LexerAction
-                    let actionIndexIgnored: number = ATNDeserializer.toInt(data[p++]);
+                    let actionIndexIgnored: number = data[p++];
                     if (actionIndexIgnored === 0xFFFF) {
                         actionIndexIgnored = -1;
                     }
@@ -625,9 +628,9 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         //
         // MODES
         //
-        const nmodes: number = ATNDeserializer.toInt(data[p++]);
+        const nmodes: number = data[p++];
         for (let i = 0; i < nmodes; i++) {
-            const s: number = ATNDeserializer.toInt(data[p++]);
+            const s: number = data[p++];
             atn.modeToStartState.push(atn.states[s] as TokensStartState);
         }
 
@@ -656,7 +659,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         //
         // EDGES
         //
-        const nedges: number = ATNDeserializer.toInt(data[p++]);
+        const nedges: number = data[p++];
         for (let i = 0; i < nedges; i++) {
             const src: number = ATNDeserializer.toInt(data[p]);
             const trg: number = ATNDeserializer.toInt(data[p + 1]);
@@ -673,11 +676,13 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         // edges for rule stop states can be derived, so they aren't serialized
         interface T { stopState: number; returnState: number; outermostPrecedenceReturn: number }
         const returnTransitionsSet = new Array2DHashSet<T>({
-            hashCode: (o: T) => o.stopState ^ o.returnState ^ o.outermostPrecedenceReturn,
+            hashCode: (o: T) => { return o.stopState ^ o.returnState ^ o.outermostPrecedenceReturn; },
 
-            equals: (a: T, b: T): boolean => a.stopState === b.stopState
-                && a.returnState === b.returnState
-                && a.outermostPrecedenceReturn === b.outermostPrecedenceReturn,
+            equals: (a: T, b: T): boolean => {
+                return a.stopState === b.stopState
+                    && a.returnState === b.returnState
+                    && a.outermostPrecedenceReturn === b.outermostPrecedenceReturn;
+            },
         });
         const returnTransitions: T[] = [];
         for (const state of atn.states) {
@@ -757,9 +762,9 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         //
         // DECISIONS
         //
-        const ndecisions: number = ATNDeserializer.toInt(data[p++]);
+        const ndecisions: number = data[p++];
         for (let i = 1; i <= ndecisions; i++) {
-            const s: number = ATNDeserializer.toInt(data[p++]);
+            const s: number = data[p++];
             const decState: DecisionState = atn.states[s] as DecisionState;
             atn.decisionToState.push(decState);
             decState.decision = i - 1;
@@ -770,15 +775,15 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         //
         if (atn.grammarType === ATNType.LEXER) {
             if (supportsLexerActions) {
-                atn.lexerActions = new Array<LexerAction>(ATNDeserializer.toInt(data[p++]));
+                atn.lexerActions = new Array<LexerAction>(data[p++]);
                 for (let i = 0; i < atn.lexerActions.length; i++) {
-                    const actionType: LexerActionType = ATNDeserializer.toInt(data[p++]);
-                    let data1: number = ATNDeserializer.toInt(data[p++]);
+                    const actionType: LexerActionType = data[p++];
+                    let data1: number = data[p++];
                     if (data1 === 0xFFFF) {
                         data1 = -1;
                     }
 
-                    let data2: number = ATNDeserializer.toInt(data[p++]);
+                    let data2: number = data[p++];
                     if (data2 === 0xFFFF) {
                         data2 = -1;
                     }
@@ -939,15 +944,15 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
     }
 
     private deserializeSets2(data: Uint16Array, p: number, sets: IntervalSet[],
-        unicodeDeserializer: UnicodeDeserializer): number {
-        const nsets: number = ATNDeserializer.toInt(data[p++]);
+        unicodeDeserializer: IUnicodeDeserializer): number {
+        const nsets: number = data[p++];
         for (let i = 0; i < nsets; i++) {
             const nintervals: number = ATNDeserializer.toInt(data[p]);
             p++;
             const set: IntervalSet = new IntervalSet();
             sets.push(set);
 
-            const containsEof: boolean = ATNDeserializer.toInt(data[p++]) !== 0;
+            const containsEof: boolean = data[p++] !== 0;
             if (containsEof) {
                 set.add(-1);
             }

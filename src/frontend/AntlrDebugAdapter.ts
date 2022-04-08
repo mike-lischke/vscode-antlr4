@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2020, Mike Lischke
+ * Copyright (c) 2017, 2021, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -12,23 +12,23 @@
 import {
     DebugSession, InitializedEvent, Thread, Scope, Source, OutputEvent,
     TerminatedEvent, StoppedEvent, Breakpoint, BreakpointEvent, StackFrame,
-} from "vscode-debugadapter";
-import { DebugProtocol } from "vscode-debugprotocol/lib/debugProtocol";
+} from "@vscode/debugadapter";
+import { DebugProtocol } from "@vscode/debugprotocol";
 
 import { window, Uri, WorkspaceFolder } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Subject } from "await-notify";
 
-import { GrammarDebugger, GrammarBreakPoint } from "../backend/GrammarDebugger";
+import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger";
 import { AntlrParseTreeProvider } from "./ParseTreeProvider";
-import { AntlrFacade, ParseTreeNode, ParseTreeNodeType } from "../backend/facade";
+import { AntlrFacade, IParseTreeNode, ParseTreeNodeType } from "../backend/facade";
 import { Token, CommonToken } from "antlr4ts";
 
 /**
  * Interface that reflects the arguments as specified in package.json.
  */
-export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
+export interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     input: string;
     startRule: string;
     grammar: string;
@@ -39,7 +39,7 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
     visualParseTree?: boolean;
 }
 
-export interface DebuggerConsumer {
+export interface IDebuggerConsumer {
     debugger: GrammarDebugger;
 
     refresh(): void; // A full reload, e.g. after a grammar change.
@@ -55,7 +55,7 @@ enum VarRef {
 }
 
 export class AntlrDebugSession extends DebugSession {
-    private static THREAD_ID = 1;
+    private static threadId = 1;
 
     private debugger: GrammarDebugger | undefined;
     private parseTreeProvider: AntlrParseTreeProvider;
@@ -80,7 +80,7 @@ export class AntlrDebugSession extends DebugSession {
     public constructor(
         private folder: WorkspaceFolder | undefined,
         private backend: AntlrFacade,
-        private consumers: DebuggerConsumer[]) {
+        private consumers: IDebuggerConsumer[]) {
         super();
 
         this.setDebuggerLinesStartAt1(true);
@@ -94,7 +94,7 @@ export class AntlrDebugSession extends DebugSession {
     }
 
     protected initializeRequest(response: DebugProtocol.InitializeResponse,
-        args: DebugProtocol.InitializeRequestArguments): void {
+        _args: DebugProtocol.InitializeRequestArguments): void {
 
         response.body = response.body || {};
         response.body.supportsConfigurationDoneRequest = true;
@@ -110,7 +110,7 @@ export class AntlrDebugSession extends DebugSession {
         this.configurationDone.notify();
     }
 
-    protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
+    protected launchRequest(response: DebugProtocol.LaunchResponse, args: ILaunchRequestArguments): void {
         if (!args.input) {
             this.sendErrorResponse(response, {
                 id: 1,
@@ -148,6 +148,7 @@ export class AntlrDebugSession extends DebugSession {
         if (!args.grammar) {
             this.sendErrorResponse(response, {
                 id: 1,
+                // eslint-disable-next-line no-template-curly-in-string
                 format: "Could not launch debug session: no grammar file specified (use the ${file} macro for the " +
                     "current editor).",
             });
@@ -194,7 +195,7 @@ export class AntlrDebugSession extends DebugSession {
             }
             this.sendEvent(new InitializedEvent()); // Now we can accept breakpoints.
         } catch (e) {
-            this.sendErrorResponse(response, { id: 1, format: "Could not prepare debug session:\n\n" + e });
+            this.sendErrorResponse(response, { id: 1, format: "Could not prepare debug session:\n\n" + String(e) });
 
             return;
         }
@@ -227,7 +228,7 @@ export class AntlrDebugSession extends DebugSession {
                 }
 
             } catch (e) {
-                this.sendErrorResponse(response, { id: 3, format: "Could not launch debug session:\n\n" + e });
+                this.sendErrorResponse(response, { id: 3, format: "Could not launch debug session:\n\n" + String(e) });
 
                 return;
             }
@@ -261,7 +262,7 @@ export class AntlrDebugSession extends DebugSession {
         // We have no threads, so return a dummy entry.
         response.body = {
             threads: [
-                new Thread(AntlrDebugSession.THREAD_ID, "Interpreter"),
+                new Thread(AntlrDebugSession.threadId, "Interpreter"),
             ],
         };
         this.sendResponse(response);
@@ -306,16 +307,21 @@ export class AntlrDebugSession extends DebugSession {
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
         // Cache a few values that stay the same during a single request for scopes and variables.
-        this.tokens = this.debugger!.tokenList;
-        this.variables = this.debugger!.getVariables(args.frameId);
-
-        const scopes: Scope[] = [];
-        scopes.push(new Scope("Globals", VarRef.Globals, true));
-        //scopes.push(new Scope(this.debugger.getStackInfo(args.frameId), VarRef.Context, false));
-        response.body = {
-            scopes,
-        };
-        this.sendResponse(response);
+        if (this.debugger) {
+            this.tokens = this.debugger.tokenList;
+            this.debugger.getVariables(args.frameId).then((values) => {
+                this.variables = values;
+                const scopes: Scope[] = [];
+                scopes.push(new Scope("Globals", VarRef.Globals, true));
+                //scopes.push(new Scope(this.debugger.getStackInfo(args.frameId), VarRef.Context, false));
+                response.body = {
+                    scopes,
+                };
+                this.sendResponse(response);
+            }).catch(() => {
+                this.sendResponse(response);
+            });
+        }
     }
 
     protected variablesRequest(response: DebugProtocol.VariablesResponse,
@@ -360,7 +366,7 @@ export class AntlrDebugSession extends DebugSession {
                 for (let i = 0; i < length; ++i) {
                     const index = start + i;
                     variables.push({
-                        name: index + ": " + this.debugger!.tokenTypeName(this.tokens[index] as CommonToken),
+                        name: `${index}: ${this.debugger!.tokenTypeName(this.tokens[index] as CommonToken)}`,
                         type: "Token",
                         value: "",
                         variablesReference: VarRef.Tokens + index,
@@ -378,49 +384,56 @@ export class AntlrDebugSession extends DebugSession {
                         variables.push({
                             name: "text",
                             type: "string",
-                            value: token.text ? token.text : "",
+                            value: token.text ?? "",
                             variablesReference: 0,
                         });
+
                         variables.push({
                             name: "type",
                             type: "number",
-                            value: token.type + "",
+                            value: String(token.type),
                             variablesReference: 0,
                         });
+
                         variables.push({
                             name: "line",
                             type: "number",
-                            value: token.line + "",
+                            value: String(token.line),
                             variablesReference: 0,
                         });
+
                         variables.push({
                             name: "offset",
                             type: "number",
-                            value: token.charPositionInLine + "",
+                            value: String(token.charPositionInLine),
                             variablesReference: 0,
                         });
+
                         variables.push({
                             name: "channel",
                             type: "number",
-                            value: token.channel + "",
+                            value: String(token.channel),
                             variablesReference: 0,
                         });
+
                         variables.push({
                             name: "tokenIndex",
                             type: "number",
-                            value: token.tokenIndex + "",
+                            value: String(token.tokenIndex),
                             variablesReference: 0,
                         });
+
                         variables.push({
                             name: "startIndex",
                             type: "number",
-                            value: token.startIndex + "",
+                            value: String(token.startIndex),
                             variablesReference: 0,
                         });
+
                         variables.push({
                             name: "stopIndex",
                             type: "number",
-                            value: token.stopIndex + "",
+                            value: String(token.stopIndex),
                             variablesReference: 0,
                         });
 
@@ -436,32 +449,36 @@ export class AntlrDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
-        this.debugger!.pause();
+    protected pauseRequest(response: DebugProtocol.PauseResponse, _args: DebugProtocol.PauseArguments): void {
+        this.debugger?.pause();
         this.sendResponse(response);
     }
 
-    protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-        this.debugger!.continue();
-        this.sendResponse(response);
+    protected continueRequest(response: DebugProtocol.ContinueResponse, _args: DebugProtocol.ContinueArguments): void {
+        void this.debugger?.continue().then(() => {
+            this.sendResponse(response);
+        });
     }
 
-    protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
-        this.debugger!.stepOver();
-        this.sendResponse(response);
+    protected nextRequest(response: DebugProtocol.NextResponse, _args: DebugProtocol.NextArguments): void {
+        void this.debugger?.stepOver().then(() => {
+            this.sendResponse(response);
+        });
     }
 
-    protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): void {
-        this.debugger!.stepIn();
-        this.sendResponse(response);
+    protected stepInRequest(response: DebugProtocol.StepInResponse, _args: DebugProtocol.StepInArguments): void {
+        void this.debugger?.stepIn().then(() => {
+            this.sendResponse(response);
+        });
     }
 
-    protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
-        this.debugger!.stepOut();
-        this.sendResponse(response);
+    protected stepOutRequest(response: DebugProtocol.StepOutResponse, _args: DebugProtocol.StepOutArguments): void {
+        void this.debugger?.stepOut().then(() => {
+            this.sendResponse(response);
+        });
     }
 
-    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, _args: DebugProtocol.EvaluateArguments): void {
         response.body = {
             result: "evaluation not supported",
             variablesReference: 0,
@@ -483,25 +500,25 @@ export class AntlrDebugSession extends DebugSession {
 
         this.debugger.on("stopOnStep", () => {
             this.notifyConsumers(Uri.file(grammar));
-            this.sendEvent(new StoppedEvent("step", AntlrDebugSession.THREAD_ID));
+            this.sendEvent(new StoppedEvent("step", AntlrDebugSession.threadId));
         });
 
         this.debugger.on("stopOnPause", () => {
             this.notifyConsumers(Uri.file(grammar));
-            this.sendEvent(new StoppedEvent("pause", AntlrDebugSession.THREAD_ID));
+            this.sendEvent(new StoppedEvent("pause", AntlrDebugSession.threadId));
         });
 
         this.debugger.on("stopOnBreakpoint", () => {
             this.notifyConsumers(Uri.file(grammar));
-            this.sendEvent(new StoppedEvent("breakpoint", AntlrDebugSession.THREAD_ID));
+            this.sendEvent(new StoppedEvent("breakpoint", AntlrDebugSession.threadId));
         });
 
         this.debugger.on("stopOnException", () => {
             this.notifyConsumers(Uri.file(grammar));
-            this.sendEvent(new StoppedEvent("exception", AntlrDebugSession.THREAD_ID));
+            this.sendEvent(new StoppedEvent("exception", AntlrDebugSession.threadId));
         });
 
-        this.debugger.on("breakpointValidated", (bp: GrammarBreakPoint) => {
+        this.debugger.on("breakpointValidated", (bp: IGrammarBreakPoint) => {
             const breakpoint: DebugProtocol.Breakpoint = {
                 verified: bp.validated,
                 id: bp.id,
@@ -509,12 +526,12 @@ export class AntlrDebugSession extends DebugSession {
             this.sendEvent(new BreakpointEvent("changed", breakpoint));
         });
 
-        this.debugger.on("output", (...args: any[]) => {
-            const isError: boolean = args[4];
-            const column: number = args[3];
-            const line: number = args[2];
-            const filePath: string = args[1];
-            const text: string = args[0];
+        this.debugger.on("output", (...args: unknown[]) => {
+            const isError = args[4] as boolean;
+            const column = args[3] as number;
+            const line = args[2] as number;
+            const filePath = args[1] as string;
+            const text = args[0] as string;
 
             const e: DebugProtocol.OutputEvent = new OutputEvent(`${text}\n`);
             e.body.source = filePath ? this.createSource(filePath) : undefined;
@@ -554,6 +571,12 @@ export class AntlrDebugSession extends DebugSession {
 
             this.sendEvent(new TerminatedEvent());
         });
+
+        this.debugger.on("error", (reason: string) => {
+            const e: DebugProtocol.OutputEvent = new OutputEvent(`${reason}\n`);
+            e.body.category = "stderr";
+            this.sendEvent(e);
+        });
     }
 
     //---- helpers
@@ -563,7 +586,7 @@ export class AntlrDebugSession extends DebugSession {
             this.convertDebuggerPathToClient(filePath), undefined, undefined, "antlr-data");
     }
 
-    private parseNodeToString(node: ParseTreeNode, level = 0): string {
+    private parseNodeToString(node: IParseTreeNode, level = 0): string {
         let result = " ".repeat(level);
         switch (node.type) {
             case ParseTreeNodeType.Rule: {

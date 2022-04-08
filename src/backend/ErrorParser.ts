@@ -5,7 +5,9 @@
  * See LICENSE file for more info.
  */
 
-import { DiagnosticEntry, DiagnosticType } from "../backend/facade";
+/* eslint-disable max-len */
+
+import { IDiagnosticEntry, DiagnosticType } from "../backend/facade";
 import { SourceContext } from "./SourceContext";
 
 /**
@@ -113,7 +115,7 @@ export class ErrorParser {
      *
      * @returns True if the conversion was successful, false otherwise.
      */
-    public convertErrorsToDiagnostics(text: string): boolean {
+    public async convertErrorsToDiagnostics(text: string): Promise<boolean> {
         const lines = text.split("\n");
         for (const line of lines) {
             if (line.length > 0) {
@@ -131,7 +133,7 @@ export class ErrorParser {
                     for (const candidate of this.contexts) {
                         // Usually error messages come with the full path, but in case of grammar <-> filename conflicts
                         // we only get the base name.
-					    if (candidate.fileName === fileName || candidate.fileName.endsWith(fileName)) {
+                        if (candidate.fileName === fileName || candidate.fileName.endsWith(fileName)) {
                             context = candidate;
                             break;
                         }
@@ -231,7 +233,7 @@ export class ErrorParser {
                                         for (let i = 1; i < symbols.length; ++i) { // Not the first entry
                                             symbols.push(matches[i]);
                                         }
-                                        this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error,
+                                        await this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error,
                                             context);
                                         continue;
                                     }
@@ -262,7 +264,7 @@ export class ErrorParser {
                                 const matches = ErrorParser.errorCodeToPattern.get(errorCode)!.exec(errorText);
                                 if (matches) {
                                     // We're adding two entries here: one for each symbol.
-                                    this.addDiagnosticsForSymbols([matches[1]], errorText, DiagnosticType.Warning,
+                                    await this.addDiagnosticsForSymbols([matches[1]], errorText, DiagnosticType.Warning,
                                         context);
                                     range.end.column += matches[1].length - 1;
                                 }
@@ -290,7 +292,7 @@ export class ErrorParser {
                                 break;
 
                             case 202: { // "tokens {A; B;} syntax is now tokens {A, B} in ANTLR 4", ErrorSeverity.WARNING
-                                const enclosingRange = context.enclosingSymbolAtPosition(range.start.column,
+                                const enclosingRange = await context.enclosingSymbolAtPosition(range.start.column,
                                     range.start.row, true);
                                 if (enclosingRange && enclosingRange.definition) {
                                     range = enclosingRange.definition.range;
@@ -311,7 +313,7 @@ export class ErrorParser {
                                 break;
 
                             default: {
-                                const info = context.symbolAtPosition(range.start.column, range.start.row, false);
+                                const info = await context.symbolAtPosition(range.start.column, range.start.row, false);
                                 if (info) {
                                     range.end.column += info.name.length - 1;
                                 }
@@ -319,7 +321,7 @@ export class ErrorParser {
                             }
                         }
 
-                        const error: DiagnosticEntry = {
+                        const error: IDiagnosticEntry = {
                             type: (firstLevelMatches[1] === "error") ? DiagnosticType.Error : DiagnosticType.Warning,
                             message: errorText,
                             range,
@@ -354,7 +356,8 @@ export class ErrorParser {
                                 const matches = /\[([^\]]+)]/.exec(errorText);
                                 if (matches) {
                                     const symbols = matches[1].split(",");
-                                    this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error, context);
+                                    await this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error,
+                                        context);
                                 }
                                 break;
                             }
@@ -369,8 +372,8 @@ export class ErrorParser {
                             default:
                                 this.addGenericDiagnosis(
                                     `[Internal Error] Unhandled error message (code ${errorCode}, message: ` +
-                                        `${errorText}\nPlease file a bug report at ` +
-                                        "https://github.com/mike-lischke/vscode-antlr4/issues)",
+                                    `${errorText}\nPlease file a bug report at ` +
+                                    "https://github.com/mike-lischke/vscode-antlr4/issues)",
                                     DiagnosticType.Error, context);
                                 break;
                         }
@@ -382,11 +385,12 @@ export class ErrorParser {
         return true;
     }
 
-    private addDiagnosticsForSymbols(symbols: string[], text: string, type: DiagnosticType, context: SourceContext) {
+    private async addDiagnosticsForSymbols(symbols: string[], text: string, type: DiagnosticType,
+        context: SourceContext) {
         for (const symbol of symbols) {
-            const info = context.getSymbolInfo(symbol.trim());
+            const info = await context.getSymbolInfo(symbol.trim());
             if (info) {
-                const error: DiagnosticEntry = {
+                const error: IDiagnosticEntry = {
                     type,
                     message: text,
                     range: info.definition!.range,
@@ -397,7 +401,7 @@ export class ErrorParser {
     }
 
     private addGenericDiagnosis(text: string, type: DiagnosticType, context: SourceContext) {
-        const error: DiagnosticEntry = {
+        const error: IDiagnosticEntry = {
             type,
             message: text,
             range: { start: { column: 0, row: 1 }, end: { column: 0, row: 1 } },

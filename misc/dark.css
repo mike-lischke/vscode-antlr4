@@ -6,32 +6,36 @@
  * the dark theme.
  */
 
- body.vscode-dark svg {
-	background: rgba(255, 255, 255, 0.05);
+body.vscode-dark svg {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 /* ATN graphs. */
 
 body.vscode-dark .marker {
-  fill: #eee;
-  stroke: none;
+    fill: #eee;
+    stroke: none;
 }
 
 body.vscode-dark .stateLabel {
-  fill: #202020;
+    fill: #202020;
 }
 
 body.vscode-dark .stateTypeLabel {
-  fill: #404040;
+    fill: #404040;
 }
 
 body.vscode-dark .linkLabel {
-  fill: #ddd;
+    fill: #ddd;
+}
+
+body.vscode-dark .linkLabel > .heading {
+    fill: cadetblue;
 }
 
 body.vscode-dark .state {
-  stroke: white;
-  filter: url(#white-glow);
+    stroke: white;
+    filter: url(#white-glow);
 }
 
 /* Railroad diagrams */
@@ -53,57 +57,57 @@ body.vscode-dark .parse-tree-save-image {
 }
 
 body.vscode-dark svg.railroad-diagram path {
-	/* The connection lines. */
-	stroke-width: 2;
-	stroke: darkgray;
-	fill: rgba(0, 0, 0, 0);
+    /* The connection lines. */
+    stroke-width: 2;
+    stroke: darkgray;
+    fill: rgba(0, 0, 0, 0);
 }
 
 body.vscode-dark svg.railroad-diagram text {
-	/* All text except comments. */
-	font: bold 12px Hack, "Source Code Pro", monospace;
-	text-anchor: middle;
-	fill: #404040;
-	/* Use fill instead of color for svg text. */
+    /* All text except comments. */
+    font: bold 12px Hack, "Source Code Pro", monospace;
+    text-anchor: middle;
+    fill: #404040;
+    /* Use fill instead of color for svg text. */
 }
 
 body.vscode-dark svg.railroad-diagram text.comment {
-	/* Comment text */
-	font: italic 10px Hack, "Source Code Pro", monospace;
-	fill: #909090;
+    /* Comment text */
+    font: italic 10px Hack, "Source Code Pro", monospace;
+    fill: #909090;
 }
 
 body.vscode-dark svg.railroad-diagram g.non-terminal rect {
-	/* The non-terminal boxes. */
-	stroke-width: 2;
-	stroke: #404040;
-	fill: rgba(255, 255, 255, 1);
+    /* The non-terminal boxes. */
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 1);
 }
 
 body.vscode-dark svg.railroad-diagram g.terminal rect {
-	/* The terminal boxes. */
-	stroke-width: 2;
-	stroke: #404040;
-	fill: rgba(255, 255, 255, 0.7);
+    /* The terminal boxes. */
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 0.7);
 }
 
 body.vscode-dark svg.railroad-diagram text.diagram-text {
-	/* Multiple choice text, not working atm. */
-	font-size: 12px Hack, "Source Code Pro", monospace;
-	fill: red;
+    /* Multiple choice text, not working atm. */
+    font-size: 12px Hack, "Source Code Pro", monospace;
+    fill: red;
 }
 
 body.vscode-dark svg.railroad-diagram path.diagram-text {
-	/* Multiple choice text, not working atm. */
-	stroke-width: 1;
-	stroke: red;
-	fill: white;
-	cursor: help;
+    /* Multiple choice text, not working atm. */
+    stroke-width: 1;
+    stroke: red;
+    fill: white;
+    cursor: help;
 }
 
 body.vscode-dark svg.railroad-diagram g.diagram-text:hover path.diagram-text {
-	/* Multiple choice text, not working atm. */
-	fill: #f00;
+    /* Multiple choice text, not working atm. */
+    fill: #f00;
 }
 
 /* Call graphs */
@@ -179,21 +183,21 @@ body.vscode-dark .link {
     stroke-opacity: .2;
     fill: none;
     pointer-events: none;
-	animation: fadeIn 0.5s ease-out 0.2s 1 normal backwards;
+    animation: fadeIn 0.5s ease-out 0.2s 1 normal backwards;
 }
 
 body.vscode-dark .link-source {
     stroke-opacity: 1;
     stroke-width: 2px;
     stroke: #45aa73;
-	animation: none;
+    animation: none;
 }
 
 body.vscode-dark .link-target {
     stroke-opacity: 1;
     stroke-width: 2px;
     stroke: #ff5711;
-	animation: none;
+    animation: none;
 }
 
 body.vscode-dark .link-dimmed {
@@ -239,4 +243,3 @@ body.vscode-dark g .token-range {
 }
 
 /* Default CSS for internal elements, only visible in vscode */
-

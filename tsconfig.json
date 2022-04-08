@@ -1,20 +1,20 @@
 {
     "compilerOptions": {
-		"declaration": true,
+        "declaration": true,
         "module": "commonjs",
         "target": "es6",
         "outDir": "out",
         "removeComments": true,
-		"noImplicitAny": true,
+        "noImplicitAny": true,
         "sourceMap": true,
         "inlineSources": true,
         "isolatedModules": false,
-		"allowSyntheticDefaultImports": true,
-		"experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
         "strictNullChecks": true,
         "alwaysStrict": true
     },
-	"compileOnSave": true,
+    "compileOnSave": true,
     "include": [
         "src/*.ts",
         "src/**/*.ts",
@@ -23,7 +23,6 @@
     "exclude": [
         "node_modules",
         ".vscode-test",
-        "images",
-        "generated"
+        "images"
     ]
 }

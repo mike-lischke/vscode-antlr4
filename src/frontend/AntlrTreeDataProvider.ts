@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2020, Mike Lischke
+ * Copyright (c) 2018, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -13,7 +13,7 @@ export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
 
     private changeEvent = new EventEmitter<void>();
 
-    public constructor(protected backend: AntlrFacade) {}
+    public constructor(protected backend: AntlrFacade) { }
 
     public get onDidChangeTreeData(): Event<void> {
         return this.changeEvent.event;
@@ -32,7 +32,7 @@ export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
         return element;
     }
 
-    public getChildren(element?: T): ProviderResult<T[]> {
+    public getChildren(_element?: T): ProviderResult<T[]> {
         return undefined;
     }
 }

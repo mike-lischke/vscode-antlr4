@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2020, Mike Lischke
+ * Copyright (c) 2017, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -11,6 +11,26 @@ import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
+
+export class Import extends TreeItem {
+
+    public iconPath = {
+        light: path.join(__dirname, "..", "..", "..", "misc", "dependency-light.svg"),
+        dark: path.join(__dirname, "..", "..", "..", "misc", "dependency-dark.svg"),
+    };
+
+    public contextValue = "grammar-dependency";
+
+    public constructor(
+        public readonly label: string,
+        public readonly collapsibleState: TreeItemCollapsibleState,
+        command?: Command,
+    ) {
+        super(label, collapsibleState);
+        this.command = command;
+    }
+
+}
 
 export class ImportsProvider extends AntlrTreeDataProvider<Import> {
 
@@ -41,24 +61,4 @@ export class ImportsProvider extends AntlrTreeDataProvider<Import> {
             resolve([]);
         });
     }
-}
-
-export class Import extends TreeItem {
-
-    public iconPath = {
-        light: path.join(__dirname, "..", "..", "..", "misc", "dependency-light.svg"),
-        dark: path.join(__dirname, "..", "..", "..", "misc", "dependency-dark.svg"),
-    };
-
-    public contextValue = "grammar-dependency";
-
-    public constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
-        command_?: Command,
-    ) {
-        super(label, collapsibleState);
-        this.command = command_;
-    }
-
 }

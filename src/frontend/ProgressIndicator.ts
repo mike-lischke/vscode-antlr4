@@ -11,7 +11,7 @@ export class ProgressIndicator {
     private static progressChars = "⠁⠃⠅⡁⢁⠡⠑⠉⠁⠃⠇⡃⢃⠣⠓⠋⠃⠃⠇⡇⢇⠧⠗⠏⠇⠇⠇⡇⣇⡧⡗⡏⡇⡇⡇⡇⣇⣧⣗⣏⣇⣇⣇⣇⣇⣧⣷⣯⣧⣧⣧⣧⣧⣧⣷⣿⣿⣿⣿⣿⣿⣿⣿";
 
     private statusBarItem: StatusBarItem;
-    private timer: any;
+    private timer: ReturnType<typeof setInterval> | null;
     private progress = 0;
 
     public constructor() {
@@ -30,8 +30,10 @@ export class ProgressIndicator {
     }
 
     public stopAnimation(): void {
-        clearInterval(this.timer);
-        this.timer = null;
-        this.statusBarItem.hide();
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+            this.statusBarItem.hide();
+        }
     }
 }

@@ -43,10 +43,15 @@ svg {
 }
 
 .linkLabel {
-    font: bold 9pt "Helvetica Neue", Arial, sans-serif;
+    font: 9pt monospace;
     fill: #606060;
     text-anchor: middle;
     pointer-events: none;
+}
+
+.linkLabel > .heading {
+    fill: cornflowerblue;
+    font-weight: 800;
 }
 
 .state {

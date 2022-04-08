@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2021, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -26,7 +26,8 @@ const symbolDescriptionMap = new Map<SymbolKind, string>([
     [SymbolKind.Option, "Grammar Option"],
     [SymbolKind.TokenReference, "Token (Lexer Rule) Reference"],
     [SymbolKind.RuleReference, "Parser Rule Reference"],
-    [SymbolKind.NamedAction, "Named Action"],
+    [SymbolKind.GlobalNamedAction, "Global Named Action"],
+    [SymbolKind.LocalNamedAction, "Local Named Action"],
     [SymbolKind.LexerCommand, "Lexer Command"],
     [SymbolKind.ExceptionAction, "Exception Action Code"],
     [SymbolKind.FinallyAction, "Finally Action Code"],
@@ -44,7 +45,9 @@ const symbolDescriptionMap = new Map<SymbolKind, string>([
  *
  * @returns The description.
  */
-export const symbolDescriptionFromEnum = (kind: SymbolKind): string => symbolDescriptionMap.get(kind) || "Unknown";
+export const symbolDescriptionFromEnum = (kind: SymbolKind): string => {
+    return symbolDescriptionMap.get(kind) || "Unknown";
+};
 
 const symbolCodeTypeMap = new Map<SymbolKind, vscode.SymbolKind>([
     [SymbolKind.Terminal, vscode.SymbolKind.EnumMember],
@@ -64,7 +67,8 @@ const symbolCodeTypeMap = new Map<SymbolKind, vscode.SymbolKind>([
     [SymbolKind.Option, vscode.SymbolKind.Object],
     [SymbolKind.TokenReference, vscode.SymbolKind.Function],
     [SymbolKind.RuleReference, vscode.SymbolKind.Function],
-    [SymbolKind.NamedAction, vscode.SymbolKind.Struct],
+    [SymbolKind.GlobalNamedAction, vscode.SymbolKind.Struct],
+    [SymbolKind.LocalNamedAction, vscode.SymbolKind.Struct],
     [SymbolKind.LexerCommand, vscode.SymbolKind.Struct],
     [SymbolKind.ExceptionAction, vscode.SymbolKind.Struct],
     [SymbolKind.FinallyAction, vscode.SymbolKind.Struct],
@@ -82,8 +86,9 @@ const symbolCodeTypeMap = new Map<SymbolKind, vscode.SymbolKind>([
  *
  * @returns The vscode symbol kind for the given ANTLR4 kind.
  */
-export const translateSymbolKind = (kind: SymbolKind): vscode.SymbolKind =>
-    symbolCodeTypeMap.get(kind) || vscode.SymbolKind.Null;
+export const translateSymbolKind = (kind: SymbolKind): vscode.SymbolKind => {
+    return symbolCodeTypeMap.get(kind) || vscode.SymbolKind.Null;
+};
 
 const symbolCompletionTypeMap = new Map<SymbolKind, vscode.CompletionItemKind>([
     [SymbolKind.Terminal, vscode.CompletionItemKind.EnumMember],
@@ -103,7 +108,8 @@ const symbolCompletionTypeMap = new Map<SymbolKind, vscode.CompletionItemKind>([
     [SymbolKind.Option, vscode.CompletionItemKind.User],
     [SymbolKind.TokenReference, vscode.CompletionItemKind.Function],
     [SymbolKind.RuleReference, vscode.CompletionItemKind.Function],
-    [SymbolKind.NamedAction, vscode.CompletionItemKind.Struct],
+    [SymbolKind.GlobalNamedAction, vscode.CompletionItemKind.Struct],
+    [SymbolKind.LocalNamedAction, vscode.CompletionItemKind.Struct],
     [SymbolKind.LexerCommand, vscode.CompletionItemKind.Struct],
     [SymbolKind.ExceptionAction, vscode.CompletionItemKind.Struct],
     [SymbolKind.FinallyAction, vscode.CompletionItemKind.Struct],
@@ -122,5 +128,6 @@ const symbolCompletionTypeMap = new Map<SymbolKind, vscode.CompletionItemKind>([
  *
  * @returns The vscode completion item kind.
  */
-export const translateCompletionKind = (kind: SymbolKind): vscode.CompletionItemKind =>
-    symbolCompletionTypeMap.get(kind) || vscode.CompletionItemKind.Text;
+export const translateCompletionKind = (kind: SymbolKind): vscode.CompletionItemKind => {
+    return symbolCompletionTypeMap.get(kind) || vscode.CompletionItemKind.Text;
+};

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2020, Mike Lischke
+ * Copyright (c) 2017, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -8,17 +8,17 @@
 import * as path from "path";
 
 import { AntlrFacade } from "../backend/facade";
-import { Utils } from "./Utils";
+import { FrontendUtils } from "./FrontendUtils";
 import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 
-export interface WebviewShowOptions {
+export interface IWebviewShowOptions {
     [key: string]: boolean | number | string;
 
     title: string;
 }
 
-export interface WebviewMessage {
-    [key: string]: any;
+export interface IWebviewMessage {
+    [key: string]: unknown;
 }
 
 /**
@@ -30,99 +30,121 @@ export class WebviewProvider {
     protected currentEditor: TextEditor | undefined;
 
     // Keep track of all created panels, to avoid duplicates.
-    private webViewMap = new Map<String, [WebviewPanel, WebviewShowOptions]>();
+    private webViewMap = new Map<String, [WebviewPanel, IWebviewShowOptions]>();
 
     public constructor(protected backend: AntlrFacade, protected context: ExtensionContext) { }
 
-    public showWebview(source: TextEditor | Uri, options: WebviewShowOptions): void {
+    public showWebview(source: TextEditor | Uri, options: IWebviewShowOptions): void {
         this.currentEditor = (source instanceof Uri) ? undefined : source;
+
         const uri = (source instanceof Uri) ? source : source.document.uri;
         const uriString = uri.toString();
+
+        const panel = window.createWebviewPanel("antlr4-vscode-webview", options.title, ViewColumn.Two, {
+            enableScripts: true,
+            retainContextWhenHidden: true,
+        });
+        this.webViewMap.set(uriString, [panel, options]);
+
         if (this.webViewMap.has(uriString)) {
             const [existingPanel] = this.webViewMap.get(uriString)!;
             existingPanel.title = options.title;
             if (!this.updateContent(uri)) {
-                existingPanel.webview.html = this.generateContent(existingPanel.webview,
-                    this.currentEditor ? this.currentEditor : uri, options);
+                this.generateContent(existingPanel.webview, this.currentEditor ? this.currentEditor : uri, options)
+                    .then((content) => {
+                        panel.webview.html = content;
+                    }).catch((reason: string) => {
+                        panel.webview.html = `Could not render webview content: ${reason.toString()}`;
+                    });
             }
 
             return;
         }
 
-        const panel = window.createWebviewPanel(
-            "antlr4-vscode-webview", options.title, ViewColumn.Two, {
-                enableScripts: true,
-                retainContextWhenHidden: true,
-            },
-        );
-        this.webViewMap.set(uriString, [panel, options]);
+        this.generateContent(panel.webview, this.currentEditor ? this.currentEditor : uri, options)
+            .then((content) => {
+                panel.webview.html = content;
+            }).catch((reason: string) => {
+                panel.webview.html = `Could not render webview content: ${reason.toString()}`;
+            });
 
-        panel.webview.html = this.generateContent(panel.webview,
-            this.currentEditor ? this.currentEditor : uri, options);
-        panel.onDidDispose(() => {
-            this.webViewMap.delete(uriString);
-        }, null, this.context.subscriptions);
-
-        panel.webview.onDidReceiveMessage((message: WebviewMessage) => {
+        panel.webview.onDidReceiveMessage((message: IWebviewMessage) => {
             if (this.handleMessage(message)) {
                 return;
             }
 
             switch (message.command) {
                 case "alert": {
-                    void window.showErrorMessage(message.text);
+                    if (typeof message.text === "string") {
+                        void window.showErrorMessage(message.text);
+                    } else {
+                        void window.showErrorMessage(String(message));
+                    }
 
                     return;
                 }
 
                 case "saveSVG": {
-                    const css: string[] = [];
-                    css.push(Utils.getMiscPath("light.css", this.context));
-                    const customStyles = workspace.getConfiguration("antlr4").customCSS as string | string[];
-                    if (customStyles && Array.isArray(customStyles)) {
-                        for (const style of customStyles) {
-                            css.push(style);
+                    if (typeof message.svg === "string" && typeof message.name === "string") {
+                        const css: string[] = [];
+                        css.push(FrontendUtils.getMiscPath("light.css", this.context));
+                        const customStyles = workspace.getConfiguration("antlr4").customCSS as string | string[];
+                        if (customStyles && Array.isArray(customStyles)) {
+                            for (const style of customStyles) {
+                                css.push(style);
+                            }
                         }
-                    }
 
-                    let svg = '<?xml version="1.0" standalone="no"?>\n';
-                    for (const stylesheet of css) {
-                        svg += `<?xml-stylesheet href="${path.basename(stylesheet)}" type="text/css"?>\n`;
-                    }
+                        let svg = '<?xml version="1.0" standalone="no"?>\n';
+                        for (const stylesheet of css) {
+                            svg += `<?xml-stylesheet href="${path.basename(stylesheet)}" type="text/css"?>\n`;
+                        }
 
-                    svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
-                        '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + message.svg;
+                        svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
+                            '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + message.svg;
 
-                    try {
-                        Utils.exportDataWithConfirmation(path.join(
-                            workspace.getConfiguration("antlr4." + message.type).saveDir || "",
-                            message.name + "." + message.type), { SVG: ["svg"] }, svg, css,
-                        );
-                    } catch (error) {
-                        void window.showErrorMessage("Couldn't write SVG file: " + error);
+                        try {
+                            if (typeof message.type === "string") {
+                                const section = "antlr4." + message.type;
+                                const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                                const target = path.join(saveDir, message.name + "." + message.type);
+                                FrontendUtils.exportDataWithConfirmation(target,
+                                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                                    { "Scalable Vector Graphic": ["svg"] }, svg, css,
+                                );
+                            }
+                        } catch (error) {
+                            void window.showErrorMessage("Couldn't write SVG file: " + String(error));
+                        }
                     }
 
                     break;
                 }
 
                 case "saveHTML": {
-                    const css: string[] = [];
-                    css.push(Utils.getMiscPath("light.css", this.context));
-                    css.push(Utils.getMiscPath("dark.css", this.context));
-                    const customStyles = workspace.getConfiguration("antlr4").customCSS as string | string[];
-                    if (customStyles && Array.isArray(customStyles)) {
-                        for (const style of customStyles) {
-                            css.push(style);
+                    if (typeof message.type === "string" && typeof message.name === "string") {
+                        const css: string[] = [];
+                        css.push(FrontendUtils.getMiscPath("light.css", this.context));
+                        css.push(FrontendUtils.getMiscPath("dark.css", this.context));
+                        const customStyles = workspace.getConfiguration("antlr4").customCSS as string | string[];
+                        if (customStyles && Array.isArray(customStyles)) {
+                            for (const style of customStyles) {
+                                css.push(style);
+                            }
+                        }
+
+                        try {
+                            const section = "antlr4." + message.type;
+                            const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                            const target = path.join(saveDir, message.name + "." + message.type);
+                            FrontendUtils.exportDataWithConfirmation(target,
+                                // eslint-disable-next-line @typescript-eslint/naming-convention
+                                { HTML: ["html"] }, message.html as string, css);
+                        } catch (error) {
+                            void window.showErrorMessage("Couldn't write HTML file: " + String(error));
                         }
                     }
 
-                    try {
-                        Utils.exportDataWithConfirmation(path.join(
-                            workspace.getConfiguration("antlr4." + message.type).saveDir || "",
-                            message.name + "." + message.type), { HTML: ["html"] }, message.html, css);
-                    } catch (error) {
-                        void window.showErrorMessage("Couldn't write HTML file: " + error);
-                    }
                     break;
                 }
 
@@ -137,13 +159,18 @@ export class WebviewProvider {
         if (this.webViewMap.has(editor.document.uri.toString())) {
             const [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
             if (!this.updateContent(editor.document.uri)) {
-                panel.webview.html = this.generateContent(panel.webview, editor, options);
+                this.generateContent(panel.webview, editor, options).then((content) => {
+                    panel.webview.html = content;
+                }).catch((reason: string) => {
+                    panel.webview.html = `Could not render webview content: ${reason.toString()}`;
+                });
             }
         }
     }
 
-    protected generateContent(webView: Webview, source: TextEditor | Uri, options: WebviewShowOptions): string {
-        return "";
+    protected async generateContent(_webView: Webview, _source: TextEditor | Uri,
+        _options: IWebviewShowOptions): Promise<string> {
+        return Promise.resolve("");
     }
 
     protected generateContentSecurityPolicy(_: TextEditor | Uri): string {
@@ -154,11 +181,11 @@ export class WebviewProvider {
         `;
     }
 
-    protected updateContent(uri: Uri): boolean {
+    protected updateContent(_uri: Uri): boolean {
         return false;
     }
 
-    protected sendMessage(uri: Uri, args: WebviewMessage): boolean {
+    protected sendMessage(uri: Uri, args: IWebviewMessage): boolean {
         if (this.webViewMap.has(uri.toString())) {
             const [panel] = this.webViewMap.get(uri.toString())!;
             void panel.webview.postMessage(args);
@@ -171,31 +198,35 @@ export class WebviewProvider {
 
     // Can be overridden by descendants to handle specific messages.
     // Must return true when default handling shouldn't take place.
-    protected handleMessage(message: WebviewMessage): boolean {
+    protected handleMessage(_message: IWebviewMessage): boolean {
         return false;
     }
 
     protected getStyles(webView: Webview): string {
         const baseStyles = [
-            Utils.getMiscPath("light.css", this.context, webView),
-            Utils.getMiscPath("dark.css", this.context, webView),
+            FrontendUtils.getMiscPath("light.css", this.context, webView),
+            FrontendUtils.getMiscPath("dark.css", this.context, webView),
         ];
 
-        const defaults = baseStyles.map((link) => `<link rel="stylesheet" type="text/css" href="${link}">`).join("\n");
+        const defaults = baseStyles.map((link) => {
+            return `<link rel="stylesheet" type="text/css" href="${link}">`;
+        }).join("\n");
 
         const paths = workspace.getConfiguration("antlr4").customCSS as string | string[];
         if (paths && Array.isArray(paths) && paths.length > 0) {
-            return defaults + "\n" + paths.map((stylePath) =>
-                `<link rel="stylesheet" href="${webView.asWebviewUri(Uri.parse(stylePath)).toString()}" ` +
-                "type=\"text/css\" media=\"screen\">").join("\n");
+            return defaults + "\n" + paths.map((stylePath) => {
+                return `<link rel="stylesheet" href="${webView.asWebviewUri(Uri.parse(stylePath)).toString()}" ` +
+                    "type=\"text/css\" media=\"screen\">";
+            }).join("\n");
         }
 
         return defaults;
     }
 
     protected getScripts(nonce: string, scripts: string[]): string {
-        return scripts
-            .map((source) => `<script type="text/javascript" src="${source}" nonce="${nonce}"></script>`).join("\n");
+        return scripts.map((source) => {
+            return `<script type="text/javascript" src="${source}" nonce="${nonce}"></script>`;
+        }).join("\n");
     }
 
     /**
@@ -216,5 +247,9 @@ export class WebviewProvider {
         }
 
         return result;
+    }
+
+    protected generateNonce(): string {
+        return `${new Date().getTime()}${new Date().getMilliseconds()}`;
     }
 }

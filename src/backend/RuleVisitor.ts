@@ -201,7 +201,9 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         }
     };
 
-    public visitElementOptions = (ctx: ElementOptionsContext): string => "Comment('" + ctx.text + "')";
+    public visitElementOptions = (ctx: ElementOptionsContext): string => {
+        return "Comment('" + ctx.text + "')";
+    };
 
     public visitLabeledElement = (ctx: LabeledElementContext): string => {
         if (ctx.atom()) {

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -11,9 +11,9 @@ import { CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token }
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
-import { InterpreterData } from "./InterpreterDataReader";
+import { IInterpreterData } from "./InterpreterDataReader";
 import {
-    LexerToken, ParseTreeNode, ParseTreeNodeType, LexicalRange, PredicateFunction,
+    ILexerToken, IParseTreeNode, ParseTreeNodeType, ILexicalRange, PredicateFunction,
 } from "./facade";
 
 import { RuleSymbol } from "./ContextSymbolTable";
@@ -26,17 +26,17 @@ import {
 import * as vm from "vm";
 import * as fs from "fs";
 
-export interface GrammarBreakPoint {
+export interface IGrammarBreakPoint {
     source: string;
     validated: boolean;
     line: number;
     id: number;
 }
 
-export interface GrammarStackFrame {
+export interface IGrammarStackFrame {
     name: string;
     source: string;
-    next: LexicalRange[];
+    next: ILexicalRange[];
 }
 
 /**
@@ -44,15 +44,15 @@ export interface GrammarStackFrame {
  */
 export class GrammarDebugger extends EventEmitter {
     // Interpreter data for the main grammar as well as all imported grammars.
-    private lexerData: InterpreterData | undefined;
-    private parserData: InterpreterData | undefined;
+    private lexerData: IInterpreterData | undefined;
+    private parserData: IInterpreterData | undefined;
 
     private lexer: GrammarLexerInterpreter;
     private tokenStream: CommonTokenStream;
     private parser: GrammarParserInterpreter | undefined;
     private parseTree: ParserRuleContext | undefined;
 
-    private breakPoints = new Map<number, GrammarBreakPoint>();
+    private breakPoints = new Map<number, IGrammarBreakPoint>();
     private nextBreakPointId = 0;
 
     public constructor(private contexts: SourceContext[], actionFile: string) {
@@ -93,8 +93,8 @@ export class GrammarDebugger extends EventEmitter {
                 }
             }
 
-            const eventSink = (event: string | symbol, ...args: any[]): void => {
-                setImmediate((_) => this.emit(event, args));
+            const eventSink = (event: string | symbol, ...args: unknown[]): void => {
+                setImmediate((_) => { return this.emit(event, args); });
             };
 
             if (this.lexerData) {
@@ -117,7 +117,7 @@ export class GrammarDebugger extends EventEmitter {
     }
 
     public get isValid(): boolean {
-        return this.contexts.find((context) => !context.isInterpreterDataLoaded) === undefined;
+        return this.contexts.find((context) => { return !context.isInterpreterDataLoaded; }) === undefined;
     }
 
     public start(startRuleIndex: number, input: string, noDebug: boolean): void {
@@ -134,41 +134,49 @@ export class GrammarDebugger extends EventEmitter {
         this.parser.breakPoints.clear();
 
         if (noDebug) {
-            void this.parser.setProfile(false).then(() => {
+            this.parser.setProfile(false).then(() => {
                 this.parseTree = this.parser!.parse(startRuleIndex);
                 this.sendEvent("end");
+            }).catch((reason) => {
+                this.sendEvent("error", reason);
             });
         } else {
-            for (const bp of this.breakPoints) {
-                this.validateBreakPoint(bp[1]);
-            }
+            const promises: Array<Promise<void>> = [];
 
-            this.parser.start(startRuleIndex);
-            this.continue();
+            this.breakPoints.forEach((breakPoint) => {
+                promises.push(this.validateBreakPoint(breakPoint));
+            });
+
+            Promise.all(promises).then(async () => {
+                this.parser?.start(startRuleIndex);
+                await this.continue();
+            }).catch((reason) => {
+                this.sendEvent("error", reason);
+            });
         }
     }
 
-    public continue(): void {
+    public async continue(): Promise<void> {
         if (this.parser) {
-            this.parseTree = this.parser.continue(RunMode.Normal);
+            this.parseTree = await this.parser.continue(RunMode.Normal);
         }
     }
 
-    public stepIn(): void {
+    public async stepIn(): Promise<void> {
         if (this.parser) {
-            this.parseTree = this.parser.continue(RunMode.StepIn);
+            this.parseTree = await this.parser.continue(RunMode.StepIn);
         }
     }
 
-    public stepOut(): void {
+    public async stepOut(): Promise<void> {
         if (this.parser) {
-            this.parseTree = this.parser.continue(RunMode.StepOut);
+            this.parseTree = await this.parser.continue(RunMode.StepOut);
         }
     }
 
-    public stepOver(): void {
+    public async stepOver(): Promise<void> {
         if (this.parser) {
-            this.parseTree = this.parser.continue(RunMode.StepOver);
+            this.parseTree = await this.parser.continue(RunMode.StepOver);
         }
     }
 
@@ -187,10 +195,16 @@ export class GrammarDebugger extends EventEmitter {
         }
     }
 
-    public addBreakPoint(path: string, line: number): GrammarBreakPoint {
-        const breakPoint = <GrammarBreakPoint>{ source: path, validated: false, line, id: this.nextBreakPointId++ };
+    public addBreakPoint(path: string, line: number): IGrammarBreakPoint {
+        const breakPoint: IGrammarBreakPoint = {
+            source: path,
+            validated: false,
+            line,
+            id: this.nextBreakPointId++,
+        };
         this.breakPoints.set(breakPoint.id, breakPoint);
-        this.validateBreakPoint(breakPoint);
+
+        void this.validateBreakPoint(breakPoint);
 
         return breakPoint;
     }
@@ -236,10 +250,12 @@ export class GrammarDebugger extends EventEmitter {
             return -1;
         }
 
-        return this.parser.ruleNames.findIndex((entry) => entry === ruleName);
+        return this.parser.ruleNames.findIndex((entry) => {
+            return entry === ruleName;
+        });
     }
 
-    public get currentParseTree(): ParseTreeNode | undefined {
+    public get currentParseTree(): IParseTreeNode | undefined {
         if (!this.parseTree) {
             return undefined;
         }
@@ -247,11 +263,11 @@ export class GrammarDebugger extends EventEmitter {
         return this.parseContextToNode(this.parseTree);
     }
 
-    public get currentStackTrace(): GrammarStackFrame[] {
-        const result: GrammarStackFrame[] = [];
+    public get currentStackTrace(): IGrammarStackFrame[] {
+        const result: IGrammarStackFrame[] = [];
         if (this.parser) {
             for (const frame of this.parser.callStack) {
-                const externalFrame = <GrammarStackFrame>{
+                const externalFrame = <IGrammarStackFrame>{
                     name: frame.name,
                     source: frame.source,
                     next: [],
@@ -302,7 +318,7 @@ export class GrammarDebugger extends EventEmitter {
         return "Context " + frame.name;
     }
 
-    public getVariables(index: number): Array<[string, string]> {
+    public async getVariables(index: number): Promise<Array<[string, string]>> {
         const result: Array<[string, string]> = [];
         if (!this.parser || index < 0 || index > this.parser.callStack.length) {
             return [];
@@ -324,7 +340,8 @@ export class GrammarDebugger extends EventEmitter {
                 context = context.parent!;
             }
 
-            const symbols = (run as ScopedSymbol).getNestedSymbolsOfType(VariableSymbol);
+            const parent = run as ScopedSymbol;
+            const symbols = await parent.getNestedSymbolsOfType(VariableSymbol);
 
             // Coalesce variable names and look up the value.
             const variables: Set<string> = new Set<string>();
@@ -343,18 +360,18 @@ export class GrammarDebugger extends EventEmitter {
 
     public tokenTypeName(token: CommonToken): string {
         // For implicit tokens we use the same approach like ANTLR4 does for the naming.
-        return this.lexer.vocabulary.getSymbolicName(token.type) || "T__" + token.type;
+        return this.lexer.vocabulary.getSymbolicName(token.type) || `T__${token.type}`;
     }
 
-    private sendEvent(event: string, ...args: any[]) {
+    private sendEvent(event: string, ...args: unknown[]) {
         setImmediate((_) => {
             this.emit(event, ...args);
         });
     }
 
-    private parseContextToNode(tree: ParseTree): ParseTreeNode {
+    private parseContextToNode(tree: ParseTree): IParseTreeNode {
         if (tree instanceof ParserRuleContext) {
-            const children: ParseTreeNode[] = [];
+            const children: IParseTreeNode[] = [];
             if (tree.children) {
                 for (const child of tree.children) {
                     if ((child instanceof TerminalNode) && (child.symbol.type === Token.EOF)) {
@@ -413,11 +430,14 @@ export class GrammarDebugger extends EventEmitter {
     private computeHash(input: ParserRuleContext | CommonToken): number {
         let hash = 0;
         if (input instanceof ParserRuleContext) {
-            hash = (31 * hash) + input.start.inputStream!.size; // Seed with a value that for sure goes beyond any possible token index.
+            // Seed with a value that for sure goes beyond any possible token index.
+            hash = (31 * hash) + input.start.inputStream!.size;
             if (input.parent) {
-                // Multiple invocations of the same rule which matches nothing appear as nodes in the parse tree with the same
-                // start token, so we need an additional property to tell them apart: the child index.
-                hash = (31 * hash) + input.parent.children!.findIndex((element) => element === input);
+                // Multiple invocations of the same rule which matches nothing appear as nodes in the parse tree with
+                // the same start token, so we need an additional property to tell them apart: the child index.
+                hash = (31 * hash) + input.parent.children!.findIndex((element) => {
+                    return element === input;
+                });
             }
             hash = (31 * hash) + input.depth();
             hash = (31 * hash) + input.ruleIndex;
@@ -433,7 +453,7 @@ export class GrammarDebugger extends EventEmitter {
         return hash;
     }
 
-    private convertToken(token: CommonToken): LexerToken | undefined {
+    private convertToken(token: CommonToken): ILexerToken | undefined {
         if (!token) {
             return;
         }
@@ -458,14 +478,16 @@ export class GrammarDebugger extends EventEmitter {
      *
      * @param breakPoint The breakpoint to validate.
      */
-    private validateBreakPoint(breakPoint: GrammarBreakPoint) {
-        const context = this.contexts.find((entry) => entry.fileName === breakPoint.source);
+    private async validateBreakPoint(breakPoint: IGrammarBreakPoint) {
+        const context = this.contexts.find((entry) => {
+            return entry.fileName === breakPoint.source;
+        });
         if (!context || !this.parserData) {
             return;
         }
 
         // Assuming here a rule always starts in column 0.
-        const rule = context.enclosingSymbolAtPosition(0, breakPoint.line, true);
+        const rule = await context.enclosingSymbolAtPosition(0, breakPoint.line, true);
         if (rule) {
             breakPoint.validated = true;
 

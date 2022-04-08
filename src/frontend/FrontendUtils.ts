@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2021, Mike Lischke
+ * Copyright (c) 2017, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,14 +9,15 @@ import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import * as path from "path";
 
-import { ExtensionContext, Uri, window, Webview, commands, ProviderResult } from "vscode";
-import { LexicalRange } from "../backend/facade";
+import { ExtensionContext, Uri, window, Webview, commands, ProviderResult, TextDocument } from "vscode";
+import { AntlrFacade, ILexicalRange } from "../backend/facade";
+import { GrammarType } from "../backend/SourceContext";
 
-export interface RangeHolder {
-    range?: LexicalRange;
+export interface IRangeHolder {
+    range?: ILexicalRange;
 }
 
-export class Utils {
+export class FrontendUtils {
 
     /**
      * Returns the absolute path to a file located in our misc folder.
@@ -60,7 +61,7 @@ export class Utils {
             files.forEach((file) => {
                 const curPath = path.join(target, file);
                 if (fs.lstatSync(curPath).isDirectory()) {
-                    Utils.deleteFolderRecursive(curPath);
+                    FrontendUtils.deleteFolderRecursive(curPath);
                 } else {
                     fs.unlinkSync(curPath);
                 }
@@ -84,7 +85,7 @@ export class Utils {
         try {
             fs.ensureDirSync(targetPath);
         } catch (error) {
-            void window.showErrorMessage("Could not create target folder '" + targetPath + "'. " + error);
+            void window.showErrorMessage(`Could not create target folder '${targetPath}'. ${String(error)}`);
         }
 
         for (const file of files) {
@@ -101,7 +102,7 @@ export class Utils {
                     void fs.copy(file, targetFile, { overwrite: true });
                 }
             } catch (error) {
-                void window.showErrorMessage("Could not copy file '" + file + "'. " + error);
+                void window.showErrorMessage(`Could not copy file '${file}'. ${String(error)}`);
             }
         }
     }
@@ -145,7 +146,8 @@ export class Utils {
      *
      * @returns The list entry at the given position or undefined if nothing could be found.
      */
-    public static findInListFromPosition<T extends RangeHolder>(list: T[], column: number, row: number): T | undefined {
+    public static findInListFromPosition<T extends IRangeHolder>(list: T[], column: number,
+        row: number): T | undefined {
         for (const entry of list) {
             if (!entry.range) {
                 continue;
@@ -178,5 +180,33 @@ export class Utils {
      */
     public static switchVsCodeContext(key: string, enable: boolean): ProviderResult<unknown> {
         return commands.executeCommand("setContext", key, enable);
+    }
+
+    /**
+     * Checks if the given document is actually a grammar file.
+     *
+     * @param document The document to check.
+     *
+     * @returns True if this is indeed a grammar file.
+     */
+    public static isGrammarFile(document?: TextDocument | undefined): boolean {
+        return document ? (document.languageId === "antlr" && document.uri.scheme === "file") : false;
+    }
+
+    /**
+     * Enables/disables certain VS Code contexts depending on which file is currently active.
+     *
+     * @param backend The facade for details.
+     * @param document The source for the updates.
+     */
+    public static updateVsCodeContext(backend: AntlrFacade, document: TextDocument | undefined): void {
+        if (document && FrontendUtils.isGrammarFile(document)) {
+            const info = backend.getContextDetails(document.fileName); 1;
+            void FrontendUtils.switchVsCodeContext("antlr4.isLexer", info.type === GrammarType.Lexer);
+            void FrontendUtils.switchVsCodeContext("antlr4.isParser", info.type === GrammarType.Parser);
+            void FrontendUtils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);
+
+            void FrontendUtils.switchVsCodeContext("antlr4.hasImports", info.imports.length > 0);
+        }
     }
 }

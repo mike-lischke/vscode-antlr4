@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2019, 2020, Mike Lischke
+ * Copyright (c) 2019, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,7 +9,7 @@ import { IntervalSet, Interval } from "antlr4ts/misc";
 
 // This structure contains all currently defined Unicode blocks (according to https://unicode-table.com/en/blocks/)
 // together with a weight value that determines the probability to select a given block in the random block selection.
-const UnicodeBlocks: Array<[Interval, string, number]> = [
+const unicodeBlocks: Array<[Interval, string, number]> = [
     [new Interval(0x0000, 0x001F), "Control character", 0],
     [new Interval(0x0020, 0x007F), "Basic Latin", 100],
     [new Interval(0x0080, 0x00FF), "Latin-1 Supplement", 30],
@@ -294,9 +294,42 @@ const UnicodeBlocks: Array<[Interval, string, number]> = [
 let predefinedWeightSum = 0;
 let assignedIntervals: IntervalSet;
 
-export const FULL_UNICODE_SET = new IntervalSet([new Interval(0, 0x10FFFF)]);
+/**
+ * Converts the code points from the given file to an interval set.
+ *
+ * @param dataFile The name of a file to import.
+ * @param existing Optionally specifies an interval set with previously red values (to merge with the new ones).
+ *
+ * @returns A new set of Unicode code points.
+ */
+const codePointsToIntervals = (dataFile: string, existing?: IntervalSet): IntervalSet => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
+    const charsToExclude: number[] = require("@unicode/unicode-11.0.0/" + dataFile);
+    const result = existing ?? new IntervalSet([]);
 
-export interface UnicodeOptions {
+    // Code points are sorted in increasing order, which we can use to speed up insertion.
+    let start = charsToExclude[0];
+    let end = start;
+    for (let i = 1; i < charsToExclude.length; ++i) {
+        const code = charsToExclude[i];
+        if (end + 1 === code) {
+            ++end;
+            continue;
+        }
+
+        result.add(start, end);
+        start = code;
+        end = code;
+    }
+
+    result.add(start, end);
+
+    return result;
+};
+
+export const fullUnicodeSet = new IntervalSet([new Interval(0, 0x10FFFF)]);
+
+export interface IUnicodeOptions {
     // The CJK scripts consist of so many code points, any generated random string will contain mostly CJK
     // characters (Chinese/Japanese/Korean), if not excluded. However, only the largest scripts are
     // removed by this setting, namely:
@@ -324,7 +357,7 @@ export interface UnicodeOptions {
  *
  * @returns A set of intervals with the requested Unicode code points.
  */
-export const printableUnicodePoints = (options: UnicodeOptions): IntervalSet => {
+export const printableUnicodePoints = (options: IUnicodeOptions): IntervalSet => {
     if (!assignedIntervals) {
         // Create a set with all Unicode code points that are assigned and not in categories with unprintable chars,
         // surrogate pairs, formatting + private codes.
@@ -371,7 +404,7 @@ export const printableUnicodePoints = (options: UnicodeOptions): IntervalSet => 
         if (options.limitToBMP) {
             sourceIntervals = IntervalSet.COMPLETE_CHAR_SET;
         } else {
-            sourceIntervals = FULL_UNICODE_SET;
+            sourceIntervals = fullUnicodeSet;
         }
 
         assignedIntervals = intervalsToExclude.complement(sourceIntervals);
@@ -389,7 +422,7 @@ export const printableUnicodePoints = (options: UnicodeOptions): IntervalSet => 
  */
 export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval => {
     if (predefinedWeightSum === 0) {
-        for (const entry of UnicodeBlocks) {
+        for (const entry of unicodeBlocks) {
             predefinedWeightSum += entry[2];
         }
     }
@@ -398,7 +431,7 @@ export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval 
     if (!blockOverrides) {
         weightSum = predefinedWeightSum;
     } else {
-        for (const entry of UnicodeBlocks) {
+        for (const entry of unicodeBlocks) {
             if (blockOverrides.has(entry[1])) {
                 weightSum += blockOverrides.get(entry[1])!;
             } else {
@@ -408,7 +441,7 @@ export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval 
     }
 
     let randomValue = Math.random() * weightSum;
-    for (const entry of UnicodeBlocks) {
+    for (const entry of unicodeBlocks) {
         let weight = entry[2];
         if (blockOverrides && blockOverrides.has(entry[1])) {
             weight = blockOverrides.get(entry[1])!;
@@ -420,37 +453,4 @@ export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval 
     }
 
     return new Interval(0, 0);
-};
-
-/**
- * Converts the code points from the given file to an interval set.
- *
- * @param dataFile The name of a file to import.
- * @param existing Optionally specifies an interval set with previously red values (to merge with the new ones).
- *
- * @returns A new set of Unicode code points.
- */
-const codePointsToIntervals = (dataFile: string, existing?: IntervalSet): IntervalSet => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
-    const charsToExclude: number[] = require("unicode-11.0.0/" + dataFile);
-    const result = existing ?? new IntervalSet([]);
-
-    // Code points are sorted in increasing order, which we can use to speed up insertion.
-    let start = charsToExclude[0];
-    let end = start;
-    for (let i = 1; i < charsToExclude.length; ++i) {
-        const code = charsToExclude[i];
-        if (end + 1 === code) {
-            ++end;
-            continue;
-        }
-
-        result.add(start, end);
-        start = code;
-        end = code;
-    }
-
-    result.add(start, end);
-
-    return result;
 };

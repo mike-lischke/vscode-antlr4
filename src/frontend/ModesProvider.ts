@@ -12,6 +12,25 @@ import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
+export class ModeEntry extends TreeItem {
+
+    public iconPath = {
+        light: path.join(__dirname, "..", "..", "..", "misc", "mode-light.svg"),
+        dark: path.join(__dirname, "..", "..", "..", "misc", "mode-dark.svg"),
+    };
+
+    public contextValue = "lexerSymbols";
+
+    public constructor(
+        public readonly label: string,
+        public readonly collapsibleState: TreeItemCollapsibleState,
+        command?: Command,
+    ) {
+        super(label, collapsibleState);
+        this.command = command;
+    }
+}
+
 export class ModesProvider extends AntlrTreeDataProvider<ModeEntry> {
 
     public getTreeItem(element: ModeEntry): TreeItem {
@@ -44,26 +63,6 @@ export class ModesProvider extends AntlrTreeDataProvider<ModeEntry> {
         return new Promise((resolve) => {
             resolve([]);
         });
-    }
-
-}
-
-export class ModeEntry extends TreeItem {
-
-    public iconPath = {
-        light: path.join(__dirname, "..", "..", "..", "misc", "mode-light.svg"),
-        dark: path.join(__dirname, "..", "..", "..", "misc", "mode-dark.svg"),
-    };
-
-    public contextValue = "lexerSymbols";
-
-    public constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
-        command_?: Command,
-    ) {
-        super(label, collapsibleState);
-        this.command = command_;
     }
 
 }

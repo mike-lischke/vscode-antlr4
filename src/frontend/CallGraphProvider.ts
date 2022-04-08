@@ -1,25 +1,26 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2020, Mike Lischke
+ * Copyright (c) 2017, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
 import * as path from "path";
 
-import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
-import { Utils } from "./Utils";
+import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
+import { FrontendUtils } from "./FrontendUtils";
 import { TextEditor, Uri, Webview } from "vscode";
 
 export class AntlrCallGraphProvider extends WebviewProvider {
 
-    public generateContent(webView: Webview, source: TextEditor | Uri, options: WebviewShowOptions): string {
+    public async generateContent(webView: Webview, source: TextEditor | Uri,
+        _options: IWebviewShowOptions): Promise<string> {
         const uri = (source instanceof Uri) ? source : source.document.uri;
 
         const fileName = uri.fsPath;
         const baseName = path.basename(fileName, path.extname(fileName));
 
-        const graph = this.backend.getReferenceGraph(fileName);
+        const graph = await this.backend.getReferenceGraph(fileName);
         const data = [];
         for (const entry of graph) {
             const references: string[] = [];
@@ -32,12 +33,12 @@ export class AntlrCallGraphProvider extends WebviewProvider {
             data.push({ name: entry[0], references });
         }
 
-        const nonce = new Date().getTime() + "" + new Date().getMilliseconds();
+        const nonce = this.generateNonce();
         const scripts = [
-            Utils.getMiscPath("utils.js", this.context, webView),
-            Utils.getMiscPath("call-graph.js", this.context, webView),
+            FrontendUtils.getMiscPath("utils.js", this.context, webView),
+            FrontendUtils.getMiscPath("call-graph.js", this.context, webView),
         ];
-        const graphLibPath = Utils.getNodeModulesPath("d3/dist/d3.js", this.context);
+        const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
 
         const diagram = `<!DOCTYPE html>
             <html>

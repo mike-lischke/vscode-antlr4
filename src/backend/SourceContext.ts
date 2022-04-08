@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2021, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -32,8 +32,8 @@ import {
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
 import {
-    SymbolKind, SymbolInfo, DiagnosticEntry, DiagnosticType, ReferenceNode, ATNGraphData, GenerationOptions,
-    SentenceGenerationOptions, FormattingOptions, Definition, ContextDetails, PredicateFunction, ATNLink,
+    SymbolKind, ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IAtnGraphData, IGenerationOptions,
+    ISentenceGenerationOptions, IFormattingOptions, IDefinition, IContextDetails, PredicateFunction, IAtnLink,
     CodeActionType,
 } from "./facade";
 
@@ -43,7 +43,7 @@ import { ContextLexerErrorListener } from "./ContextLexerErrorListener";
 import { DetailsListener } from "./DetailsListener";
 import { SemanticListener } from "./SemanticListener";
 import { RuleVisitor } from "./RuleVisitor";
-import { InterpreterDataReader, InterpreterData } from "./InterpreterDataReader";
+import { InterpreterDataReader, IInterpreterData } from "./InterpreterDataReader";
 import { ErrorParser } from "./ErrorParser";
 
 import {
@@ -54,6 +54,8 @@ import {
     ParserPredicateSymbol,
     LexerCommandSymbol,
     TerminalSymbol,
+    GlobalNamedActionSymbol,
+    LocalNamedActionSymbol,
 } from "./ContextSymbolTable";
 
 import { SentenceGenerator } from "./SentenceGenerator";
@@ -61,6 +63,8 @@ import { GrammarFormatter } from "./Formatter";
 import {
     GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
 } from "./GrammarInterpreters";
+import { printableUnicodePoints } from "./Unicode";
+import { BackendUtils } from "./BackendUtils";
 
 export enum GrammarType {
     Unknown,
@@ -73,6 +77,8 @@ export enum GrammarType {
 export class SourceContext {
     private static globalSymbols = new ContextSymbolTable("Global Symbols", { allowDuplicateSymbols: false });
     private static symbolToKindMap: Map<new () => Symbol, SymbolKind> = new Map([
+        [GlobalNamedActionSymbol, SymbolKind.GlobalNamedAction],
+        [LocalNamedActionSymbol, SymbolKind.LocalNamedAction],
         [ImportSymbol, SymbolKind.Import],
         [BuiltInTokenSymbol, SymbolKind.BuiltInLexerToken],
         [VirtualTokenSymbol, SymbolKind.VirtualLexerToken],
@@ -98,29 +104,20 @@ export class SourceContext {
         [ArgumentsSymbol, SymbolKind.Arguments],
     ]);
 
-    // Human readable descriptions for lexer action types.
-    private static lexerActionDescription = [
-        "Channel action",
-        "", // Custom actions are defined by their content.
-        "Mode action",
-        "More action",
-        "Pop Mode action",
-        "Push Mode action",
-        "Skip action",
-        "Type action",
-    ];
+    private static printableChars = printableUnicodePoints({});
 
     public symbolTable: ContextSymbolTable;
     public sourceId: string;
-    public info: ContextDetails = {
+    public info: IContextDetails = {
         type: GrammarType.Unknown,
         unreferencedRules: [],
         imports: [],
     };
 
     /* @internal */
-    public diagnostics: DiagnosticEntry[] = [];
+    public diagnostics: IDiagnosticEntry[] = [];
 
+    // eslint-disable-next-line no-use-before-define
     private references: SourceContext[] = []; // Contexts referencing us.
 
     // Result related fields.
@@ -135,9 +132,9 @@ export class SourceContext {
     private lexerErrorListener: ContextLexerErrorListener = new ContextLexerErrorListener(this.diagnostics);
 
     // Grammar data.
-    private grammarLexerData: InterpreterData | undefined;
+    private grammarLexerData: IInterpreterData | undefined;
     private grammarLexerRuleMap = new Map<string, number>(); // A mapping from lexer rule names to their index.
-    private grammarParserData: InterpreterData | undefined;
+    private grammarParserData: IInterpreterData | undefined;
     private grammarParserRuleMap = new Map<string, number>(); // A mapping from parser rule names to their index.
 
     private tree: GrammarSpecContext | undefined; // The root context from the last parse run.
@@ -147,12 +144,41 @@ export class SourceContext {
         this.symbolTable = new ContextSymbolTable(this.sourceId, { allowDuplicateSymbols: true }, this);
 
         // Initialize static global symbol table, if not yet done.
-        if (!SourceContext.globalSymbols.resolve("EOF")) {
-            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined, "DEFAULT_TOKEN_CHANNEL");
-            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined, "HIDDEN");
-            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInTokenSymbol, undefined, "EOF");
-            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInModeSymbol, undefined, "DEFAULT_MODE");
+        const eof = SourceContext.globalSymbols.resolve("EOF");
+        eof.then((value) => {
+            if (!value) {
+                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined,
+                    "DEFAULT_TOKEN_CHANNEL");
+                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined, "HIDDEN");
+                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInTokenSymbol, undefined, "EOF");
+                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInModeSymbol, undefined, "DEFAULT_MODE");
+            }
+        }).catch(() => {
+            // ignore
+        });
+    }
+
+    public get isInterpreterDataLoaded(): boolean {
+        return this.grammarLexerData !== undefined || this.grammarParserData !== undefined;
+    }
+
+    /**
+     * Internal function to provide interpreter data to certain internal classes (e.g. the debugger).
+     *
+     * @returns Lexer and parser interpreter data for use outside of this context.
+     */
+    public get interpreterData(): [IInterpreterData | undefined, IInterpreterData | undefined] {
+        return [this.grammarLexerData, this.grammarParserData];
+    }
+
+    public get hasErrors(): boolean {
+        for (const diagnostic of this.diagnostics) {
+            if (diagnostic.type === DiagnosticType.Error) {
+                return true;
+            }
         }
+
+        return false;
     }
 
     public static getKindFromSymbol(symbol: Symbol): SymbolKind {
@@ -169,12 +195,12 @@ export class SourceContext {
      *
      * @returns The definition info for the given rule context.
      */
-    public static definitionForContext(ctx: ParseTree | undefined, keepQuotes: boolean): Definition | undefined {
+    public static definitionForContext(ctx: ParseTree | undefined, keepQuotes: boolean): IDefinition | undefined {
         if (!ctx) {
             return undefined;
         }
 
-        const result: Definition = {
+        const result: IDefinition = {
             text: "",
             range: {
                 start: { column: 0, row: 0 },
@@ -241,8 +267,10 @@ export class SourceContext {
         return result;
     }
 
-    public symbolAtPosition(column: number, row: number, limitToChildren: boolean): SymbolInfo | undefined {
-        const terminal = parseTreeFromPosition(this.tree!, column, row);
+    public async symbolAtPosition(column: number, row: number,
+        limitToChildren: boolean): Promise<ISymbolInfo | undefined> {
+
+        const terminal = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
         if (!terminal || !(terminal instanceof TerminalNode)) {
             return undefined;
         }
@@ -264,7 +292,7 @@ export class SourceContext {
                 let symbol = this.symbolTable.symbolContainingContext(terminal);
                 if (symbol) {
                     // This is only the reference to a symbol. See if that symbol exists actually.
-                    symbol = this.resolveSymbol(symbol.name);
+                    symbol = await this.resolveSymbol(symbol.name);
                     if (symbol) {
                         return this.getSymbolInfo(symbol);
                     }
@@ -274,6 +302,7 @@ export class SourceContext {
             }
 
             case ANTLRv4Parser.RULE_actionBlock:
+            case ANTLRv4Parser.RULE_ruleAction:
             case ANTLRv4Parser.RULE_lexerCommandExpr:
             case ANTLRv4Parser.RULE_optionValue:
             case ANTLRv4Parser.RULE_delegateGrammar:
@@ -315,8 +344,9 @@ export class SourceContext {
      *
      * @returns The symbol at the given position (if there's any).
      */
-    public enclosingSymbolAtPosition(column: number, row: number, ruleScope: boolean): SymbolInfo | undefined {
-        let context = parseTreeFromPosition(this.tree!, column, row);
+    public async enclosingSymbolAtPosition(column: number, row: number,
+        ruleScope: boolean): Promise<ISymbolInfo | undefined> {
+        let context = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
         if (!context) {
             return;
         }
@@ -338,13 +368,15 @@ export class SourceContext {
             }
         }
 
-        const symbol = this.symbolTable.symbolWithContext(context!);
-        if (symbol) {
-            return this.symbolTable.getSymbolInfo(symbol);
+        if (context) {
+            const symbol = await this.symbolTable.symbolWithContext(context);
+            if (symbol) {
+                return this.symbolTable.getSymbolInfo(symbol);
+            }
         }
     }
 
-    public listTopLevelSymbols(includeDependencies: boolean): SymbolInfo[] {
+    public async listTopLevelSymbols(includeDependencies: boolean): Promise<ISymbolInfo[]> {
         return this.symbolTable.listTopLevelSymbols(includeDependencies);
     }
 
@@ -379,7 +411,7 @@ export class SourceContext {
      *
      * @returns The list of actions.
      */
-    public listActions(type: CodeActionType): SymbolInfo[] {
+    public listActions(type: CodeActionType): ISymbolInfo[] {
         return this.symbolTable.listActions(type);
     }
 
@@ -392,7 +424,7 @@ export class SourceContext {
         return this.symbolTable.getActionCounts();
     }
 
-    public getCodeCompletionCandidates(column: number, row: number): SymbolInfo[] {
+    public async getCodeCompletionCandidates(column: number, row: number): Promise<ISymbolInfo[]> {
         if (!this.parser) {
             return [];
         }
@@ -474,7 +506,7 @@ export class SourceContext {
         }
 
         const candidates = core.collectCandidates(index);
-        const result: SymbolInfo[] = [];
+        const result: ISymbolInfo[] = [];
 
         candidates.tokens.forEach((following: number[], type: number) => {
             switch (type) {
@@ -575,6 +607,7 @@ export class SourceContext {
             }
         });
 
+        const promises: Array<Promise<Symbol[] | undefined>> = [];
         candidates.rules.forEach((candidateRule, key) => {
             switch (key) {
                 case ANTLRv4Parser.RULE_argActionBlock: {
@@ -621,50 +654,15 @@ export class SourceContext {
                 }
 
                 case ANTLRv4Parser.RULE_terminalRule: { // Lexer rules.
-                    this.symbolTable.getAllSymbols(BuiltInTokenSymbol).forEach((symbol) => {
-                        if (symbol.name !== "EOF") {
-                            result.push({
-                                kind: SymbolKind.BuiltInLexerToken,
-                                name: symbol.name,
-                                source: this.fileName,
-                                definition: undefined,
-                                description: undefined,
-                            });
-                        }
-                    });
-                    this.symbolTable.getAllSymbols(VirtualTokenSymbol).forEach((symbol) => {
-                        result.push({
-                            kind: SymbolKind.VirtualLexerToken,
-                            name: symbol.name,
-                            source: this.fileName,
-                            definition: undefined,
-                            description: undefined,
-                        });
-                    });
+                    promises.push(this.symbolTable.getAllSymbols(BuiltInTokenSymbol));
+                    promises.push(this.symbolTable.getAllSymbols(VirtualTokenSymbol));
+                    promises.push(this.symbolTable.getAllSymbols(TokenSymbol));
 
                     // Include fragment rules only when referenced from a lexer rule.
                     const list = candidateRule.ruleList;
                     if (list[list.length - 1] === ANTLRv4Parser.RULE_lexerAtom) {
-                        this.symbolTable.getAllSymbols(FragmentTokenSymbol).forEach((symbol) => {
-                            result.push({
-                                kind: SymbolKind.FragmentLexerToken,
-                                name: symbol.name,
-                                source: this.fileName,
-                                definition: undefined,
-                                description: undefined,
-                            });
-                        });
+                        promises.push(this.symbolTable.getAllSymbols(FragmentTokenSymbol));
                     }
-
-                    this.symbolTable.getAllSymbols(TokenSymbol).forEach((symbol) => {
-                        result.push({
-                            kind: SymbolKind.LexerRule,
-                            name: symbol.name,
-                            source: this.fileName,
-                            definition: undefined,
-                            description: undefined,
-                        });
-                    });
 
                     break;
                 }
@@ -683,15 +681,8 @@ export class SourceContext {
                 }
 
                 case ANTLRv4Parser.RULE_ruleref: {
-                    this.symbolTable.getAllSymbols(RuleSymbol).forEach((symbol) => {
-                        result.push({
-                            kind: SymbolKind.ParserRule,
-                            name: symbol.name,
-                            source: this.fileName,
-                            definition: undefined,
-                            description: undefined,
-                        });
-                    });
+                    promises.push(this.symbolTable.getAllSymbols(RuleSymbol));
+
                     break;
                 }
 
@@ -746,6 +737,24 @@ export class SourceContext {
                 default: {
                     break;
                 }
+            }
+
+        });
+
+        const symbolLists = await Promise.all(promises);
+        symbolLists.forEach((symbols) => {
+            if (symbols) {
+                symbols.forEach((symbol) => {
+                    if (symbol.name !== "EOF") {
+                        result.push({
+                            kind: SourceContext.getKindFromSymbol(symbol),
+                            name: symbol.name,
+                            source: this.fileName,
+                            definition: undefined,
+                            description: undefined,
+                        });
+                    }
+                });
             }
         });
 
@@ -836,29 +845,29 @@ export class SourceContext {
         return this.info.imports;
     }
 
-    public getDiagnostics(): DiagnosticEntry[] {
+    public getDiagnostics(): IDiagnosticEntry[] {
         this.runSemanticAnalysisIfNeeded();
 
         return this.diagnostics;
     }
 
-    public getReferenceGraph(): Map<string, ReferenceNode> {
+    public async getReferenceGraph(): Promise<Map<string, IReferenceNode>> {
         this.runSemanticAnalysisIfNeeded();
 
-        const result = new Map<string, ReferenceNode>();
-        for (const symbol of this.symbolTable.getAllSymbols(Symbol, false)) {
+        const result = new Map<string, IReferenceNode>();
+        for (const symbol of await this.symbolTable.getAllSymbols(Symbol, false)) {
             if (symbol instanceof RuleSymbol
                 || symbol instanceof TokenSymbol
                 || symbol instanceof FragmentTokenSymbol) {
-                const entry: ReferenceNode = {
+                const entry: IReferenceNode = {
                     kind: symbol instanceof RuleSymbol ? SymbolKind.ParserRule : SymbolKind.LexerRule,
                     rules: new Set<string>(),
                     tokens: new Set<string>(),
                     literals: new Set<string>(),
                 };
 
-                for (const child of symbol.getNestedSymbolsOfType(RuleReferenceSymbol)) {
-                    const resolved = this.symbolTable.resolve(child.name, false);
+                for (const child of await symbol.getNestedSymbolsOfType(RuleReferenceSymbol)) {
+                    const resolved = await this.symbolTable.resolve(child.name, false);
                     if (resolved) {
                         entry.rules.add(resolved.qualifiedName());
                     } else {
@@ -866,8 +875,8 @@ export class SourceContext {
                     }
                 }
 
-                for (const child of symbol.getNestedSymbolsOfType(TokenReferenceSymbol)) {
-                    const resolved = this.symbolTable.resolve(child.name, false);
+                for (const child of await symbol.getNestedSymbolsOfType(TokenReferenceSymbol)) {
+                    const resolved = await this.symbolTable.resolve(child.name, false);
                     if (resolved) {
                         entry.tokens.add(resolved.qualifiedName());
                     } else {
@@ -875,8 +884,8 @@ export class SourceContext {
                     }
                 }
 
-                for (const child of symbol.getNestedSymbolsOfType(LiteralSymbol)) {
-                    const resolved = this.symbolTable.resolve(child.name, false);
+                for (const child of await symbol.getNestedSymbolsOfType(LiteralSymbol)) {
+                    const resolved = await this.symbolTable.resolve(child.name, false);
                     if (resolved) {
                         entry.literals.add(resolved.qualifiedName());
                     } else {
@@ -960,14 +969,17 @@ export class SourceContext {
         return result;
     }
 
-    public getAllSymbols(recursive: boolean): Set<Symbol> {
+    public async getAllSymbols(recursive: boolean): Promise<Symbol[]> {
         // The symbol table returns symbols of itself and those it depends on (if recursive is true).
-        const result = this.symbolTable.getAllSymbols(Symbol, !recursive);
+        const result = await this.symbolTable.getAllSymbols(Symbol, !recursive);
 
         // Add also symbols from contexts referencing us, this time not recursive
         // as we have added our content already.
         for (const reference of this.references) {
-            reference.symbolTable.getAllSymbols(Symbol, true).forEach((value) => { result.add(value); });
+            const symbols = await reference.symbolTable.getAllSymbols(Symbol, true);
+            symbols.forEach((value) => {
+                result.push(value);
+            });
         }
 
         return result;
@@ -982,7 +994,7 @@ export class SourceContext {
      * @returns A rule name and its index if found.
      */
     public ruleFromPosition(column: number, row: number): [string | undefined, number | undefined] {
-        const tree = parseTreeFromPosition(this.tree!, column, row);
+        const tree = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
         if (!tree) {
             return [undefined, undefined];
         }
@@ -1024,100 +1036,80 @@ export class SourceContext {
      *
      * @returns List of names of all participating files.
      */
-    public generate(dependencies: Set<SourceContext>, options: GenerationOptions): Promise<string[]> {
+    public async generate(dependencies: Set<SourceContext>, options: IGenerationOptions): Promise<string[]> {
         if (options.loadOnly) {
             this.setupInterpreters(options.outputDir);
 
-            return new Promise<string[]>((resolve, reject) => {
-                resolve([]);
-            });
+            return Promise.resolve([]);
         }
 
-        return new Promise<string[]>((resolve, reject) => {
-            const parameters = ["-jar"];
-            if (options.alternativeJar) {
-                parameters.push(options.alternativeJar);
+        const parameters = ["-jar"];
+        if (options.alternativeJar) {
+            parameters.push(options.alternativeJar);
+        } else {
+            if (options.language?.toLowerCase() === "typescript") {
+                parameters.push(path.join(__dirname,
+                    "../../../antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar"));
             } else {
-                if (options.language?.toLowerCase() === "typescript") {
-                    parameters.push(path.join(__dirname,
-                        "../../../antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar"));
-                } else {
-                    parameters.push(path.join(__dirname, "../../../antlr/antlr-4.9.2-complete.jar"));
-                }
+                parameters.push(path.join(__dirname, "../../../antlr/antlr-4.9.2-complete.jar"));
             }
+        }
 
-            if (options.language) {
-                parameters.push("-Dlanguage=" + options.language);
+        if (options.language) {
+            parameters.push("-Dlanguage=" + options.language);
+        }
+
+        parameters.push("-message-format");
+        parameters.push("antlr");
+        if (options.libDir) {
+            parameters.push("-lib");
+            parameters.push(options.libDir);
+        }
+
+        if (options.outputDir) {
+            parameters.push("-o");
+            parameters.push(options.outputDir);
+        }
+
+        if (options.package) {
+            parameters.push("-package");
+            parameters.push(options.package);
+        }
+
+        const genListener = options.listeners === undefined || options.listeners === true;
+        parameters.push(genListener ? "-listener" : "-no-listener");
+        parameters.push(options.visitors === true ? "-visitor" : "-no-visitor");
+        parameters.push("-Xexact-output-dir"); // Available starting with 4.7.2.
+
+        if (options.additionalParameters) {
+            parameters.push(options.additionalParameters);
+        }
+
+        dependencies.add(this); // Needs this also in the error parser.
+
+        let message = "";
+        const fileList: string[] = [];
+        const spawnOptions = { cwd: options.baseDir ? options.baseDir : undefined };
+
+        const errorParser = new ErrorParser(dependencies);
+        for await (const dependency of dependencies) {
+            fileList.push(dependency.fileName);
+
+            const actualParameters = [...parameters, dependency.fileName];
+            const result = await this.doGeneration(actualParameters, spawnOptions, errorParser, options.outputDir);
+            if (result.length > 0) {
+                message += "\n" + result;
             }
+        }
 
-            parameters.push("-message-format");
-            parameters.push("antlr");
-            if (options.libDir) {
-                parameters.push("-lib");
-                parameters.push(options.libDir);
-            }
+        if (message.length > 0) {
+            throw new Error(message);
+        }
 
-            if (options.outputDir) {
-                parameters.push("-o");
-                parameters.push(options.outputDir);
-            }
-
-            if (options.package) {
-                parameters.push("-package");
-                parameters.push(options.package);
-            }
-
-            const genListener = options.listeners === undefined || options.listeners === true;
-            parameters.push(genListener ? "-listener" : "-no-listener");
-            parameters.push(options.visitors === true ? "-visitor" : "-no-visitor");
-            parameters.push("-Xexact-output-dir"); // Available starting with 4.7.2.
-
-            if (options.additionalParameters) {
-                parameters.push(options.additionalParameters);
-            }
-
-            dependencies.add(this); // Needs this also in the error parser.
-
-            const fileList: string[] = [];
-            for (const dependency of dependencies) {
-                fileList.push(dependency.fileName);
-            }
-            parameters.push(...fileList);
-
-            const spawnOptions = { cwd: options.baseDir ? options.baseDir : undefined };
-            const java = child_process.spawn("java", parameters, spawnOptions);
-
-            let buffer = "";
-            java.stderr.on("data", (data) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-                let text = data.toString() as string;
-                if (text.startsWith("Picked up _JAVA_OPTIONS:")) {
-                    const endOfInfo = text.indexOf("\n");
-                    if (endOfInfo === -1) {
-                        text = "";
-                    } else {
-                        text = text.substr(endOfInfo + 1, text.length);
-                    }
-                }
-
-                if (text.length > 0) {
-                    buffer += "\n" + text;
-                }
-            });
-
-            java.on("close", (code) => {
-                const parser = new ErrorParser(dependencies);
-                if (parser.convertErrorsToDiagnostics(buffer)) {
-                    this.setupInterpreters(options.outputDir);
-                    resolve(fileList);
-                } else {
-                    reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
-                }
-            });
-        });
+        return fileList;
     }
 
-    public getATNGraph(rule: string): ATNGraphData | undefined {
+    public getATNGraph(rule: string): IAtnGraphData | undefined {
         const isLexerRule = rule[0] === rule[0].toUpperCase();
         if ((isLexerRule && !this.grammarLexerData) || (!isLexerRule && !this.grammarParserData)) {
             // Requires a generation run.
@@ -1140,7 +1132,7 @@ export class SourceContext {
         const seenStates: Set<ATNState> = new Set([startState]);
         const pipeline: ATNState[] = [startState];
 
-        const result: ATNGraphData = {
+        const result: IAtnGraphData = {
             links: [],
             nodes: [],
         };
@@ -1203,56 +1195,106 @@ export class SourceContext {
                 const marker = transition.target.stateNumber * (transitsToRule ? state.stateNumber : 1);
                 const targetIndex = ensureATNNode(marker, transition.target);
 
-                const labels: string[] = [];
-                const link: ATNLink = {
+                const link: IAtnLink = {
                     source: sourceIndex,
                     target: targetIndex,
                     type: transition.serializationType,
-                    labels,
+                    labels: [],
                 };
 
                 switch (transition.serializationType) {
-                    case TransitionType.ACTION: {
-                        const actionTransition = transition as ActionTransition;
-                        const index = actionTransition.actionIndex === 0xFFFF ? -1 : actionTransition.actionIndex;
-                        if (isLexerRule) {
-                            labels.push(`<lexer action ${index}>`);
-                        } else {
-                            labels.push(`<parser action ${index}>`);
-                        }
+                    case TransitionType.EPSILON: {
+                        // Label added below.
+                        break;
+                    }
+
+                    case TransitionType.RANGE: {
+                        link.labels.push({ content: "Range Transition", class: "heading" });
+
+                        break;
+                    }
+
+                    case TransitionType.RULE: {
+                        link.labels.push({ content: "Rule Transition", class: "heading" });
 
                         break;
                     }
 
                     case TransitionType.PREDICATE: {
                         const predicateTransition = transition as PredicateTransition;
-                        labels.push(`<predicate ${predicateTransition.predIndex}>`);
+                        link.labels.push({
+                            content: `Predicate Transition (${predicateTransition.predIndex})`,
+                            class: "heading",
+                        });
+
+                        break;
+                    }
+
+                    case TransitionType.ATOM: {
+                        link.labels.push({ content: "Atom Transition", class: "heading" });
+
+
+                        break;
+                    }
+
+                    case TransitionType.ACTION: {
+                        const actionTransition = transition as ActionTransition;
+                        const index = actionTransition.actionIndex === 0xFFFF ? -1 : actionTransition.actionIndex;
+                        if (isLexerRule) {
+                            link.labels.push({ content: `Lexer Action (${index})`, class: "heading" });
+                        } else {
+                            // Parser actions are directly embedded. No idea why there are still action transitions
+                            // in the parser ATN (always with -1 index).
+                            link.labels.push({ content: "Parser Action", class: "heading" });
+                        }
+
+                        break;
+                    }
+
+                    case TransitionType.SET: {
+                        link.labels.push({ content: "Set Transition", class: "heading" });
+                        break;
+                    }
+
+                    case TransitionType.NOT_SET: {
+                        link.labels.push({ content: "Not-Set Transition", class: "heading" });
+                        break;
+                    }
+
+                    case TransitionType.WILDCARD: {
+                        link.labels.push({ content: "Wildcard Transition", class: "heading" });
                         break;
                     }
 
                     case TransitionType.PRECEDENCE: {
                         const precedenceTransition = transition as PrecedencePredicateTransition;
-                        labels.push(`<precedence predicate ${precedenceTransition.precedence}>`);
+                        link.labels.push({
+                            content: `Precedence Predicate (${precedenceTransition.precedence})`,
+                            class: "heading",
+                        });
                         break;
                     }
 
                     default: {
-                        if (transition.isEpsilon) {
-                            labels.push("ε");
-                        } else if (transition.label) {
-                            if (isLexerRule) {
-                                // Lexer rules can be defined for a large range of characters (even the full Unicode range).
-                                // We hence return a compact form here instead of listing every character.
-                                link.labels = this.intervalSetToStrings(transition.label);
-                            } else {
-                                for (const label of transition.label.toArray()) {
-                                    link.labels.push(vocabulary.getDisplayName(label));
-                                }
-                            }
-                        }
 
                         break;
                     }
+                }
+
+                if (transition.isEpsilon) {
+                    link.labels.push({ content: "ε" });
+                } else if (transition.label) {
+                    if (isLexerRule) {
+                        this.intervalSetToStrings(transition.label).forEach((value) => {
+                            link.labels.push({ content: value });
+                        });
+                    } else {
+                        for (const label of transition.label.toArray()) {
+                            link.labels.push({ content: vocabulary.getDisplayName(label) });
+                        }
+                    }
+                } else {
+                    link.labels.push({ content: "∀" });
                 }
 
                 result.links.push(link);
@@ -1264,11 +1306,11 @@ export class SourceContext {
                     nextState = (transition as RuleTransition).followState;
                     const returnIndex = ensureATNNode(nextState.stateNumber, nextState);
 
-                    const nodeLink: ATNLink = {
+                    const nodeLink: IAtnLink = {
                         source: targetIndex,
                         target: returnIndex,
                         type: TransitionType.RULE,
-                        labels: ["ε"],
+                        labels: [{ content: "ε" }],
                     };
                     result.links.push(nodeLink);
                 } else {
@@ -1290,13 +1332,14 @@ export class SourceContext {
     /**
      * Generates strings that are valid input for the managed grammar.
      *
-     * @param dependencies All source contexts on which this one depends (usually the lexer, if this is a split grammar).
+     * @param dependencies All source contexts on which this one depends (usually the lexer,
+     *                     if this is a split grammar).
      * @param rule The rule to generate a sentence for.
      * @param options The settings controlling the generation.
      * @param callback A function to call for each generated sentence.
      */
     public generateSentence(dependencies: Set<SourceContext>, rule: string,
-        options: SentenceGenerationOptions, callback: (sentence: string, index: number) => void): void {
+        options: ISentenceGenerationOptions, callback: (sentence: string, index: number) => void): void {
         if (!this.isInterpreterDataLoaded) {
             // Requires a generation run.
             callback("[No grammar data available]", 0);
@@ -1311,8 +1354,8 @@ export class SourceContext {
         }
 
         const isLexerRule = rule[0] === rule[0].toUpperCase();
-        let lexerData: InterpreterData | undefined;
-        let parserData: InterpreterData | undefined;
+        let lexerData: IInterpreterData | undefined;
+        let parserData: IInterpreterData | undefined;
 
         switch (this.info.type) {
             case GrammarType.Combined: {
@@ -1381,7 +1424,7 @@ export class SourceContext {
                 callback(generator.generate(options, start), i);
             }
         } catch (e) {
-            callback(e, 0);
+            callback(String(e), 0);
         }
     }
 
@@ -1414,8 +1457,8 @@ export class SourceContext {
             lexer.removeErrorListeners();
 
             lexer.addErrorListener(
-                new InterpreterLexerErrorListener((event: string | symbol, ...args: any[]): boolean => {
-                    error += args[0] + "\n";
+                new InterpreterLexerErrorListener((event: string | symbol, ...args: unknown[]): boolean => {
+                    error += (args[0] as string) + "\n";
 
                     return true;
                 }),
@@ -1458,8 +1501,8 @@ export class SourceContext {
             predicateFunction = vm.runInThisContext(code) as PredicateFunction;
         }
 
-        const eventSink = (event: string | symbol, ...args: any[]): void => {
-            errors.push(args[0]);
+        const eventSink = (event: string | symbol, ...args: unknown[]): void => {
+            errors.push(args[0] as string);
         };
 
         const stream = CharStreams.fromString(input);
@@ -1482,43 +1525,20 @@ export class SourceContext {
         return errors;
     }
 
-    public getSymbolInfo(symbol: string | Symbol): SymbolInfo | undefined {
+    public async getSymbolInfo(symbol: string | Symbol): Promise<ISymbolInfo | undefined> {
         return this.symbolTable.getSymbolInfo(symbol);
     }
 
-    public resolveSymbol(symbolName: string): Symbol | undefined {
+    public async resolveSymbol(symbolName: string): Promise<Symbol | undefined> {
         return this.symbolTable.resolve(symbolName, false);
     }
 
-    public formatGrammar(options: FormattingOptions, start: number, stop: number): [string, number, number] {
+    public formatGrammar(options: IFormattingOptions, start: number, stop: number): [string, number, number] {
         this.tokenStream.fill();
         const tokens = this.tokenStream.getTokens();
         const formatter = new GrammarFormatter(tokens);
 
         return formatter.formatGrammar(options, start, stop);
-    }
-
-    public get isInterpreterDataLoaded(): boolean {
-        return this.grammarLexerData !== undefined || this.grammarParserData !== undefined;
-    }
-
-    /**
-     * Internal function to provide interpreter data to certain internal classes (e.g. the debugger).
-     *
-     * @returns Lexer and parser interpreter data for use outside of this context.
-     */
-    public get interpreterData(): [InterpreterData | undefined, InterpreterData | undefined] {
-        return [this.grammarLexerData, this.grammarParserData];
-    }
-
-    public get hasErrors(): boolean {
-        for (const diagnostic of this.diagnostics) {
-            if (diagnostic.type === DiagnosticType.Error) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -1544,7 +1564,7 @@ export class SourceContext {
                 // We have no own source context for this case and hence load both lexer and parser data here.
                 parserFile = path.join(grammarPath, baseName) + ".interp";
                 if (baseName.endsWith("Parser")) {
-                    baseName = baseName.substr(0, baseName.length - "Parser".length);
+                    baseName = baseName.substring(0, baseName.length - "Parser".length);
                 }
                 lexerFile = path.join(grammarPath, baseName) + "Lexer.interp";
                 break;
@@ -1589,6 +1609,53 @@ export class SourceContext {
         }
     }
 
+    /**
+     * This method runs the generation for one file.
+     *
+     * @param parameters The command line parameters fro ANTLR4.
+     * @param spawnOptions The options for spawning Java.
+     * @param errorParser The parser to use for ANTLR4 error messages.
+     * @param outputDir The directory to find the interpreter data.
+     *
+     * @returns A string containing the error for non-grammar problems (process or java issues) otherwise empty.
+     */
+    private doGeneration(parameters: string[], spawnOptions: object, errorParser: ErrorParser,
+        outputDir?: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const java = child_process.spawn("java", parameters, spawnOptions);
+
+            let buffer = "";
+            java.stderr.on("data", (data: Buffer) => {
+                let text = data.toString();
+                if (text.startsWith("Picked up _JAVA_OPTIONS:")) {
+                    const endOfInfo = text.indexOf("\n");
+                    if (endOfInfo === -1) {
+                        text = "";
+                    } else {
+                        text = text.substring(endOfInfo + 1);
+                    }
+                }
+
+                if (text.length > 0) {
+                    buffer += "\n" + text;
+                }
+            });
+
+            java.on("close", (_code) => {
+                errorParser.convertErrorsToDiagnostics(buffer).then((flag) => {
+                    if (flag) {
+                        this.setupInterpreters(outputDir);
+                        resolve("");
+                    } else {
+                        reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
+                    }
+                }).catch((reason) => {
+                    reject(reason);
+                });
+            });
+        });
+    }
+
     private runSemanticAnalysisIfNeeded() {
         if (!this.semanticAnalysisDone) {
             this.semanticAnalysisDone = true;
@@ -1620,18 +1687,17 @@ export class SourceContext {
          * @returns The string representation of the character.
          */
         const characterRepresentation = (char: number): string => {
-            // Unfortunately JS/TS has no means to determine the Unicode class of a character,
-            // so we are very limited here. For now we return a quoted character for a code point if it is
-            // in the printable ANSI char range (but not latin extended A + B), otherwise a Unicode escape code.
             if (char < 0) {
                 return "EOF";
             }
 
-            if ((char >= 0x21 && char <= 0x7F) || (char >= 0xA1 && char <= 0xFF)) {
+            if (SourceContext.printableChars.contains(char)) {
                 return "'" + String.fromCharCode(char) + "'";
             }
 
-            return "\\u" + char.toString(16).toUpperCase();
+            const value = char.toString(16).toUpperCase();
+
+            return "\\u" + "0".repeat(4 - value.length) + value;
         };
 
         for (const interval of set.intervals) {
@@ -1645,54 +1711,3 @@ export class SourceContext {
         return result;
     }
 }
-
-/**
- * Get the lowest level parse tree, which covers the given position.
- *
- * @param root The start point to search from.
- * @param column The position in the given row.
- * @param row The row position to search for.
- *
- * @returns The parse tree which covers the given position or undefined if none could be found.
- */
-const parseTreeFromPosition = (root: ParseTree, column: number, row: number): ParseTree | undefined => {
-    // Does the root node actually contain the position? If not we don't need to look further.
-    if (root instanceof TerminalNode) {
-        const terminal = (root);
-        const token = terminal.symbol;
-        if (token.line !== row) { return undefined; }
-
-        const tokenStop = token.charPositionInLine + (token.stopIndex - token.startIndex + 1);
-        if (token.charPositionInLine <= column && tokenStop >= column) {
-            return terminal;
-        }
-
-        return undefined;
-    } else {
-        const context = (root as ParserRuleContext);
-        if (!context.start || !context.stop) { // Invalid tree?
-            return undefined;
-        }
-
-        if (context.start.line > row || (context.start.line === row && column < context.start.charPositionInLine)) {
-            return undefined;
-        }
-
-        const tokenStop = context.stop.charPositionInLine + (context.stop.stopIndex - context.stop.startIndex + 1);
-        if (context.stop.line < row || (context.stop.line === row && tokenStop < column)) {
-            return undefined;
-        }
-
-        if (context.children) {
-            for (const child of context.children) {
-                const result = parseTreeFromPosition(child, column, row);
-                if (result) {
-                    return result;
-                }
-            }
-        }
-
-        return context;
-
-    }
-};

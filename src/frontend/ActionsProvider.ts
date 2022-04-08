@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2021, Mike Lischke
+ * Copyright (c) 2018, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -11,8 +11,8 @@ import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, TextEditor, TreeView, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
-import { LexicalRange, CodeActionType } from "../backend/facade";
-import { Utils, RangeHolder } from "./Utils";
+import { ILexicalRange, CodeActionType } from "../backend/facade";
+import { FrontendUtils, IRangeHolder } from "./FrontendUtils";
 
 export class RootEntry extends TreeItem {
 
@@ -24,7 +24,7 @@ export class RootEntry extends TreeItem {
     }
 }
 
-export class ChildEntry extends TreeItem implements RangeHolder {
+export class ChildEntry extends TreeItem implements IRangeHolder {
 
     private static imageBaseNames: Map<CodeActionType, string> = new Map([
         [CodeActionType.GlobalNamed, "named-action"],
@@ -41,7 +41,7 @@ export class ChildEntry extends TreeItem implements RangeHolder {
         public readonly parent: RootEntry,
         label: string,
         type: CodeActionType,
-        public readonly range?: LexicalRange,
+        public readonly range?: ILexicalRange,
         command?: Command) {
 
         super(label, TreeItemCollapsibleState.None);
@@ -80,21 +80,23 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
     public update(editor: TextEditor): void {
         const position = editor.selection.active;
 
-        let action = Utils.findInListFromPosition(this.globalNamedActions, position.character, position.line + 1);
+        let action = FrontendUtils.findInListFromPosition(this.globalNamedActions, position.character,
+            position.line + 1);
         if (!action) {
-            action = Utils.findInListFromPosition(this.localNamedActions, position.character, position.line + 1);
+            action = FrontendUtils.findInListFromPosition(this.localNamedActions, position.character,
+                position.line + 1);
         }
         if (!action) {
-            action = Utils.findInListFromPosition(this.parserActions, position.character, position.line + 1);
+            action = FrontendUtils.findInListFromPosition(this.parserActions, position.character, position.line + 1);
         }
         if (!action) {
-            action = Utils.findInListFromPosition(this.lexerActions, position.character, position.line + 1);
+            action = FrontendUtils.findInListFromPosition(this.lexerActions, position.character, position.line + 1);
         }
         if (!action) {
-            action = Utils.findInListFromPosition(this.parserPredicates, position.character, position.line + 1);
+            action = FrontendUtils.findInListFromPosition(this.parserPredicates, position.character, position.line + 1);
         }
         if (!action) {
-            action = Utils.findInListFromPosition(this.lexerPredicates, position.character, position.line + 1);
+            action = FrontendUtils.findInListFromPosition(this.lexerPredicates, position.character, position.line + 1);
         }
 
         if (action) {

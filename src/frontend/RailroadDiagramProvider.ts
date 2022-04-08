@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2020, Mike Lischke
+ * Copyright (c) 2017, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,12 +9,13 @@ import * as path from "path";
 import * as vscode from "vscode";
 
 import { SymbolKind } from "../backend/facade";
-import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
-import { Utils } from "./Utils";
+import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
+import { FrontendUtils } from "./FrontendUtils";
 
 export class AntlrRailroadDiagramProvider extends WebviewProvider {
 
-    public generateContent(webView: vscode.Webview, editor: vscode.TextEditor, options: WebviewShowOptions): string {
+    public async generateContent(webView: vscode.Webview, editor: vscode.TextEditor,
+        options: IWebviewShowOptions): Promise<string> {
         const caret = editor.selection.active;
 
         const fileName = editor.document.fileName;
@@ -26,10 +27,10 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
         const baseName = path.basename(fileName, path.extname(fileName));
 
         // Content Security Policy
-        const nonce = new Date().getTime() + "" + new Date().getMilliseconds();
+        const nonce = this.generateNonce();
         const scripts = [
-            Utils.getMiscPath("utils.js", this.context, webView),
-            Utils.getMiscPath("railroad-diagrams.js", this.context, webView),
+            FrontendUtils.getMiscPath("utils.js", this.context, webView),
+            FrontendUtils.getMiscPath("railroad-diagrams.js", this.context, webView),
         ];
 
         let diagram = `<!DOCTYPE html>
@@ -54,13 +55,13 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
                     </span>
                 </div>
                 <div id="container">`;
-            const symbols = this.backend.listTopLevelSymbols(fileName, false);
+            const symbols = await this.backend.listTopLevelSymbols(fileName, false);
             for (const symbol of symbols) {
                 if (symbol.kind === SymbolKind.LexerRule
                     || symbol.kind === SymbolKind.ParserRule
                     || symbol.kind === SymbolKind.FragmentLexerToken) {
                     const script = this.backend.getRRDScript(fileName, symbol.name);
-                    diagram += `<h3 class=\"${symbol.name}-class\">${symbol.name}</h3>\n<script>${script}</script>\n\n`;
+                    diagram += `<h3 class="${symbol.name}-class">${symbol.name}</h3>\n<script>${script}</script>\n\n`;
                 }
             }
             diagram += "</div>";

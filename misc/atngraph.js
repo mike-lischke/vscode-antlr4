@@ -23,7 +23,11 @@ const stateType = [
     },
     { short: "LEND", long: "Loop end\nMarks the end of a * or + loop." },
 
-    { short: "RULE", long: "Rule call\nRepresents a transition to a subrule." }, // Fake state
+    {  // Fake state
+        short: "RULE",
+        long: "Rule call\nThis is not a real ATN state but a placeholder to indicate a sub rule being 'called' by " +
+            "the rule transition."
+    },
 ];
 
 // Mark start and end nodes as fixed if not already done by the caller.
@@ -173,12 +177,12 @@ function tick() {
     transformLinkLabels();
 }
 
-function zoomed() {
-    topGroup.attr("transform", d3.event.transform);
+function zoomed(e) {
+    topGroup.attr("transform", e.transform);
 }
 
-function transform(d) {
-    return "translate(" + d.x + "," + d.y + ")";
+function transform(e) {
+    return "translate(" + e.x + "," + e.y + ")";
 }
 
 /**
@@ -261,7 +265,8 @@ function appendLinkText(text) {
                 .attr('x', 0)
                 .attr('y', "1.1em")
                 .attr('dy', lineNumber++ + "em")
-                .text(label);
+                .attr('class', label.class)
+                .text(label.content);
 
             if (lineNumber == maxLabelCount) {
                 var remainingCount = d.labels.length - maxLabelCount;
@@ -309,24 +314,24 @@ function transformLinkLabels() {
         });
 }
 
-function dragStarted(d) {
-    if (!d3.event.active) {
+function dragStarted(e) {
+    if (!e.active) {
         force.alphaTarget(0.3).restart();
     }
-    d.fx = d.x;
-    d.fy = d.y;
+    e.subject.fx = e.x;
+    e.subject.fy = e.y;
 }
 
-function dragged(d) {
+function dragged(e) {
     var grid = 20;
 
-    d.fx = Math.round(d3.event.x / grid) * grid;
-    d.fy = Math.round(d3.event.y / grid) * grid;
+    e.subject.fx = Math.round(e.x / grid) * grid;
+    e.subject.fy = Math.round(e.y / grid) * grid;
 }
 
-function doubleClicked(d) {
-    d.fx = null;
-    d.fy = null;
+function doubleClicked() {
+    this.__data__.fx = null;
+    this.__data__.fy = null;
 }
 
 function resetTransformation() {

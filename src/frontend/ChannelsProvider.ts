@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2021, Mike Lischke
+ * Copyright (c) 2018, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -11,6 +11,26 @@ import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
+
+export class ChannelEntry extends TreeItem {
+
+    public iconPath = {
+        light: path.join(__dirname, "..", "..", "..", "misc", "channel-light.svg"),
+        dark: path.join(__dirname, "..", "..", "..", "misc", "channel-dark.svg"),
+    };
+
+    public contextValue = "channels";
+
+    public constructor(
+        public readonly label: string,
+        public readonly collapsibleState: TreeItemCollapsibleState,
+        command?: Command,
+    ) {
+        super(label, collapsibleState);
+        this.command = command;
+    }
+
+}
 
 export class ChannelsProvider extends AntlrTreeDataProvider<ChannelEntry> {
 
@@ -44,24 +64,4 @@ export class ChannelsProvider extends AntlrTreeDataProvider<ChannelEntry> {
             resolve([]);
         });
     }
-}
-
-export class ChannelEntry extends TreeItem {
-
-    public iconPath = {
-        light: path.join(__dirname, "..", "..", "..", "misc", "channel-light.svg"),
-        dark: path.join(__dirname, "..", "..", "..", "misc", "channel-dark.svg"),
-    };
-
-    public contextValue = "channels";
-
-    public constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
-        command_?: Command,
-    ) {
-        super(label, collapsibleState);
-        this.command = command_;
-    }
-
 }

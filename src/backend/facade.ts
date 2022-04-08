@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2021, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -41,7 +41,8 @@ export enum SymbolKind {
     LexerCommand,
 
     // Native code.
-    NamedAction,
+    GlobalNamedAction,
+    LocalNamedAction,
     ExceptionAction,
     FinallyAction,
     ParserAction,
@@ -59,22 +60,22 @@ import { GrammarDebugger } from "./GrammarDebugger";
  * A range within a text. Just like the range object in vscode the end position is not included in the range.
  * Hence when start and end position are equal the range is empty.
  */
-export interface LexicalRange {
+export interface ILexicalRange {
     start: { column: number; row: number };
     end: { column: number; row: number };
 }
 
 // The definition of a single symbol (range and content it is made of).
-export interface Definition {
+export interface IDefinition {
     text: string;
-    range: LexicalRange;
+    range: ILexicalRange;
 }
 
-export interface SymbolInfo {
+export interface ISymbolInfo {
     kind: SymbolKind;
     name: string;
     source: string;
-    definition?: Definition;
+    definition?: IDefinition;
     description?: string;  // Used for code completion. Provides a small description for certain symbols.
 }
 
@@ -85,16 +86,16 @@ export enum DiagnosticType {
     Error
 }
 
-export interface DiagnosticEntry {
+export interface IDiagnosticEntry {
     type: DiagnosticType;
     message: string;
-    range: LexicalRange;
+    range: ILexicalRange;
 }
 
 /**
  * Contains a number of values for a lexer token. Used when constructing a token list and parse trees in the debugger.
  */
-export interface LexerToken {
+export interface ILexerToken {
     [key: string]: string | number | object;
 
     text: string;
@@ -118,7 +119,7 @@ export enum ParseTreeNodeType {
  * Describes the a range in an input stream (character indexes in a char stream or token indexes in a token stream).
  * Indexes can be < 0 if there's no input representation for a tree node (e.g. when it did not match anything).
  */
-export interface IndexRange {
+export interface IIndexRange {
     startIndex: number;
     stopIndex: number;
     length: number;
@@ -128,19 +129,19 @@ export interface IndexRange {
  * This node class is what exported parse trees are made of, which are created by the debugger interface.
  * Each node stands either for an invoked rule, a terminal node or an error node.
  */
-export interface ParseTreeNode {
+export interface IParseTreeNode {
     type: ParseTreeNodeType;
-    id: number;          // A unique id to allow computing differences when updating a parse tree visualization in D3.js.
+    id: number;           // A unique id for D3.js.
 
-    ruleIndex?: number;  // Only valid for the rule node type.
+    ruleIndex?: number;   // Only valid for the rule node type.
     name: string;
-    start?: LexerToken;  // ditto
-    stop?: LexerToken;   // ditto
-    range?: IndexRange;   // ditto
+    start?: ILexerToken;  // ditto
+    stop?: ILexerToken;   // ditto
+    range?: IIndexRange;  // ditto
 
-    symbol?: LexerToken; // Only valid for non-rule nodes.
+    symbol?: ILexerToken; // Only valid for non-rule nodes.
 
-    children: ParseTreeNode[]; // Available for all node types, but empty for non-rule types.
+    children: IParseTreeNode[]; // Available for all node types, but empty for non-rule types.
 }
 
 /**
@@ -148,14 +149,14 @@ export interface ParseTreeNode {
  * Lexer rules obviously cannot have any parser rule reference. String literals are mostly interesting
  * for parser rules to check for implicit lexer tokens.
  */
-export interface ReferenceNode {
+export interface IReferenceNode {
     kind: SymbolKind;
     rules: Set<string>;
     tokens: Set<string>;
     literals: Set<string>;
 }
 
-export interface ATNNode {
+export interface IAtnNode {
     id: number;         // A unique number (positive for state numbers, negative for rule nodes)
     name: string;
     type: ATNStateType;
@@ -165,19 +166,19 @@ export interface ATNNode {
     fy?: number;
 }
 
-export interface ATNLink {
+export interface IAtnLink {
     source: number;
     target: number;
     type: TransitionType;
-    labels: string[];
+    labels: Array<{ content: string; class?: string }>;
 }
 
 /**
  * Contains the link + node values which describe the ATN graph for a single rule.
  */
-export interface ATNGraphData {
-    nodes: ATNNode[];
-    links: ATNLink[];
+export interface IAtnGraphData {
+    nodes: IAtnNode[];
+    links: IAtnLink[];
 }
 
 export enum CodeActionType {
@@ -192,7 +193,7 @@ export enum CodeActionType {
 /**
  * Options used by the parser files generation.
  */
-export interface GenerationOptions {
+export interface IGenerationOptions {
     // The folder in which to run the generation process. Should be an absolute path for predictable results.
     // Used internally only.
     baseDir?: string;
@@ -228,7 +229,7 @@ export interface GenerationOptions {
 /**
  * Options used by the sentence generation.
  */
-export interface SentenceGenerationOptions {
+export interface ISentenceGenerationOptions {
     /**
      * The number of sentences to generate in one call.
      */
@@ -295,56 +296,96 @@ export type RuleMappings = Map<string, string>;
 
 /**
  * Options for grammar text formatting. Some names, values and meanings have been taken from clang-format
- * (http://clang.llvm.org/docs/ClangFormatStyleOptions.html), but may have slight variations tailored towards ANTLR grammars.
- * Deviations from that are mentioned in comments, otherwise see clang-format and the documentation for descriptions + examples.
+ * (http://clang.llvm.org/docs/ClangFormatStyleOptions.html), but may have slight variations tailored towards
+ * ANTLR grammars. Deviations from that are mentioned in comments, otherwise see clang-format and the documentation for
+ * descriptions + examples.
  */
-export interface FormattingOptions {
+export interface IFormattingOptions {
     // Index signature to allow accessing properties via brackets.
     [key: string]: boolean | number | string | undefined;
 
-    alignTrailingComments?: boolean;            // Default: false
-    allowShortBlocksOnASingleLine?: boolean;    // Default: true;
-    breakBeforeBraces?: boolean;                // When true start predicates and actions on a new line. Default: false.
-    columnLimit?: number;                       // Default: 100 chars.
-    continuationIndentWidth?: number;           // For line continuation (only used if useTab is false). Default: same as indentWith.
-    indentWidth?: number;                       // Default: 4 chars.
-    keepEmptyLinesAtTheStartOfBlocks?: boolean; // Default: false.
-    maxEmptyLinesToKeep?: number;               // Default: 1.
-    reflowComments?: boolean;                   // Default: true.
-    spaceBeforeAssignmentOperators?: boolean;   // Default: true
-    tabWidth?: number;                          // Default: 4.
-    useTab?: boolean;                           // Default: true.
+    // Default: false
+    alignTrailingComments?: boolean;
+
+    // Default: true;
+    allowShortBlocksOnASingleLine?: boolean;
+
+    // When true start predicates and actions on a new line. Default: false.
+    breakBeforeBraces?: boolean;
+
+    // Default: 100 chars.
+    columnLimit?: number;
+
+    // For line continuation (only used if useTab is false). Default: same as indentWith.
+    continuationIndentWidth?: number;
+
+    // Default: 4 chars.
+    indentWidth?: number;
+
+    // Default: false.
+    keepEmptyLinesAtTheStartOfBlocks?: boolean;
+
+    // Default: 1.
+    maxEmptyLinesToKeep?: number;
+
+    // Default: true.
+    reflowComments?: boolean;
+
+    // Default: true
+    spaceBeforeAssignmentOperators?: boolean;
+
+    // Default: 4.
+    tabWidth?: number;
+
+    // Default: true.
+    useTab?: boolean;
 
     // Values not found in clang-format:
 
-    // When set to "none" places the colon directly behind the rule name. Trailing alignment aligns colons of consecutive
-    // single line rules (with at least one whitespace between rule name and colon). Hanging alignment moves the
-    // colon to the next line (after the normal indentation, aligning it so with the alt pipe chars).
+    // When set to "none" places the colon directly behind the rule name. Trailing alignment aligns colons of
+    // consecutive single line rules (with at least one whitespace between rule name and colon). Hanging alignment
+    // moves the colon to the next line (after the normal indentation, aligning it so with the alt pipe chars).
     // Default: none.
     alignColons?: "none" | "trailing" | "hanging";
 
-    // When `allowShortRulesOnASingleLine` is true and `alignColon` is set to "hanging" this setting determines which gets
-    // precedence. If true (the default) a rule is placed on a single line if it fits, ignoring the "hanging" setting.
+    // When `allowShortRulesOnASingleLine` is true and `alignColon` is set to "hanging" this setting determines which
+    // gets precedence. If true (the default) a rule is placed on a single line if it fits, ignoring the "hanging"
+    // setting.
     singleLineOverrulesHangingColon?: boolean;
-    allowShortRulesOnASingleLine?: boolean; // Like allowShortBlocksOnASingleLine, but for entire rules. Default: true.
 
-    // Place semicolon behind last code token or on an own line (with or w/o indentation). Default: ownLine (no indentation).
-    // This setting has no effect for non-rule commands that end with a semicolon (e.g. "grammar Test;", "import Blah;" etc.).
-    // Such commands are always placed on a single line.
+    // Like allowShortBlocksOnASingleLine, but for entire rules. Default: true.
+    allowShortRulesOnASingleLine?: boolean;
+
+    // Place semicolon behind last code token or on an own line (with or w/o indentation). Default: ownLine
+    // (no indentation). This setting has no effect for non-rule commands that end with a semicolon
+    // (e.g. "grammar Test;", "import Blah;" etc.). Such commands are always placed on a single line.
     alignSemicolons?: "none" | "ownLine" | "hanging";
-    breakBeforeParens?: boolean; // For blocks: if true puts opening parentheses on an own line. Default: false.
 
-    // Place rule internals (return value, local variables, @init, @after) all on a single line, if true. Default: false.
+    // For blocks: if true puts opening parentheses on an own line. Default: false.
+    breakBeforeParens?: boolean;
+
+    // Place rule internals (return value, local variables, @init, @after) all on a single line, if true.
+    // Default: false.
     ruleInternalsOnSingleLine?: boolean;
-    minEmptyLines?: number; // Between top level elements, how many empty lines must exist? Default: 0.
+
+    // Between top level elements, how many empty lines must exist? Default: 0.
+    minEmptyLines?: number;
 
     // When true alignments are organized in groups of lines where they apply. These line groups are separated
     // by lines where a specific alignment type does not appear. Default: true.
     groupedAlignments?: boolean;
-    alignFirstTokens?: boolean; // Align first tokens in rules after the colon. Default: false.
-    alignLexerCommands?: boolean; // Align arrows from lexer commands. Default: false.
-    alignActions?: boolean; // Align actions ({} blocks in rules) and predicates. Default: false.
-    alignLabels?: boolean; // Align alt labels (# name). Default: true.
+
+    // Align first tokens in rules after the colon. Default: false.
+    alignFirstTokens?: boolean;
+
+    // Align arrows from lexer commands. Default: false.
+    alignLexerCommands?: boolean;
+
+    // Align actions ({} blocks in rules) and predicates. Default: false.
+    alignActions?: boolean;
+
+    // Align alt labels (# name). Default: true.
+    alignLabels?: boolean;
 
     // When true a single alignment for labels, actions, lexer commands and trailing comments is used instead of
     // individual alignments for each type. This avoids large whitespace runs if you have a mix of these types.
@@ -354,17 +395,17 @@ export interface FormattingOptions {
 
 export type PredicateFunction = (predicate: string) => boolean;
 
-export interface ContextDetails {
+export interface IContextDetails {
     type: GrammarType;
     unreferencedRules: string[];
     imports: string[];
 }
 
-export interface SelfDiagnostics {
+export interface ISelfDiagnostics {
     contextCount: number;
 }
 
-interface ContextEntry {
+interface IContextEntry {
     context: SourceContext;
     refCount: number;
     dependencies: string[];
@@ -373,7 +414,7 @@ interface ContextEntry {
 
 export class AntlrFacade {
     // Mapping file names to SourceContext instances.
-    private sourceContexts: Map<string, ContextEntry> = new Map<string, ContextEntry>();
+    private sourceContexts: Map<string, IContextEntry> = new Map<string, IContextEntry>();
 
     public constructor(private importDir: string) {
     }
@@ -383,7 +424,7 @@ export class AntlrFacade {
      *
      * @returns An object with interesting details (currently only the number of existing contexts).
      */
-    public getSelfDiagnostics(): SelfDiagnostics {
+    public getSelfDiagnostics(): ISelfDiagnostics {
         return {
             contextCount: this.sourceContexts.keys.length,
         };
@@ -455,21 +496,21 @@ export class AntlrFacade {
         this.internalReleaseGrammar(fileName);
     }
 
-    public symbolInfoAtPosition(fileName: string, column: number, row: number,
-        limitToChildren = true): SymbolInfo | undefined {
+    public async symbolInfoAtPosition(fileName: string, column: number, row: number,
+        limitToChildren = true): Promise<ISymbolInfo | undefined> {
         const context = this.getContext(fileName);
 
         return context.symbolAtPosition(column, row, limitToChildren);
     }
 
-    public infoForSymbol(fileName: string, symbol: string): SymbolInfo | undefined {
+    public async infoForSymbol(fileName: string, symbol: string): Promise<ISymbolInfo | undefined> {
         const context = this.getContext(fileName);
 
         return context.getSymbolInfo(symbol);
     }
 
-    public enclosingSymbolAtPosition(fileName: string, column: number, row: number,
-        ruleScope = false): SymbolInfo | undefined {
+    public async enclosingSymbolAtPosition(fileName: string, column: number, row: number,
+        ruleScope = false): Promise<ISymbolInfo | undefined> {
         const context = this.getContext(fileName);
 
         return context.enclosingSymbolAtPosition(column, row, ruleScope);
@@ -480,10 +521,9 @@ export class AntlrFacade {
      *
      * @param fileName The grammar file name.
      * @param fullList If true, includes symbols from all dependencies as well.
-     *
      * @returns A list of symbol info entries.
      */
-    public listTopLevelSymbols(fileName: string, fullList: boolean): SymbolInfo[] {
+    public async listTopLevelSymbols(fileName: string, fullList: boolean): Promise<ISymbolInfo[]> {
         const context = this.getContext(fileName);
 
         return context.listTopLevelSymbols(!fullList);
@@ -493,7 +533,6 @@ export class AntlrFacade {
      * Returns the vocabulary for the given file (if it contains lexer rules).
      *
      * @param fileName The grammar file name.
-     *
      * @returns The vocabulary if found.
      */
     public getLexerVocabulary(fileName: string): Vocabulary | undefined {
@@ -506,7 +545,6 @@ export class AntlrFacade {
      * Returns a list of rule names for the given file (if it contains parser rules).
      *
      * @param fileName The grammar file name.
-     *
      * @returns The list of rule names.
      */
     public getRuleList(fileName: string): string[] | undefined {
@@ -519,7 +557,6 @@ export class AntlrFacade {
      * Returns a list of channel names for the given file (if it contains lexer rules).
      *
      * @param fileName The grammar file name.
-     *
      * @returns The list of channel names.
      */
     public getChannels(fileName: string): string[] | undefined {
@@ -532,7 +569,6 @@ export class AntlrFacade {
      * Returns a list of lexer modes for the given file (if it contains lexer rules).
      *
      * @param fileName The grammar file name.
-     *
      * @returns The list of mode names.
      */
     public getModes(fileName: string): string[] | undefined {
@@ -546,10 +582,9 @@ export class AntlrFacade {
      *
      * @param fileName The grammar file name.
      * @param type The of actions to return.
-     *
      * @returns The list of actions.
      */
-    public listActions(fileName: string, type: CodeActionType): SymbolInfo[] {
+    public listActions(fileName: string, type: CodeActionType): ISymbolInfo[] {
         const context = this.getContext(fileName);
 
         return context.listActions(type);
@@ -561,13 +596,13 @@ export class AntlrFacade {
         return context.getActionCounts();
     }
 
-    public getCodeCompletionCandidates(fileName: string, column: number, row: number): SymbolInfo[] {
+    public async getCodeCompletionCandidates(fileName: string, column: number, row: number): Promise<ISymbolInfo[]> {
         const context = this.getContext(fileName);
 
         return context.getCodeCompletionCandidates(column, row);
     }
 
-    public getDiagnostics(fileName: string): DiagnosticEntry[] {
+    public getDiagnostics(fileName: string): IDiagnosticEntry[] {
         const context = this.getContext(fileName);
 
         return context.getDiagnostics();
@@ -584,7 +619,6 @@ export class AntlrFacade {
      *
      * @param fileName The grammar file name.
      * @param symbol The symbol for which to determine the reference count.
-     *
      * @returns The reference count.
      */
     public countReferences(fileName: string, symbol: string): number {
@@ -599,15 +633,14 @@ export class AntlrFacade {
      *
      * @param fileName The grammar file name.
      * @param symbolName The name of the symbol to check.
-     *
      * @returns A list of symbol info entries, each describing one occurrence.
      */
-    public getSymbolOccurrences(fileName: string, symbolName: string): SymbolInfo[] {
+    public async getSymbolOccurrences(fileName: string, symbolName: string): Promise<ISymbolInfo[]> {
         const context = this.getContext(fileName);
-        const result = context.symbolTable.getSymbolOccurrences(symbolName, false);
+        const result = await context.symbolTable.getSymbolOccurrences(symbolName, false);
 
         // Sort result by kind. This way rule definitions appear before rule references and are re-parsed first.
-        return result.sort((lhs: SymbolInfo, rhs: SymbolInfo) => lhs.kind - rhs.kind);
+        return result.sort((lhs: ISymbolInfo, rhs: ISymbolInfo) => { return lhs.kind - rhs.kind; });
     }
 
     public getDependencies(fileName: string): string[] {
@@ -626,7 +659,7 @@ export class AntlrFacade {
         return result;
     }
 
-    public getReferenceGraph(fileName: string): Map<string, ReferenceNode> {
+    public async getReferenceGraph(fileName: string): Promise<Map<string, IReferenceNode>> {
         const context = this.getContext(fileName);
 
         return context.getReferenceGraph();
@@ -638,7 +671,7 @@ export class AntlrFacade {
         return context.getRRDScript(rule) || "";
     }
 
-    public generate(fileName: string, options: GenerationOptions): Promise<string[]> {
+    public generate(fileName: string, options: IGenerationOptions): Promise<string[]> {
         const context = this.getContext(fileName);
         const dependencies: Set<SourceContext> = new Set();
         this.pushDependencyFiles(this.sourceContexts.get(fileName)!, dependencies);
@@ -646,13 +679,13 @@ export class AntlrFacade {
         return context.generate(dependencies, options);
     }
 
-    public getATNGraph(fileName: string, rule: string): ATNGraphData | undefined {
+    public getATNGraph(fileName: string, rule: string): IAtnGraphData | undefined {
         const context = this.getContext(fileName);
 
         return context.getATNGraph(rule);
     }
 
-    public generateSentence(fileName: string, rule: string, options: SentenceGenerationOptions,
+    public generateSentence(fileName: string, rule: string, options: ISentenceGenerationOptions,
         callback: (sentence: string, index: number) => void): void {
         const context = this.getContext(fileName);
 
@@ -688,7 +721,7 @@ export class AntlrFacade {
         return context.parseTestInput(input, startRule, actionFile);
     }
 
-    public formatGrammar(fileName: string, options: FormattingOptions, start: number,
+    public formatGrammar(fileName: string, options: IFormattingOptions, start: number,
         stop: number): [string, number, number] {
         const context = this.getContext(fileName);
 
@@ -724,13 +757,13 @@ export class AntlrFacade {
         return new GrammarDebugger([...contexts], actionFile);
     }
 
-    public getContextDetails(fileName: string): ContextDetails {
+    public getContextDetails(fileName: string): IContextDetails {
         const context = this.getContext(fileName);
 
         return context.info;
     }
 
-    private loadDependency(contextEntry: ContextEntry, depName: string): SourceContext | undefined {
+    private loadDependency(contextEntry: IContextEntry, depName: string): SourceContext | undefined {
         // The given import dir is used to locate the dependency (either relative to the base path or via an
         // absolute path).
         // If we cannot find the grammar file that way we try the base folder.
@@ -784,7 +817,7 @@ export class AntlrFacade {
         return undefined;
     }
 
-    private parseGrammar(contextEntry: ContextEntry) {
+    private parseGrammar(contextEntry: IContextEntry) {
         const oldDependencies = contextEntry.dependencies;
         contextEntry.dependencies = [];
         const newDependencies = contextEntry.context.parse();
@@ -800,7 +833,7 @@ export class AntlrFacade {
         for (const dep of oldDependencies) { this.releaseGrammar(dep); }
     }
 
-    private internalReleaseGrammar(fileName: string, referencing?: ContextEntry): void {
+    private internalReleaseGrammar(fileName: string, referencing?: IContextEntry): void {
         const contextEntry = this.sourceContexts.get(fileName);
         if (contextEntry) {
             if (referencing) {
@@ -821,7 +854,7 @@ export class AntlrFacade {
         }
     }
 
-    private pushDependencyFiles(entry: ContextEntry, contexts: Set<SourceContext>) {
+    private pushDependencyFiles(entry: IContextEntry, contexts: Set<SourceContext>) {
         // Using a set for the context list here, to automatically exclude duplicates.
         for (const dep of entry.dependencies) {
             const depEntry = this.sourceContexts.get(dep);

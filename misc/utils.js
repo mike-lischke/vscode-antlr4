@@ -28,7 +28,7 @@ function exportToSVG(type, name) {
 
 function exportToHTML(type, name) {
 	// When exporting the HTML content we have to remove our scripts (e.g. to avoid running image
-	// generation again which happend already in vscode) and other internal elements.
+	// generation again which happened already in vscode) and other internal elements.
 	// Additionally we have to make all style sheet references relative.
 	// That requires a deep copy of the entire DOM to avoid messing with the webview display.
 	try {

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2020, Mike Lischke
+ * Copyright (c) 2018, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,12 +9,12 @@ import * as path from "path";
 
 import * as vscode from "vscode";
 
-import { WebviewProvider, WebviewShowOptions } from "./WebviewProvider";
-import { Utils } from "./Utils";
-import { DebuggerConsumer } from "./AntlrDebugAdapter";
+import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
+import { FrontendUtils } from "./FrontendUtils";
+import { IDebuggerConsumer } from "./AntlrDebugAdapter";
 import { GrammarDebugger } from "../backend/GrammarDebugger";
 
-export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerConsumer {
+export class AntlrParseTreeProvider extends WebviewProvider implements IDebuggerConsumer {
 
     public debugger: GrammarDebugger;
 
@@ -28,16 +28,17 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
         this.updateContent(uri);
     }
 
-    public generateContent(webView: vscode.Webview, uri: vscode.Uri, options: WebviewShowOptions): string {
+    public async generateContent(webView: vscode.Webview, uri: vscode.Uri,
+        _options: IWebviewShowOptions): Promise<string> {
         const graph = this.debugger.currentParseTree;
 
         // Content Security Policy
-        const nonce = new Date().getTime() + "" + new Date().getMilliseconds();
+        const nonce = this.generateNonce();
         const scripts = [
-            Utils.getMiscPath("utils.js", this.context, webView),
-            Utils.getMiscPath("parse-tree.js", this.context, webView),
+            FrontendUtils.getMiscPath("utils.js", this.context, webView),
+            FrontendUtils.getMiscPath("parse-tree.js", this.context, webView),
         ];
-        const graphLibPath = Utils.getNodeModulesPath("d3/dist/d3.js", this.context);
+        const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
 
         const settings = vscode.workspace.getConfiguration("antlr4.debug");
         const horizontal = settings.visualParseTreeHorizontal ? 1 : 0;
@@ -105,7 +106,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements DebuggerC
             </body>
         </html>`;
 
-        return diagram;
+        return Promise.resolve(diagram);
     }
 
     protected updateContent(uri: vscode.Uri): boolean {

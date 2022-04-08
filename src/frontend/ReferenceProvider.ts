@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2019, 2020, Mike Lischke
+ * Copyright (c) 2019, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -14,27 +14,39 @@ import { AntlrFacade } from "../backend/facade";
 export class AntlrReferenceProvider implements ReferenceProvider {
     public constructor(private backend: AntlrFacade) { }
 
-    public provideReferences(document: TextDocument, position: Position, context: ReferenceContext,
-        token: CancellationToken): ProviderResult<Location[]> {
-        const info = this.backend.symbolInfoAtPosition(document.fileName, position.character, position.line + 1, false);
+    public provideReferences(document: TextDocument, position: Position, _context: ReferenceContext,
+        _token: CancellationToken): ProviderResult<Location[]> {
+        return new Promise((resolve, reject) => {
+            this.backend.symbolInfoAtPosition(document.fileName, position.character, position.line + 1, false)
+                .then((info) => {
+                    if (!info) {
+                        return undefined;
+                    } else {
+                        const result: Location[] = [];
+                        this.backend.getSymbolOccurrences(document.fileName, info.name).then((occurrences) => {
+                            for (const symbol of occurrences) {
+                                if (symbol.definition) {
+                                    const range = new Range(
+                                        symbol.definition.range.start.row - 1,
+                                        symbol.definition.range.start.column,
+                                        symbol.definition.range.end.row - 1,
+                                        symbol.definition.range.start.column + info.name.length,
+                                    );
+                                    const location = new Location(Uri.file(symbol.source), range);
+                                    result.push(location);
+                                }
+                            }
 
-        if (!info) {
-            return undefined;
-        }
+                            resolve(result);
 
-        const result: Location[] = [];
-        const occurrences = this.backend.getSymbolOccurrences(document.fileName, info.name);
-        for (const symbol of occurrences) {
-            if (symbol.definition) {
-                const range = new Range(
-                    symbol.definition.range.start.row - 1, symbol.definition.range.start.column,
-                    symbol.definition.range.end.row - 1, symbol.definition.range.start.column + info.name.length,
-                );
-                const location = new Location(Uri.file(symbol.source), range);
-                result.push(location);
-            }
-        }
+                        }).catch((reason) => {
+                            reject(reason);
+                        });
+                    }
+                }).catch((reason) => {
+                    reject(reason);
+                });
 
-        return result;
+        });
     }
 }

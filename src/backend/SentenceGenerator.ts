@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -13,11 +13,11 @@ import {
     RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState, PredicateTransition,
 } from "antlr4ts/atn";
 
-import { SentenceGenerationOptions, RuleMappings, PredicateFunction } from "./facade";
+import { ISentenceGenerationOptions, RuleMappings, PredicateFunction } from "./facade";
 import { IntervalSet } from "antlr4ts/misc";
 
-import { printableUnicodePoints, FULL_UNICODE_SET } from "./Unicode";
-import { InterpreterData } from "./InterpreterDataReader";
+import { printableUnicodePoints, fullUnicodeSet } from "./Unicode";
+import { IInterpreterData } from "./InterpreterDataReader";
 import { LexerPredicateSymbol, ParserPredicateSymbol } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 
@@ -59,8 +59,8 @@ export class SentenceGenerator {
      */
     public constructor(
         context: SourceContext,
-        private lexerData: InterpreterData,
-        private parserData: InterpreterData | undefined,
+        private lexerData: IInterpreterData,
+        private parserData: IInterpreterData | undefined,
         actionFile: string | undefined) {
 
         this.printableUnicode = printableUnicodePoints({
@@ -71,8 +71,16 @@ export class SentenceGenerator {
         });
 
         // Get the symbols for all predicates (to enable predicate evaluation).
-        this.lexerPredicates = context.symbolTable.getNestedSymbolsOfType(LexerPredicateSymbol);
-        this.parserPredicates = context.symbolTable.getNestedSymbolsOfType(ParserPredicateSymbol);
+        context.symbolTable.getNestedSymbolsOfType(LexerPredicateSymbol).then((symbols) => {
+            this.lexerPredicates = symbols;
+        }).catch(() => {
+            this.lexerPredicates = [];
+        });
+        context.symbolTable.getNestedSymbolsOfType(ParserPredicateSymbol).then((symbols) => {
+            this.parserPredicates = symbols;
+        }).catch(() => {
+            this.parserPredicates = [];
+        });
 
         this.parserPredicates.forEach((value, index) => {
             console.log(`${index}: ${value.context!.text}`);
@@ -98,7 +106,7 @@ export class SentenceGenerator {
      *
      * @returns A string that can successfully be parsed by the rule.
      */
-    public generate(options: SentenceGenerationOptions, start: RuleStartState): string {
+    public generate(options: ISentenceGenerationOptions, start: RuleStartState): string {
 
         this.convergenceFactor = options.convergenceFactor || 0.25;
 
@@ -165,7 +173,7 @@ export class SentenceGenerator {
                     return this.runPredicate(predicate);
                 } catch (e) {
                     throw Error(`There was an error while evaluating predicate "${predicate}". ` +
-                        "Evaluation returned: " + e);
+                        `Evaluation returned: ` + String(e));
                 }
             }
         }
@@ -319,7 +327,7 @@ export class SentenceGenerator {
                             if (inLexer) {
                                 // Any char from the entire Unicode range. The generator takes care to pick only
                                 // valid characters.
-                                [text] = this.getRandomCharacterFromInterval(FULL_UNICODE_SET);
+                                [text] = this.getRandomCharacterFromInterval(fullUnicodeSet);
                             } else {
                                 // Pick a random lexer rule.
                                 const ruleIndex = Math.floor(Math.random() *
@@ -478,7 +486,9 @@ export class SentenceGenerator {
             }
         }
 
-        const sum = weights.reduce((accumulated, current) => accumulated + current);
+        const sum = weights.reduce((accumulated, current) => {
+            return accumulated + current;
+        });
         let randomValue = Math.random() * sum;
         let randomIndex = 0;
         while (randomIndex < altCounts.length) {

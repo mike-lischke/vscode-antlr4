@@ -5,6 +5,10 @@
  * See LICENSE file for more info.
  */
 
+// Need explicit any and any-spread for constructor functions.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener";
 import {
     LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,
@@ -20,9 +24,7 @@ import {
     VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, AlternativeSymbol, EbnfSuffixSymbol,
     ArgumentSymbol, OperatorSymbol, GlobalNamedActionSymbol, ExceptionActionSymbol, FinallyActionSymbol,
     ParserActionSymbol, LexerActionSymbol, OptionsSymbol, OptionSymbol, LexerPredicateSymbol,
-    ParserPredicateSymbol, LocalNamedActionSymbol,
-    LexerCommandSymbol,
-    TerminalSymbol,
+    ParserPredicateSymbol, LocalNamedActionSymbol, LexerCommandSymbol,
 } from "./ContextSymbolTable";
 
 import { SourceContext } from "./SourceContext";
@@ -31,16 +33,45 @@ import { LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
 import { ParseTree, TerminalNode } from "antlr4ts/tree";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
+/**
+ * Removes outer quotes from the input.
+ *
+ * @param input The input to clean up.
+ * @param quoteChar The quote char to remove.
+ *
+ * @returns The cleaned string.
+ */
+const unquote = (input: string, quoteChar?: string): string => {
+    quoteChar = quoteChar || '"';
+    if (input[0] === quoteChar && input[input.length - 1] === quoteChar) {
+        return input.slice(1, input.length - 1);
+    }
+
+    return input;
+};
+
 export class DetailsListener implements ANTLRv4ParserListener {
     private symbolStack: Symbol[] = [];
 
     public constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
 
+    /**
+     * The symbol stack usually contains entries beginning with a rule context, followed by a number of blocks and alts
+     * as well as additional parts like actions or predicates.
+     * This function returns the name of the first symbol, which represents the rule (parser/lexer) which we are
+     * currently walking over.
+     *
+     * @returns The rule name from the start symbol.
+     */
+    private get ruleName(): string {
+        return this.symbolStack.length === 0 ? "" : this.symbolStack[0].name;
+    }
+
     public enterParserRuleSpec(ctx: ParserRuleSpecContext): void {
         this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF().text);
     }
 
-    public exitParserRuleSpec(ctx: ParserRuleSpecContext): void {
+    public exitParserRuleSpec(_ctx: ParserRuleSpecContext): void {
         this.popSymbol();
     }
 
@@ -68,7 +99,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
         this.pushNewSymbol(BlockSymbol, ctx, "");
     }
 
-    public exitLexerRuleBlock(ctx: LexerRuleBlockContext): void {
+    public exitLexerRuleBlock(_ctx: LexerRuleBlockContext): void {
         this.popSymbol();
     }
 
@@ -76,7 +107,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
         this.pushNewSymbol(BlockSymbol, ctx, "");
     }
 
-    public exitBlock(ctx: BlockContext): void {
+    public exitBlock(_ctx: BlockContext): void {
         this.popSymbol();
     }
 
@@ -84,7 +115,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
         this.pushNewSymbol(AlternativeSymbol, ctx, "");
     }
 
-    public exitAlternative(ctx: AlternativeContext): void {
+    public exitAlternative(_ctx: AlternativeContext): void {
         this.popSymbol();
     }
 
@@ -92,7 +123,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
         this.pushNewSymbol(AlternativeSymbol, ctx, "");
     }
 
-    public exitLexerAlt(ctx: LexerAltContext): void {
+    public exitLexerAlt(_ctx: LexerAltContext): void {
         this.popSymbol();
     }
 
@@ -152,7 +183,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
         this.pushNewSymbol(OptionsSymbol, ctx, "options");
     }
 
-    public exitOptionsSpec(ctx: OptionsSpecContext): void {
+    public exitOptionsSpec(_ctx: OptionsSpecContext): void {
         this.popSymbol();
     }
 
@@ -188,8 +219,10 @@ export class DetailsListener implements ANTLRv4ParserListener {
                     // Global level named action, like @parser.
                     const localContext = run as NamedActionContext;
                     let prefix = "";
-                    if (localContext.actionScopeName()) {
-                        prefix = localContext.actionScopeName()?.text + "::";
+
+                    const actionScopeName = localContext.actionScopeName();
+                    if (actionScopeName) {
+                        prefix = actionScopeName.text + "::";
                     }
 
                     const symbol = this.addNewSymbol(GlobalNamedActionSymbol, ctx,
@@ -324,7 +357,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
         this.pushNewSymbol(LexerCommandSymbol, ctx, ctx.lexerCommandName().text);
     }
 
-    public exitLexerCommand(ctx: LexerCommandContext): void {
+    public exitLexerCommand(_ctx: LexerCommandContext): void {
         this.popSymbol();
     }
 
@@ -367,10 +400,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
             }
 
             default: {
-                if (node.symbol.type !== ANTLRv4Lexer.ACTION_CONTENT) {
-                    this.addNewSymbol(TerminalSymbol, node, node.text);
-                }
-
+                // Ignore the rest.
                 break;
             }
         }
@@ -422,34 +452,4 @@ export class DetailsListener implements ANTLRv4ParserListener {
     private popSymbol(): Symbol | undefined {
         return this.symbolStack.pop();
     }
-
-    /**
-     * The symbol stack usually contains entries beginning with a rule context, followed by a number of blocks and alts
-     * as well as additional parts like actions or predicates.
-     * This function returns the name of the first symbol, which represents the rule (parser/lexer) which we are
-     * currently walking over.
-     *
-     * @returns The rule name from the start symbol.
-     */
-    private get ruleName(): string {
-        return this.symbolStack.length === 0 ? "" : this.symbolStack[0].name;
-    }
-
 }
-
-/**
- * Removes outer quotes from the input.
- *
- * @param input The input to clean up.
- * @param quoteChar The quote char to remove.
- *
- * @returns The cleaned string.
- */
-const unquote = (input: string, quoteChar?: string): string => {
-    quoteChar = quoteChar || '"';
-    if (input[0] === quoteChar && input[input.length - 1] === quoteChar) {
-        return input.slice(1, input.length - 1);
-    }
-
-    return input;
-};

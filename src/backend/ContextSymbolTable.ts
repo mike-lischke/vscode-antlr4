@@ -10,9 +10,48 @@
 import { ParserRuleContext } from "antlr4ts";
 import { SymbolTable, Symbol, ScopedSymbol, SymbolTableOptions } from "antlr4-c3";
 
-import { SymbolKind, SymbolGroupKind, SymbolInfo, CodeActionType } from "../backend/facade";
+import { SymbolKind, SymbolGroupKind, ISymbolInfo, CodeActionType } from "../backend/facade";
 import { SourceContext } from "./SourceContext";
 import { ParseTree } from "antlr4ts/tree";
+
+export class OptionSymbol extends Symbol {
+    public value: string;
+}
+
+export class ImportSymbol extends Symbol { }
+export class BuiltInTokenSymbol extends Symbol { }
+export class VirtualTokenSymbol extends Symbol { }
+export class FragmentTokenSymbol extends ScopedSymbol { }
+export class TokenSymbol extends ScopedSymbol { }
+export class TokenReferenceSymbol extends Symbol { }
+export class BuiltInModeSymbol extends Symbol { }
+export class LexerModeSymbol extends Symbol { }
+export class BuiltInChannelSymbol extends Symbol { }
+export class TokenChannelSymbol extends Symbol { }
+export class RuleSymbol extends ScopedSymbol { }
+export class RuleReferenceSymbol extends Symbol { }
+export class AlternativeSymbol extends ScopedSymbol { }
+export class EbnfSuffixSymbol extends Symbol { }
+export class OptionsSymbol extends ScopedSymbol { }
+export class ArgumentSymbol extends ScopedSymbol { }
+export class OperatorSymbol extends Symbol { }
+export class TerminalSymbol extends Symbol { }          // Any other terminal but operators.
+export class LexerCommandSymbol extends Symbol { }      // Commands in lexer rules after the -> introducer.
+
+// Symbols for all kind of native code blocks in a grammar.
+export class GlobalNamedActionSymbol extends Symbol { } // Top level actions prefixed with @.
+export class LocalNamedActionSymbol extends Symbol { }  // Rule level actions prefixed with @.
+
+export class ExceptionActionSymbol extends Symbol { }   // Action code in exception blocks.
+export class FinallyActionSymbol extends Symbol { }     // Ditto for finally clauses.
+
+export class ParserActionSymbol extends Symbol { }      // Simple code blocks in rule alts for a parser rule.
+export class LexerActionSymbol extends Symbol { }       // Ditto for lexer rules.
+
+export class ParserPredicateSymbol extends Symbol { }   // Predicate code in a parser rule.
+export class LexerPredicateSymbol extends Symbol { }    // Ditto for lexer rules.
+
+export class ArgumentsSymbol extends Symbol { }          // Native code for argument blocks and local variables.
 
 export class ContextSymbolTable extends SymbolTable {
     public tree: ParserRuleContext; // Set by the owning source context after each parse run.
@@ -117,9 +156,9 @@ export class ContextSymbolTable extends SymbolTable {
         return symbol.context;
     }
 
-    public getSymbolInfo(symbol: string | Symbol): SymbolInfo | undefined {
+    public async getSymbolInfo(symbol: string | Symbol): Promise<ISymbolInfo | undefined> {
         if (!(symbol instanceof Symbol)) {
-            const temp = this.resolve(symbol);
+            const temp = await this.resolve(symbol);
             if (!temp) {
                 return undefined;
             }
@@ -148,11 +187,15 @@ export class ContextSymbolTable extends SymbolTable {
                 break;
             }
 
-            case SymbolKind.Operator:
             case SymbolKind.Terminal: {
                 // These are references to a depending grammar.
+                const promises: Array<Promise<Symbol | undefined>> = [];
                 this.dependencies.forEach((table: ContextSymbolTable) => {
-                    const actualSymbol = table.resolve(name);
+                    promises.push(table.resolve(name));
+                });
+
+                const symbols = await Promise.all(promises);
+                symbols.forEach((actualSymbol) => {
                     if (actualSymbol) {
                         symbol = actualSymbol;
                         kind = SourceContext.getKindFromSymbol(actualSymbol);
@@ -179,26 +222,40 @@ export class ContextSymbolTable extends SymbolTable {
 
     }
 
-    public listTopLevelSymbols(localOnly: boolean): SymbolInfo[] {
-        const result: SymbolInfo[] = [];
+    public async listTopLevelSymbols(localOnly: boolean): Promise<ISymbolInfo[]> {
+        const result: ISymbolInfo[] = [];
 
-        const options = this.resolve("options", true);
+        const options = await this.resolve("options", true);
         if (options) {
-            const tokenVocab = options.resolve("tokenVocab", true);
+            const tokenVocab = await options.resolve("tokenVocab", true);
             if (tokenVocab) {
-                result.push(this.getSymbolInfo(tokenVocab)!);
+                const value = await this.getSymbolInfo(tokenVocab);
+                if (value) {
+                    result.push(value);
+                }
             }
         }
-        result.push(...this.symbolsOfType(ImportSymbol, localOnly));
-        result.push(...this.symbolsOfType(BuiltInTokenSymbol, localOnly));
-        result.push(...this.symbolsOfType(VirtualTokenSymbol, localOnly));
-        result.push(...this.symbolsOfType(FragmentTokenSymbol, localOnly));
-        result.push(...this.symbolsOfType(TokenSymbol, localOnly));
-        result.push(...this.symbolsOfType(BuiltInModeSymbol, localOnly));
-        result.push(...this.symbolsOfType(LexerModeSymbol, localOnly));
-        result.push(...this.symbolsOfType(BuiltInChannelSymbol, localOnly));
-        result.push(...this.symbolsOfType(TokenChannelSymbol, localOnly));
-        result.push(...this.symbolsOfType(RuleSymbol, localOnly));
+
+        let symbols = await this.symbolsOfType(ImportSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(BuiltInTokenSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(VirtualTokenSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(FragmentTokenSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(TokenSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(BuiltInModeSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(LexerModeSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(BuiltInChannelSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(TokenChannelSymbol, localOnly);
+        result.push(...symbols);
+        symbols = await this.symbolsOfType(RuleSymbol, localOnly);
+        result.push(...symbols);
 
         return result;
     }
@@ -210,8 +267,8 @@ export class ContextSymbolTable extends SymbolTable {
      *
      * @returns Symbol information for each defined action.
      */
-    public listActions(type: CodeActionType): SymbolInfo[] {
-        const result: SymbolInfo[] = [];
+    public listActions(type: CodeActionType): ISymbolInfo[] {
+        const result: ISymbolInfo[] = [];
 
         try {
             const list = this.actionListOfType(type);
@@ -246,10 +303,14 @@ export class ContextSymbolTable extends SymbolTable {
     public getActionCounts(): Map<CodeActionType, number> {
         const result = new Map<CodeActionType, number>();
 
-        let list = this.namedActions.filter((symbol) => symbol instanceof LocalNamedActionSymbol);
+        let list = this.namedActions.filter((symbol) => {
+            return symbol instanceof LocalNamedActionSymbol;
+        });
         result.set(CodeActionType.LocalNamed, list.length);
 
-        list = this.namedActions.filter((symbol) => symbol instanceof GlobalNamedActionSymbol);
+        list = this.namedActions.filter((symbol) => {
+            return symbol instanceof GlobalNamedActionSymbol;
+        });
         result.set(CodeActionType.GlobalNamed, list.length);
 
         result.set(CodeActionType.ParserAction, this.parserActions.length);
@@ -289,10 +350,10 @@ export class ContextSymbolTable extends SymbolTable {
         }
     }
 
-    public getSymbolOccurrences(symbolName: string, localOnly: boolean): SymbolInfo[] {
-        const result: SymbolInfo[] = [];
+    public async getSymbolOccurrences(symbolName: string, localOnly: boolean): Promise<ISymbolInfo[]> {
+        const result: ISymbolInfo[] = [];
 
-        const symbols = this.getAllSymbols(Symbol, localOnly);
+        const symbols = await this.getAllSymbols(Symbol, localOnly);
         for (const symbol of symbols) {
             const owner = (symbol.root as ContextSymbolTable).owner;
 
@@ -315,7 +376,7 @@ export class ContextSymbolTable extends SymbolTable {
                 }
 
                 if (symbol instanceof ScopedSymbol) {
-                    const references = symbol.getAllNestedSymbols(symbolName);
+                    const references = await symbol.getAllNestedSymbols(symbolName);
                     for (const reference of references) {
                         result.push({
                             kind: SourceContext.getKindFromSymbol(reference),
@@ -379,7 +440,6 @@ export class ContextSymbolTable extends SymbolTable {
      * the closes covering symbol.
      *
      * @param context The context to search for.
-     *
      * @returns The symbol covering the given context or undefined if nothing was found.
      */
     public symbolContainingContext(context: ParseTree): Symbol | undefined {
@@ -418,7 +478,9 @@ export class ContextSymbolTable extends SymbolTable {
     private actionListOfType(type: CodeActionType): Symbol[] {
         switch (type) {
             case CodeActionType.LocalNamed: {
-                return this.namedActions.filter((symbol) => symbol instanceof LocalNamedActionSymbol);
+                return this.namedActions.filter((symbol) => {
+                    return symbol instanceof LocalNamedActionSymbol;
+                });
             }
 
             case CodeActionType.ParserAction: {
@@ -440,16 +502,21 @@ export class ContextSymbolTable extends SymbolTable {
             }
 
             default: {
-                return this.namedActions.filter((symbol) => symbol instanceof GlobalNamedActionSymbol);
+                return this.namedActions.filter((symbol) => {
+                    return symbol instanceof GlobalNamedActionSymbol;
+                });
             }
         }
     }
 
-    private symbolsOfType<T extends Symbol>(t: new (...args: any[]) => T, localOnly = false): SymbolInfo[] {
-        const result: SymbolInfo[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private async symbolsOfType<T extends Symbol>(t: new (...args: any[]) => T,
+        localOnly = false): Promise<ISymbolInfo[]> {
+        const result: ISymbolInfo[] = [];
 
-        const symbols = this.getAllSymbols(t, localOnly);
-        for (const symbol of symbols) {
+        const symbols = await this.getAllSymbols(t, localOnly);
+        const filtered = new Set(symbols); // Filter for duplicates.
+        for (const symbol of filtered) {
             const root = symbol.root as ContextSymbolTable;
             result.push({
                 kind: SourceContext.getKindFromSymbol(symbol),
@@ -466,87 +533,58 @@ export class ContextSymbolTable extends SymbolTable {
     private getSymbolOfType(name: string, kind: SymbolKind, localOnly: boolean): Symbol | undefined {
         switch (kind) {
             case SymbolKind.TokenVocab: {
-                const options = this.resolve("options", true);
+                const options = this.resolveSync("options", true);
                 if (options) {
-                    return options.resolve(name, localOnly);
+                    return options.resolveSync(name, localOnly);
                 }
-            }
-            case SymbolKind.Import: {
-                return this.resolve(name, localOnly) as ImportSymbol;
-            }
-            case SymbolKind.BuiltInLexerToken: {
-                return this.resolve(name, localOnly) as BuiltInTokenSymbol;
-            }
-            case SymbolKind.VirtualLexerToken: {
-                return this.resolve(name, localOnly) as VirtualTokenSymbol;
-            }
-            case SymbolKind.FragmentLexerToken: {
-                return this.resolve(name, localOnly) as FragmentTokenSymbol;
-            }
-            case SymbolKind.LexerRule: {
-                return this.resolve(name, localOnly) as TokenSymbol;
-            }
-            case SymbolKind.BuiltInMode: {
-                return this.resolve(name, localOnly) as BuiltInModeSymbol;
-            }
-            case SymbolKind.LexerMode: {
-                return this.resolve(name, localOnly) as LexerModeSymbol;
-            }
-            case SymbolKind.BuiltInChannel: {
-                return this.resolve(name, localOnly) as BuiltInChannelSymbol;
-            }
-            case SymbolKind.TokenChannel: {
-                return this.resolve(name, localOnly) as TokenChannelSymbol;
-            }
-            case SymbolKind.ParserRule: {
-                return this.resolve(name, localOnly) as RuleSymbol;
-            }
 
-            default: {
                 break;
             }
+
+            case SymbolKind.Import: {
+                return this.resolveSync(name, localOnly) as ImportSymbol;
+            }
+
+            case SymbolKind.BuiltInLexerToken: {
+                return this.resolveSync(name, localOnly) as BuiltInTokenSymbol;
+            }
+
+            case SymbolKind.VirtualLexerToken: {
+                return this.resolveSync(name, localOnly) as VirtualTokenSymbol;
+            }
+
+            case SymbolKind.FragmentLexerToken: {
+                return this.resolveSync(name, localOnly) as FragmentTokenSymbol;
+            }
+
+            case SymbolKind.LexerRule: {
+                return this.resolveSync(name, localOnly) as TokenSymbol;
+            }
+
+            case SymbolKind.BuiltInMode: {
+                return this.resolveSync(name, localOnly) as BuiltInModeSymbol;
+            }
+
+            case SymbolKind.LexerMode: {
+                return this.resolveSync(name, localOnly) as LexerModeSymbol;
+            }
+
+            case SymbolKind.BuiltInChannel: {
+                return this.resolveSync(name, localOnly) as BuiltInChannelSymbol;
+            }
+
+            case SymbolKind.TokenChannel: {
+                return this.resolveSync(name, localOnly) as TokenChannelSymbol;
+            }
+
+            case SymbolKind.ParserRule: {
+                return this.resolveSync(name, localOnly) as RuleSymbol;
+            }
+
+            default:
         }
 
         return undefined;
     }
 
 }
-
-export class OptionSymbol extends Symbol {
-    public value: string;
-}
-
-export class ImportSymbol extends Symbol { }
-export class BuiltInTokenSymbol extends Symbol { }
-export class VirtualTokenSymbol extends Symbol { }
-export class FragmentTokenSymbol extends ScopedSymbol { }
-export class TokenSymbol extends ScopedSymbol { }
-export class TokenReferenceSymbol extends Symbol { }
-export class BuiltInModeSymbol extends Symbol { }
-export class LexerModeSymbol extends Symbol { }
-export class BuiltInChannelSymbol extends Symbol { }
-export class TokenChannelSymbol extends Symbol { }
-export class RuleSymbol extends ScopedSymbol { }
-export class RuleReferenceSymbol extends Symbol { }
-export class AlternativeSymbol extends ScopedSymbol { }
-export class EbnfSuffixSymbol extends Symbol { }
-export class OptionsSymbol extends ScopedSymbol { }
-export class ArgumentSymbol extends ScopedSymbol { }
-export class OperatorSymbol extends Symbol { }
-export class TerminalSymbol extends Symbol { }          // Any other terminal but operators.
-export class LexerCommandSymbol extends Symbol { }      // Commands in lexer rules after the -> introducer.
-
-// Symbols for all kind of native code blocks in a grammar.
-export class GlobalNamedActionSymbol extends Symbol { } // Top level actions prefixed with @.
-export class LocalNamedActionSymbol extends Symbol { }  // Rule level actions prefixed with @.
-
-export class ExceptionActionSymbol extends Symbol { }   // Action code in exception blocks.
-export class FinallyActionSymbol extends Symbol { }     // Ditto for finally clauses.
-
-export class ParserActionSymbol extends Symbol { }      // Simple code blocks in rule alts for a parser rule.
-export class LexerActionSymbol extends Symbol { }       // Ditto for lexer rules.
-
-export class ParserPredicateSymbol extends Symbol { }   // Predicate code in a parser rule.
-export class LexerPredicateSymbol extends Symbol { }    // Ditto for lexer rules.
-
-export class ArgumentsSymbol extends Symbol { }          // Native code for argument blocks and local variables.

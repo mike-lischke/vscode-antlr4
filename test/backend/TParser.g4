@@ -78,8 +78,8 @@ conquer:
 	| ID (LessThan* divide)?? { $ID.text; }
 ;
 
-// Unused rule to demonstrate some of the special features.
-unused[double input = 111] returns [double calculated] locals [int _a, double _b, int _c] @init{ doInit(); } @after { doAfter(); } :
+// Rule to demonstrate some of the special features.
+special[double input = 111] returns [double calculated] locals [int _a, double _b, int _c] @init{ doInit(); } @after { doAfter(); } :
 	stat
 ;
 catch [...] {
@@ -89,8 +89,8 @@ finally {
   cleanUp();
 }
 
-unused2:
-	(unused[1] .)+ (Colon | Semicolon | Plus)? ~Semicolon
+special2:
+	(special[1] .)+ (Colon | Semicolon | Plus)? ~Semicolon
 ;
 
 stat: expr Equal expr Semicolon

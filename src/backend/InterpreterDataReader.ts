@@ -9,7 +9,7 @@ import { ATN } from "antlr4ts/atn";
 import { Vocabulary, VocabularyImpl } from "antlr4ts";
 import { CompatibleATNDeserializer } from "./CompatibleATNDeserializer";
 
-export interface InterpreterData {
+export interface IInterpreterData {
     atn: ATN;
     vocabulary: Vocabulary;
     ruleNames: string[];
@@ -19,7 +19,7 @@ export interface InterpreterData {
 
 export class InterpreterDataReader {
 
-    public static parseFile(fileName: string): InterpreterData {
+    public static parseFile(fileName: string): IInterpreterData {
         const ruleNames: string[] = [];
         const channels: string[] = [];
         const modes: string[] = [];

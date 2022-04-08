@@ -1,12 +1,12 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
-import { SymbolGroupKind, DiagnosticEntry, DiagnosticType } from "./facade";
-import { ContextSymbolTable, TokenSymbol, RuleSymbol } from "./ContextSymbolTable";
+import { SymbolGroupKind, IDiagnosticEntry, DiagnosticType } from "./facade";
+import { ContextSymbolTable } from "./ContextSymbolTable";
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener";
 import {
     TerminalRuleContext, RulerefContext, SetElementContext, LexerCommandContext, LexerRuleSpecContext,
@@ -20,7 +20,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
 
     private seenSymbols = new Map<string, Token>();
 
-    public constructor(private diagnostics: DiagnosticEntry[], private symbolTable: ContextSymbolTable) { }
+    public constructor(private diagnostics: IDiagnosticEntry[], private symbolTable: ContextSymbolTable) { }
 
     // Check references to other lexer tokens.
     public exitTerminalRule = (ctx: TerminalRuleContext): void => {
@@ -86,17 +86,9 @@ export class SemanticListener implements ANTLRv4ParserListener {
         if (seenSymbol) {
             this.reportDuplicateSymbol(name, tokenRef.symbol, seenSymbol);
         } else {
-            // Check if there are dependencies which already have this symbol, expressed by the fact
-            // that the found symbol is not defined in the main symbol table.
-            const symbol = this.symbolTable.resolve(name) as TokenSymbol;
-            if (symbol.root !== this.symbolTable) {
-                const start = symbol.context instanceof ParserRuleContext ?
-                    symbol.context.start : (symbol.context as TerminalNode).symbol;
-                this.reportDuplicateSymbol(name, tokenRef.symbol, symbol.context ? start : undefined);
-            } else {
-                // Otherwise we haven't come across this symbol yet.
-                this.seenSymbols.set(name, tokenRef.symbol);
-            }
+            // Otherwise we haven't come across this symbol yet.
+            this.seenSymbols.set(name, tokenRef.symbol);
+            void this.resolveAndReportDuplicate(name, tokenRef);
         }
     };
 
@@ -109,35 +101,19 @@ export class SemanticListener implements ANTLRv4ParserListener {
         if (seenSymbol) {
             this.reportDuplicateSymbol(name, ruleRef.symbol, seenSymbol);
         } else {
-            const symbol = this.symbolTable.resolve(name) as RuleSymbol;
-            if (symbol.root !== this.symbolTable) {
-                let start;
-                if (symbol.context instanceof ParserRuleContext) {
-                    start = symbol.context.start;
-                } else if (symbol.context instanceof TerminalNode) {
-                    start = symbol.context.symbol;
-                }
-                this.reportDuplicateSymbol(name, ruleRef.symbol, start);
-            } else {
-                this.seenSymbols.set(name, ruleRef.symbol);
-            }
+            this.seenSymbols.set(name, ruleRef.symbol);
+            void this.resolveAndReportDuplicate(name, ruleRef);
         }
     };
 
-    /**
-     * This method exists purely to make TS happy. Without it we get a warning that this listener has nothing in
-     * common with the ParseTreeListener interface (which we actually implement here).
-     *
-     * @param node A node.
-     */
-    public visitTerminal = (node: TerminalNode): void => {
+    public visitTerminal = (_node: TerminalNode): void => {
         // Nothing to do here.
     };
 
     protected checkSymbolExistence(mustExist: boolean, kind: SymbolGroupKind, symbol: string, message: string,
         offendingToken: Token): void {
         if (this.symbolTable.symbolExistsInGroup(symbol, kind, false) !== mustExist) {
-            const entry: DiagnosticEntry = {
+            const entry: IDiagnosticEntry = {
                 type: DiagnosticType.Error,
                 message: message + " '" + symbol + "'",
                 range: {
@@ -156,8 +132,8 @@ export class SemanticListener implements ANTLRv4ParserListener {
         }
     }
 
-    protected reportDuplicateSymbol(symbol: string, offendingToken: Token, previousToken: Token | undefined): void {
-        const entry: DiagnosticEntry = {
+    protected reportDuplicateSymbol(symbol: string, offendingToken: Token, _previousToken: Token | undefined): void {
+        const entry: IDiagnosticEntry = {
             type: DiagnosticType.Error,
             message: "Duplicate symbol '" + symbol + "'",
             range: {
@@ -173,5 +149,23 @@ export class SemanticListener implements ANTLRv4ParserListener {
             },
         };
         this.diagnostics.push(entry);
+    }
+
+    private async resolveAndReportDuplicate(name: string, ruleRef: TerminalNode): Promise<void> {
+        // Check if there are dependencies which already have this symbol, expressed by the fact
+        // that the found symbol is not defined in the main symbol table.
+        const symbol = await this.symbolTable.resolve(name);
+        if (symbol) {
+            if (symbol.root !== this.symbolTable) {
+                let start;
+                if (symbol.context instanceof ParserRuleContext) {
+                    start = symbol.context.start;
+                } else if (symbol.context instanceof TerminalNode) {
+                    start = symbol.context.symbol;
+                }
+                this.reportDuplicateSymbol(name, ruleRef.symbol, start);
+            }
+        }
+
     }
 }
