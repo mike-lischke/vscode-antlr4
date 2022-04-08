@@ -66,21 +66,13 @@ export class SentenceGenerator {
         this.printableUnicode = printableUnicodePoints({
             excludeCJK: true,
             excludeRTL: true,
-            limitToBMP: false,
+            limitToBMP: true,
             includeLineTerminators: true,
         });
 
         // Get the symbols for all predicates (to enable predicate evaluation).
-        context.symbolTable.getNestedSymbolsOfType(LexerPredicateSymbol).then((symbols) => {
-            this.lexerPredicates = symbols;
-        }).catch(() => {
-            this.lexerPredicates = [];
-        });
-        context.symbolTable.getNestedSymbolsOfType(ParserPredicateSymbol).then((symbols) => {
-            this.parserPredicates = symbols;
-        }).catch(() => {
-            this.parserPredicates = [];
-        });
+        this.lexerPredicates = context.symbolTable.getNestedSymbolsOfTypeSync(LexerPredicateSymbol);
+        this.parserPredicates = context.symbolTable.getNestedSymbolsOfTypeSync(ParserPredicateSymbol);
 
         this.parserPredicates.forEach((value, index) => {
             console.log(`${index}: ${value.context!.text}`);

@@ -214,7 +214,7 @@ export class ExtensionHost {
                     }
                 }
 
-                if (typeof config.actionFile === "string") {
+                if (typeof config.actionFile === "string" && config.actionFile.length > 0) {
                     if (!path.isAbsolute(config.actionFile)) {
                         config.actionFile = path.join(path.dirname(grammarFileName), config.actionFile);
                     }
@@ -235,7 +235,7 @@ export class ExtensionHost {
                 }
 
                 this.backend.generateSentence(grammarFileName, ruleName, config, (sentence: string, index: number) => {
-                    sentenceOutputChannel.appendLine(`${index}) ⋙${sentence}⋘`);
+                    sentenceOutputChannel.appendLine(`${index}) ${sentence}`);
                     sentenceOutputChannel.show(true);
                 });
             }),
