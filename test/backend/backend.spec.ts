@@ -39,7 +39,7 @@ interface ITestRange {
 describe("vscode-antlr4-backend:", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
-    jest.setTimeout(20000);
+    jest.setTimeout(50000);
 
     describe("Base Handling:", () => {
         it("Create Backend", () => {
