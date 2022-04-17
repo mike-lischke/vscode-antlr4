@@ -1,7 +1,7 @@
 [![](https://vsmarketplacebadge.apphb.com/version-short/mike-lischke.vscode-antlr4.svg)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4)
 [![](https://vsmarketplacebadge.apphb.com/installs-short/mike-lischke.vscode-antlr4.svg)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4)
 [![](https://vsmarketplacebadge.apphb.com/rating-short/mike-lischke.vscode-antlr4.svg)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4)
-[![](https://travis-ci.org/mike-lischke/vscode-antlr4.svg?branch=master)](https://travis-ci.org/mike-lischke/vscode-antlr4)
+[![CircleCI](https://circleci.com/gh/mike-lischke/vscode-antlr4/tree/master.svg?style=svg)](https://circleci.com/gh/mike-lischke/vscode-antlr4/tree/master)
 
 
 <p style="float:right;">
