@@ -547,8 +547,8 @@
         "publish": "vsce publish",
         "package": "vsce package",
         "vscode:prepublish": "tsc -b",
-        "test": "jest --watch --coverage",
-        "debug-test": "jest --no-coverage",
+        "local-test": "jest --watch --coverage",
+        "test": "jest --no-coverage",
         "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\""
     },

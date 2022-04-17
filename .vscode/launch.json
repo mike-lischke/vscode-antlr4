@@ -23,7 +23,7 @@
             "runtimeExecutable": "npm",
             "runtimeArgs": [
                 "run",
-                "debug-test"
+                "test"
             ],
             "args": [
                 "--",
