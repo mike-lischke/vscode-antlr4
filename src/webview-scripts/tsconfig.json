@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "module": "ES2022",
+        "target": "ES2022",
+        "outDir": "../../out",
+        "removeComments": true,
+        "noImplicitAny": true,
+        "inlineSources": true,
+        "inlineSourceMap": true,
+        "isolatedModules": false,
+        "allowSyntheticDefaultImports": true,
+        "allowUmdGlobalAccess": true, // For D3.js
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "strictNullChecks": true,
+        "alwaysStrict": true,
+        "composite": true,
+        "rootDir": "../.."
+    },
+    "include": [
+        "./*.ts"
+    ],
+    "exclude": []
+}

@@ -21,8 +21,9 @@ import * as path from "path";
 import { Subject } from "await-notify";
 
 import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger";
-import { AntlrParseTreeProvider } from "./ParseTreeProvider";
-import { AntlrFacade, IParseTreeNode, ParseTreeNodeType } from "../backend/facade";
+import { AntlrParseTreeProvider } from "./webviews/ParseTreeProvider";
+import { AntlrFacade } from "../backend/facade";
+import { IParseTreeNode, ParseTreeNodeType } from "../backend/types";
 import { Token, CommonToken } from "antlr4ts";
 
 /**
@@ -222,11 +223,6 @@ export class AntlrDebugSession extends DebugSession {
                 }
 
                 this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
-                if (this.showGraphicalParseTree) {
-                    this.parseTreeProvider.showWebview(Uri.file(args.grammar),
-                        { title: "Parse Tree: " + path.basename(args.grammar) });
-                }
-
             } catch (e) {
                 this.sendErrorResponse(response, { id: 3, format: "Could not launch debug session:\n\n" + String(e) });
 

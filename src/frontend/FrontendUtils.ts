@@ -10,8 +10,8 @@ import * as crypto from "crypto";
 import * as path from "path";
 
 import { ExtensionContext, Uri, window, Webview, commands, ProviderResult, TextDocument } from "vscode";
-import { AntlrFacade, ILexicalRange } from "../backend/facade";
-import { GrammarType } from "../backend/SourceContext";
+import { AntlrFacade } from "../backend/facade";
+import { ILexicalRange, GrammarType } from "../backend/types";
 
 export interface IRangeHolder {
     range?: ILexicalRange;
@@ -25,6 +25,7 @@ export class FrontendUtils {
      * @param file The base file name.
      * @param context The context of this extension to get its path regardless where it is installed.
      * @param webView When given format the path for use in this webview.
+     *
      * @returns The computed path.
      */
     public static getMiscPath(file: string, context: ExtensionContext, webView?: Webview): string {
@@ -35,6 +36,25 @@ export class FrontendUtils {
         }
 
         return context.asAbsolutePath(path.join("misc", file));
+    }
+
+    /**
+     * Returns the absolute path to a file located in our out folder.
+     *
+     * @param file The base file name.
+     * @param context The context of this extension to get its path regardless where it is installed.
+     * @param webView When given format the path for use in this webview.
+     *
+     * @returns The computed path.
+     */
+    public static getOutPath(file: string, context: ExtensionContext, webView?: Webview): string {
+        if (webView) {
+            const uri = Uri.file(context.asAbsolutePath(path.join("out", file)));
+
+            return webView.asWebviewUri(uri).toString();
+        }
+
+        return context.asAbsolutePath(path.join("out", file));
     }
 
     /**

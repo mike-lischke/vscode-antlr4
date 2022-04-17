@@ -5,11 +5,8 @@
             "label": "tsc",
             "command": "tsc",
             "args": [
+                "-b",
                 "-w",
-                "-p",
-                ".",
-                "--outDir",
-                "./out"
             ],
             "presentation": {
                 "echo": true,
@@ -26,11 +23,8 @@
             "label": "tsc-win",
             "command": "tsc.cmd",
             "args": [
+                "-b",
                 "-w",
-                "-p",
-                ".",
-                "--outDir",
-                "./out"
             ],
             "presentation": {
                 "echo": true,

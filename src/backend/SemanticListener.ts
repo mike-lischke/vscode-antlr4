@@ -5,7 +5,7 @@
  * See LICENSE file for more info.
  */
 
-import { SymbolGroupKind, IDiagnosticEntry, DiagnosticType } from "./facade";
+import { IDiagnosticEntry, DiagnosticType, SymbolGroupKind } from "./types";
 import { ContextSymbolTable } from "./ContextSymbolTable";
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener";
 import {

@@ -2,45 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Mocha Tests",
-            "type": "node",
-            "request": "launch",
-            "protocol": "inspector",
-            "cwd": "${workspaceRoot}",
-            "preLaunchTask": "tsc",
-            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-            "args": [ "--no-timeouts", "--colors", "${workspaceRoot}/out/test/**/*.js" ],
-            "stopOnEntry": false,
-            "runtimeExecutable": null,
-            "env": {
-               "NODE_ENV": "testing"
-            },
-            "sourceMaps": true
-        },
-        {
-            "name": "Mocha Tests on Win",
-            "type": "pwa-node",
-            "request": "launch",
-            "preLaunchTask": "tsc-win",
-            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "args": [
-                "-u",
-                "tdd",
-                "--timeout",
-                "999999",
-                "--colors",
-                "${workspaceFolder}/out/test"
-            ],
-            "internalConsoleOptions": "openOnSessionStart",
-            "env": {
-                "NODE_ENV": "testing"
-            },
-            "outFiles": [
-                "${workspaceRoot}/out/test/**/*.js"
-            ],
-            "sourceMaps": true
-        },
-        {
             "type": "extensionHost",
             "request": "launch",
             "name": "Launch Extension",
@@ -54,6 +15,24 @@
             ],
             "preLaunchTask": "tsc",
             "trace": false
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run selected Jest test",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "debug-test"
+            ],
+            "args": [
+                "--",
+                "-i",
+                "${file}",
+                "-t",
+                "--no-coverage"
+            ],
+            "console": "integratedTerminal",
+        },
     ]
 }

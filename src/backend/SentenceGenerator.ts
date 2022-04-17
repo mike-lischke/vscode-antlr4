@@ -13,7 +13,7 @@ import {
     RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState, PredicateTransition,
 } from "antlr4ts/atn";
 
-import { ISentenceGenerationOptions, RuleMappings, PredicateFunction } from "./facade";
+import { ISentenceGenerationOptions, RuleMappings, PredicateFunction } from "./types";
 import { IntervalSet } from "antlr4ts/misc";
 
 import { printableUnicodePoints, fullUnicodeSet } from "./Unicode";

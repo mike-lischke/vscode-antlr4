@@ -10,7 +10,8 @@
 import {
     workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, EventEmitter, Event, ProviderResult,
 } from "vscode";
-import { ISymbolInfo, AntlrFacade, SymbolKind } from "../backend/facade";
+import { AntlrFacade } from "../backend/facade";
+import { ISymbolInfo, SymbolKind } from "../backend/types";
 
 class SymbolCodeLens extends CodeLens {
     public constructor(public symbol: ISymbolInfo, range: Range) {

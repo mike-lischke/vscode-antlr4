@@ -10,7 +10,7 @@
 import { ParserRuleContext } from "antlr4ts";
 import { SymbolTable, Symbol, ScopedSymbol, SymbolTableOptions } from "antlr4-c3";
 
-import { SymbolKind, SymbolGroupKind, ISymbolInfo, CodeActionType } from "../backend/facade";
+import { ISymbolInfo, CodeActionType, SymbolKind, SymbolGroupKind } from "./types";
 import { SourceContext } from "./SourceContext";
 import { ParseTree } from "antlr4ts/tree";
 

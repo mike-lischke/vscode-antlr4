@@ -8,7 +8,7 @@
 import { ANTLRErrorListener, Recognizer, RecognitionException } from "antlr4ts";
 
 import { Override } from "antlr4ts/Decorators";
-import { IDiagnosticEntry, DiagnosticType } from "./facade";
+import { IDiagnosticEntry, DiagnosticType } from "./types";
 
 export class ContextLexerErrorListener implements ANTLRErrorListener<number> {
     public constructor(private errorList: IDiagnosticEntry[]) {

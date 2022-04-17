@@ -6,7 +6,6 @@
  */
 
 import { ExtensionContext } from "vscode";
-
 import { ExtensionHost } from "./ExtensionHost";
 
 let extensionHost: ExtensionHost;

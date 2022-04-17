@@ -10,7 +10,7 @@
 import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
-import { ISymbolInfo } from "../backend/facade";
+import { ISymbolInfo } from "../backend/types";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class ParserSymbol extends TreeItem {

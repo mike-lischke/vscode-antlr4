@@ -1,9 +1,9 @@
 {
     "env": {
-        "browser": false,
+        "browser": true,
         "node": true,
         "es6": true,
-        "mocha": true
+        "jest": true
     },
     "extends": [
         "eslint:recommended",
@@ -17,7 +17,10 @@
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "project": "tsconfig.json",
+        "project": [
+            "tsconfig.json",
+            "src/webview-scripts/tsconfig.json"
+        ],
         "sourceType": "module",
         "implicitStrict": true,
         "ecmaFeatures": {},

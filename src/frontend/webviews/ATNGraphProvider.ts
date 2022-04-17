@@ -9,9 +9,9 @@ import * as fs from "fs-extra";
 import * as path from "path";
 
 import { WebviewProvider, IWebviewShowOptions, IWebviewMessage } from "./WebviewProvider";
-import { FrontendUtils } from "./FrontendUtils";
+import { FrontendUtils } from "../FrontendUtils";
 import { window, workspace, Uri, TextEditor, Webview } from "vscode";
-import { IAtnNode } from "../backend/facade";
+import { IAtnNode } from "../../backend/types";
 
 // ATN graph state info for a single rule.
 export interface IAtnStateEntry {

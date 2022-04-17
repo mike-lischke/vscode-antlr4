@@ -19,7 +19,7 @@
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.46.0"
+        "vscode": "^1.66.0"
     },
     "categories": [
         "Programming Languages",
@@ -545,42 +545,63 @@
     },
     "scripts": {
         "publish": "vsce publish",
-        "test": "tsc && ./node_modules/mocha/bin/_mocha ./out/test/backend/test.js",
-        "test-win": "tsc.cmd && mocha ./out/test/backend/test.js",
+        "package": "vsce package",
+        "vscode:prepublish": "tsc -b",
+        "test": "jest --watch --coverage",
+        "debug-test": "jest --no-coverage",
         "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\""
     },
     "dependencies": {
+        "@unicode/unicode-11.0.0": "^1.2.1",
+        "@vscode/debugadapter": "^1.55.1",
+        "@vscode/debugprotocol": "^1.55.1",
         "antlr4-c3": "^2.2.1",
         "antlr4ts": "^0.5.0-alpha.4",
         "antlr4ts-cli": "^0.5.0-alpha.4",
         "await-notify": "^1.0.1",
         "d3": "^7.4.2",
-        "fs-extra": "^10.0.1",
-        "lodash": "^4.17.21",
-        "@unicode/unicode-11.0.0": "^1.2.1",
-        "@vscode/debugprotocol": "^1.55.1",
-        "@vscode/debugadapter": "^1.55.1"
+        "fs-extra": "^10.0.1"
     },
     "devDependencies": {
-        "@types/chai": "^4.3.0",
         "@types/d3": "^7.1.0",
         "@types/fs-extra": "^9.0.13",
         "@types/glob": "^7.2.0",
+        "@types/jest": "^27.4.1",
         "@types/lodash": "^4.14.181",
-        "@types/mocha": "^9.1.0",
         "@types/node": "^17.0.23",
         "@types/vscode": "1.66.0",
         "@typescript-eslint/eslint-plugin": "^5.18.0",
         "@typescript-eslint/eslint-plugin-tslint": "^5.18.0",
         "@typescript-eslint/parser": "^5.18.0",
-        "chai": "^4.3.6",
         "eslint": "^8.12.0",
         "eslint-plugin-import": "^2.25.4",
         "eslint-plugin-jsdoc": "^38.1.6",
         "eslint-plugin-prefer-arrow": "^1.2.3",
-        "mocha": "^9.2.2",
-        "tslint": "^6.1.3",
+        "jest": "^27.5.1",
+        "ts-jest": "^27.1.4",
         "typescript": "^4.6.3"
+    },
+    "jest": {
+        "preset": "ts-jest",
+        "collectCoverageFrom": [
+            "src/**/*.ts",
+            "!src/generated/**",
+            "!src/parsers/**",
+            "!src/webview-scripts/**",
+            "!src/**/*.d.ts"
+        ],
+        "coverageReporters": [
+            "text",
+            "html"
+        ],
+        "coverageThreshold": {
+            "global": {
+                "statements": 54,
+                "branch": 49,
+                "functions": 43,
+                "lines": 54
+            }
+        }
     }
 }

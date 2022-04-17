@@ -10,9 +10,9 @@ import * as path from "path";
 import * as vscode from "vscode";
 
 import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
-import { FrontendUtils } from "./FrontendUtils";
-import { IDebuggerConsumer } from "./AntlrDebugAdapter";
-import { GrammarDebugger } from "../backend/GrammarDebugger";
+import { FrontendUtils } from "../FrontendUtils";
+import { IDebuggerConsumer } from "../AntlrDebugAdapter";
+import { GrammarDebugger } from "../../backend/GrammarDebugger";
 
 export class AntlrParseTreeProvider extends WebviewProvider implements IDebuggerConsumer {
 
@@ -34,15 +34,20 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
 
         // Content Security Policy
         const nonce = this.generateNonce();
-        const scripts = [
-            FrontendUtils.getMiscPath("utils.js", this.context, webView),
-            FrontendUtils.getMiscPath("parse-tree.js", this.context, webView),
+        const scripts: string[] = [
+            //FrontendUtils.getMiscPath("utils.js", this.context, webView),
+            //FrontendUtils.getMiscPath("parse-tree.js", this.context, webView),
+            //FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context, webView),
         ];
+        const rendererPath = FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context,
+            webView);
+        const communicationPath = FrontendUtils.getOutPath("src/webview-scripts/Communication.js", this.context,
+            webView);
         const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
 
         const settings = vscode.workspace.getConfiguration("antlr4.debug");
-        const horizontal = settings.visualParseTreeHorizontal ? 1 : 0;
-        const clustered = settings.visualParseTreeClustered ? 1 : 0;
+        const horizontal = settings.visualParseTreeHorizontal ? true : false;
+        const clustered = settings.visualParseTreeClustered ? true : false;
 
         const diagram = `<!DOCTYPE html>
             <html>
@@ -53,13 +58,8 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                     <base target="_blank">
                     <script src="${graphLibPath}"></script>
                     <script>
-                        var parseTreeData = ${JSON.stringify(graph)};
-                        var useCluster = ${clustered};
-                        var horizontal = ${horizontal};
-                        const width = 1000, height = 1000;
-                        const initialScale = 0.75;
-                        const initialTranslateX = ${horizontal ? 200 : 500};
-                        const initialTranslateY = ${horizontal ? 400 : 50};
+                        let parseTreeRenderer;
+                        let exportToSVG;
                     </script>
                 </head>
 
@@ -69,7 +69,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                         Tree
                         <span class="switch">
                             <span class="switch-border">
-                                <input id="switch1" type="checkbox" onClick="toggleTreeType(this)"/>
+                                <input id="switch1" type="checkbox" onClick="parseTreeRenderer.toggleTreeType(this)"/>
                                 <label for="switch1"></label>
                                 <span class="switch-handle-top"></span>
                             </span>
@@ -78,18 +78,19 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                         Horizontal
                         <span class="switch">
                             <span class="switch-border">
-                                <input id="switch2" type="checkbox" onClick="toggleOrientation(this)"/>
+                                <input id="switch2" type="checkbox"
+                                    onClick="parseTreeRenderer.toggleOrientation(this)"/>
                                 <label for="switch2"></label>
                                 <span class="switch-handle-top"></span>
                             </span>
                         </span>
                         Vertical&nbsp;&nbsp;
-                        <a onClick="changeNodeSize(0.9);">
+                        <a onClick="parseTreeRenderer.changeNodeSize(0.9);">
                             <span class="parse-tree-color" style="font-size: 120%; font-weight: 800;
                                 cursor: pointer; vertical-align: middle;">-</span>
                         </a>
                         Node Size
-                        <a onClick="changeNodeSize(1.1);">
+                        <a onClick="parseTreeRenderer.changeNodeSize(1.1);">
                             <span class="parse-tree-color" style="font-size: 120%; font-weight: 800; cursor: pointer;
                                 vertical-align: middle;">+</span>
                         </a>&nbsp;&nbsp;
@@ -102,7 +103,25 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
 
                 <svg></svg>
                 ${this.getScripts(nonce, scripts)}
-                <script>initSwitches(); update(root);</script>
+                <script type="module">
+                    import { ParseTreeRenderer } from "${rendererPath}";
+                    import { Communication } from "${communicationPath}";
+
+                    exportToSVG = Communication.exportToSVG;
+                    parseTreeRenderer = new ParseTreeRenderer();
+
+                    parseTreeRenderer.loadNewTree({
+                        parseTreeData: ${JSON.stringify(graph)},
+                        useCluster: ${clustered.toString()},
+                        horizontal: ${horizontal.toString()},
+                        width: 1000,
+                        height: 1000,
+                        initialScale: 0.75,
+                        initialTranslateX: ${horizontal ? 200 : 500},
+                        initialTranslateY: ${horizontal ? 400 : 50},
+                    });
+                    parseTreeRenderer.initSwitches();
+                </script>
             </body>
         </html>`;
 

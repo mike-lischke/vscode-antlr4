@@ -14,7 +14,7 @@ import {
 
 import { AntlrFacade } from "./backend/facade";
 import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
-import { AntlrParseTreeProvider } from "./frontend/ParseTreeProvider";
+import { AntlrParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
 
 /**
  * Validates launch configuration for grammar debugging.

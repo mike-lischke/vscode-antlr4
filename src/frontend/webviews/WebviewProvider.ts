@@ -7,8 +7,8 @@
 
 import * as path from "path";
 
-import { AntlrFacade } from "../backend/facade";
-import { FrontendUtils } from "./FrontendUtils";
+import { AntlrFacade } from "../../backend/facade";
+import { FrontendUtils } from "../FrontendUtils";
 import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 
 export interface IWebviewShowOptions {
@@ -40,26 +40,30 @@ export class WebviewProvider {
         const uri = (source instanceof Uri) ? source : source.document.uri;
         const uriString = uri.toString();
 
-        const panel = window.createWebviewPanel("antlr4-vscode-webview", options.title, ViewColumn.Two, {
-            enableScripts: true,
-            retainContextWhenHidden: true,
-        });
-        this.webViewMap.set(uriString, [panel, options]);
-
         if (this.webViewMap.has(uriString)) {
             const [existingPanel] = this.webViewMap.get(uriString)!;
             existingPanel.title = options.title;
             if (!this.updateContent(uri)) {
                 this.generateContent(existingPanel.webview, this.currentEditor ? this.currentEditor : uri, options)
                     .then((content) => {
-                        panel.webview.html = content;
+                        existingPanel.webview.html = content;
                     }).catch((reason: string) => {
-                        panel.webview.html = `Could not render webview content: ${reason.toString()}`;
+                        existingPanel.webview.html = `Could not render webview content: ${reason.toString()}`;
                     });
             }
 
             return;
         }
+
+        const panel = window.createWebviewPanel("antlr4-vscode-webview", options.title, ViewColumn.Two, {
+            enableScripts: true,
+            retainContextWhenHidden: true,
+        });
+        this.webViewMap.set(uriString, [panel, options]);
+
+        panel.onDidDispose(() => {
+            this.webViewMap.delete(uriString);
+        });
 
         this.generateContent(panel.webview, this.currentEditor ? this.currentEditor : uri, options)
             .then((content) => {

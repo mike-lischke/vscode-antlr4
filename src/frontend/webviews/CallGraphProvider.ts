@@ -8,7 +8,7 @@
 import * as path from "path";
 
 import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
-import { FrontendUtils } from "./FrontendUtils";
+import { FrontendUtils } from "../FrontendUtils";
 import { TextEditor, Uri, Webview } from "vscode";
 
 export class AntlrCallGraphProvider extends WebviewProvider {

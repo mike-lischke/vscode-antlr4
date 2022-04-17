@@ -8,7 +8,7 @@
 import { ANTLRErrorListener, Recognizer, RecognitionException, Token, CommonToken } from "antlr4ts";
 
 import { Override } from "antlr4ts/Decorators";
-import { IDiagnosticEntry, DiagnosticType } from "../backend/facade";
+import { IDiagnosticEntry, DiagnosticType } from "./types";
 
 export class ContextErrorListener implements ANTLRErrorListener<CommonToken> {
     public constructor(private errorList: IDiagnosticEntry[]) {

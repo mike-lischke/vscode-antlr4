@@ -32,10 +32,10 @@ import {
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
 import {
-    SymbolKind, ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IAtnGraphData, IGenerationOptions,
+    ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IAtnGraphData, IGenerationOptions,
     ISentenceGenerationOptions, IFormattingOptions, IDefinition, IContextDetails, PredicateFunction, IAtnLink,
-    CodeActionType,
-} from "./facade";
+    CodeActionType, SymbolKind, GrammarType,
+} from "./types";
 
 import { ContextErrorListener } from "./ContextErrorListener";
 import { ContextLexerErrorListener } from "./ContextLexerErrorListener";
@@ -65,13 +65,6 @@ import {
 } from "./GrammarInterpreters";
 import { printableUnicodePoints } from "./Unicode";
 import { BackendUtils } from "./BackendUtils";
-
-export enum GrammarType {
-    Unknown,
-    Parser,
-    Lexer,
-    Combined
-}
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
@@ -139,7 +132,7 @@ export class SourceContext {
 
     private tree: GrammarSpecContext | undefined; // The root context from the last parse run.
 
-    public constructor(public fileName: string) {
+    public constructor(public fileName: string, private extensionDir: string) {
         this.sourceId = path.basename(fileName, path.extname(fileName));
         this.symbolTable = new ContextSymbolTable(this.sourceId, { allowDuplicateSymbols: true }, this);
 
@@ -1048,10 +1041,9 @@ export class SourceContext {
             parameters.push(options.alternativeJar);
         } else {
             if (options.language?.toLowerCase() === "typescript") {
-                parameters.push(path.join(__dirname,
-                    "../../../antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar"));
+                parameters.push(path.join(this.extensionDir, "antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar"));
             } else {
-                parameters.push(path.join(__dirname, "../../../antlr/antlr-4.9.2-complete.jar"));
+                parameters.push(path.join(this.extensionDir, "antlr/antlr-4.9.2-complete.jar"));
             }
         }
 

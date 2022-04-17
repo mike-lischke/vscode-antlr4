@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "declaration": true,
-        "module": "commonjs",
-        "target": "es6",
+        "module": "CommonJS",
+        "target": "ES2022",
         "outDir": "out",
         "removeComments": true,
         "noImplicitAny": true,
@@ -10,19 +10,29 @@
         "inlineSources": true,
         "isolatedModules": false,
         "allowSyntheticDefaultImports": true,
+        "allowUmdGlobalAccess": true, // For D3.js
+        "moduleResolution": "node",
         "experimentalDecorators": true,
         "strictNullChecks": true,
-        "alwaysStrict": true
+        "alwaysStrict": true,
+        "rootDir": "./"
     },
+    "references": [
+        { // Webview scripts need a different module type (esm), so they are handled as a separate (sub) project.
+            "path": "src/webview-scripts"
+        }
+    ],
     "compileOnSave": true,
     "include": [
         "src/*.ts",
-        "src/**/*.ts",
+        "src/backend/**/*.ts",
+        "src/frontend/**/*.ts",
+        "src/parser/**/*.ts",
         "test/**/*.ts"
     ],
     "exclude": [
         "node_modules",
         ".vscode-test",
-        "images"
+        "images",
     ]
 }

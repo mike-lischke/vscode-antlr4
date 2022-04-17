@@ -15,14 +15,15 @@ import {
 } from "vscode";
 
 import {
-    AntlrFacade, DiagnosticType, IGenerationOptions, ILexicalRange, ISentenceGenerationOptions,
+    AntlrFacade,
 } from "./backend/facade";
+import { DiagnosticType, IGenerationOptions, ILexicalRange, ISentenceGenerationOptions } from "./backend/types";
 import { FrontendUtils } from "./frontend/FrontendUtils";
 import { ProgressIndicator } from "./frontend/ProgressIndicator";
 import { AntlrDebugConfigurationProvider } from "./AntlrDebugConfigurationProvider";
 import { ActionsProvider } from "./frontend/ActionsProvider";
-import { AntlrAtnGraphProvider } from "./frontend/ATNGraphProvider";
-import { AntlrCallGraphProvider } from "./frontend/CallGraphProvider";
+import { AntlrAtnGraphProvider } from "./frontend/webviews/ATNGraphProvider";
+import { AntlrCallGraphProvider } from "./frontend/webviews/CallGraphProvider";
 import { ChannelsProvider } from "./frontend/ChannelsProvider";
 import { AntlrCodeLensProvider } from "./frontend/CodeLensProvider";
 import { AntlrCompletionItemProvider } from "./frontend/CompletionItemProvider";
@@ -33,8 +34,8 @@ import { ImportsProvider } from "./frontend/ImportsProvider";
 import { LexerSymbolsProvider } from "./frontend/LexerSymbolsProvider";
 import { ModesProvider } from "./frontend/ModesProvider";
 import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
-import { AntlrParseTreeProvider } from "./frontend/ParseTreeProvider";
-import { AntlrRailroadDiagramProvider } from "./frontend/RailroadDiagramProvider";
+import { AntlrParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
+import { AntlrRailroadDiagramProvider } from "./frontend/webviews/RailroadDiagramProvider";
 import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
 import { AntlrRenameProvider } from "./frontend/RenameProvider";
 import { AntlrSymbolProvider } from "./frontend/SymbolProvider";
@@ -75,9 +76,7 @@ export class ExtensionHost {
 
     public constructor(context: ExtensionContext) {
         this.importDir = workspace.getConfiguration("antlr4.generation").importDir as string;
-        this.backend = new AntlrFacade(this.importDir ?? "");
-
-        this.addSubscriptions(context);
+        this.backend = new AntlrFacade(this.importDir ?? "", context.extensionPath);
 
         this.importsProvider = new ImportsProvider(this.backend);
         context.subscriptions.push(window.registerTreeDataProvider("antlr4.imports", this.importsProvider));
@@ -112,6 +111,7 @@ export class ExtensionHost {
         }
 
         this.registerEventHandlers();
+        this.addSubscriptions(context);
 
         // Load interpreter + cache data for each open document, if there's any.
         for (const document of workspace.textDocuments) {

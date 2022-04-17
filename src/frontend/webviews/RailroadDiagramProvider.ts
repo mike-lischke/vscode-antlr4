@@ -8,9 +8,9 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { SymbolKind } from "../backend/facade";
+import { SymbolKind } from "../../backend/types";
 import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
-import { FrontendUtils } from "./FrontendUtils";
+import { FrontendUtils } from "../FrontendUtils";
 
 export class AntlrRailroadDiagramProvider extends WebviewProvider {
 

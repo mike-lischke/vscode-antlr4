@@ -11,7 +11,7 @@ import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, TextEditor, TreeView, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
-import { ILexicalRange, CodeActionType } from "../backend/facade";
+import { ILexicalRange, CodeActionType } from "../backend/types";
 import { FrontendUtils, IRangeHolder } from "./FrontendUtils";
 
 export class RootEntry extends TreeItem {

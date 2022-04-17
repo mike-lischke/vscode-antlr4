@@ -8,7 +8,9 @@
 import {
     TextDocument, CancellationToken, Range, Location, Uri, SymbolInformation, DocumentSymbolProvider, ProviderResult,
 } from "vscode";
-import { AntlrFacade, SymbolKind } from "../backend/facade";
+
+import { AntlrFacade } from "../backend/facade";
+import { SymbolKind } from "../backend/types";
 import { symbolDescriptionFromEnum, translateSymbolKind } from "./Symbol";
 
 export class AntlrSymbolProvider implements DocumentSymbolProvider {

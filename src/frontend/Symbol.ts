@@ -6,7 +6,8 @@
  */
 
 import * as vscode from "vscode";
-import { SymbolKind } from "../backend/facade";
+
+import { SymbolKind } from "../backend/types";
 
 const symbolDescriptionMap = new Map<SymbolKind, string>([
     [SymbolKind.Terminal, "Terminal"],

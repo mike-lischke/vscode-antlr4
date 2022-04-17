@@ -5,7 +5,7 @@
  * See LICENSE file for more info.
  */
 
-import { IFormattingOptions } from "../backend/facade";
+import { IFormattingOptions } from "./types";
 
 import { Token } from "antlr4ts";
 import { Interval } from "antlr4ts/misc";

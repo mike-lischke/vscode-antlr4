@@ -25,7 +25,7 @@ import {
     ParserPredicateSymbol, LexerActionSymbol, ParserActionSymbol,
 } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
-import { PredicateFunction } from "./facade";
+import { PredicateFunction } from "./types";
 
 export enum RunMode {
     Normal,

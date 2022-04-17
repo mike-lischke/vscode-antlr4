@@ -7,7 +7,7 @@
 
 /* eslint-disable max-len */
 
-import { IDiagnosticEntry, DiagnosticType } from "../backend/facade";
+import { IDiagnosticEntry, DiagnosticType } from "./types";
 import { SourceContext } from "./SourceContext";
 
 /**

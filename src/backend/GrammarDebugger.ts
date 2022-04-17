@@ -12,9 +12,7 @@ import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
 import { IInterpreterData } from "./InterpreterDataReader";
-import {
-    ILexerToken, IParseTreeNode, ParseTreeNodeType, ILexicalRange, PredicateFunction,
-} from "./facade";
+import { ILexerToken, IParseTreeNode, ParseTreeNodeType, ILexicalRange, PredicateFunction } from "./types";
 
 import { RuleSymbol } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
