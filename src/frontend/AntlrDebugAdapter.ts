@@ -97,9 +97,11 @@ export class AntlrDebugSession extends DebugSession {
     protected initializeRequest(response: DebugProtocol.InitializeResponse,
         _args: DebugProtocol.InitializeRequestArguments): void {
 
-        response.body = response.body || {};
-        response.body.supportsConfigurationDoneRequest = true;
-        response.body.supportsStepInTargetsRequest = true;
+        response.body = {
+            supportsConfigurationDoneRequest: true,
+            supportsStepInTargetsRequest: true,
+            supportsDelayedStackTraceLoading: false,
+        };
 
         this.sendResponse(response);
     }
@@ -267,28 +269,52 @@ export class AntlrDebugSession extends DebugSession {
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse,
         args: DebugProtocol.StackTraceArguments): void {
 
+        if (!this.debugger) {
+            response.body = {
+                stackFrames: [],
+                totalFrames: 0,
+            };
+            this.sendResponse(response);
+
+            return;
+        }
+
         const startFrame = typeof args.startFrame === "number" ? args.startFrame : 0;
         const maxLevels = typeof args.levels === "number" ? args.levels : 1000;
 
-        const stack = this.debugger!.currentStackTrace;
+        const stack = this.debugger.currentStackTrace;
         const frames: StackFrame[] = [];
         for (let i = startFrame; i < stack.length; ++i) {
             const entry = stack[i];
             let frame: StackFrame;
-            if (entry.next[0]) {
+            if (entry.next.length > 0) {
                 frame = new StackFrame(i, entry.name,
                     this.createSource(entry.source),
                     this.convertDebuggerLineToClient(entry.next[0].start.row),
                     this.convertDebuggerColumnToClient(entry.next[0].start.column),
                 );
+
+                frame.presentationHint = "normal";
             } else {
+                // We arrive here usually because an internal problem came up.
+                // See if we can use the same line/column coordinates as the previous frame.
+                let line = this.convertDebuggerLineToClient(1);
+                let column = this.convertDebuggerColumnToClient(0);
+                if (frames.length > 0) {
+                    line = frames[frames.length - 1].line;
+                    column = frames[frames.length - 1].column;
+                }
+
                 frame = new StackFrame(i, entry.name + " <missing next>",
                     this.createSource(entry.source),
-                    this.convertDebuggerLineToClient(1),
-                    this.convertDebuggerColumnToClient(0),
+                    line,
+                    column,
                 );
+
+                frame.presentationHint = "label";
             }
             frames.push(frame);
+
             if (frames.length > maxLevels) {
                 break;
             }
@@ -451,27 +477,26 @@ export class AntlrDebugSession extends DebugSession {
     }
 
     protected continueRequest(response: DebugProtocol.ContinueResponse, _args: DebugProtocol.ContinueArguments): void {
-        void this.debugger?.continue().then(() => {
-            this.sendResponse(response);
-        });
+        this.debugger?.continue();
+        this.sendResponse(response);
     }
 
     protected nextRequest(response: DebugProtocol.NextResponse, _args: DebugProtocol.NextArguments): void {
-        void this.debugger?.stepOver().then(() => {
-            this.sendResponse(response);
-        });
+        this.debugger?.stepOver();
+        this.sendResponse(response);
+
     }
 
     protected stepInRequest(response: DebugProtocol.StepInResponse, _args: DebugProtocol.StepInArguments): void {
-        void this.debugger?.stepIn().then(() => {
-            this.sendResponse(response);
-        });
+        this.debugger?.stepIn();
+        this.sendResponse(response);
+
     }
 
     protected stepOutRequest(response: DebugProtocol.StepOutResponse, _args: DebugProtocol.StepOutArguments): void {
-        void this.debugger?.stepOut().then(() => {
-            this.sendResponse(response);
-        });
+        this.debugger?.stepOut();
+        this.sendResponse(response);
+
     }
 
     protected evaluateRequest(response: DebugProtocol.EvaluateResponse, _args: DebugProtocol.EvaluateArguments): void {

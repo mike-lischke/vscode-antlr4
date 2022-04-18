@@ -44,7 +44,7 @@ The parser generation process has been improved by using the latest official ANT
 * When parser generation is enabled (at least for internal use) ANTLR4 itself is used to check for errors and warnings. These are then reported instead of the internally found problems and give you so the full validation power of ANTLR4.
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-8.png)
 
-### More Informations
+### More Information
 There are a number of documentation files for specific topics:
 
 * [Extension Settings](doc/extension-settings.md)
@@ -72,7 +72,8 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
-Note: there are sometimes holes between release numbers, which are caused by the need of re-releasing a version due to release problems. The do not change anything in the extension code.
+### 2.2.5
+- Now using ANTLR 4.9. Cannot use the just released 4.10 because of TS runtime incompatibilities.
 
 ### 2.2.4
 - You can now specify an alternative ANTLR4 jar file for parser generation and also use custom parameters. Both values can be set in the generation settings of the extension.
@@ -106,9 +107,9 @@ Note: there are sometimes holes between release numbers, which are caused by the
 - Fixed re-use of graphical tabs (web views), to avoid multiple tabs of the same type for a single grammar. Also, parse tree tabs now include the grammar's name in the title, just like it is done for all other tabs.
 - Added live visual parse trees and improved their handling + usability. No more jumping and zooming to default values on each debugger run.
 - Fixed a number of TS warnings.
-- Added two parse tree related settings (allowing to specify the inital layout + orientation).
+- Added two parse tree related settings (allowing to specify the initial layout + orientation).
 - Improved handling of certain ANTLR4 errors.
-- Re-enabled the accidentially disabled code completion feature.
+- Re-enabled the accidentally disabled code completion feature.
 
 ### 2.0.4
 - Fixed Bug #36: "$antlr-format off" removes remaining lines in file
@@ -160,14 +161,14 @@ Note: there are sometimes holes between release numbers, which are caused by the
 
 * Updated the symbol handling for the latest change in the antlr4-graps module. We now also show different icons depending on the type of the symbol.
 * Updated prebuilt antlr4-graps binaries for all platforms.
-* Quick navigation has been extended to imports/tokenvocabs and lexer modes.
+* Quick navigation has been extended to imports/token vocabularies and lexer modes.
 * The symbols list now contains some markup to show where a section with a specific lexer mode starts.
 * Fixed also a little mis-highlighting in the language syntax file.
 * Added a license file.
 
 ### 0.3.4
 
-Marked the extension as preview and added prebuild binaries.
+Marked the extension as preview and added prebuilt binaries.
 
 ### 0.2.0
 

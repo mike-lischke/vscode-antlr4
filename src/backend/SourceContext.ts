@@ -260,8 +260,7 @@ export class SourceContext {
         return result;
     }
 
-    public async symbolAtPosition(column: number, row: number,
-        limitToChildren: boolean): Promise<ISymbolInfo | undefined> {
+    public symbolAtPosition(column: number, row: number, limitToChildren: boolean): ISymbolInfo | undefined {
 
         const terminal = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
         if (!terminal || !(terminal instanceof TerminalNode)) {
@@ -285,7 +284,7 @@ export class SourceContext {
                 let symbol = this.symbolTable.symbolContainingContext(terminal);
                 if (symbol) {
                     // This is only the reference to a symbol. See if that symbol exists actually.
-                    symbol = await this.resolveSymbol(symbol.name);
+                    symbol = this.resolveSymbol(symbol.name);
                     if (symbol) {
                         return this.getSymbolInfo(symbol);
                     }
@@ -337,11 +336,10 @@ export class SourceContext {
      *
      * @returns The symbol at the given position (if there's any).
      */
-    public async enclosingSymbolAtPosition(column: number, row: number,
-        ruleScope: boolean): Promise<ISymbolInfo | undefined> {
+    public enclosingSymbolAtPosition(column: number, row: number, ruleScope: boolean): ISymbolInfo | undefined {
         let context = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
         if (!context) {
-            return;
+            return undefined;
         }
 
         if (context instanceof TerminalNode) {
@@ -362,14 +360,14 @@ export class SourceContext {
         }
 
         if (context) {
-            const symbol = await this.symbolTable.symbolWithContext(context);
+            const symbol = this.symbolTable.symbolWithContextSync(context);
             if (symbol) {
                 return this.symbolTable.getSymbolInfo(symbol);
             }
         }
     }
 
-    public async listTopLevelSymbols(includeDependencies: boolean): Promise<ISymbolInfo[]> {
+    public listTopLevelSymbols(includeDependencies: boolean): ISymbolInfo[] {
         return this.symbolTable.listTopLevelSymbols(includeDependencies);
     }
 
@@ -1440,7 +1438,7 @@ export class SourceContext {
                 runPredicate;
                 `;
 
-                predicateFunction = vm.runInThisContext(code) as PredicateFunction;
+                predicateFunction = vm.runInNewContext(code) as PredicateFunction;
             }
 
             const stream = CharStreams.fromString(input);
@@ -1490,7 +1488,7 @@ export class SourceContext {
             runPredicate;
             `;
 
-            predicateFunction = vm.runInThisContext(code) as PredicateFunction;
+            predicateFunction = vm.runInNewContext(code) as PredicateFunction;
         }
 
         const eventSink = (event: string | symbol, ...args: unknown[]): void => {
@@ -1517,12 +1515,12 @@ export class SourceContext {
         return errors;
     }
 
-    public async getSymbolInfo(symbol: string | Symbol): Promise<ISymbolInfo | undefined> {
+    public getSymbolInfo(symbol: string | Symbol): ISymbolInfo | undefined {
         return this.symbolTable.getSymbolInfo(symbol);
     }
 
-    public async resolveSymbol(symbolName: string): Promise<Symbol | undefined> {
-        return this.symbolTable.resolve(symbolName, false);
+    public resolveSymbol(symbolName: string): Symbol | undefined {
+        return this.symbolTable.resolveSync(symbolName, false);
     }
 
     public formatGrammar(options: IFormattingOptions, start: number, stop: number): [string, number, number] {

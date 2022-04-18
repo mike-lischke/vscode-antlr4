@@ -68,7 +68,7 @@ export class GrammarDebugger extends EventEmitter {
             runPredicate;
             `;
 
-            predicateFunction = vm.runInThisContext(code) as PredicateFunction;
+            predicateFunction = vm.runInNewContext(code) as PredicateFunction;
         }
 
         // The context list contains all dependencies of the main grammar (which is the first entry).
@@ -133,48 +133,45 @@ export class GrammarDebugger extends EventEmitter {
 
         if (noDebug) {
             this.parser.setProfile(false).then(() => {
-                this.parseTree = this.parser!.parse(startRuleIndex);
+                if (this.parser) {
+                    this.parseTree = this.parser.parse(startRuleIndex);
+                }
+
                 this.sendEvent("end");
             }).catch((reason) => {
                 this.sendEvent("error", reason);
             });
         } else {
-            const promises: Array<Promise<void>> = [];
-
             this.breakPoints.forEach((breakPoint) => {
-                promises.push(this.validateBreakPoint(breakPoint));
+                this.validateBreakPoint(breakPoint);
             });
 
-            Promise.all(promises).then(async () => {
-                this.parser?.start(startRuleIndex);
-                await this.continue();
-            }).catch((reason) => {
-                this.sendEvent("error", reason);
-            });
+            this.parseTree = this.parser.start(startRuleIndex);
+            this.continue();
         }
     }
 
-    public async continue(): Promise<void> {
+    public continue(): void {
         if (this.parser) {
-            this.parseTree = await this.parser.continue(RunMode.Normal);
+            this.parseTree = this.parser.continue(RunMode.Normal);
         }
     }
 
-    public async stepIn(): Promise<void> {
+    public stepIn(): void {
         if (this.parser) {
-            this.parseTree = await this.parser.continue(RunMode.StepIn);
+            this.parseTree = this.parser.continue(RunMode.StepIn);
         }
     }
 
-    public async stepOut(): Promise<void> {
+    public stepOut(): void {
         if (this.parser) {
-            this.parseTree = await this.parser.continue(RunMode.StepOut);
+            this.parseTree = this.parser.continue(RunMode.StepOut);
         }
     }
 
-    public async stepOver(): Promise<void> {
+    public stepOver(): void {
         if (this.parser) {
-            this.parseTree = await this.parser.continue(RunMode.StepOver);
+            this.parseTree = this.parser.continue(RunMode.StepOver);
         }
     }
 
@@ -476,16 +473,17 @@ export class GrammarDebugger extends EventEmitter {
      *
      * @param breakPoint The breakpoint to validate.
      */
-    private async validateBreakPoint(breakPoint: IGrammarBreakPoint) {
+    private validateBreakPoint(breakPoint: IGrammarBreakPoint) {
         const context = this.contexts.find((entry) => {
             return entry.fileName === breakPoint.source;
         });
+
         if (!context || !this.parserData) {
             return;
         }
 
         // Assuming here a rule always starts in column 0.
-        const rule = await context.enclosingSymbolAtPosition(0, breakPoint.line, true);
+        const rule = context.enclosingSymbolAtPosition(0, breakPoint.line, true);
         if (rule) {
             breakPoint.validated = true;
 
@@ -502,6 +500,7 @@ export class GrammarDebugger extends EventEmitter {
                 this.parser!.breakPoints.add(start);
                 breakPoint.line = rule.definition!.range.start.row;
             }
+
             this.sendEvent("breakpointValidated", breakPoint);
         }
     }

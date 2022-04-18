@@ -66,7 +66,7 @@ export class SentenceGenerator {
         this.printableUnicode = printableUnicodePoints({
             excludeCJK: true,
             excludeRTL: true,
-            limitToBMP: true,
+            limitToBMP: false,
             includeLineTerminators: true,
         });
 
@@ -542,9 +542,11 @@ export class SentenceGenerator {
     }
 
     private getRandomCharacterFromInterval(set: IntervalSet): String {
+        //const randomBlockSet = randomCodeBlocks();
         const validSet = this.printableUnicode.and(set);
         if (validSet.size === 0) {
-            return "✖︎";
+            // Very likely just a single script or a simple set of elements.
+            return String.fromCodePoint(this.getIntervalElement(set, Math.floor(Math.random() * set.size)));
         }
 
         return String.fromCodePoint(this.getIntervalElement(validSet, Math.floor(Math.random() * validSet.size)));

@@ -156,9 +156,9 @@ export class ContextSymbolTable extends SymbolTable {
         return symbol.context;
     }
 
-    public async getSymbolInfo(symbol: string | Symbol): Promise<ISymbolInfo | undefined> {
+    public getSymbolInfo(symbol: string | Symbol): ISymbolInfo | undefined {
         if (!(symbol instanceof Symbol)) {
-            const temp = await this.resolve(symbol);
+            const temp = this.resolveSync(symbol);
             if (!temp) {
                 return undefined;
             }
@@ -189,13 +189,8 @@ export class ContextSymbolTable extends SymbolTable {
 
             case SymbolKind.Terminal: {
                 // These are references to a depending grammar.
-                const promises: Array<Promise<Symbol | undefined>> = [];
                 this.dependencies.forEach((table: ContextSymbolTable) => {
-                    promises.push(table.resolve(name));
-                });
-
-                const symbols = await Promise.all(promises);
-                symbols.forEach((actualSymbol) => {
+                    const actualSymbol = table.resolveSync(name);
                     if (actualSymbol) {
                         symbol = actualSymbol;
                         kind = SourceContext.getKindFromSymbol(actualSymbol);
@@ -222,39 +217,39 @@ export class ContextSymbolTable extends SymbolTable {
 
     }
 
-    public async listTopLevelSymbols(localOnly: boolean): Promise<ISymbolInfo[]> {
+    public listTopLevelSymbols(localOnly: boolean): ISymbolInfo[] {
         const result: ISymbolInfo[] = [];
 
-        const options = await this.resolve("options", true);
+        const options = this.resolveSync("options", true);
         if (options) {
-            const tokenVocab = await options.resolve("tokenVocab", true);
+            const tokenVocab = options.resolveSync("tokenVocab", true);
             if (tokenVocab) {
-                const value = await this.getSymbolInfo(tokenVocab);
+                const value = this.getSymbolInfo(tokenVocab);
                 if (value) {
                     result.push(value);
                 }
             }
         }
 
-        let symbols = await this.symbolsOfType(ImportSymbol, localOnly);
+        let symbols = this.symbolsOfType(ImportSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(BuiltInTokenSymbol, localOnly);
+        symbols = this.symbolsOfType(BuiltInTokenSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(VirtualTokenSymbol, localOnly);
+        symbols = this.symbolsOfType(VirtualTokenSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(FragmentTokenSymbol, localOnly);
+        symbols = this.symbolsOfType(FragmentTokenSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(TokenSymbol, localOnly);
+        symbols = this.symbolsOfType(TokenSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(BuiltInModeSymbol, localOnly);
+        symbols = this.symbolsOfType(BuiltInModeSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(LexerModeSymbol, localOnly);
+        symbols = this.symbolsOfType(LexerModeSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(BuiltInChannelSymbol, localOnly);
+        symbols = this.symbolsOfType(BuiltInChannelSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(TokenChannelSymbol, localOnly);
+        symbols = this.symbolsOfType(TokenChannelSymbol, localOnly);
         result.push(...symbols);
-        symbols = await this.symbolsOfType(RuleSymbol, localOnly);
+        symbols = this.symbolsOfType(RuleSymbol, localOnly);
         result.push(...symbols);
 
         return result;
@@ -510,11 +505,10 @@ export class ContextSymbolTable extends SymbolTable {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async symbolsOfType<T extends Symbol>(t: new (...args: any[]) => T,
-        localOnly = false): Promise<ISymbolInfo[]> {
+    private symbolsOfType<T extends Symbol>(t: new (...args: any[]) => T, localOnly = false): ISymbolInfo[] {
         const result: ISymbolInfo[] = [];
 
-        const symbols = await this.getAllSymbols(t, localOnly);
+        const symbols = this.getAllSymbolsSync(t, localOnly);
         const filtered = new Set(symbols); // Filter for duplicates.
         for (const symbol of filtered) {
             const root = symbol.root as ContextSymbolTable;

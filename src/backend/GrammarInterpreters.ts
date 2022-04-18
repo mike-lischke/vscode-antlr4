@@ -21,11 +21,12 @@ import { Symbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 
 import { IInterpreterData } from "./InterpreterDataReader";
 import {
-    ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, AlternativeSymbol, LexerPredicateSymbol,
+    ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, LexerPredicateSymbol,
     ParserPredicateSymbol, LexerActionSymbol, ParserActionSymbol,
 } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
 import { PredicateFunction } from "./types";
+import { TerminalRuleContext } from "../parser/ANTLRv4Parser";
 
 export enum RunMode {
     Normal,
@@ -106,7 +107,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
     }
 
-    public start(startRuleIndex: number): void {
+    public start(startRuleIndex: number): ParserRuleContext {
         this.pauseRequested = false;
         this.callStack = [];
         const startRuleStartState: RuleStartState = this.atn.ruleToStartState[startRuleIndex];
@@ -117,6 +118,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
             this.enterRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex);
         }
         this.startIsPrecedenceRule = startRuleStartState.isPrecedenceRule;
+
+        return this.rootContext;
     }
 
     /**
@@ -126,7 +129,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
      *
      * @returns The context with which we ended the run.
      */
-    public async continue(runMode: RunMode): Promise<ParserRuleContext> {
+    public continue(runMode: RunMode): ParserRuleContext {
         // Need the current step depth for step over/out.
         const stackDepth = this.callStack.length;
 
@@ -156,7 +159,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                     if (this._ctx.isEmpty) {
                         // End of start rule.
                         if (this.startIsPrecedenceRule) {
-                            const result: ParserRuleContext = this._ctx;
+                            const result = this._ctx;
                             const parentContext = this._parentContextStack.pop()!;
                             this.unrollRecursionContexts(parentContext[0]);
                             this.eventSink("end");
@@ -184,7 +187,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 case ATNStateType.RULE_START: {
                     const ruleName = this.ruleNameFromIndex(this.atnState.ruleIndex);
                     if (ruleName) {
-                        const ruleSymbol = await this.mainContext.resolveSymbol(ruleName);
+                        const ruleSymbol = this.mainContext.resolveSymbol(ruleName);
                         if (ruleSymbol) {
                             // Get the source name from the symbol's symbol table (which doesn't
                             // necessarily correspond to the one we have set for the debugger).
@@ -313,29 +316,35 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     private computeNextSymbols(frame: IInternalStackFrame, transition: Transition) {
         frame.next = [];
 
-        let targetRule = "";
-        if (transition.target.stateType === ATNStateType.RULE_START) {
-            targetRule = this.ruleNameFromIndex(transition.target.ruleIndex)!;
-        }
+        const terminalMatches = (node: TerminalNode): boolean => {
+            const type = this.tokenIndexFromName(node.symbol.text!);
+            const currentType = this.inputStream.LA(1);
+            if (type === currentType
+                && transition.matches(currentType, Lexer.MIN_CHAR_VALUE, Lexer.MAX_CHAR_VALUE)) {
+                return true;
+            }
+
+            return false;
+        };
 
         for (const source of frame.current) {
             const candidates = this.nextCandidates(source);
             for (const candidate of candidates) {
                 if (candidate instanceof RuleReferenceSymbol) {
-                    if (candidate.name === targetRule) {
-                        frame.next.push(candidate);
-                    }
+                    frame.next.push(candidate);
                 } else {
                     if (candidate.name === ";") { // Special case: end of rule.
                         frame.next.push(candidate);
+                    } else if (candidate.context instanceof TerminalRuleContext) {
+                        if (candidate.context.TOKEN_REF()) {
+                            if (terminalMatches(candidate.context.TOKEN_REF()!)) {
+                                frame.next.push(candidate);
+                            }
+                        }
                     } else if (candidate.context instanceof TerminalNode) {
-                        const type = this.tokenIndexFromName(candidate.context.symbol.text!);
-                        const currentType = this.inputStream.LA(1);
-                        if (type === currentType
-                            && transition.matches(currentType, Lexer.MIN_CHAR_VALUE, Lexer.MAX_CHAR_VALUE)) {
+                        if (terminalMatches(candidate.context)) {
                             frame.next.push(candidate);
                         }
-
                     }
                 }
             }
@@ -353,7 +362,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         // from the rule's block, instead its sibling (which is another rule).
         let next: Symbol | undefined;
         if (start instanceof RuleSymbol) {
-            next = start.children[0]; // 2 children in a rule: the rule block and the semicolon.
+            next = start.children[1]; // 3 children in a rule: the colon, the rule block and the semicolon.
         } else {
             // unknown other case. Continue with the next directly following symbol.
             next = start.nextSibling;
@@ -456,8 +465,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
     private candidatesFromBlock(block: ScopedSymbol): Symbol[] {
         const result: Symbol[] = [];
-        for (const alt of block.children) {
-            let next: Symbol | undefined = (alt as AlternativeSymbol).children[0];
+        for (const symbol of block.children) {
+            let next = (symbol instanceof ScopedSymbol) ? symbol.firstChild : undefined;
             if (next instanceof VariableSymbol) { // Jump over variable assignments.
                 next = next.nextSibling;
                 if (next) {

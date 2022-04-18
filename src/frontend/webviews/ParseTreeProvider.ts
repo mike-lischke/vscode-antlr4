@@ -32,13 +32,6 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
         _options: IWebviewShowOptions): Promise<string> {
         const graph = this.debugger.currentParseTree;
 
-        // Content Security Policy
-        const nonce = this.generateNonce();
-        const scripts: string[] = [
-            //FrontendUtils.getMiscPath("utils.js", this.context, webView),
-            //FrontendUtils.getMiscPath("parse-tree.js", this.context, webView),
-            //FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context, webView),
-        ];
         const rendererPath = FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context,
             webView);
         const communicationPath = FrontendUtils.getOutPath("src/webview-scripts/Communication.js", this.context,
@@ -59,7 +52,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                     <script src="${graphLibPath}"></script>
                     <script>
                         let parseTreeRenderer;
-                        let exportToSVG;
+                        let communication;
                     </script>
                 </head>
 
@@ -95,20 +88,19 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                                 vertical-align: middle;">+</span>
                         </a>&nbsp;&nbsp;
                         Save to SVG
-                        <a onClick="exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');">
+                        <a onClick="communication.exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');">
                             <span class="parse-tree-save-image" />
                         </a>
                     </span>
                 </div>
 
                 <svg></svg>
-                ${this.getScripts(nonce, scripts)}
                 <script type="module">
                     import { ParseTreeRenderer } from "${rendererPath}";
                     import { Communication } from "${communicationPath}";
 
-                    exportToSVG = Communication.exportToSVG;
                     parseTreeRenderer = new ParseTreeRenderer();
+                    communication = new Communication(parseTreeRenderer);
 
                     parseTreeRenderer.loadNewTree({
                         parseTreeData: ${JSON.stringify(graph)},

@@ -13,7 +13,7 @@ Debugging a grammar requires only a few things, since most of the prerequisites 
 	* **Step out of the current parser rule** - ditto
 
 ### Textual Parse Tree
-Once a parse run finished a textual parse tree can be printed to the `DEBUG CONSOLE` panel in vscode (see the [Setup](#setup) section for how to enable it). This is a simple text-only representation much like a simple tree dump (but formatted).
+Once a parse run finished a textual parse tree will be printed to the `DEBUG CONSOLE` panel in vscode (see the [Setup](#setup) section for how to enable it). This is a simple text-only representation much like a simple tree dump (but formatted).
 
 ### Live Graphical Parse Tree
 When enabled in the launch task setup, a graphical parse tree is shown in an own editor tab, which updates on each debugging step:
@@ -27,9 +27,9 @@ As with all graphs in this extension, you can export it to an SVG file, along wi
 ### Actions and Semantic Predicates
 Grammars sometimes contain code in the target language of the generated lexer/parser. That can be support code in named actions (e.g. `import` or `#include` statements), other code within rules to support the parsing process or semantic predicates, to guide the parser. However, because this extension uses the interpreters for debugging it is not possible to run any of this code directly (even if the predicates are written in JS, let alone other languages). And since named and unnamed actions are usually to support the generated parser (and mostly not relevant for debugging), they are ignored by the extension debugger. However, for predicates there's an approach to simulate what the generated lexer/parser would do.
 
-This is possible by using a Javascript file, which contains code to evaluate semantic predicates (see the [Setup section](#setup) for how to enable it). That means however, the predicates must be written in valid JS code. Since predicates are usually short and use simple expressions (like `{version < 1000}` or `{doesItBlend()}` it should be easy to use what's originally written for another language (JS, C++, TS, Java etc. which all share a very similar expression syntax) without changes in the grammar. If an expression doesn't work in JS, you will have to change it however, temporarily.
+This is possible by using a plain Javascript file, which contains code to evaluate semantic predicates (see the [Setup section](#setup) for how to enable it). That means however, the predicates must be written in valid JS code. Since predicates are usually short and use simple expressions (like `{version < 1000}` or `{doesItBlend()}` it should be easy to use what's originally written for another language (JS, C++, TS, Java etc. which all share a very similar expression syntax) without changes in the grammar. If an expression doesn't work in JS, you will have to change it however, temporarily.
 
-On each start of the debugger the extension loads the specified file freshly (no caching takes place to support changes in that file between debugger runs) using the Node.js [`vm.runInNewContext`](https://nodejs.org/api/vm.html#vm_vm_runinnewcontext_code_contextobject_options) call, where the `eval()` function is executed with the predicate code. So, all you have to ensure is that the predicates file successfully can executed that code (e.g. by defining variables that are accessed by a predicate). For example:
+On every launch of a debugging session a new JS context is created with the evaluated code of the specified action file using [`vm.runInNewContext`](https://nodejs.org/api/vm.html#vm_vm_runinnewcontext_code_contextobject_options). This code can then be used by your predicates. These predicates are evaluated in the created JS context and can access variables, functions and so on. For example:
 
 ```Javascript
 "use strict"
@@ -93,10 +93,12 @@ During debugging the following parsing details are shown:
 * Breakpoints - rule enter + exit breakpoints.
 
 #### Limitations
-The debugger uses the lexer and parser interpreters found in the ANTLR4 runtime. These interpreters use the same prediction engine as the standard classes, but cannot execute any target runtime code (except for action code as described above).
+1. The debugger uses the lexer and parser interpreters found in the ANTLR4 runtime. These interpreters use the same prediction engine as the standard classes, but cannot execute any target runtime code (except for action/predicate code as described above).
 
-The interpreters are implemented in Typescript and transpiled to Javascript, hence you shouldn't expect high performance parsing from the debugger. However, it should be good enough for normal error search.
+2. The interpreters are implemented in Typescript and transpiled to Javascript, hence you should not expect high performance parsing from the debugger. However, it should be good enough for normal error search.
 
-Even though ANTLR4 supports (direct) left recursive rules, their internal representation is totally different (they are converted to non-left-recursive rules). This makes it fairly difficult to match the currently executing ATN state to a concrete source position. Expect therefore non-optimal step marker visualization in such rules.
+3. Left recursive rules are pretty special and influence the way incremental visual parse tree are created. Recursive rules cache generated parser rule contexts until they are done. Only on exit they unroll and actually update the generated parse tree. Because of that no change can be displayed in the graphical parse tree before a recursive rule is left.
 
-Parser rule context variables, parameters and return values cannot be inspected, as they don't exist in the interpreter generated parse tree.
+4. Parser rule context variables, parameters and return values cannot be inspected, as they don't exist in the interpreter generated parse tree.
+
+5. The debugger implements a simple look ahead for upcoming symbols to guess what the next debugging step might end at (for stack trace generation, which also influences the caret position and debug marker in the editor). This is independent of the internal prediction process for ATN states (which is used for parsing). This approach often returns more than a single candidate for the next debugger step, because the actual path which is taken depends on the following input (which the debugger does not know yet). Because VS Code only can have one entry per stack frame, always the first candidate is used, which might lead to unexpected debug marker positions. This effect is most prominent in left recursive rules, but can also be seen in situations where optional rule invocations are used. Maybe at a later point also for debugger symbol looking more lookahead will be used to avoid this problem, but not now.
