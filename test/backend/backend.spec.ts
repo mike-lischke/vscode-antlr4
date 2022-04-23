@@ -8,7 +8,7 @@
 import * as fs from "fs";
 
 import { AntlrFacade } from "../../src/backend/facade";
-import { RuleMappings, SymbolKind } from "../../src/backend/types";
+import { IRuleMappings, SymbolKind } from "../../src/backend/types";
 import { SourceContext } from "../../src/backend/SourceContext";
 import { positionToIndex, indexToPosition } from "./test-helpers";
 
@@ -36,7 +36,7 @@ interface ITestRange {
     result: string;
 }
 
-describe("vscode-antlr4-backend:", () => {
+describe("vscode-antlr4 Backend Tests:", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
     jest.setTimeout(50000);
@@ -73,8 +73,8 @@ describe("vscode-antlr4-backend:", () => {
     });
 
     describe("Symbol Info Retrieval (t.g4):", () => {
-        it("infoForSymbol", async () => {
-            const info = await backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
+        it("infoForSymbol", () => {
+            const info = backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
             expect(info).toBeDefined();
             if (info) {
                 expect(info.name).toEqual("B");
@@ -92,8 +92,8 @@ describe("vscode-antlr4-backend:", () => {
             }
         });
 
-        it("listTopLevelSymbols", async () => {
-            const symbols = await backend.listTopLevelSymbols("test/backend/t.g4", true);
+        it("listTopLevelSymbols", () => {
+            const symbols = backend.listTopLevelSymbols("test/backend/t.g4", true);
             expect(symbols).toHaveLength(10);
 
             const info = symbols[8];
@@ -175,9 +175,9 @@ describe("vscode-antlr4-backend:", () => {
     });
 
     describe("Symbol Info Retrieval (TParser.g4):", () => {
-        it("Symbol Listing", async () => {
+        it("Symbol Listing", () => {
             backend.loadGrammar("test/backend/TParser.g4");
-            const symbols = await backend.listTopLevelSymbols("test/backend/TParser.g4", true);
+            const symbols = backend.listTopLevelSymbols("test/backend/TParser.g4", true);
             expect(symbols).toHaveLength(56);
 
             const info = symbols[38];
@@ -235,8 +235,8 @@ describe("vscode-antlr4-backend:", () => {
             backend.releaseGrammar("test/backend/TParser.g4");
         });
 
-        it("Symbol ranges", async () => {
-            let symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 100, 4); // options {} block
+        it("Symbol ranges", () => {
+            let symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 100, 4); // options {} block
             expect(symbol).toBeDefined();
             expect(symbol!.definition).toBeDefined();
             expect(symbol!.definition!.range.start.row).toEqual(3);
@@ -244,7 +244,7 @@ describe("vscode-antlr4-backend:", () => {
             expect(symbol!.definition!.range.end.row).toEqual(5);
             expect(symbol!.definition!.range.end.column).toEqual(0);
 
-            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 9, 34); // action block
+            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 9, 34); // action block
             expect(symbol).toBeDefined();
             expect(symbol?.definition).toBeDefined();
             if (symbol?.definition) {
@@ -254,11 +254,11 @@ describe("vscode-antlr4-backend:", () => {
                 expect(symbol.definition.range.end.column).toEqual(0);
             }
 
-            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 1000, 1000); // beyond EOF
+            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 1000, 1000); // beyond EOF
             expect(symbol).toBeUndefined();
 
             // argument action block
-            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82);
+            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82);
             expect(symbol).toBeDefined();
             expect(symbol?.definition).toBeDefined();
             if (symbol?.definition) {
@@ -269,7 +269,7 @@ describe("vscode-antlr4-backend:", () => {
             }
 
             // same pos, rule context
-            symbol = await backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82, true);
+            symbol = backend.enclosingSymbolAtPosition("test/backend/TParser.g4", 79, 82, true);
             expect(symbol).toBeDefined();
             expect(symbol?.definition).toBeDefined();
             if (symbol?.definition) {
@@ -389,35 +389,43 @@ describe("vscode-antlr4-backend:", () => {
     });
 
     describe("Code Generation:", () => {
+        afterEach(() => {
+            backend.releaseGrammar("test/backend/TParser.g4");
+            backend.releaseGrammar("test/backend/TLexer.g4");
+            backend.releaseGrammar("test/backend/t2.g4");
+            backend.releaseGrammar("test/backend/TParser2.g4");
+            backend.releaseGrammar("test/backend/TLexer2.g4");
+
+            fs.rmSync("generated", { recursive: true, force: true });
+        });
+
         it("A standard generation run (CSharp), split grammar", async () => {
-            const result = await backend.generate("test/backend/TParser.g4", {
+            let result = await backend.generate("test/backend/TParser.g4", {
                 outputDir: "generated",
                 language: "CSharp",
-                alternativeJar: "antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar",
             });
             expect(result).toEqual(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);
 
-            try {
-                expect(fs.existsSync("generated/TLexer.cs"));
-                expect(fs.existsSync("generated/TParser.cs"));
-                expect(fs.existsSync("generated/TParserBaseListener.cs"));
-                expect(fs.existsSync("generated/TParserListener.cs"));
-                expect(!fs.existsSync("generated/TParserBaseLVisitor.cs")); // Not created by default.
-                expect(!fs.existsSync("generated/TParserVisitor.cs")); // ditto
+            expect(fs.existsSync("generated/TLexer.cs")).toBeTruthy();
+            expect(fs.existsSync("generated/TParser.cs")).toBeTruthy();
+            expect(fs.existsSync("generated/TParserBaseListener.cs")).toBeTruthy();
+            expect(fs.existsSync("generated/TParserListener.cs")).toBeTruthy();
+            expect(fs.existsSync("generated/TParserVisitor.cs")).toBeFalsy(); // Not created by default.
 
-                expect(fs.existsSync("generated/TParser.interp"));
-                expect(fs.existsSync("generated/TLexer.interp"));
-            } finally {
-                backend.releaseGrammar("test/Tbackend/Parser.g4");
+            expect(fs.existsSync("generated/TParser.interp"));
+            expect(fs.existsSync("generated/TLexer.interp"));
 
-                // Don't remove the generated data. Need it for the next test.
-            }
-        });
+            // Release the grammars, so no interpreter data exists anymore.
+            backend.releaseGrammar("test/backend/TParser.g4");
+            backend.releaseGrammar("test/backend/TLexer.g4");
 
-        it("Load interpreter with existing data, split grammar", async () => {
-            expect(fs.existsSync("generated/"));
+            let temp = backend.getATNGraph("test/backend/TLexer.g4", "Dollar");
+            expect(temp).toBeUndefined();
+            temp = backend.getATNGraph("test/backend/TParser.g4", "stat");
+            expect(temp).toBeUndefined();
 
-            let result = await backend.generate("test/backend/TParser.g4", {
+            // Load interpreter data only (no real generation happens), using the data generated above.
+            result = await backend.generate("test/backend/TParser.g4", {
                 outputDir: "generated",
                 language: "CSharp",
                 loadOnly: true,
@@ -425,10 +433,6 @@ describe("vscode-antlr4-backend:", () => {
 
             // No dependencies are returned since data is only loaded, not generated.
             expect(result).toHaveLength(0);
-
-            // Only for combined grammars is the lexer data stored in the main context.
-            const temp = backend.getATNGraph("test/backend/TLexer.g4", "Dollar");
-            expect(temp).toBeUndefined();
 
             // Now load the lexer data too.
             result = await backend.generate("test/backend/TLexer.g4", {
@@ -440,86 +444,80 @@ describe("vscode-antlr4-backend:", () => {
             const dollarGraph = backend.getATNGraph("test/backend/TLexer.g4", "Dollar");
             const statGraph = backend.getATNGraph("test/backend/TParser.g4", "stat");
 
-            try {
-                expect(dollarGraph).toBeDefined();
-                if (dollarGraph) {
-                    expect(dollarGraph.nodes).toHaveLength(7);
-                    expect(dollarGraph.nodes[0].name).toEqual("45");
-                    expect(dollarGraph.nodes[0].type).toEqual(2);
-                    expect(dollarGraph.nodes[1].name).toEqual("140");
-                    expect(dollarGraph.nodes[1].type).toEqual(1);
-                    expect(dollarGraph.nodes[4].name).toEqual("143");
-                    expect(dollarGraph.nodes[4].type).toEqual(1);
-                    expect(dollarGraph.nodes[5].name).toEqual("144");
-                    expect(dollarGraph.nodes[5].type).toEqual(1);
+            expect(dollarGraph).toBeDefined();
+            if (dollarGraph) {
+                expect(dollarGraph.nodes).toHaveLength(7);
+                expect(dollarGraph.nodes[0].name).toEqual("45");
+                expect(dollarGraph.nodes[0].type).toEqual(2);
+                expect(dollarGraph.nodes[1].name).toEqual("140");
+                expect(dollarGraph.nodes[1].type).toEqual(1);
+                expect(dollarGraph.nodes[4].name).toEqual("143");
+                expect(dollarGraph.nodes[4].type).toEqual(1);
+                expect(dollarGraph.nodes[5].name).toEqual("144");
+                expect(dollarGraph.nodes[5].type).toEqual(1);
 
-                    expect(dollarGraph.links).toHaveLength(6);
-                    expect(dollarGraph.links[1].source).toEqual(1);
-                    expect(dollarGraph.links[1].target).toEqual(2);
-                    expect(dollarGraph.links[1].type).toEqual(5);
-                    expect(dollarGraph.links[1].labels).toHaveLength(2);
-                    expect(dollarGraph.links[1].labels[0])
-                        .toStrictEqual({ content: "Atom Transition", class: "heading" });
-                    expect(dollarGraph.links[1].labels[1]).toStrictEqual({ content: "'$'" });
+                expect(dollarGraph.links).toHaveLength(6);
+                expect(dollarGraph.links[1].source).toEqual(1);
+                expect(dollarGraph.links[1].target).toEqual(2);
+                expect(dollarGraph.links[1].type).toEqual(5);
+                expect(dollarGraph.links[1].labels).toHaveLength(2);
+                expect(dollarGraph.links[1].labels[0])
+                    .toStrictEqual({ content: "Atom Transition", class: "heading" });
+                expect(dollarGraph.links[1].labels[1]).toStrictEqual({ content: "'$'" });
 
-                    expect(dollarGraph.links[2].source).toEqual(2);
-                    expect(dollarGraph.links[2].target).toEqual(3);
-                    expect(dollarGraph.links[2].type).toEqual(1);
-                    expect(dollarGraph.links[2].labels).toHaveLength(1);
-                    expect(dollarGraph.links[2].labels[0]).toStrictEqual({ content: "ε" });
+                expect(dollarGraph.links[2].source).toEqual(2);
+                expect(dollarGraph.links[2].target).toEqual(3);
+                expect(dollarGraph.links[2].type).toEqual(1);
+                expect(dollarGraph.links[2].labels).toHaveLength(1);
+                expect(dollarGraph.links[2].labels[0]).toStrictEqual({ content: "ε" });
 
-                    expect(dollarGraph.links[5].source).toEqual(5);
-                    expect(dollarGraph.links[5].target).toEqual(6);
-                    expect(dollarGraph.links[5].type).toEqual(1);
-                    expect(dollarGraph.links[5].labels).toHaveLength(1);
-                    expect(dollarGraph.links[5].labels[0]).toStrictEqual({ content: "ε" });
-                }
+                expect(dollarGraph.links[5].source).toEqual(5);
+                expect(dollarGraph.links[5].target).toEqual(6);
+                expect(dollarGraph.links[5].type).toEqual(1);
+                expect(dollarGraph.links[5].labels).toHaveLength(1);
+                expect(dollarGraph.links[5].labels[0]).toStrictEqual({ content: "ε" });
+            }
 
-                expect(statGraph).toBeDefined();
-                if (statGraph) {
-                    expect(statGraph.nodes).toHaveLength(15);
-                    expect(statGraph.nodes[0].id.toString()).toEqual(statGraph.nodes[0].name);
-                    expect(statGraph.nodes[0].name).toEqual("12");
-                    expect(statGraph.nodes[0].type).toEqual(2);
-                    expect(statGraph.nodes[6].id.toString()).toEqual(statGraph.nodes[6].name);
-                    expect(statGraph.nodes[6].name).toEqual("80");
-                    expect(statGraph.nodes[6].type).toEqual(1);
-                    expect(statGraph.nodes[10].name).toEqual("86");
-                    expect(statGraph.nodes[10].type).toEqual(1);
-                    expect(statGraph.nodes[13].name).toEqual("83");
-                    expect(statGraph.nodes[13].type).toEqual(1);
-                    expect(statGraph.nodes[2].name).toEqual("79");
-                    expect(statGraph.nodes[2].id).toEqual(79);
-                    expect(statGraph.nodes[5].name).toEqual("expr");
-                    expect(statGraph.nodes[5].id).toEqual(-2);
-                    expect(statGraph.nodes[9].name).toEqual("expr");
-                    expect(statGraph.nodes[9].id).toEqual(-3);
+            expect(statGraph).toBeDefined();
+            if (statGraph) {
+                expect(statGraph.nodes).toHaveLength(15);
+                expect(statGraph.nodes[0].id.toString()).toEqual(statGraph.nodes[0].name);
+                expect(statGraph.nodes[0].name).toEqual("12");
+                expect(statGraph.nodes[0].type).toEqual(2);
+                expect(statGraph.nodes[6].id.toString()).toEqual(statGraph.nodes[6].name);
+                expect(statGraph.nodes[6].name).toEqual("80");
+                expect(statGraph.nodes[6].type).toEqual(1);
+                expect(statGraph.nodes[10].name).toEqual("86");
+                expect(statGraph.nodes[10].type).toEqual(1);
+                expect(statGraph.nodes[13].name).toEqual("83");
+                expect(statGraph.nodes[13].type).toEqual(1);
+                expect(statGraph.nodes[2].name).toEqual("79");
+                expect(statGraph.nodes[2].id).toEqual(79);
+                expect(statGraph.nodes[5].name).toEqual("expr");
+                expect(statGraph.nodes[5].id).toEqual(-2);
+                expect(statGraph.nodes[9].name).toEqual("expr");
+                expect(statGraph.nodes[9].id).toEqual(-3);
 
-                    expect(statGraph.links).toHaveLength(15);
-                    expect(statGraph.links[1].source).toEqual(1);
-                    expect(statGraph.links[1].target).toEqual(2);
-                    expect(statGraph.links[1].type).toEqual(1);
-                    expect(statGraph.links[1].labels).toHaveLength(1);
-                    expect(statGraph.links[1].labels[0]).toStrictEqual({ content: "ε" });
+                expect(statGraph.links).toHaveLength(15);
+                expect(statGraph.links[1].source).toEqual(1);
+                expect(statGraph.links[1].target).toEqual(2);
+                expect(statGraph.links[1].type).toEqual(1);
+                expect(statGraph.links[1].labels).toHaveLength(1);
+                expect(statGraph.links[1].labels[0]).toStrictEqual({ content: "ε" });
 
-                    expect(statGraph.links[4].source).toEqual(3);
-                    expect(statGraph.links[4].target).toEqual(6);
-                    expect(statGraph.links[4].type).toEqual(3);
-                    expect(statGraph.links[4].labels).toHaveLength(1);
-                    expect(statGraph.links[4].labels[0]).toStrictEqual({ content: "ε" });
+                expect(statGraph.links[4].source).toEqual(3);
+                expect(statGraph.links[4].target).toEqual(6);
+                expect(statGraph.links[4].type).toEqual(3);
+                expect(statGraph.links[4].labels).toHaveLength(1);
+                expect(statGraph.links[4].labels[0]).toStrictEqual({ content: "ε" });
 
-                    expect(statGraph.links[12].source).toEqual(11);
-                    expect(statGraph.links[12].target).toEqual(13);
-                    expect(statGraph.links[12].type).toEqual(5);
-                    expect(statGraph.links[12].labels).toHaveLength(2);
-                    expect(statGraph.links[12].labels[0])
-                        .toStrictEqual({ content: "Atom Transition", class: "heading" });
-                    expect(statGraph.links[12].labels[1]).toStrictEqual({ content: "';'" });
-                }
-            } finally {
-                backend.releaseGrammar("test/backend/TParser.g4");
-                backend.releaseGrammar("test/backend/TLexer.g4");
-                fs.rmSync("generated", { recursive: true, force: true });
+                expect(statGraph.links[12].source).toEqual(11);
+                expect(statGraph.links[12].target).toEqual(13);
+                expect(statGraph.links[12].type).toEqual(5);
+                expect(statGraph.links[12].labels).toHaveLength(2);
+                expect(statGraph.links[12].labels[0])
+                    .toStrictEqual({ content: "Atom Transition", class: "heading" });
+                expect(statGraph.links[12].labels[1]).toStrictEqual({ content: "';'" });
             }
         });
 
@@ -537,68 +535,67 @@ describe("vscode-antlr4-backend:", () => {
         });
 
         it("A generation run with settings, split grammar (typescript, cpp)", async () => {
-            // The typescript target requires a different tool jar.
-            // TODO: currently we have to create the lib folder manually (until a pending path handling patch is
-            //       included in ANTLR).
-            try {
-                fs.mkdirSync("generated/typescript", { recursive: true });
+            fs.mkdirSync("generated/typescript", { recursive: true });
+            expect(fs.existsSync("generated/typescript")).toBeTruthy();
 
-                // Path names are relative to the given base dir.
-                let result = await backend.generate("../../test/backend/TParser.g4", {
-                    baseDir: __dirname,
-                    libDir: "../../generated/typescript",
-                    outputDir: "../../generated",
-                    language: "typescript",
-                    package: "parser",
-                    listeners: false,
-                    visitors: true,
-                });
-                expect(result).toEqual(["../../test/backend/TParser.g4"]);
+            // Path names are relative to the given base dir.
+            let result = await backend.generate("test/backend/TParser.g4", {
+                baseDir: process.cwd(),
+                libDir: "generated/typescript",
+                outputDir: "generated",
+                language: "typescript",
+                package: "parser",
+                listeners: false,
+                visitors: true,
+            });
+            expect(result).toEqual(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);
 
-                // The same grammar for the C++ target.
-                fs.mkdirSync("generated/cpp", { recursive: true });
-                result = await backend.generate("../../test/backend/TParser.g4", {
-                    baseDir: __dirname,
-                    libDir: "../../generated/cpp",
-                    outputDir: "../../generated",
-                    language: "Cpp",
-                    package: "parser",
-                    listeners: false,
-                    visitors: true,
-                });
-                expect(result).toEqual(["../../test/backend/TParser.g4"]);
+            expect(fs.existsSync("generated/TLexer.ts")).toBeTruthy();
+            expect(fs.existsSync("generated/TParser.ts")).toBeTruthy();
+            expect(fs.existsSync("generated/TParserListener.ts")).toBeFalsy();
+            expect(fs.existsSync("generated/TParserVisitor.ts")).toBeTruthy();
 
-                expect(fs.existsSync("generated/typescript/TLexer.ts"));
-                expect(fs.existsSync("generated/typescript/TParser.ts"));
-                expect(!fs.existsSync("generated/typescript/TParserBaseListener.ts"));
-                expect(!fs.existsSync("generated/typescript/TParserListener.ts"));
-                expect(fs.existsSync("generated/typescript/TParserBaseLVisitor.ts"));
-                expect(fs.existsSync("generated/typescript/TParserVisitor.ts"));
-            } finally {
-                fs.rmSync("generated", { recursive: true, force: true });
-            }
+            backend.releaseGrammar("test/backend/TParser.g4");
+            backend.releaseGrammar("test/backend/TLexer.g4");
+
+            // The same grammar for the C++ target.
+            fs.mkdirSync("generated/cpp", { recursive: true });
+            expect(fs.existsSync("generated/cpp")).toBeTruthy();
+
+            result = await backend.generate("test/backend/TParser.g4", {
+                baseDir: process.cwd(),
+                libDir: "generated/cpp",
+                outputDir: "generated",
+                language: "Cpp",
+                package: "parser",
+                listeners: true,
+                visitors: false,
+            });
+            expect(result).toEqual(["test/backend/TLexer.g4", "test/backend/TParser.g4"]);
+
+            expect(fs.existsSync("generated/TLexer.cpp")).toBeTruthy();
+            expect(fs.existsSync("generated/TParser.cpp")).toBeTruthy();
+            expect(fs.existsSync("generated/TParserBaseListener.cpp")).toBeTruthy();
+            expect(fs.existsSync("generated/TParserListener.cpp")).toBeTruthy();
+            expect(fs.existsSync("generated/TParserBaseVisitor.cpp")).toBeFalsy();
+            expect(fs.existsSync("generated/TParserVisitor.cpp")).toBeFalsy();
         });
 
         it("Generation with semantic error, combined grammar (C++)", async () => {
-            try {
-                // File contains left recursive rule which are detected only by the ANTLR.
-                // Hence we need a generation run to report them.
-                const parserDiags = backend.getDiagnostics("test/backend/t2.g4");
-                expect(parserDiags).toHaveLength(0); // No error here yet.
+            // File contains left recursive rule which are detected only by the ANTLR.
+            // Hence we need a generation run to report them.
+            const parserDiags = backend.getDiagnostics("test/backend/t2.g4");
+            expect(parserDiags).toHaveLength(0); // No error here yet.
 
-                await backend.generate("test/backend/t2.g4", {
-                    outputDir: "generated",
-                    language: "Cpp",
-                    package: "parser",
-                    listeners: false,
-                    visitors: true,
-                    alternativeJar: "antlr/antlr-4.9.2-complete.jar",
-                });
-                expect(parserDiags).toHaveLength(3);
-            } finally {
-                backend.releaseGrammar("test/backend/t2.g4");
-                fs.rmSync("generated", { recursive: true, force: true });
-            }
+            await backend.generate("test/backend/t2.g4", {
+                outputDir: "generated",
+                language: "Cpp",
+                package: "parser",
+                listeners: false,
+                visitors: true,
+                alternativeJar: "antlr/antlr-4.9.2-complete.jar",
+            });
+            expect(parserDiags).toHaveLength(3);
         });
 
         it("Generation with Java exception, combined grammar (Java)", async () => {
@@ -616,38 +613,29 @@ describe("vscode-antlr4-backend:", () => {
             } catch (error) {
                 expect(error).toContain("java.lang.UnsupportedOperationException: Serialized ATN data " +
                     "element 101246 element 11 out of range 0..65535");
-            } finally {
-                backend.releaseGrammar("test/backend/t2.g4");
-                fs.rmSync("generated", { recursive: true, force: true });
             }
         });
 
         it("Generation with errors, split grammar (C++)", async () => {
-            try {
-                // Asking for parser generation, getting lexer error back.
-                const result = await backend.generate("test/backend/TParser2.g4", {
-                    outputDir: "generated",
-                    language: "Cpp",
-                    package: "parser",
-                    listeners: false,
-                    visitors: false,
-                    alternativeJar: "antlr/antlr-4.9.2-complete.jar",
-                });
-                expect(result).toEqual(["test/backend/TLexer2.g4", "test/backend/TParser2.g4"]);
-                const diagnostics = backend.getDiagnostics("test/backend/TLexer2.g4");
-                expect(diagnostics).toHaveLength(1);
-                expect(diagnostics[0].message).toEqual("cannot find tokens file test/backend/nonexisting.tokens");
-            } finally {
-                backend.releaseGrammar("test/backend/TParser2.g4");
-                backend.releaseGrammar("test/backend/TLexer2.g4");
-                fs.rmSync("generated", { recursive: true, force: true });
-            }
+            // Asking for parser generation, getting lexer error back.
+            const result = await backend.generate("test/backend/TParser2.g4", {
+                outputDir: "generated",
+                language: "Cpp",
+                package: "parser",
+                listeners: false,
+                visitors: false,
+                alternativeJar: "antlr/antlr-4.9.2-complete.jar",
+            });
+            expect(result).toEqual(["test/backend/TLexer2.g4", "test/backend/TParser2.g4"]);
+            const diagnostics = backend.getDiagnostics("test/backend/TLexer2.g4");
+            expect(diagnostics).toHaveLength(1);
+            expect(diagnostics[0].message).toEqual("cannot find tokens file test/backend/nonexisting.tokens");
         });
     });
 
     describe("Test for Bugs:", () => {
-        it("Lexer token in a set-element context", async () => {
-            const info = await backend.symbolInfoAtPosition("test/backend/TParser.g4", 30, 93, true);
+        it("Lexer token in a set-element context", () => {
+            const info = backend.symbolInfoAtPosition("test/backend/TParser.g4", 30, 93, true);
             expect(info).toBeDefined();
             if (info) {
                 expect(info.name).toEqual("Semicolon");
@@ -738,7 +726,7 @@ describe("vscode-antlr4-backend:", () => {
                 "ID",
             ];
 
-            const tester = (sentence: string) => {
+            const tester = (token: string, sentence: string) => {
                 //console.log(token + ": " + sentence);
                 expect(sentence.length).toBeGreaterThan(0);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -752,7 +740,8 @@ describe("vscode-antlr4-backend:", () => {
                     count: 5,
                     maxLexerIterations: 10,
                     maxParserIterations: 10,
-                }, tester);
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                }, tester.bind(this, token));
             }
         });
 
@@ -778,21 +767,17 @@ describe("vscode-antlr4-backend:", () => {
         });
 
         it("Generation with definitions", () => {
-            const ruleMappings: RuleMappings = new Map([
-                ["DIGITS", "12345"],
-                ["SimpleIdentifier", "Mike"],
-                ["UnicodeIdentifier", "µπåƒ"],
-            ]);
+            const ruleMappings: IRuleMappings = {
+                /* eslint-disable @typescript-eslint/naming-convention */
+                DIGITS: "12345",
+                SimpleIdentifier: "Mike",
+                UnicodeIdentifier: "µπåƒ",
+                /* eslint-enable @typescript-eslint/naming-convention */
+            };
 
             const tester = (rule: string, sentence: string) => {
                 //console.log(rule + ": " + sentence);
                 const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
-                if (errors.length > 0) {
-                    console.log("errors:");
-                    for (const error of errors) {
-                        console.log("\t" + error + "\n");
-                    }
-                }
                 expect(errors).toHaveLength(0);
 
                 // In addition to error free generation check also that only known elements are in the sentence.

@@ -10,7 +10,6 @@
 import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
-import { ISymbolInfo } from "../backend/types";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class ParserSymbol extends TreeItem {
@@ -36,41 +35,30 @@ export class ParserSymbol extends TreeItem {
 export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbol> {
 
     public getChildren(element?: ParserSymbol): ProviderResult<ParserSymbol[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (!element) {
                 let rules: string[] | undefined;
                 if (this.currentFile) {
                     rules = this.backend.getRuleList(this.currentFile);
                 }
 
+                const list: ParserSymbol[] = [];
                 if (rules) {
-                    const promises: Array<Promise<ISymbolInfo | undefined>> = [];
-                    for (const rule of rules) {
-                        promises.push(this.backend.infoForSymbol(this.currentFile!, rule));
-                    }
+                    rules.forEach((rule, index) => {
+                        const info = this.backend.infoForSymbol(this.currentFile!, rule);
+                        const parameters: Command = { title: "", command: "" };
+                        const caption = `${index}: ${rules![index]}`;
+                        if (info && info.definition) {
+                            parameters.title = "";
+                            parameters.command = "antlr.selectGrammarRange";
+                            parameters.arguments = [info.definition.range];
+                        }
 
-                    Promise.all(promises).then((values) => {
-                        const list: ParserSymbol[] = [];
-
-                        values.forEach((info, index) => {
-                            const parameters: Command = { title: "", command: "" };
-                            const caption = `${index}: ${rules![index]}`;
-                            if (info && info.definition) {
-                                parameters.title = "";
-                                parameters.command = "antlr.selectGrammarRange";
-                                parameters.arguments = [info.definition.range];
-                            }
-
-                            list.push(new ParserSymbol(caption, TreeItemCollapsibleState.None, parameters));
-                        });
-
-                        resolve(list);
-                    }).catch((reason) => {
-                        reject(reason);
+                        list.push(new ParserSymbol(caption, TreeItemCollapsibleState.None, parameters));
                     });
                 }
-            } else {
-                resolve(undefined);
+
+                resolve(list);
             }
         });
     }

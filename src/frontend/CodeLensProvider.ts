@@ -34,46 +34,41 @@ export class AntlrCodeLensProvider implements CodeLensProvider {
     }
 
     public provideCodeLenses(document: TextDocument, _token: CancellationToken): ProviderResult<CodeLens[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (workspace.getConfiguration("antlr4.referencesCodeLens").enabled !== true) {
                 resolve(null);
             } else {
                 this.documentName = document.fileName;
-                this.backend.listTopLevelSymbols(document.fileName, false).then((symbols) => {
-                    const lenses = [];
-                    for (const symbol of symbols) {
-                        if (!symbol.definition) {
-                            continue;
-                        }
-
-                        switch (symbol.kind) {
-                            case SymbolKind.FragmentLexerToken:
-                            case SymbolKind.LexerRule:
-                            case SymbolKind.LexerMode:
-                            case SymbolKind.ParserRule: {
-                                const range = new Range(
-                                    symbol.definition.range.start.row - 1,
-                                    symbol.definition.range.start.column,
-                                    symbol.definition.range.end.row - 1,
-                                    symbol.definition.range.end.column,
-                                );
-                                const lens = new SymbolCodeLens(symbol, range);
-                                lenses.push(lens);
-
-                                break;
-                            }
-
-                            default:
-                        }
+                const symbols = this.backend.listTopLevelSymbols(document.fileName, false);
+                const lenses = [];
+                for (const symbol of symbols) {
+                    if (!symbol.definition) {
+                        continue;
                     }
 
-                    resolve(lenses);
+                    switch (symbol.kind) {
+                        case SymbolKind.FragmentLexerToken:
+                        case SymbolKind.LexerRule:
+                        case SymbolKind.LexerMode:
+                        case SymbolKind.ParserRule: {
+                            const range = new Range(
+                                symbol.definition.range.start.row - 1,
+                                symbol.definition.range.start.column,
+                                symbol.definition.range.end.row - 1,
+                                symbol.definition.range.end.column,
+                            );
+                            const lens = new SymbolCodeLens(symbol, range);
+                            lenses.push(lens);
 
-                }).catch((reason) => {
-                    reject(reason);
-                });
+                            break;
+                        }
+
+                        default:
+                    }
+                }
+
+                resolve(lenses);
             }
-
         });
     }
 

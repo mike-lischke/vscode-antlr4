@@ -16,33 +16,29 @@ export class AntlrRenameProvider implements RenameProvider {
     public provideRenameEdits(document: TextDocument, position: Position, newName: string,
         _token: CancellationToken): ProviderResult<WorkspaceEdit> {
 
-        return new Promise((resolve, reject) => {
-            this.backend.symbolInfoAtPosition(document.fileName, position.character, position.line + 1, false)
-                .then((info) => {
-                    if (!info) {
-                        resolve(undefined);
-                    } else {
-                        const result = new WorkspaceEdit();
-                        this.backend.getSymbolOccurrences(document.fileName, info.name).then((occurrences) => {
-                            for (const symbol of occurrences) {
-                                if (symbol.definition) {
-                                    const range = new Range(
-                                        symbol.definition.range.start.row - 1,
-                                        symbol.definition.range.start.column,
-                                        symbol.definition.range.end.row - 1,
-                                        symbol.definition.range.start.column + info.name.length,
-                                    );
-                                    result.replace(Uri.file(symbol.source), range, newName);
-                                }
-                            }
-                            resolve(result);
-                        }).catch((reason) => {
-                            reject(reason);
-                        });
+        return new Promise((resolve) => {
+            const info = this.backend.symbolInfoAtPosition(document.fileName, position.character, position.line + 1,
+                false);
+
+            if (info) {
+                const result = new WorkspaceEdit();
+                const occurrences = this.backend.getSymbolOccurrences(document.fileName, info.name);
+                for (const symbol of occurrences) {
+                    if (symbol.definition) {
+                        const range = new Range(
+                            symbol.definition.range.start.row - 1,
+                            symbol.definition.range.start.column,
+                            symbol.definition.range.end.row - 1,
+                            symbol.definition.range.start.column + info.name.length,
+                        );
+                        result.replace(Uri.file(symbol.source), range, newName);
                     }
-                }).catch((reason) => {
-                    reject(reason);
-                });
+                }
+                resolve(result);
+            } else {
+                resolve(undefined);
+            }
+
         });
     }
 }

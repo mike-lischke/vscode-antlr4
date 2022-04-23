@@ -13,7 +13,7 @@ import {
     RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState, PredicateTransition,
 } from "antlr4ts/atn";
 
-import { ISentenceGenerationOptions, RuleMappings, PredicateFunction } from "./types";
+import { ISentenceGenerationOptions, IRuleMappings, PredicateFunction } from "./types";
 import { IntervalSet } from "antlr4ts/misc";
 
 import { printableUnicodePoints, fullUnicodeSet } from "./Unicode";
@@ -46,7 +46,7 @@ export class SentenceGenerator {
     private maxRecursions: number;
     private ruleInvocations = new Map<string, number>();
 
-    private ruleMappings?: RuleMappings;
+    private ruleMappings?: IRuleMappings;
 
     // To limit recursions we need to track through which rules we are walking currently.
     private parserStack: number[] = [];
@@ -252,7 +252,7 @@ export class SentenceGenerator {
                 return ["", false];
             }
 
-            const mapping = this.ruleMappings?.get(ruleName);
+            const mapping = this.ruleMappings?.[ruleName];
             if (mapping) {
                 return [addSpace ? mapping + " " : mapping, false];
             }
@@ -347,7 +347,7 @@ export class SentenceGenerator {
                         default: {
                             // Any other basic transition. See if there is a label we can use.
                             if (inLexer) {
-                                if (transition.label) {
+                                if (transition.label && transition.label.minElement > -1) {
                                     let label = transition.label;
                                     if (transition instanceof NotSetTransition) {
                                         label = label.complement(IntervalSet.COMPLETE_CHAR_SET);
@@ -364,7 +364,7 @@ export class SentenceGenerator {
                                         // its name for the output.
                                         const tokenName = this.lexerData.vocabulary.getSymbolicName(token);
                                         if (tokenName) {
-                                            const mapping = this.ruleMappings?.get(tokenName);
+                                            const mapping = this.ruleMappings?.[tokenName];
                                             if (mapping) {
                                                 result += addSpace ? mapping + " " : mapping;
                                             } else {

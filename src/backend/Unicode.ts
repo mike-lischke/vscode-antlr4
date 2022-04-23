@@ -292,7 +292,6 @@ const unicodeBlocks: Array<[Interval, string, number]> = [
 ];
 
 let predefinedWeightSum = 0;
-let assignedIntervals: IntervalSet;
 
 /**
  * Converts the code points from the given file to an interval set.
@@ -358,69 +357,65 @@ export interface IUnicodeOptions {
  * @returns A set of intervals with the requested Unicode code points.
  */
 export const printableUnicodePoints = (options: IUnicodeOptions): IntervalSet => {
-    if (!assignedIntervals) {
-        // Create a set with all Unicode code points that are assigned and not in categories with unprintable chars,
-        // surrogate pairs, formatting + private codes.
-        let intervalsToExclude = codePointsToIntervals("General_Category/Unassigned/code-points.js");
-        intervalsToExclude = codePointsToIntervals("General_Category/Control/code-points.js", intervalsToExclude);
-        intervalsToExclude = codePointsToIntervals("General_Category/Format/code-points.js", intervalsToExclude);
-        intervalsToExclude = codePointsToIntervals("General_Category/Surrogate/code-points.js", intervalsToExclude);
-        intervalsToExclude = codePointsToIntervals("General_Category/Private_Use/code-points.js", intervalsToExclude);
+    // Create a set with all Unicode code points that are assigned and not in categories with unprintable chars,
+    // surrogate pairs, formatting + private codes.
+    let intervalsToExclude = codePointsToIntervals("General_Category/Unassigned/code-points.js");
+    intervalsToExclude = codePointsToIntervals("General_Category/Control/code-points.js", intervalsToExclude);
+    intervalsToExclude = codePointsToIntervals("General_Category/Format/code-points.js", intervalsToExclude);
+    intervalsToExclude = codePointsToIntervals("General_Category/Surrogate/code-points.js", intervalsToExclude);
+    intervalsToExclude = codePointsToIntervals("General_Category/Private_Use/code-points.js", intervalsToExclude);
 
-        if (options.excludeCJK) {
-            intervalsToExclude = codePointsToIntervals("Block/CJK_Unified_Ideographs/code-points.js",
-                intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals("Block/CJK_Unified_Ideographs_Extension_A/code-points.js",
-                intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals("Block/CJK_Compatibility_Ideographs/code-points.js",
-                intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals("Block/Hangul_Syllables/code-points.js", intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals("Block/Yi_Syllables/code-points.js", intervalsToExclude);
-        }
-
-        if (options.excludeRTL) {
-            // Note: there are also a few top-to-bottom scripts (e.g. mongolian), but these are not considered here.
-            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left/code-points.js", intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Embedding/code-points.js",
-                intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Isolate/code-points.js",
-                intervalsToExclude);
-            intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Override/code-points.js",
-                intervalsToExclude);
-        }
-
-        if (options.includeLineTerminators) {
-            // Unicode line terminators are implicitly taken out by the above code, so we add them in here.
-            intervalsToExclude.remove(0x0A); // NL, New Line.
-            intervalsToExclude.remove(0x0B); // VT, Vertical Tab
-            intervalsToExclude.remove(0x0C); // FF, Form Feed
-            intervalsToExclude.remove(0x0D); // CR, Carriage Return
-            intervalsToExclude.remove(0x85); // NEL, Next Line
-            intervalsToExclude.remove(0x2028); // LS, Line Separator
-            intervalsToExclude.remove(0x2029); // PS, Paragraph Separator
-        }
-
-        let sourceIntervals: IntervalSet;
-        if (options.limitToBMP) {
-            sourceIntervals = IntervalSet.COMPLETE_CHAR_SET;
-        } else {
-            sourceIntervals = fullUnicodeSet;
-        }
-
-        assignedIntervals = intervalsToExclude.complement(sourceIntervals);
+    if (options.excludeCJK) {
+        intervalsToExclude = codePointsToIntervals("Block/CJK_Unified_Ideographs/code-points.js",
+            intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("Block/CJK_Unified_Ideographs_Extension_A/code-points.js",
+            intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("Block/CJK_Compatibility_Ideographs/code-points.js",
+            intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("Block/Hangul_Syllables/code-points.js", intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("Block/Yi_Syllables/code-points.js", intervalsToExclude);
     }
 
-    return assignedIntervals;
+    if (options.excludeRTL) {
+        // Note: there are also a few top-to-bottom scripts (e.g. mongolian), but these are not considered here.
+        intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left/code-points.js", intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Embedding/code-points.js",
+            intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Isolate/code-points.js",
+            intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals("Bidi_Class/Right_To_Left_Override/code-points.js",
+            intervalsToExclude);
+    }
+
+    if (options.includeLineTerminators) {
+        // Unicode line terminators are implicitly taken out by the above code, so we add them in here.
+        intervalsToExclude.remove(0x0A); // NL, New Line.
+        intervalsToExclude.remove(0x0B); // VT, Vertical Tab
+        intervalsToExclude.remove(0x0C); // FF, Form Feed
+        intervalsToExclude.remove(0x0D); // CR, Carriage Return
+        intervalsToExclude.remove(0x85); // NEL, Next Line
+        intervalsToExclude.remove(0x2028); // LS, Line Separator
+        intervalsToExclude.remove(0x2029); // PS, Paragraph Separator
+    }
+
+    let sourceIntervals: IntervalSet;
+    if (options.limitToBMP) {
+        sourceIntervals = IntervalSet.COMPLETE_CHAR_SET;
+    } else {
+        sourceIntervals = fullUnicodeSet;
+    }
+
+    return intervalsToExclude.complement(sourceIntervals);
 };
 
 /**
- * Returns a random Unicode code block, based on the predefined weights and the overrides given as parameter.
+ * Returns a set of random Unicode code blocks, based on the predefined weights and the overrides given as parameter.
  *
  * @param blockOverrides Optionally contains name/value pairs to specify custom weights for code blocks.
  *
- * @returns An interval containing start and stop values for a random code block.
+ * @returns An interval set containing the selected block intervals.
  */
-export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval => {
+export const randomCodeBlocks = (blockOverrides?: Map<string, number>): IntervalSet => {
     if (predefinedWeightSum === 0) {
         for (const entry of unicodeBlocks) {
             predefinedWeightSum += entry[2];
@@ -440,17 +435,22 @@ export const randomCodeBlock = (blockOverrides?: Map<string, number>): Interval 
         }
     }
 
-    let randomValue = Math.random() * weightSum;
-    for (const entry of unicodeBlocks) {
-        let weight = entry[2];
-        if (blockOverrides && blockOverrides.has(entry[1])) {
-            weight = blockOverrides.get(entry[1])!;
-        }
-        randomValue -= weight;
-        if (randomValue < 0) {
-            return entry[0];
+    const set = new IntervalSet();
+
+    for (let i = 0; i < 10; ++i) {
+        let randomValue = Math.random() * weightSum;
+        for (const entry of unicodeBlocks) {
+            let weight = entry[2];
+            if (blockOverrides && blockOverrides.has(entry[1])) {
+                weight = blockOverrides.get(entry[1])!;
+            }
+
+            randomValue -= weight;
+            if (randomValue < 0) {
+                set.add(entry[0].a, entry[0].b);
+            }
         }
     }
 
-    return new Interval(0, 0);
+    return set;
 };

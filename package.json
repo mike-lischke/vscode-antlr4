@@ -584,6 +584,9 @@
     },
     "jest": {
         "preset": "ts-jest",
+        "testMatch": [
+            "**/test/**/*.spec.ts"
+        ],
         "collectCoverageFrom": [
             "src/**/*.ts",
             "!src/generated/**",

@@ -345,10 +345,10 @@ export class ContextSymbolTable extends SymbolTable {
         }
     }
 
-    public async getSymbolOccurrences(symbolName: string, localOnly: boolean): Promise<ISymbolInfo[]> {
+    public getSymbolOccurrences(symbolName: string, localOnly: boolean): ISymbolInfo[] {
         const result: ISymbolInfo[] = [];
 
-        const symbols = await this.getAllSymbols(Symbol, localOnly);
+        const symbols = this.getAllSymbolsSync(Symbol, localOnly);
         for (const symbol of symbols) {
             const owner = (symbol.root as ContextSymbolTable).owner;
 
@@ -371,7 +371,7 @@ export class ContextSymbolTable extends SymbolTable {
                 }
 
                 if (symbol instanceof ScopedSymbol) {
-                    const references = await symbol.getAllNestedSymbols(symbolName);
+                    const references = symbol.getAllNestedSymbolsSync(symbolName);
                     for (const reference of references) {
                         result.push({
                             kind: SourceContext.getKindFromSymbol(reference),

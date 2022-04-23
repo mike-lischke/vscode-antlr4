@@ -192,19 +192,7 @@ export class ExtensionHost {
                 if (fs.existsSync(configFileName)) {
                     const content = fs.readFileSync(configFileName, "utf-8");
                     try {
-                        config = JSON.parse(content, (key, value): unknown => {
-                            // Convert the rule mappings array to a real map.
-                            if (key === "ruleMappings") {
-                                if (Array.isArray(value)) {
-                                    return new Map(value);
-                                }
-
-                                return undefined;
-                            }
-
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-                            return value;
-                        }) as ISentenceGenerationOptions;
+                        config = JSON.parse(content) as ISentenceGenerationOptions;
                     } catch (reason) {
                         this.outputChannel.appendLine("Cannot parse sentence generation config file:");
                         this.outputChannel.appendLine((reason as SyntaxError).message);

@@ -109,21 +109,21 @@ export class AntlrFacade {
         this.internalReleaseGrammar(fileName);
     }
 
-    public async symbolInfoAtPosition(fileName: string, column: number, row: number,
-        limitToChildren = true): Promise<ISymbolInfo | undefined> {
+    public symbolInfoAtPosition(fileName: string, column: number, row: number,
+        limitToChildren = true): ISymbolInfo | undefined {
         const context = this.getContext(fileName);
 
         return context.symbolAtPosition(column, row, limitToChildren);
     }
 
-    public async infoForSymbol(fileName: string, symbol: string): Promise<ISymbolInfo | undefined> {
+    public infoForSymbol(fileName: string, symbol: string): ISymbolInfo | undefined {
         const context = this.getContext(fileName);
 
         return context.getSymbolInfo(symbol);
     }
 
-    public async enclosingSymbolAtPosition(fileName: string, column: number, row: number,
-        ruleScope = false): Promise<ISymbolInfo | undefined> {
+    public enclosingSymbolAtPosition(fileName: string, column: number, row: number,
+        ruleScope = false): ISymbolInfo | undefined {
         const context = this.getContext(fileName);
 
         return context.enclosingSymbolAtPosition(column, row, ruleScope);
@@ -136,7 +136,7 @@ export class AntlrFacade {
      * @param fullList If true, includes symbols from all dependencies as well.
      * @returns A list of symbol info entries.
      */
-    public async listTopLevelSymbols(fileName: string, fullList: boolean): Promise<ISymbolInfo[]> {
+    public listTopLevelSymbols(fileName: string, fullList: boolean): ISymbolInfo[] {
         const context = this.getContext(fileName);
 
         return context.listTopLevelSymbols(!fullList);
@@ -248,12 +248,14 @@ export class AntlrFacade {
      * @param symbolName The name of the symbol to check.
      * @returns A list of symbol info entries, each describing one occurrence.
      */
-    public async getSymbolOccurrences(fileName: string, symbolName: string): Promise<ISymbolInfo[]> {
+    public getSymbolOccurrences(fileName: string, symbolName: string): ISymbolInfo[] {
         const context = this.getContext(fileName);
-        const result = await context.symbolTable.getSymbolOccurrences(symbolName, false);
+        const result = context.symbolTable.getSymbolOccurrences(symbolName, false);
 
         // Sort result by kind. This way rule definitions appear before rule references and are re-parsed first.
-        return result.sort((lhs: ISymbolInfo, rhs: ISymbolInfo) => { return lhs.kind - rhs.kind; });
+        return result.sort((lhs: ISymbolInfo, rhs: ISymbolInfo) => {
+            return lhs.kind - rhs.kind;
+        });
     }
 
     public getDependencies(fileName: string): string[] {

@@ -59,13 +59,12 @@ export enum SymbolKind {
  * A range within a text. Just like the range object in vscode the end position is not included in the range.
  * Hence when start and end position are equal the range is empty.
  */
-
 export interface ILexicalRange {
     start: { column: number; row: number };
     end: { column: number; row: number };
 }
-// The definition of a single symbol (range and content it is made of).
 
+// The definition of a single symbol (range and content it is made of).
 export interface IDefinition {
     text: string;
     range: ILexicalRange;
@@ -172,10 +171,10 @@ export interface IAtnLink {
     type: TransitionType;
     labels: Array<{ content: string; class?: string }>;
 }
+
 /**
  * Contains the link + node values which describe the ATN graph for a single rule.
  */
-
 export interface IAtnGraphData {
     nodes: IAtnNode[];
     links: IAtnLink[];
@@ -189,10 +188,10 @@ export enum CodeActionType {
     ParserPredicate,
     LexerPredicate
 }
+
 /**
  * Options used by the parser files generation.
  */
-
 export interface IGenerationOptions {
     // The folder in which to run the generation process. Should be an absolute path for predictable results.
     // Used internally only.
@@ -281,25 +280,27 @@ export interface ISentenceGenerationOptions {
     /**
      * A mapping of rule names to string literals, which should be used instead of running the generation for that rule.
      */
-    ruleMappings?: Map<string, string>;
+    ruleMappings?: IRuleMappings;
 
     /**
      * The name of a file which contains code to evaluate grammar actions and predicates.
      */
     actionFile?: string;
 }
+
 /**
  * Mappings from rule names to strings, which define output to use for specific rules when generating sentences.
  */
+export interface IRuleMappings {
+    [key: string]: string;
+}
 
-export type RuleMappings = Map<string, string>;
 /**
  * Options for grammar text formatting. Some names, values and meanings have been taken from clang-format
  * (http://clang.llvm.org/docs/ClangFormatStyleOptions.html), but may have slight variations tailored towards
  * ANTLR grammars. Deviations from that are mentioned in comments, otherwise see clang-format and the documentation for
  * descriptions + examples.
  */
-
 export interface IFormattingOptions {
     // Index signature to allow accessing properties via brackets.
     [key: string]: boolean | number | string | undefined;
