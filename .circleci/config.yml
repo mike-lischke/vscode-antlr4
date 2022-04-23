@@ -20,5 +20,5 @@ jobs:
 workflows:
     validation:
         jobs:
-            build_and_test
+            - build_and_test
             
