@@ -1,15 +1,24 @@
 # This config is equivalent to both the '.circleci/extended/orb-free.yml' and the base '.circleci/config.yml'
 version: 2.1
 
+orbs:
+  node: circleci/node@4.7.0
+  
 jobs:
-    node/test:
-        parallelism: 4
-        steps:
-            npm run test
-
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+  build_and_test:
+    parallelism: 4
+    docker:
+      - image: cimg/node:17.2.0
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          command: npm run test
+          name: Run tests
+            
 workflows:
-  validation:
-    jobs:
-      - node/test
+    validation:
+        jobs:
+            build_and_test
+            
