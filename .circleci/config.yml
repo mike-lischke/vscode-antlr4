@@ -9,7 +9,7 @@ orbs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
+  Validation: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - node/test:
@@ -19,3 +19,5 @@ workflows:
           version: '16.10'
           # If you are using yarn, change the line below from "npm" to "yarn"
           pkg-manager: npm
+		  machine: large
+    parallelism: 4
