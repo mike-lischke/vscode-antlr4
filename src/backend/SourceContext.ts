@@ -1613,11 +1613,11 @@ export class SourceContext {
         outputDir?: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const java = child_process.spawn("java", parameters, spawnOptions);
-            if (!java.connected) {
-                resolve("Java not installed");
 
-                return;
-            }
+            java.on("error", (error) => {
+                // Error while starting the Java process.
+                resolve(error.message);
+            });
 
             let buffer = "";
             java.stderr.on("data", (data: Buffer) => {
