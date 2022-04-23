@@ -7,7 +7,7 @@ orbs:
 jobs:
   build_and_test:
     docker:
-      - image: cimg/node:17.2.0
+      - image: cimg/node:lts
     resource_class: large
     steps:
       - checkout
