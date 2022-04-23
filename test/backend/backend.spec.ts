@@ -39,7 +39,7 @@ interface ITestRange {
 describe("vscode-antlr4 Backend Tests:", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
-    jest.setTimeout(600000); // 10 minutes for CircleCI
+    jest.setTimeout(60000); // 60 seconds for CircleCI
 
     describe("Base Handling:", () => {
         it("Create Backend", () => {

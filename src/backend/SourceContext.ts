@@ -1615,8 +1615,7 @@ export class SourceContext {
             const java = child_process.spawn("java", parameters, spawnOptions);
 
             java.on("error", (error) => {
-                // Error while starting the Java process.
-                resolve(error.message);
+                resolve(`Error while running Java: "${error.message}". Is Java installed on you machine?`);
             });
 
             let buffer = "";
