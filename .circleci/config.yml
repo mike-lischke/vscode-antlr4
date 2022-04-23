@@ -6,9 +6,9 @@ orbs:
   
 jobs:
   build_and_test:
-    parallelism: 4
     docker:
       - image: cimg/node:17.2.0
+    resource_class: large
     steps:
       - checkout
       - node/install-packages:
