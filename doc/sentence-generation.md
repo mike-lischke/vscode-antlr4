@@ -16,62 +16,32 @@ A generated sentence is a single line with no formatting (as whitespaces are usu
 
 To configure sentence generation for a grammar, create a file with the name of the grammar, but with the `json` extension, and place it directly beside the grammar. The file must contain a top level object, with the following fields (which are all optional):
 
-```javascript
-options = {
-    /** The number of sentences to generate in one call (default: 1). */
+```json
+{
     count: 1,
-
-    /** Clear output window on each run (used for output printing in the UI, default: true). */
     clear: true,
-
-    /** Determines how quick the weight for a decision to be select converges towards 0 (between 0 and 1, default: 0.25). */
     convergenceFactor: 0.25,
-
-    /**
-     * The minimum number of iterations used for `+` and `*` loops in the parser (default: 1 for `+`, 0 for `*`).
-     * Must be a positive integer (or 0) and must be smaller than `maxParserIterations` (if that is given).
-     * If set to 0 then for `+` loops 1 is used, automatically.
-     */
     minParserIterations: 1,
-
-    /**
-     * The maximum number of iterations in the parser. Must be a number > 0 and > `minParserIterations`.
-     * If that is not the case or the value is not specified then it is set to `minParserIterations` + 1.
-     */
-    maxParserIterations: 3,
-
-    /**
-     * The minimum number of iterations in the lexer (default: 1 for `+`, 0 for `*`).
-     * Must be a positive integer (or 0) and must be smaller than `maxLexerIterations` (if that is given).
-     * If set to 0 then for `+` loops 1 is used, automatically.
-     */
+    maxParserIterations: 2,
     minLexerIterations: 0,
-
-    /**
-     * The maximum number of iterations in the lexer. Must be a number > 0 and > than `minLexerIterations`.
-     * If that is not the case or the value is not specified then it is set to `minLexerIterations` + 10.
-     */
     maxLexerIterations: 10,
-
-    /**
-     * The maximum number of recursions (rules calling themselves directly or indirectly, default: 3).
-     */
     maxRecursions: 3,
-
-    /**
-     * A mapping of rule names to string literals, which should be used instead of running the generation for that rule.
-     * For more details see below.
-     */
     ruleMappings: {
-        "ruleName": "value",
     },
-
-    /**
-     * The name of a file which contains code to evaluate grammar actions and predicates.
-     */
-    actionFile: "<file name>"
+    actionFile: ""
 }
 ```
+
+- **count** (number, default: 1): The number of sentences to generate in one call.
+- **clear** (boolean, default: true): Clear output window on each run (used for output printing in the UI).
+- **convergenceFactor** (number, default: 0.25: Determines how quick the weight for a decision to be select converges towards 0 (between 0 and 1).
+- **minParserIterations** (number, default: 0): The minimum number of iterations used for `+` and `*` loops in the parser (default: 1 for `+`, 0 for `*`). Must be a positive integer (or 0) and must be smaller than `maxParserIterations` (if that is given). If set to 0 then for `+` loops 1 is used, automatically.
+- **maxParserIterations** (number, default: minParserIterations + 1): The maximum number of iterations in the parser. Must be a number > 0 and > `minParserIterations`. If that is not the case or the value is not specified then it is set to `minParserIterations` + 1.
+- **minLexerIterations** (number, default: 0): The minimum number of iterations in the lexer (default: 1 for `+`, 0 for `*`). Must be a positive integer (or 0) and must be smaller than `maxLexerIterations` (if that is given). If set to 0 then for `+` loops 1 is used, automatically.
+- **maxLexerIterations** (number, default: minLexerIterations + 10): The maximum number of iterations in the lexer. Must be a number > 0 and > than `minLexerIterations`. If that is not the case or the value is not specified then it is set to `minLexerIterations` + 10.
+- **maxRecursions** (number, default: 3): The maximum number of recursions (rules calling themselves directly or indirectly).
+- **ruleMappings** (object, default: none): A mapping of rule names to string literals, which should be used instead of running the generation for that rule. For more details see below.
+- **actionFile** (string, default: none): The name of a file which contains code to evaluate grammar actions and predicates.
 
 ### Loops
 
@@ -87,10 +57,12 @@ Recursions are relevant mostly for parser rules. They can be direct (a rule call
 
 The rule mappings object provides a way to explicitly specify the value for lexer or parser rules, instead of having the generator create one for them. This is often used to make sentences more readable. For example you can define a fixed value for your string rules. Let's assume there's a rule `SingleQuotedString` in your lexer, which matches all strings that are delimited by single quotes. You could define a mapping like:
 
-```javascript
+```json
+{
     ruleMapping: {
         "SingleQuotedString": "'Lorem Ipsum'",
     }
+}
 ```
 
 The generator will check the rule mappings first, when it starts processing a rule in the ATN. If it finds a match, it will use the value given in the mapping (here 'Lorem Ipsum'), instead of proceeding with the rule generation. Also for expressions this might be very useful, to avoid generating all kind of (possibly weird) expressions, when you are actually interested in the language elements that use expressions.
