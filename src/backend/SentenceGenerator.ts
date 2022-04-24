@@ -481,6 +481,7 @@ export class SentenceGenerator {
         const sum = weights.reduce((accumulated, current) => {
             return accumulated + current;
         });
+
         let randomValue = Math.random() * sum;
         let randomIndex = 0;
         while (randomIndex < altCounts.length) {
@@ -490,7 +491,6 @@ export class SentenceGenerator {
             }
             ++randomIndex;
         }
-
 
         return -1;
     }

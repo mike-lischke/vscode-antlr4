@@ -1,10 +1,13 @@
 # Debugging ANTLR4 grammars
 
 ## Introduction
+
 Debugging a grammar requires only a few things, since most of the prerequisites are included already. Only a valid Java installation is required to allow generating the interpreter data. Both, combined and separate grammars can be debugged, though only the parser rules can be stepped through. In either case you must have created interpreter data at least once, by saving the grammar in Visual Studio Code. See also [Parser Generation](parser-generation.md) for more details about generating a lexer/parser from your grammar.
 
 ## Feature Overview
+
 ### Operations
+
 * The following debug operations are supported:
 	* **Run w/o debugging** - just run the parser interpreter (no profiling yet, though it's planned)
 	* **Run with debugging** - run the interpreter and stop on breakpoints
@@ -13,9 +16,11 @@ Debugging a grammar requires only a few things, since most of the prerequisites 
 	* **Step out of the current parser rule** - ditto
 
 ### Textual Parse Tree
+
 Once a parse run finished a textual parse tree will be printed to the `DEBUG CONSOLE` panel in vscode (see the [Setup](#setup) section for how to enable it). This is a simple text-only representation much like a simple tree dump (but formatted).
 
 ### Live Graphical Parse Tree
+
 When enabled in the launch task setup, a graphical parse tree is shown in an own editor tab, which updates on each debugging step:
 
 ![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/live-parse-tree.gif)
@@ -25,11 +30,12 @@ This graphical parse tree is interactive. You can collapse/expand parser rule no
 As with all graphs in this extension, you can export it to an SVG file, along with custom or built-in CSS code to style the parse tree. There are 2 user settings that determine the initial orientation and the layout of the tree. You can read details in [Extension Settings](extension-settings.md#debugging).
 
 ### Actions and Semantic Predicates
-Grammars sometimes contain code in the target language of the generated lexer/parser. That can be support code in named actions (e.g. `import` or `#include` statements), other code within rules to support the parsing process or semantic predicates, to guide the parser. However, because this extension uses the interpreters for debugging it is not possible to run any of this code directly (even if the predicates are written in JS, let alone other languages). And since named and unnamed actions are usually to support the generated parser (and mostly not relevant for debugging), they are ignored by the extension debugger. However, for predicates there's an approach to simulate what the generated lexer/parser would do.
 
-This is possible by using a plain Javascript file, which contains code to evaluate semantic predicates (see the [Setup section](#setup) for how to enable it). That means however, the predicates must be written in valid JS code. Since predicates are usually short and use simple expressions (like `{version < 1000}` or `{doesItBlend()}` it should be easy to use what's originally written for another language (JS, C++, TS, Java etc. which all share a very similar expression syntax) without changes in the grammar. If an expression doesn't work in JS, you will have to change it however, temporarily.
+Grammars can contain code in the target language of the generated lexer/parser. This can be support code in named actions (e.g. `import` or `#include` statements), other code within rules to support the parsing process (unnamed actions) or semantic predicates, to guide the parser. The debugger will try to evaluate any such action/predicate code when it encounters it, using a standalone JS VM context. To make this work, however, this code must be written in JS.
 
-On every launch of a debugging session a new JS context is created with the evaluated code of the specified action file using [`vm.runInNewContext`](https://nodejs.org/api/vm.html#vm_vm_runinnewcontext_code_contextobject_options). This code can then be used by your predicates. These predicates are evaluated in the created JS context and can access variables, functions and so on. For example:
+Executing this code alone makes not much sense, usually. It often requires the infrastructure (base lexer/parser classes and so on) to interact with them. However, the debugger uses the ANTLR4 interpreter classes, which do not have access to that infrastructure. Instead you have to provide a mock up, against which action and predicate code can be executed. The mock code should reside in a plain Javascript file (no module), which is loaded into the same JS VM context where the action code is evaluated (see the [Setup section](#setup) for how to enable it). On every launch of a debugging session a new JS context is created with the evaluated code of the specified action file using [`vm.runInNewContext`](https://nodejs.org/api/vm.html#vm_vm_runinnewcontext_code_contextobject_options). Because of that you can change your mock code between debugger runs to modify the parsing behavior.
+
+For example:
 
 ```Javascript
 "use strict"
@@ -44,6 +50,7 @@ Errors during execution are reported back to get a chance of fixing any problem.
 ![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/predicate-debugging.gif)
 
 ## Setup
+
 What is needed to debug a grammar?
 
 * The grammar obviously, either as combined grammar (with parser and lexer rules in a single file) or separate grammars. Note: grammars which require a special setup (e.g. a different base class than the standard `Lexer` and `Parser` classes) could be a problem. It depends on what code is used from such base classes. Maybe you can emulate that also using the mentioned action/predicate JS file.

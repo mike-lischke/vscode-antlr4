@@ -375,7 +375,7 @@
             },
             {
                 "command": "antlr.rrd.allRules",
-                "title": "Show Railroad Diagram for all Rules"
+                "title": "Show Railroad Diagram for All Rules"
             },
             {
                 "command": "antlr.call-graph",
@@ -383,7 +383,7 @@
             },
             {
                 "command": "antlr.tools.generateSentences",
-                "title": "Generate valid input for Rule"
+                "title": "Generate Valid Input for Rule"
             }
         ],
         "menus": {

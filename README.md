@@ -52,7 +52,7 @@ There are a number of documentation files for specific topics:
 * [Grammar Debugging](doc/grammar-debugging.md)
 * [Graphical Visualizations](doc/graphical-visualizations.md)
 * [Grammar Formatting](doc/formatting.md)
-
+* [Sentence Generation](doc/sentence-generation.md)
 
 ### Miscellaneous
 
@@ -74,6 +74,33 @@ Bug fixing and what feels appealing to hack on.
 
 ### 2.2.5
 - Now using ANTLR 4.9. Cannot use the just released 4.10 because of TS runtime incompatibilities.
+- Fixed bug #104: Cannot read property 'document' of undefined error being thrown
+- Fixed bug #120: "antlr4.customcss": probably wrong type configuration.
+- Improved ATN diagrams:
+    - Labels for links now rotate sooner to horizontal position (45° instead of 75° of link angle), which makes for a nicer display.
+    - Unused ATN states are no longer visible in the graph.
+    - Transitions for actions, predicates and precedence predicates now show a label that indicates their type.
+    - The custom CSS setting name has been changed to cause no spelling trouble (from `customcss` to `customCSS`). Documentation was updated as well.
+- Improved predicate execution:
+    - Simplified the required JS code for predicate simulation in the debugger, sentence generation and test execution. See [Grammar Debugging](doc/grammar-debugging.md) for details.
+- Improved sentence generation:
+    - Sentence generation is now available in grammar files. [Sentence Generation](doc/sentence-generation.md) for details.
+    - Show a special char if no printable char could be generated (due to filtering).
+    - For virtual tokens the name is now printed instead of nothing (as they have no attached label), if no mapping is specified for them.
+    - Inclusion of Unicode line terminators can now be enabled, to allow generating them where possible.
+    - Sentence generation can now be configured per grammar. See the documentation for that.
+- Improved action and predicate handling/display:
+    - Named actions, standard actions and predicates now have hover information.
+    - Action types are now grouped for more details in the "Actions & Predicates" section. This also is part of better predicate handling (correct action index).
+    - There are now separate entries for local and global named actions.
+    - Exception blocks, lexer actions (more, pushMode etc.) and similar action blocks are tagged properly in the symbol table now and show as such in the actions section.
+    - Action transitions in the ATN graph now show their type + index.
+- Elements in railroad diagrams now have a CSS class, to make them better customizable.
+- D3.js is a dependency of the extension and hence shipped with it. But the webviews downloaded an own copy of that lib for their work. Now they use the shipped D3.js code.
+- There is now a language injection definition for Markdown files, to syntax highlight ANTLR4 code in these files. Just specify `antlr` as language for triple-backtick code blocks to see it.
+- Improved the file generation process:
+    - Generation continues if multiple files take part (e.g. those imported) and one of them has an error.
+    - Errors coming up while running Java are now reported to the frontend. Also shows a hint if no Java is installed.
 
 ### 2.2.4
 - You can now specify an alternative ANTLR4 jar file for parser generation and also use custom parameters. Both values can be set in the generation settings of the extension.
