@@ -16,13 +16,13 @@ A generated sentence is a single line with no formatting (as whitespaces are usu
 
 To configure sentence generation for a grammar, create a file with the name of the grammar, but with the `json` extension, and place it directly beside the grammar. The file must contain a top level object, with the following fields (which are all optional):
 
-```json
-{
+```javascript
+options = {
     /** The number of sentences to generate in one call (default: 1). */
     count: 1,
 
     /** Clear output window on each run (used for output printing in the UI, default: true). */
-    clear: true;
+    clear: true,
 
     /** Determines how quick the weight for a decision to be select converges towards 0 (between 0 and 1, default: 0.25). */
     convergenceFactor: 0.25,
@@ -32,13 +32,13 @@ To configure sentence generation for a grammar, create a file with the name of t
      * Must be a positive integer (or 0) and must be smaller than `maxParserIterations` (if that is given).
      * If set to 0 then for `+` loops 1 is used, automatically.
      */
-    minParserIterations: 1;
+    minParserIterations: 1,
 
     /**
      * The maximum number of iterations in the parser. Must be a number > 0 and > `minParserIterations`.
      * If that is not the case or the value is not specified then it is set to `minParserIterations` + 1.
      */
-    maxParserIterations: 3;
+    maxParserIterations: 3,
 
     /**
      * The minimum number of iterations in the lexer (default: 1 for `+`, 0 for `*`).
@@ -87,7 +87,7 @@ Recursions are relevant mostly for parser rules. They can be direct (a rule call
 
 The rule mappings object provides a way to explicitly specify the value for lexer or parser rules, instead of having the generator create one for them. This is often used to make sentences more readable. For example you can define a fixed value for your string rules. Let's assume there's a rule `SingleQuotedString` in your lexer, which matches all strings that are delimited by single quotes. You could define a mapping like:
 
-```json
+```javascript
     ruleMapping: {
         "SingleQuotedString": "'Lorem Ipsum'",
     }
@@ -107,7 +107,7 @@ This is done by using a transition weight value in the range of 0 through 1, whi
 
 The weight is computed by raising a convergence factor to the power of the transition count:
 
-> w = convergenceFactor ^count
+> w = convergenceFactor ^ count
 
 where the convergence factor can be specified in the generation configuration. Its default is 0.25 and the smaller it is, the quicker the weight approaches zero:
 
