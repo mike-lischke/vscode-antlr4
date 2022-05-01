@@ -14,8 +14,8 @@ import { FrontendUtils } from "../FrontendUtils";
 
 export class AntlrRailroadDiagramProvider extends WebviewProvider {
 
-    public async generateContent(webView: vscode.Webview, editor: vscode.TextEditor,
-        options: IWebviewShowOptions): Promise<string> {
+    public generateContent(webView: vscode.Webview, editor: vscode.TextEditor,
+        options: IWebviewShowOptions): string {
         const caret = editor.selection.active;
 
         const fileName = editor.document.fileName;
@@ -29,7 +29,6 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
         // Content Security Policy
         const nonce = this.generateNonce();
         const scripts = [
-            FrontendUtils.getMiscPath("utils.js", this.context, webView),
             FrontendUtils.getMiscPath("railroad-diagrams.js", this.context, webView),
         ];
 
@@ -55,7 +54,7 @@ export class AntlrRailroadDiagramProvider extends WebviewProvider {
                     </span>
                 </div>
                 <div id="container">`;
-            const symbols = await this.backend.listTopLevelSymbols(fileName, false);
+            const symbols = this.backend.listTopLevelSymbols(fileName, false);
             for (const symbol of symbols) {
                 if (symbol.kind === SymbolKind.LexerRule
                     || symbol.kind === SymbolKind.ParserRule

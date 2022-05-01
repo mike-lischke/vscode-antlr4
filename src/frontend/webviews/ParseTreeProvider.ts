@@ -28,13 +28,13 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
         this.updateContent(uri);
     }
 
-    public async generateContent(webView: vscode.Webview, uri: vscode.Uri,
-        _options: IWebviewShowOptions): Promise<string> {
+    public generateContent(webView: vscode.Webview, uri: vscode.Uri,
+        _options: IWebviewShowOptions): string {
         const graph = this.debugger.currentParseTree;
 
-        const rendererPath = FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context,
+        const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context,
             webView);
-        const communicationPath = FrontendUtils.getOutPath("src/webview-scripts/Communication.js", this.context,
+        const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
             webView);
         const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
 
@@ -52,7 +52,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                     <script src="${graphLibPath}"></script>
                     <script>
                         let parseTreeRenderer;
-                        let communication;
+                        let graphExport;
                     </script>
                 </head>
 
@@ -88,7 +88,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                                 vertical-align: middle;">+</span>
                         </a>&nbsp;&nbsp;
                         Save to SVG
-                        <a onClick="communication.exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');">
+                        <a onClick="graphExport.exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');">
                             <span class="parse-tree-save-image" />
                         </a>
                     </span>
@@ -96,11 +96,24 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
 
                 <svg></svg>
                 <script type="module">
-                    import { ParseTreeRenderer } from "${rendererPath}";
-                    import { Communication } from "${communicationPath}";
+                    import { ParseTreeRenderer } from "${rendererScriptPath}";
+                    import { GraphExport } from "${exportScriptPath}";
+
+                    // Register a listener for data changes.
+                    window.addEventListener("message", (event) => {
+                        switch (event.data.command) {
+                            case "updateParseTreeData": {
+                                parseTreeRenderer.loadNewTree({ parseTreeData: event.data.treeData });
+
+                                break;
+                            }
+
+                            default:
+                        }
+                    });
 
                     parseTreeRenderer = new ParseTreeRenderer();
-                    communication = new Communication(parseTreeRenderer);
+                    graphExport = new GraphExport();
 
                     parseTreeRenderer.loadNewTree({
                         parseTreeData: ${JSON.stringify(graph)},
@@ -117,7 +130,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
             </body>
         </html>`;
 
-        return Promise.resolve(diagram);
+        return diagram;
     }
 
     protected updateContent(uri: vscode.Uri): boolean {

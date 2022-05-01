@@ -842,11 +842,11 @@ export class SourceContext {
         return this.diagnostics;
     }
 
-    public async getReferenceGraph(): Promise<Map<string, IReferenceNode>> {
+    public getReferenceGraph(): Map<string, IReferenceNode> {
         this.runSemanticAnalysisIfNeeded();
 
         const result = new Map<string, IReferenceNode>();
-        for (const symbol of await this.symbolTable.getAllSymbols(Symbol, false)) {
+        for (const symbol of this.symbolTable.getAllSymbolsSync(Symbol, false)) {
             if (symbol instanceof RuleSymbol
                 || symbol instanceof TokenSymbol
                 || symbol instanceof FragmentTokenSymbol) {
@@ -857,8 +857,8 @@ export class SourceContext {
                     literals: new Set<string>(),
                 };
 
-                for (const child of await symbol.getNestedSymbolsOfType(RuleReferenceSymbol)) {
-                    const resolved = await this.symbolTable.resolve(child.name, false);
+                for (const child of symbol.getNestedSymbolsOfTypeSync(RuleReferenceSymbol)) {
+                    const resolved = this.symbolTable.resolveSync(child.name, false);
                     if (resolved) {
                         entry.rules.add(resolved.qualifiedName());
                     } else {
@@ -866,8 +866,8 @@ export class SourceContext {
                     }
                 }
 
-                for (const child of await symbol.getNestedSymbolsOfType(TokenReferenceSymbol)) {
-                    const resolved = await this.symbolTable.resolve(child.name, false);
+                for (const child of symbol.getNestedSymbolsOfTypeSync(TokenReferenceSymbol)) {
+                    const resolved = this.symbolTable.resolveSync(child.name, false);
                     if (resolved) {
                         entry.tokens.add(resolved.qualifiedName());
                     } else {
@@ -875,8 +875,8 @@ export class SourceContext {
                     }
                 }
 
-                for (const child of await symbol.getNestedSymbolsOfType(LiteralSymbol)) {
-                    const resolved = await this.symbolTable.resolve(child.name, false);
+                for (const child of symbol.getNestedSymbolsOfTypeSync(LiteralSymbol)) {
+                    const resolved = this.symbolTable.resolveSync(child.name, false);
                     if (resolved) {
                         entry.literals.add(resolved.qualifiedName());
                     } else {

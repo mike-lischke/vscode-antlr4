@@ -183,26 +183,22 @@ body.vscode-dark .link {
     stroke-opacity: .2;
     fill: none;
     pointer-events: none;
-    animation: fadeIn 0.5s ease-out 0.2s 1 normal backwards;
 }
 
 body.vscode-dark .link-source {
     stroke-opacity: 1;
     stroke-width: 2px;
     stroke: #45aa73;
-    animation: none;
 }
 
 body.vscode-dark .link-target {
     stroke-opacity: 1;
     stroke-width: 2px;
     stroke: #ff5711;
-    animation: none;
 }
 
 body.vscode-dark .link-dimmed {
     stroke-opacity: 0.075;
-    animation: fadeOut 0.25s ease-out 0s 1 normal backwards;
 }
 
 /* Parse trees */

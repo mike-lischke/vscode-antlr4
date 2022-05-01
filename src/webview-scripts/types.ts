@@ -102,3 +102,8 @@ export interface IAtnGraphData {
     nodes: IAtnNode[];
     links: IAtnLink[];
 }
+
+export interface ICallGraphEntry {
+    name: string;
+    references: string[];
+}

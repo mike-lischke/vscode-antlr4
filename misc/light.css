@@ -187,7 +187,7 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
     stroke-opacity: .2;
     fill: none;
     pointer-events: none;
-    animation: fadeIn 0.25s ease-out 0.2s 1 normal backwards;
+    animation: fadeIn 1s ease-out 1s normal backwards;
 }
 
 .module-1 {
@@ -284,7 +284,7 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 
 .link-dimmed {
     stroke-opacity: 0.075;
-    animation: fadeOut 0.25s ease-out 0.1s 1 normal backwards;
+    animation: fadeOut 0.3s ease-out 0s normal backwards;
 }
 
 
@@ -475,8 +475,8 @@ g .token-range {
 	width: 12px;
 	height: 12px;
 	position: absolute;
-	left: 0px;
-	top: 0px;
+	left: 0;
+	top: 0;
 	z-index: 4;
 	background-color: white;
 	border-radius: 2.5em;
@@ -484,6 +484,6 @@ g .token-range {
 }
 
 .switch input:checked~.switch-handle-top  {
-    top: 0px;
+    top: 0;
     left: 12px;
 }

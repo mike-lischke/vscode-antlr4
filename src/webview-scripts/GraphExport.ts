@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-import { ParseTreeRenderer } from "./ParseTreeRenderer";
-
 interface IVSCode {
     postMessage(message: { [key: string]: unknown }): void;
     getState(): unknown;
@@ -20,8 +18,8 @@ const vscode = acquireVsCodeApi();
 // These values directly correspond to the settings section names containing a "saveDir" entry.
 export type GraphType = "rrd" | "atn" | "call-graph";
 
-export class Communication {
-    public constructor(private parseTreeRenderer: ParseTreeRenderer) {
+export class GraphExport {
+    public constructor() {
         // Used to send messages from the extension to this webview.
         window.addEventListener("message", (event) => {
             switch (event.data.command) {
@@ -38,25 +36,9 @@ export class Communication {
 
                     break;
                 }
-
-                case "updateParseTreeData": {
-                    this.parseTreeRenderer.loadNewTree({ parseTreeData: event.data.treeData });
-
-                    break;
-                }
-
                 default:
             }
         });
-    }
-
-    /**
-     * Used for debugging, to show a message.
-     *
-     * @param message The message to show.
-     */
-    public showMessage(message: string): void {
-        vscode.postMessage({ command: "alert", text: message });
     }
 
     /**
@@ -108,7 +90,7 @@ export class Communication {
 
             vscode.postMessage(args);
         } catch (error) {
-            this.showMessage("JS Error: " + String(error));
+            vscode.postMessage({ command: "alert", text: "JS Error: " + String(error) });
         }
     }
 }

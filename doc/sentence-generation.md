@@ -18,17 +18,17 @@ To configure sentence generation for a grammar, create a file with the name of t
 
 ```json
 {
-    count: 1,
-    clear: true,
-    convergenceFactor: 0.25,
-    minParserIterations: 1,
-    maxParserIterations: 2,
-    minLexerIterations: 0,
-    maxLexerIterations: 10,
-    maxRecursions: 3,
-    ruleMappings: {
+    "count": 1,
+    "clear": true,
+    "convergenceFactor": 0.25,
+    "minParserIterations": 1,
+    "maxParserIterations": 2,
+    "minLexerIterations": 0,
+    "maxLexerIterations": 10,
+    "maxRecursions": 3,
+    "ruleMappings": {
     },
-    actionFile: ""
+    "actionFile": ""
 }
 ```
 
@@ -51,7 +51,7 @@ Rule definitions in grammars often use loops:
 
 To avoid endless processing, maximum loop counts are used. These numbers can have smaller impact (e.g. the length of generated identifiers) or make generated output enormously more complex (when repeating large rules and their subrules). Therefore you should start experimenting with small values for `maxParserIterations`. There are also minimum counterparts for iterations, to specify how often iterations at least should be run through.
 
-Recursions are relevant mostly for parser rules. They can be direct (a rule calls itself) or indirect (a rule calls another rule, which then calls the original rule again). Each invocation of a rule during a parse run is recorded in the so-called invocation stack. Using this structure it is possible to determine how often a specific rules has already been invoked. The same can be applied to the generation process, which is a walk over the ATN. Potentially, recursions also can lead to endless processing, which is why there is `maxRecursions`, which determines how often a rule appears in the invocation stack (at any level).
+Recursions are relevant mostly for parser rules. They can be direct (a rule calls itself) or indirect (a rule calls another rule, which then calls the original rule again). Each invocation of a rule during a parse run is recorded in the so-called invocation stack. With this structure it is possible to determine how often a specific rules has already been invoked. The same can be applied to the generation process, which is a walk over the ATN. Potentially, recursions also can lead to endless processing, which is why there is `maxRecursions`, which determines how often a rule appears in the invocation stack (at any level).
 
 ### Rule Mappings
 
@@ -59,23 +59,38 @@ The rule mappings object provides a way to explicitly specify the value for lexe
 
 ```json
 {
-    ruleMapping: {
+    "ruleMapping": {
         "SingleQuotedString": "'Lorem Ipsum'",
     }
 }
 ```
 
-The generator will check the rule mappings first, when it starts processing a rule in the ATN. If it finds a match, it will use the value given in the mapping (here 'Lorem Ipsum'), instead of proceeding with the rule generation. Also for expressions this might be very useful, to avoid generating all kind of (possibly weird) expressions, when you are actually interested in the language elements that use expressions.
+The generator will check the rule mappings first, when it starts processing a rule (here `SingleQuotedString`) in the ATN. If it finds a match, it will use the value given in the mapping (here 'Lorem Ipsum'), instead of proceeding with the rule generation. Also for expressions this might be very useful, to avoid generating all kind of (possibly weird) expressions, when you are actually interested in the language elements that use expressions.
 
 ### Actions and Predicates
 
 Like for the [Grammar Debugger](grammar-debugging.md) also the sentence generator supports actions and predicates in a grammar, provided they are executable in a Javascript context. However, the action file for the generator is specified in the `actionFile` field of the side-car json file.
 
+## Unicode
+
+ANTLR4 supports the [full Unicode range](https://github.com/antlr/antlr4/blob/master/doc/unicode.md). It is possible to construct lexer tokens from any code point defined in the Unicode standard. Especially typical identifier lexer rules encompass a large range of code points. Picking a random value from the range 0x00000-0x10FFFF can however lead to very unsatisfying results.
+
+- Not all code points are assigned. There are many unused entries.
+- There a code points which serve special purposes (control codes, surrogates, combining marks, box drawing, mathematical symbols and more). These are not printable on their own or produce unexpected output.
+- The vast majority of assigned code points in the Unicode standard are asian characters. This almost guarantees that a random pick will return a chinese, japanese or korean (CJK) character.
+- Many characters require special fonts to show up properly. Using them in the generated string will only show the default char for them, making the string difficult to use.
+
+For this reason a special collection of code points is used to generate a random code point. Whenever a code point is requested, an intersection is computed between the code point's source set and this special collection. The resulting set is used to pick a code point from. If it is empty, the original, unchanged, source set is used instead.
+
+This special collection is currently created from the full Unicode range, excluding all non-printable characters (control code points, formatting code points, surrogates and private use code points). Furthermore, some very large asian scripts are excluded too (CJK Unified Ideographs, CJK Unified Ideographs Extension A, CJK Compatibility Ideographs, Hangul Syllables and Yi Syllables) to balance the entire collection. That doesn't mean all asian characters are removed. There remain still plenty of code points for generation. This exclusion is purely based on balancing considerations and might change in the future. Another excluded set is the right-to-left BIDI character class, as it makes no sense to mix LTR and RTL directions randomly and I use LTR personally. Also this decision can be changed, if needed.
+
+In fact I'm not so happy with this selection process and have therefore started to develop a new approach, based on configurable language block weight values. With these weights you can give a specific [Unicode block](https://en.wikipedia.org/wiki/Unicode_block) more or less weight, to determine how much it contributes to the random selection process. This is however still work in progress and currently not used.
+
 ## The Generation Process
 
-Like for code completion and debugging, sentence generation is done by walking the parser or lexer ATN. Each rule has a start and an end state, which can be looked up by the rule's index. The generation process follows the outgoing transitions of each ATN state. States with more than one outgoing transition are called decision states, because a decision must be made which transition to follow. In the normal parsing process such a decision is determined by the prediction engine (in fact this is its main purpose). For sentence generation the transition to follow is determined randomly. This way potentially all paths are taken over time (if a state is visited multiple times). However, because of certain aspects the indexes of the used transitions are not evenly distributed. Hence some correction is necessary.
+Like for code completion and debugging, sentence generation is done by walking over the parser or lexer ATN. Each rule has a start and an end state, which can be looked up by the rule's index. The generation process follows the outgoing transitions of each ATN state, beginning with the start state of the selected rule. States with more than one outgoing transition are called decision states, because a decision must be made which transition to follow. In the normal parsing process such a decision is determined by the prediction engine (in fact this is its main purpose). For sentence generation the transition to follow is randomly selected. This way potentially all paths are taken over time (if a state is visited multiple times). However, because of certain aspects the selected indexes are not evenly distributed and some need special handling (like exit transitions in loop end states). Hence some correction is necessary.
 
-This is done by using a transition weight value in the range of 0 through 1, which is derived from how often a transition was taken before. The more often that happened the smaller is the weight, so it gets less and less likely that a specific transition is selected again. There is however one exception to that rule: loop end states. They always have 2 outgoing transitions: one to enter the loop again and one to exit it. The exit transition always has a weight of 1, so it can never happen that a loop is not ended. Transitions counters are reset to zero each time the generator is started again.
+This is done by using a transition weight value in the range of 0 through 1, which is derived from how often a transition was taken before. The more often that happened the smaller is the weight, so it gets less and less likely that a specific transition is selected again. There is however one exception to that rule: loop end states. They always have 2 outgoing transitions: one to enter the loop again and one to exit it. The exit transition always has a weight of 1, so it can never happen that a loop is not ended (though there's also the maximum iteration count, see generation configuration). Transitions counters are reset to zero each time the generator is started again.
 
 The weight is computed by raising a convergence factor to the power of the transition count:
 
@@ -85,4 +100,4 @@ where the convergence factor can be specified in the generation configuration. I
 
 ![Generation Convergence](../images/generation-convergence.png)
 
-However, this is a rarely needed fine tuning value.
+However, this is a rarely needed fine tuning value, but might nonetheless give you additional control over the process.

@@ -44,12 +44,8 @@ export class WebviewProvider {
             const [existingPanel] = this.webViewMap.get(uriString)!;
             existingPanel.title = options.title;
             if (!this.updateContent(uri)) {
-                this.generateContent(existingPanel.webview, this.currentEditor ? this.currentEditor : uri, options)
-                    .then((content) => {
-                        existingPanel.webview.html = content;
-                    }).catch((reason: string) => {
-                        existingPanel.webview.html = `Could not render webview content: ${reason.toString()}`;
-                    });
+                existingPanel.webview.html = this.generateContent(existingPanel.webview,
+                    this.currentEditor ? this.currentEditor : uri, options);
             }
 
             return;
@@ -65,12 +61,8 @@ export class WebviewProvider {
             this.webViewMap.delete(uriString);
         });
 
-        this.generateContent(panel.webview, this.currentEditor ? this.currentEditor : uri, options)
-            .then((content) => {
-                panel.webview.html = content;
-            }).catch((reason: string) => {
-                panel.webview.html = `Could not render webview content: ${reason.toString()}`;
-            });
+        panel.webview.html = this.generateContent(panel.webview, this.currentEditor ? this.currentEditor : uri,
+            options);
 
         panel.webview.onDidReceiveMessage((message: IWebviewMessage) => {
             if (this.handleMessage(message)) {
@@ -163,18 +155,14 @@ export class WebviewProvider {
         if (this.webViewMap.has(editor.document.uri.toString())) {
             const [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
             if (!this.updateContent(editor.document.uri)) {
-                this.generateContent(panel.webview, editor, options).then((content) => {
-                    panel.webview.html = content;
-                }).catch((reason: string) => {
-                    panel.webview.html = `Could not render webview content: ${reason.toString()}`;
-                });
+                panel.webview.html = this.generateContent(panel.webview, editor, options);
             }
         }
     }
 
-    protected async generateContent(_webView: Webview, _source: TextEditor | Uri,
-        _options: IWebviewShowOptions): Promise<string> {
-        return Promise.resolve("");
+    protected generateContent(_webView: Webview, _source: TextEditor | Uri,
+        _options: IWebviewShowOptions): string {
+        return "";
     }
 
     protected generateContentSecurityPolicy(_: TextEditor | Uri): string {

@@ -274,7 +274,7 @@ export class AntlrFacade {
         return result;
     }
 
-    public async getReferenceGraph(fileName: string): Promise<Map<string, IReferenceNode>> {
+    public getReferenceGraph(fileName: string): Map<string, IReferenceNode> {
         const context = this.getContext(fileName);
 
         return context.getReferenceGraph();

@@ -38,8 +38,8 @@ export class AntlrAtnGraphProvider extends WebviewProvider {
         }
     }
 
-    public async generateContent(webView: Webview, source: TextEditor | Uri,
-        _options: IWebviewShowOptions): Promise<string> {
+    public generateContent(webView: Webview, source: TextEditor | Uri,
+        _options: IWebviewShowOptions): string {
         if (!this.currentRule) {
             return `<!DOCTYPE html>
                 <html>
@@ -55,10 +55,6 @@ export class AntlrAtnGraphProvider extends WebviewProvider {
 
         miscPath = FrontendUtils.getMiscPath("atngraph.js", this.context);
         const code = fs.readFileSync(miscPath, { encoding: "utf-8" });
-
-        const scripts = [
-            FrontendUtils.getMiscPath("utils.js", this.context, webView),
-        ];
 
         const uri = (source instanceof Uri) ? source : source.document.uri;
         html = html.replace("##header##", `
@@ -120,8 +116,7 @@ export class AntlrAtnGraphProvider extends WebviewProvider {
             html += `  const initialTranslateX = ${transX};\n`;
             html += `  const initialTranslateY = ${transY};\n`;
 
-            const nonce = `${new Date().getTime()}${new Date().getMilliseconds()}`;
-            html += `${code}\n</script>\n${this.getScripts(nonce, scripts)}</div></body>`;
+            html += `${code}\n</script></div></body>`;
 
         } else {
             html += "  const nodes = []\n";
@@ -137,7 +132,7 @@ export class AntlrAtnGraphProvider extends WebviewProvider {
 
         fs.writeFileSync("/Users/mike/Downloads/atn.html", html + "</html>");
 
-        return Promise.resolve(html + "</html>");
+        return html + "</html>";
     }
 
     public update(editor: TextEditor, forced = false): void {
