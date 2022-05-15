@@ -5,8 +5,6 @@
  * See LICENSE file for more info.
  */
 
-import { ATNStateType, TransitionType } from "antlr4ts/atn";
-
 export enum GrammarType {
     Unknown,
     Parser,
@@ -108,12 +106,6 @@ export interface ILexerToken {
     stopIndex: number;
 }
 
-export enum ParseTreeNodeType {
-    Rule,
-    Terminal,
-    Error
-}
-
 /**
  * Describes the a range in an input stream (character indexes in a char stream or token indexes in a token stream).
  * Indexes can be < 0 if there's no input representation for a tree node (e.g. when it did not match anything).
@@ -125,11 +117,12 @@ export interface IIndexRange {
 }
 
 /**
- * This node class is what exported parse trees are made of, which are created by the debugger interface.
+ * This interface is what exported parse trees are made of, which are created by the debugger interface.
  * Each node stands either for an invoked rule, a terminal node or an error node.
+ * NOTE: there's a copy of the it in webview-scripts/types.ts, so keep them in sync!
  */
 export interface IParseTreeNode {
-    type: ParseTreeNodeType;
+    type: "rule" | "terminal" | "error";
     id: number; // A unique id for D3.js.
 
     ruleIndex?: number; // Only valid for the rule node type.
@@ -153,31 +146,6 @@ export interface IReferenceNode {
     rules: Set<string>;
     tokens: Set<string>;
     literals: Set<string>;
-}
-
-export interface IAtnNode {
-    id: number; // A unique number (positive for state numbers, negative for rule nodes)
-    name: string;
-    type: ATNStateType;
-
-    // Cached position values.
-    fx?: number;
-    fy?: number;
-}
-
-export interface IAtnLink {
-    source: number;
-    target: number;
-    type: TransitionType;
-    labels: Array<{ content: string; class?: string }>;
-}
-
-/**
- * Contains the link + node values which describe the ATN graph for a single rule.
- */
-export interface IAtnGraphData {
-    nodes: IAtnNode[];
-    links: IAtnLink[];
 }
 
 export enum CodeActionType {
@@ -276,6 +244,11 @@ export interface ISentenceGenerationOptions {
      * The maximum number of recursions (rules calling themselves directly or indirectly, default: 3).
      */
     maxRecursions?: number;
+
+    /**
+     * The string to use when the maximum recursion level was reached (default: "⨱").
+     */
+    maxRecursionLabel?: string;
 
     /**
      * A mapping of rule names to string literals, which should be used instead of running the generation for that rule.

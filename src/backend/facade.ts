@@ -22,8 +22,9 @@ import { SourceContext } from "./SourceContext";
 import { GrammarDebugger } from "./GrammarDebugger";
 import {
     ISelfDiagnostics, ISymbolInfo, CodeActionType, IDiagnosticEntry, IReferenceNode, IGenerationOptions,
-    IAtnGraphData, ISentenceGenerationOptions, IFormattingOptions, IContextDetails,
+    ISentenceGenerationOptions, IFormattingOptions, IContextDetails,
 } from "./types";
+import { IATNGraphData } from "../webview-scripts/types";
 
 export class AntlrFacade {
     // Mapping file names to SourceContext instances.
@@ -294,7 +295,7 @@ export class AntlrFacade {
         return context.generate(dependencies, options);
     }
 
-    public getATNGraph(fileName: string, rule: string): IAtnGraphData | undefined {
+    public getATNGraph(fileName: string, rule: string): IATNGraphData | undefined {
         const context = this.getContext(fileName);
 
         return context.getATNGraph(rule);

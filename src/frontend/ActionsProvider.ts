@@ -82,19 +82,24 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
         let action = FrontendUtils.findInListFromPosition(this.globalNamedActions, position.character,
             position.line + 1);
+
         if (!action) {
             action = FrontendUtils.findInListFromPosition(this.localNamedActions, position.character,
                 position.line + 1);
         }
+
         if (!action) {
             action = FrontendUtils.findInListFromPosition(this.parserActions, position.character, position.line + 1);
         }
+
         if (!action) {
             action = FrontendUtils.findInListFromPosition(this.lexerActions, position.character, position.line + 1);
         }
+
         if (!action) {
             action = FrontendUtils.findInListFromPosition(this.parserPredicates, position.character, position.line + 1);
         }
+
         if (!action) {
             action = FrontendUtils.findInListFromPosition(this.lexerPredicates, position.character, position.line + 1);
         }

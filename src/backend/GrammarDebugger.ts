@@ -12,7 +12,7 @@ import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
 import { IInterpreterData } from "./InterpreterDataReader";
-import { ILexerToken, IParseTreeNode, ParseTreeNodeType, ILexicalRange, PredicateFunction } from "./types";
+import { ILexerToken, ILexicalRange, IParseTreeNode, PredicateFunction } from "./types";
 
 import { RuleSymbol } from "./ContextSymbolTable";
 import { SourceContext } from "./SourceContext";
@@ -255,7 +255,9 @@ export class GrammarDebugger extends EventEmitter {
             return undefined;
         }
 
-        return this.parseContextToNode(this.parseTree);
+        const aa = this.parseContextToNode(this.parseTree);
+
+        return aa;
     }
 
     public get currentStackTrace(): IGrammarStackFrame[] {
@@ -377,7 +379,7 @@ export class GrammarDebugger extends EventEmitter {
             }
 
             return {
-                type: ParseTreeNodeType.Rule,
+                type: "rule",
                 ruleIndex: tree.ruleIndex,
                 name: this.parser!.ruleNames[tree.ruleIndex],
                 start: this.convertToken(tree.start as CommonToken),
@@ -394,7 +396,7 @@ export class GrammarDebugger extends EventEmitter {
             const symbol = this.convertToken(tree.symbol as CommonToken);
 
             return {
-                type: ParseTreeNodeType.Error,
+                type: "error",
                 symbol,
                 id: this.computeHash(tree.symbol as CommonToken),
                 name: symbol ? symbol.name : "<no name>",
@@ -406,7 +408,7 @@ export class GrammarDebugger extends EventEmitter {
             const symbol = this.convertToken((tree as TerminalNode).symbol as CommonToken);
 
             return {
-                type: ParseTreeNodeType.Terminal,
+                type: "terminal",
                 symbol,
                 id: this.computeHash(token),
                 name: symbol ? symbol.name : "<no name>",

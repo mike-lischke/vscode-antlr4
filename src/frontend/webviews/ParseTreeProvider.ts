@@ -5,30 +5,24 @@
  * See LICENSE file for more info.
  */
 
-import * as path from "path";
+import { basename } from "path";
 
-import * as vscode from "vscode";
+import { Uri, Webview, workspace } from "vscode";
 
 import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
 import { FrontendUtils } from "../FrontendUtils";
 import { IDebuggerConsumer } from "../AntlrDebugAdapter";
 import { GrammarDebugger } from "../../backend/GrammarDebugger";
 
-export class AntlrParseTreeProvider extends WebviewProvider implements IDebuggerConsumer {
+export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsumer {
 
     public debugger: GrammarDebugger;
 
-    public refresh(): void {
-        if (this.currentEditor) {
-            this.update(this.currentEditor);
-        }
-    }
-
-    public debuggerStopped(uri: vscode.Uri): void {
+    public debuggerStopped(uri: Uri): void {
         this.updateContent(uri);
     }
 
-    public generateContent(webView: vscode.Webview, uri: vscode.Uri,
+    public generateContent(webView: Webview, uri: Uri,
         _options: IWebviewShowOptions): string {
         const graph = this.debugger.currentParseTree;
 
@@ -38,15 +32,15 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
             webView);
         const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
 
-        const settings = vscode.workspace.getConfiguration("antlr4.debug");
-        const horizontal = settings.visualParseTreeHorizontal ? true : false;
-        const clustered = settings.visualParseTreeClustered ? true : false;
+        const settings = workspace.getConfiguration("antlr4.debug");
+        const horizontal = settings.get<boolean>("visualParseTreeHorizontal", true);
+        const clustered = settings.get<boolean>("visualParseTreeClustered", false);
 
         const diagram = `<!DOCTYPE html>
             <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-                    ${this.generateContentSecurityPolicy(uri)}
+                    ${this.generateContentSecurityPolicy()}
                     ${this.getStyles(webView)}
                     <base target="_blank">
                     <script src="${graphLibPath}"></script>
@@ -88,7 +82,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
                                 vertical-align: middle;">+</span>
                         </a>&nbsp;&nbsp;
                         Save to SVG
-                        <a onClick="graphExport.exportToSVG('parse-tree', '${path.basename(uri.fsPath)}');">
+                        <a onClick="graphExport.exportToSVG('parse-tree', '${basename(uri.fsPath)}');">
                             <span class="parse-tree-save-image" />
                         </a>
                     </span>
@@ -133,7 +127,7 @@ export class AntlrParseTreeProvider extends WebviewProvider implements IDebugger
         return diagram;
     }
 
-    protected updateContent(uri: vscode.Uri): boolean {
+    public updateContent(uri: Uri): boolean {
         const graph = this.debugger.currentParseTree;
         this.sendMessage(uri, {
             command: "updateParseTreeData",

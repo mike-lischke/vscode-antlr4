@@ -221,11 +221,12 @@ export class ParseTreeRenderer {
 
                 let result = "tree-node";
                 switch (d.data.type) {
-                    case 1: { // A terminal node.
+                    case "terminal": {
                         result += " tree-leaf";
                         break;
                     }
-                    case 2: { // An error node.
+
+                    case "error": {
                         result += " tree-error";
                         break;
                     }
@@ -249,10 +250,10 @@ export class ParseTreeRenderer {
             .attr("width", this.rectW)
             .attr("height", this.rectH)
             .attr("rx", (d) => {
-                return (d.data.type === 0) ? 0 : 10;
+                return (d.data.type === "rule") ? 0 : 10;
             })
             .attr("ry", (d) => {
-                return (d.data.type === 0) ? 0 : 10;
+                return (d.data.type === "rule") ? 0 : 10;
             });
 
         this.createText(nodeEnter);
@@ -397,11 +398,11 @@ export class ParseTreeRenderer {
 
                 let result = "tree-node";
                 switch (d.data.type) {
-                    case 1: { // A terminal node.
+                    case "terminal": {
                         result += " tree-leaf";
                         break;
                     }
-                    case 2: { // An error node.
+                    case "error": {
                         result += " tree-error";
                         break;
                     }
@@ -436,11 +437,11 @@ export class ParseTreeRenderer {
                 return isHorizontal ? "0.25em" : "2.5em";
             })
             .text((d) => {
-                if (d.data.type === 0) {
+                if (d.data.type === "rule") {
                     return "";
                 }
 
-                if (d.data.type === 2) { // Error node.
+                if (d.data.type === "error") {
                     if (!d.data.symbol || d.data.symbol.tokenIndex === -1) {
                         return "<missing>";
                     }
@@ -455,7 +456,7 @@ export class ParseTreeRenderer {
             .transition()
             .duration(this.duration * durationFactor)
             .text((d) => {
-                if (d.data.type !== 0) {
+                if (d.data.type !== "rule") {
                     if (!d.data.symbol || d.data.symbol.tokenIndex === -1) {
                         return "no index";
                     }
@@ -524,7 +525,7 @@ export class ParseTreeRenderer {
             .attr("dx", 0)
             .attr("dy", "-1.8em")
             .text((node) => {
-                if (node.data.type !== 0) {
+                if (node.data.type !== "rule") {
                     if (node.data.symbol?.tokenIndex === -1) {
                         return "no index";
                     }
@@ -550,11 +551,11 @@ export class ParseTreeRenderer {
             .attr("y", this.rectH / 2)
             .attr("dy", this.data?.horizontal ?? true ? "0.25em" : "2.5em")
             .text((node) => {
-                if (node.data.type === 0) {
+                if (node.data.type === "rule") {
                     return "";
                 }
 
-                if (node.data.type === 2) { // Error node.
+                if (node.data.type === "error") {
                     if (!node.data.symbol || node.data.symbol.tokenIndex === -1) {
                         return "<missing>";
                     }

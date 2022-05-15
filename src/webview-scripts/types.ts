@@ -9,6 +9,7 @@
 // not like the extension code as CommonJS.
 
 import { ATNStateType, TransitionType } from "antlr4ts/atn";
+import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 
 /**
  * A range within a text. Just like the range object in vscode the end position is not included in the range.
@@ -43,12 +44,6 @@ export interface ILexerToken {
     stopIndex: number;
 }
 
-export enum ParseTreeNodeType {
-    Rule,
-    Terminal,
-    Error
-}
-
 /**
  * Describes the a range in an input stream (character indexes in a char stream or token indexes in a token stream).
  * Indexes can be < 0 if there's no input representation for a tree node (e.g. when it did not match anything).
@@ -60,11 +55,11 @@ export interface IIndexRange {
 }
 
 /**
- * This node class is what exported parse trees are made of, which are created by the debugger interface.
- * Each node stands either for an invoked rule, a terminal node or an error node.
+ * This interface is a duplicate of the same named interface in backend/types.ts. We need the duplication
+ * because it's used both, in the (CommonJS) extension code and the (ESM) webview code.
  */
 export interface IParseTreeNode {
-    type: ParseTreeNodeType;
+    type: "rule" | "terminal" | "error";
     id: number; // A unique id for D3.js.
 
     ruleIndex?: number; // Only valid for the rule node type.
@@ -78,17 +73,15 @@ export interface IParseTreeNode {
     children: IParseTreeNode[]; // Available for all node types, but empty for non-rule types.
 }
 
-export interface IAtnNode {
+export interface IATNNode {
     id: number; // A unique number (positive for state numbers, negative for rule nodes)
     name: string;
-    type: ATNStateType;
 
-    // Cached position values.
-    fx?: number;
-    fy?: number;
+    // We use the INVALID_TYPE in this field to denote a rule node.
+    type: ATNStateType;
 }
 
-export interface IAtnLink {
+export interface IATNLink {
     source: number;
     target: number;
     type: TransitionType;
@@ -98,9 +91,20 @@ export interface IAtnLink {
 /**
  * Contains the link + node values which describe the ATN graph for a single rule.
  */
-export interface IAtnGraphData {
-    nodes: IAtnNode[];
-    links: IAtnLink[];
+export interface IATNGraphData {
+    nodes: IATNNode[];
+    links: IATNLink[];
+}
+
+export interface IATNGraphLayoutNode extends SimulationNodeDatum, IATNNode {
+    width?: number;
+    endX?: number;
+    endY?: number;
+}
+
+export interface IATNGraphLayoutLink extends SimulationLinkDatum<IATNGraphLayoutNode> {
+    type: TransitionType;
+    labels: Array<{ content: string; class?: string }>;
 }
 
 export interface ICallGraphEntry {

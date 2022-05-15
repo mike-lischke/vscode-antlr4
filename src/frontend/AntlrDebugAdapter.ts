@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2021, Mike Lischke
+ * Copyright (c) 2017, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -21,10 +21,10 @@ import * as path from "path";
 import { Subject } from "await-notify";
 
 import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger";
-import { AntlrParseTreeProvider } from "./webviews/ParseTreeProvider";
+import { ParseTreeProvider } from "./webviews/ParseTreeProvider";
 import { AntlrFacade } from "../backend/facade";
-import { IParseTreeNode, ParseTreeNodeType } from "../backend/types";
 import { Token, CommonToken } from "antlr4ts";
+import { IParseTreeNode } from "../backend/types";
 
 /**
  * Interface that reflects the arguments as specified in package.json.
@@ -43,7 +43,7 @@ export interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArgu
 export interface IDebuggerConsumer {
     debugger: GrammarDebugger;
 
-    refresh(): void; // A full reload, e.g. after a grammar change.
+    updateContent(uri: Uri): void;
     debuggerStopped(uri: Uri): void; // Called after each stop of the debugger (step, pause, breakpoint).
 }
 
@@ -59,7 +59,7 @@ export class AntlrDebugSession extends DebugSession {
     private static threadId = 1;
 
     private debugger: GrammarDebugger | undefined;
-    private parseTreeProvider: AntlrParseTreeProvider;
+    private parseTreeProvider?: ParseTreeProvider;
     private configurationDone = new Subject();
 
     private showTextualParseTree = false;
@@ -87,7 +87,9 @@ export class AntlrDebugSession extends DebugSession {
         this.setDebuggerLinesStartAt1(true);
         this.setDebuggerColumnsStartAt1(false);
 
-        this.parseTreeProvider = consumers[0] as AntlrParseTreeProvider;
+        if (consumers[0] instanceof ParseTreeProvider) {
+            this.parseTreeProvider = consumers[0];
+        }
     }
 
     public shutdown(): void {
@@ -194,7 +196,7 @@ export class AntlrDebugSession extends DebugSession {
             this.setup(args.grammar, args.actionFile);
             for (const consumer of this.consumers) {
                 consumer.debugger = this.debugger!;
-                consumer.refresh();
+                consumer.updateContent(Uri.file(args.grammar));
             }
             this.sendEvent(new InitializedEvent()); // Now we can accept breakpoints.
         } catch (e) {
@@ -575,7 +577,7 @@ export class AntlrDebugSession extends DebugSession {
                 }
                 this.sendEvent(new OutputEvent("Tokens:\n" + text + "\n"));
 
-                const tree = this.debugger!.currentParseTree;
+                const tree = this.debugger?.currentParseTree;
                 if (tree) {
                     const treeText = this.parseNodeToString(tree);
                     this.sendEvent(new OutputEvent("Parse Tree:\n" + treeText + "\n"));
@@ -585,7 +587,7 @@ export class AntlrDebugSession extends DebugSession {
             }
 
             if (this.showGraphicalParseTree) {
-                this.parseTreeProvider.showWebview(Uri.file(grammar), {
+                this.parseTreeProvider?.showWebview(Uri.file(grammar), {
                     title: "Parse Tree: " + path.basename(grammar),
                 });
             }
@@ -610,7 +612,7 @@ export class AntlrDebugSession extends DebugSession {
     private parseNodeToString(node: IParseTreeNode, level = 0): string {
         let result = " ".repeat(level);
         switch (node.type) {
-            case ParseTreeNodeType.Rule: {
+            case "rule": {
                 const name = this.debugger!.ruleNameFromIndex(node.ruleIndex!);
                 result += name ? name : "<unknown rule>";
 
@@ -624,7 +626,7 @@ export class AntlrDebugSession extends DebugSession {
                 break;
             }
 
-            case ParseTreeNodeType.Error: {
+            case "error": {
                 result += " <Error>";
                 if (node.symbol) {
                     result += "\"" + node.symbol.text + "\"\n";
@@ -632,13 +634,12 @@ export class AntlrDebugSession extends DebugSession {
                 break;
             }
 
-            case ParseTreeNodeType.Terminal: {
+            case "terminal": {
                 result += "\"" + node.symbol!.text + "\"\n";
                 break;
             }
 
             default:
-                break;
         }
 
         return result;

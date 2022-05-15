@@ -32,8 +32,8 @@ import {
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
 import {
-    ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IAtnGraphData, IGenerationOptions,
-    ISentenceGenerationOptions, IFormattingOptions, IDefinition, IContextDetails, PredicateFunction, IAtnLink,
+    ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IGenerationOptions,
+    ISentenceGenerationOptions, IFormattingOptions, IDefinition, IContextDetails, PredicateFunction,
     CodeActionType, SymbolKind, GrammarType,
 } from "./types";
 
@@ -50,12 +50,8 @@ import {
     ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
     VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol,
     LexerModeSymbol, TokenChannelSymbol, OperatorSymbol, ArgumentsSymbol, ExceptionActionSymbol,
-    FinallyActionSymbol, LexerActionSymbol, LexerPredicateSymbol, ParserActionSymbol,
-    ParserPredicateSymbol,
-    LexerCommandSymbol,
-    TerminalSymbol,
-    GlobalNamedActionSymbol,
-    LocalNamedActionSymbol,
+    FinallyActionSymbol, LexerActionSymbol, LexerPredicateSymbol, ParserActionSymbol, ParserPredicateSymbol,
+    LexerCommandSymbol, TerminalSymbol, GlobalNamedActionSymbol, LocalNamedActionSymbol,
 } from "./ContextSymbolTable";
 
 import { SentenceGenerator } from "./SentenceGenerator";
@@ -65,6 +61,8 @@ import {
 } from "./GrammarInterpreters";
 import { printableUnicodePoints } from "./Unicode";
 import { BackendUtils } from "./BackendUtils";
+
+import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types";
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
@@ -1099,7 +1097,7 @@ export class SourceContext {
         return fileList;
     }
 
-    public getATNGraph(rule: string): IAtnGraphData | undefined {
+    public getATNGraph(rule: string): IATNGraphData | undefined {
         const isLexerRule = rule[0] === rule[0].toUpperCase();
         if ((isLexerRule && !this.grammarLexerData) || (!isLexerRule && !this.grammarParserData)) {
             // Requires a generation run.
@@ -1119,13 +1117,14 @@ export class SourceContext {
         const startState = atn.ruleToStartState[ruleIndex];
         const stopState = atn.ruleToStopState[ruleIndex];
 
+        const lexerPredicates = this.listActions(CodeActionType.LexerPredicate);
+        const parserPredicates = this.listActions(CodeActionType.ParserPredicate);
+
         const seenStates: Set<ATNState> = new Set([startState]);
         const pipeline: ATNState[] = [startState];
 
-        const result: IAtnGraphData = {
-            links: [],
-            nodes: [],
-        };
+        const nodes: IATNNode[] = [];
+        const links: IATNLink[] = [];
 
         // Maps an ATN state to its index in the rules list.
         const stateToIndex = new Map<number, number>();
@@ -1144,24 +1143,24 @@ export class SourceContext {
             if (index === undefined) {
                 const transitions = state.getTransitions();
 
-                index = result.nodes.length;
+                index = nodes.length;
                 stateToIndex.set(id, index);
-                result.nodes.push({
+                nodes.push({
                     id,
                     name: id.toString(),
                     type: state.stateType,
                 });
 
-                // If this state transits to a new rule create also a fake node for that rule.
+                // If this state transits to a new rule, create also a fake node for that rule.
                 if (transitions.length === 1 && transitions[0].target.stateType === ATNStateType.RULE_START) {
                     const marker = state.stateNumber * transitions[0].target.stateNumber;
-                    stateToIndex.set(marker, result.nodes.length);
+                    stateToIndex.set(marker, index + 1);
 
-                    // Type 13 is a fake type denoting a rule. It's one beyond the highest ATNStateType values.
-                    result.nodes.push({
+                    // Type 0 is used to denote a rule.
+                    nodes.push({
                         id: currentRuleIndex--,
                         name: ruleNames[transitions[0].target.ruleIndex],
-                        type: 13,
+                        type: ATNStateType.INVALID_TYPE,
                     });
                 }
             }
@@ -1185,11 +1184,12 @@ export class SourceContext {
                 const marker = transition.target.stateNumber * (transitsToRule ? state.stateNumber : 1);
                 const targetIndex = ensureATNNode(marker, transition.target);
 
-                const link: IAtnLink = {
+                const labels: Array<{ content: string; class?: string }> = [];
+                const link: IATNLink = {
                     source: sourceIndex,
                     target: targetIndex,
                     type: transition.serializationType,
-                    labels: [],
+                    labels,
                 };
 
                 switch (transition.serializationType) {
@@ -1199,29 +1199,46 @@ export class SourceContext {
                     }
 
                     case TransitionType.RANGE: {
-                        link.labels.push({ content: "Range Transition", class: "heading" });
+                        labels.push({ content: "Range Transition", class: "heading" });
 
                         break;
                     }
 
                     case TransitionType.RULE: {
-                        link.labels.push({ content: "Rule Transition", class: "heading" });
+                        labels.push({ content: "Rule Transition", class: "heading" });
 
                         break;
                     }
 
                     case TransitionType.PREDICATE: {
                         const predicateTransition = transition as PredicateTransition;
-                        link.labels.push({
-                            content: `Predicate Transition (${predicateTransition.predIndex})`,
+                        const index = predicateTransition.predIndex - 1; // One based indexes.
+                        labels.push({
+                            content: `Predicate Transition (${index})`,
                             class: "heading",
                         });
+
+                        let predicateText;
+                        if (isLexerRule) {
+                            const symbol = lexerPredicates[index];
+                            predicateText = symbol.description;
+                        } else {
+                            const symbol = parserPredicates[index];
+                            predicateText = symbol.description;
+                        }
+
+                        if (predicateText) {
+                            labels.push({
+                                content: predicateText,
+                                class: "predicate",
+                            });
+                        }
 
                         break;
                     }
 
                     case TransitionType.ATOM: {
-                        link.labels.push({ content: "Atom Transition", class: "heading" });
+                        labels.push({ content: "Atom Transition", class: "heading" });
 
 
                         break;
@@ -1231,34 +1248,34 @@ export class SourceContext {
                         const actionTransition = transition as ActionTransition;
                         const index = actionTransition.actionIndex === 0xFFFF ? -1 : actionTransition.actionIndex;
                         if (isLexerRule) {
-                            link.labels.push({ content: `Lexer Action (${index})`, class: "heading" });
+                            labels.push({ content: `Lexer Action (${index})`, class: "action" });
                         } else {
                             // Parser actions are directly embedded. No idea why there are still action transitions
                             // in the parser ATN (always with -1 index).
-                            link.labels.push({ content: "Parser Action", class: "heading" });
+                            labels.push({ content: "Parser Action", class: "action" });
                         }
 
                         break;
                     }
 
                     case TransitionType.SET: {
-                        link.labels.push({ content: "Set Transition", class: "heading" });
+                        labels.push({ content: "Set Transition", class: "heading" });
                         break;
                     }
 
                     case TransitionType.NOT_SET: {
-                        link.labels.push({ content: "Not-Set Transition", class: "heading" });
+                        labels.push({ content: "Not-Set Transition", class: "heading" });
                         break;
                     }
 
                     case TransitionType.WILDCARD: {
-                        link.labels.push({ content: "Wildcard Transition", class: "heading" });
+                        labels.push({ content: "Wildcard Transition", class: "heading" });
                         break;
                     }
 
                     case TransitionType.PRECEDENCE: {
                         const precedenceTransition = transition as PrecedencePredicateTransition;
-                        link.labels.push({
+                        labels.push({
                             content: `Precedence Predicate (${precedenceTransition.precedence})`,
                             class: "heading",
                         });
@@ -1271,23 +1288,25 @@ export class SourceContext {
                     }
                 }
 
-                if (transition.isEpsilon) {
-                    link.labels.push({ content: "ε" });
-                } else if (transition.label) {
-                    if (isLexerRule) {
-                        this.intervalSetToStrings(transition.label).forEach((value) => {
-                            link.labels.push({ content: value });
-                        });
-                    } else {
-                        for (const label of transition.label.toArray()) {
-                            link.labels.push({ content: vocabulary.getDisplayName(label) });
+                if (transition.serializationType !== TransitionType.PREDICATE) {
+                    if (transition.isEpsilon) {
+                        labels.push({ content: "ε" });
+                    } else if (transition.label) {
+                        if (isLexerRule) {
+                            this.intervalSetToStrings(transition.label).forEach((value) => {
+                                labels.push({ content: value });
+                            });
+                        } else {
+                            for (const label of transition.label.toArray()) {
+                                labels.push({ content: vocabulary.getDisplayName(label) });
+                            }
                         }
+                    } else {
+                        labels.push({ content: "∀" });
                     }
-                } else {
-                    link.labels.push({ content: "∀" });
                 }
 
-                result.links.push(link);
+                links.push(link);
 
                 let nextState: ATNState;
                 if (transitsToRule) {
@@ -1296,13 +1315,13 @@ export class SourceContext {
                     nextState = (transition as RuleTransition).followState;
                     const returnIndex = ensureATNNode(nextState.stateNumber, nextState);
 
-                    const nodeLink: IAtnLink = {
+                    const nodeLink: IATNLink = {
                         source: targetIndex,
                         target: returnIndex,
                         type: TransitionType.RULE,
                         labels: [{ content: "ε" }],
                     };
-                    result.links.push(nodeLink);
+                    links.push(nodeLink);
                 } else {
                     nextState = transition.target;
                 }
@@ -1316,7 +1335,10 @@ export class SourceContext {
             }
         }
 
-        return result;
+        return {
+            links,
+            nodes,
+        };
     }
 
     /**

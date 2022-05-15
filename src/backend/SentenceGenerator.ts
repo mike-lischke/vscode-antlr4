@@ -44,6 +44,7 @@ export class SentenceGenerator {
     private minLexerIterations: number;
     private maxLexerIterations: number;
     private maxRecursions: number;
+    private maxRecursionLabel: string;
     private ruleInvocations = new Map<string, number>();
 
     private ruleMappings?: IRuleMappings;
@@ -74,10 +75,6 @@ export class SentenceGenerator {
         this.lexerPredicates = context.symbolTable.getNestedSymbolsOfTypeSync(LexerPredicateSymbol);
         this.parserPredicates = context.symbolTable.getNestedSymbolsOfTypeSync(ParserPredicateSymbol);
 
-        this.parserPredicates.forEach((value, index) => {
-            console.log(`${index}: ${value.context!.text}`);
-        });
-
         // Need to disable a number of linter checks in order to allow importing the action file.
         if (actionFile) {
             const code = fs.readFileSync(actionFile, { encoding: "utf-8" }) + `
@@ -100,30 +97,30 @@ export class SentenceGenerator {
      */
     public generate(options: ISentenceGenerationOptions, start: RuleStartState): string {
 
-        this.convergenceFactor = options.convergenceFactor || 0.25;
+        this.convergenceFactor = options.convergenceFactor ?? 0.25;
 
-        this.minParserIterations = options.minParserIterations || 0;
+        this.minParserIterations = options.minParserIterations ?? 0;
         if (this.minParserIterations < 0) {
             this.minParserIterations = 0;
         } else {
             this.minParserIterations = Math.floor(this.minParserIterations);
         }
 
-        this.maxParserIterations = options.maxParserIterations || this.minParserIterations + 1;
+        this.maxParserIterations = options.maxParserIterations ?? this.minParserIterations + 1;
         if (this.maxParserIterations < this.minParserIterations) {
             this.maxParserIterations = this.minParserIterations + 1;
         } else {
             this.maxParserIterations = Math.ceil(this.maxParserIterations);
         }
 
-        this.minLexerIterations = options.minLexerIterations || 0;
+        this.minLexerIterations = options.minLexerIterations ?? 0;
         if (this.minLexerIterations < 0) {
             this.minLexerIterations = 0;
         } else {
             this.minLexerIterations = Math.floor(this.minLexerIterations);
         }
 
-        this.maxLexerIterations = options.maxLexerIterations || this.minLexerIterations + 10;
+        this.maxLexerIterations = options.maxLexerIterations ?? this.minLexerIterations + 10;
         if (this.maxLexerIterations < this.minLexerIterations) {
             this.maxLexerIterations = this.minLexerIterations + 10;
         } else {
@@ -131,6 +128,7 @@ export class SentenceGenerator {
         }
 
         this.maxRecursions = (!options.maxRecursions || options.maxRecursions < 1) ? 3 : options.maxRecursions;
+        this.maxRecursionLabel = options.maxRecursionLabel ?? "⨱";
 
         this.ruleInvocations.clear();
         this.ruleMappings = options.ruleMappings;
@@ -161,7 +159,6 @@ export class SentenceGenerator {
             if (predicate.length > 2) {
                 predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
                 try {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return this.runPredicate(predicate);
                 } catch (e) {
                     throw Error(`There was an error while evaluating predicate "${predicate}". ` +
@@ -258,7 +255,7 @@ export class SentenceGenerator {
             }
 
             if (!this.invokeRule(ruleName)) {
-                return [addSpace ? "⨱ " : "⨱", false];
+                return [addSpace ? this.maxRecursionLabel + " " : this.maxRecursionLabel, false];
             }
         }
 

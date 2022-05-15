@@ -14,7 +14,7 @@ import {
 
 import { AntlrFacade } from "./backend/facade";
 import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
-import { AntlrParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
+import { ParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
 
 /**
  * Validates launch configuration for grammar debugging.
@@ -22,7 +22,7 @@ import { AntlrParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
 export class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
     private server?: Net.Server;
 
-    public constructor(private backend: AntlrFacade, private parseTreeProvider: AntlrParseTreeProvider) { }
+    public constructor(private backend: AntlrFacade, private parseTreeProvider: ParseTreeProvider) { }
 
     public resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration,
         _token?: CancellationToken): ProviderResult<DebugConfiguration> {

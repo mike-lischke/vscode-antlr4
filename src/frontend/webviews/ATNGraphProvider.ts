@@ -8,19 +8,27 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { WebviewProvider, IWebviewShowOptions, IWebviewMessage } from "./WebviewProvider";
+import { WebviewProvider, IWebviewMessage } from "./WebviewProvider";
 import { FrontendUtils } from "../FrontendUtils";
 import { window, workspace, Uri, TextEditor, Webview } from "vscode";
-import { IAtnNode } from "../../backend/types";
+import { IATNGraphLayoutNode } from "../../webview-scripts/types";
 
 // ATN graph state info for a single rule.
 export interface IAtnStateEntry {
     scale: number;
     translation: { x: number; y: number };
-    states: Array<{ id: number; fx: number; fy: number }>;
+    states: Array<{ id: number; fx?: number | null; fy?: number | null }>;
 }
 
-export class AntlrAtnGraphProvider extends WebviewProvider {
+interface IATNStateSaveMessage extends IWebviewMessage {
+    command: "saveATNState";
+    nodes: IATNGraphLayoutNode[];
+    file: string;
+    rule: string;
+    transform: d3.ZoomTransform;
+}
+
+export class ATNGraphProvider extends WebviewProvider {
 
     // All ATN state entries per file, per rule. Initially filled from the extension code.
     public static atnStates = new Map<string, Map<string, IAtnStateEntry>>();
@@ -33,164 +41,233 @@ export class AntlrAtnGraphProvider extends WebviewProvider {
         const atnCacheFile = path.join(root, "cache", hash + ".atn");
         if (fs.existsSync(atnCacheFile)) {
             const data = fs.readFileSync(atnCacheFile, { encoding: "utf-8" });
-            const fileEntry = new Map<string, IAtnStateEntry>(JSON.parse(data) as Map<string, IAtnStateEntry>);
-            AntlrAtnGraphProvider.atnStates.set(hash, fileEntry);
+            try {
+                const fileEntry = new Map<string, IAtnStateEntry>(JSON.parse(data) as Map<string, IAtnStateEntry>);
+                ATNGraphProvider.atnStates.set(hash, fileEntry);
+            } catch (e) {
+                // Ignore cache loading errors.
+            }
         }
     }
 
-    public generateContent(webView: Webview, source: TextEditor | Uri,
-        _options: IWebviewShowOptions): string {
+    public generateContent(webView: Webview, uri: Uri): string {
         if (!this.currentRule) {
             return `<!DOCTYPE html>
                 <html>
                     <head>
-                        ${this.generateContentSecurityPolicy(source)}
+                        ${this.generateContentSecurityPolicy()}
                     </head>
                     <body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body>
                 </html>`;
         }
 
-        let miscPath = FrontendUtils.getMiscPath("atngraph-head.html", this.context);
-        let html = fs.readFileSync(miscPath, { encoding: "utf-8" });
-
-        miscPath = FrontendUtils.getMiscPath("atngraph.js", this.context);
-        const code = fs.readFileSync(miscPath, { encoding: "utf-8" });
-
-        const uri = (source instanceof Uri) ? source : source.document.uri;
-        html = html.replace("##header##", `
-            ${this.generateContentSecurityPolicy(source)}
-            ${this.getStyles(webView)}
-            <base target="_blank" />
-        `.replace(/\$/g, "$$"));
-
-        const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
-        html = html.replace("##d3path##", graphLibPath);
-
-        html = html.replace(/##objectName##/g, this.currentRule.replace(/\$/g, "$$"));
-        html = html.replace(/##index##/g, this.currentRuleIndex !== undefined ? String(this.currentRuleIndex) : "?");
-
-        const maxLabelCount = workspace.getConfiguration("antlr4.atn").maxLabelCount as number;
-        html = html.replace("##maxLabelCount##", (maxLabelCount > 1 ? maxLabelCount : 5).toString());
-        html += "  const width = 1000, height = 1000;\n\n";
-
         const data = this.backend.getATNGraph(uri.fsPath, this.currentRule);
-        if (data) {
-            const scale = !this.cachedRuleStates || Number.isNaN(this.cachedRuleStates.scale)
-                ? "0.5 * Math.exp(-nodes.length / 50) + 0.1"
-                : this.cachedRuleStates.scale;
-
-            const transX = !this.cachedRuleStates
-                || !this.cachedRuleStates.translation.x
-                || Number.isNaN(this.cachedRuleStates.translation.x)
-                ? "width * (1 - initialScale)"
-                : this.cachedRuleStates.translation.x.toString();
-
-            const transY = !this.cachedRuleStates
-                || !this.cachedRuleStates.translation.y
-                || Number.isNaN(this.cachedRuleStates.translation.y)
-                ? "height * (1 - initialScale)"
-                : this.cachedRuleStates.translation.y.toString();
-
-            if (this.cachedRuleStates) {
-                for (const node of data.nodes) {
-                    const state = this.cachedRuleStates.states.find((element): boolean => {
-                        return element.id === node.id;
-                    });
-
-                    if (state) {
-                        if (state.fx) {
-                            node.fx = state.fx;
-                        }
-                        if (state.fy) {
-                            node.fy = state.fy;
-                        }
-                    }
-                }
-
-            }
-
-            html += "  const nodes = " + JSON.stringify(data.nodes) + "\n";
-            html += "  const links = " + JSON.stringify(data.links) + "\n\n";
-
-            html += `  const initialScale = ${scale};\n`;
-            html += `  const initialTranslateX = ${transX};\n`;
-            html += `  const initialTranslateY = ${transY};\n`;
-
-            html += `${code}\n</script></div></body>`;
-
-        } else {
-            html += "  const nodes = []\n";
-            html += "  const links = []\n\n";
-
-            html += "  const initialScale = 1;\n";
-            html += "  const initialTranslateX = 0;\n";
-            html += "  const initialTranslateY = 0;\n";
-
-            html += `</script><br/><span style="color: #808080; font-size: 16pt;">No ATN data found
-                    (code generation must run at least once in internal or external mode)</span></div></body>`;
+        if (!data) {
+            return `<!DOCTYPE html>
+                <html>
+                    <head>
+                        ${this.generateContentSecurityPolicy()}
+                    </head>
+                    <body><span style="color: #808080; font-size: 16pt;">No ATN data found
+                    (code generation must run at least once in internal or external mode)</span></body>
+                </html>`;
         }
 
-        fs.writeFileSync("/Users/mike/Downloads/atn.html", html + "</html>");
+        const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/ATNGraphRenderer.js", this.context,
+            webView);
+        const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
+            webView);
+        const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
 
-        return html + "</html>";
+        const scale = !this.cachedRuleStates || Number.isNaN(this.cachedRuleStates.scale)
+            ? 0.5
+            : this.cachedRuleStates.scale;
+
+        const initialTranslation = {
+            x: this.cachedRuleStates?.translation.x,
+            y: this.cachedRuleStates?.translation.y,
+        };
+
+        if (this.cachedRuleStates) {
+            for (const node of data.nodes as IATNGraphLayoutNode[]) {
+                const state = this.cachedRuleStates.states.find((element): boolean => {
+                    return element.id === node.id;
+                });
+
+                if (state) {
+                    if (state.fx) {
+                        node.fx = state.fx;
+                    }
+                    if (state.fy) {
+                        node.fy = state.fy;
+                    }
+                }
+            }
+        }
+
+        const objectName = this.currentRule.replace(/\$/g, "$$");
+        const configuration = workspace.getConfiguration("antlr4.atn");
+        const maxLabelCount = configuration.get<number>("maxLabelCount", 3);
+
+        return `<!DOCTYPE html>
+            <html style="width: 100%, height: 100%">
+                <head>
+                    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+                    ${this.generateContentSecurityPolicy()}
+                    ${this.getStyles(webView)}
+                    <base target="_blank">
+                    <script src="${graphLibPath}"></script>
+                    <script>
+                        let atnGraphRenderer;
+                        let graphExport;
+                    </script>
+                </head>
+                <body>
+                    <script src="${graphLibPath}"></script>
+                    <div class="header">
+                        <span class="atn-graph-color">
+                            <span class="graph-initial">Ⓡ</span>ule&nbsp;&nbsp;</span>
+                            ${objectName}
+                            <span class="rule-index">(rule index: ${this.currentRuleIndex ?? "?"})</span>
+                        <span class="action-box">
+                            Reset display <a onClick="atnGraphRenderer.resetTransformation();">
+                            <span class="atn-graph-color" style="font-size: 120%; font-weight: 800; cursor: pointer;
+                                vertical-align: middle;">↺</span></a>&nbsp;
+                            Save to file<a onClick="graphExport.exportToSVG('atn', '${objectName}');">
+                                <span class="atn-graph-save-image" />
+                            </a>
+                        </span>
+                    </div>
+
+                    <svg>
+                        <defs>
+                            <filter id="white-glow" x="-150%" y="-150%" width="300%" height="300%">
+                                <feFlood result="flood" flood-color="#ffffff" flood-opacity="0.15" />
+                                <feComposite in="flood" result="mask" in2="SourceGraphic" operator="in" />
+                                <feMorphology in="mask" result="dilated" operator="dilate" radius="5" />
+                                <feGaussianBlur in="dilated" result="blurred" stdDeviation="5" />
+                                <feMerge>
+                                    <feMergeNode in="blurred" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+
+                            <filter id="black-glow" x="-1000%" y="-1000%" width="2000%" height="2000%">
+                                <feFlood result="flood" flood-color="#000000" flood-opacity="0.15" />
+                                <feComposite in="flood" result="mask" in2="SourceGraphic" operator="in" />
+                                <feMorphology in="mask" result="dilated" operator="dilate" radius="4" />
+                                <feGaussianBlur in="dilated" result="blurred" stdDeviation="5" />
+                                <feMerge>
+                                    <feMergeNode in="blurred" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+
+                            <marker id="transitionEndCircle" viewBox="0 -5 10 10" refX="31" refY="0" markerWidth="7"
+                                markerHeight="7" orient="auto" class="marker">
+                                <path d="M0,-4L10,0L0,4" />
+                            </marker>
+                            <marker id="transitionEndRect" viewBox="0 -5 10 10" refX="10" refY="0" markerWidth="7"
+                                markerHeight="7" orient="auto" class="marker">
+                                <path d="M0,-4L10,0L0,4" />
+                            </marker>
+                        </defs>
+                    </svg>
+
+                    <script type="module">
+                        import { ATNGraphRenderer } from "${rendererScriptPath}";
+                        import { GraphExport, vscode } from "${exportScriptPath}";
+
+                        atnGraphRenderer = new ATNGraphRenderer({
+                            objectName: "${objectName}",
+                            maxLabelCount: ${maxLabelCount},
+                            data: ${JSON.stringify(data)},
+                            initialScale: ${scale},
+                            initialTranslation: ${JSON.stringify(initialTranslation)},
+                        });
+
+                        // Register a listener for data changes.
+                        window.addEventListener("message", (event) => {
+                            switch (event.data.command) {
+                                case "cacheATNLayout": {
+                                    const args = {
+                                        command: "saveATNState",
+                                        nodes: atnGraphRenderer.nodes,
+                                        file: event.data.file,
+                                        rule: event.data.rule,
+                                        transform: atnGraphRenderer.currentTransformation,
+                                    };
+
+                                    vscode.postMessage(args);
+
+                                    break;
+                                }
+
+                                default:
+                            }
+                        });
+
+                        atnGraphRenderer.render();
+                    </script>
+                </body>
+            </html>
+        `;
     }
 
+    /**
+     * Called when the webview must be updated. This can happen when:
+     * - The user switched to another editor, which holds an ANTLR4 grammar.
+     * - The user moved the caret in an editor holding a grammar.
+     * - New data was generated for the grammar in that editor.
+     *
+     * @param editor The editor that holds a grammar.
+     * @param forced If true update regardless of the selected rule (e.g. when new ATN data was generated).
+     */
     public update(editor: TextEditor, forced = false): void {
-        const [currentRule, ruleIndex] = this.findCurrentRule(editor);
-        if (!this.currentEditor || this.currentEditor !== editor || this.currentRule !== currentRule || forced) {
-            const hash = FrontendUtils.hashForPath(editor.document.fileName);
-            const cachedStates = AntlrAtnGraphProvider.atnStates.get(hash);
+        // Keep track of the currently selected rule in the given editor and trigger a visual update
+        // if the ATN graph is currently visible.
+        const caret = editor.selection.active;
+        const [selectedRule, selectedRuleIndex] =
+            this.backend.ruleFromPosition(editor.document.fileName, caret.character, caret.line + 1);
 
-            if (!cachedStates || !currentRule) {
+        if (this.currentRule !== selectedRule || forced) {
+            const hash = FrontendUtils.hashForPath(editor.document.fileName);
+            const cachedStates = ATNGraphProvider.atnStates.get(hash);
+
+            if (!cachedStates || !selectedRule) {
                 this.cachedRuleStates = undefined;
             } else {
-                this.cachedRuleStates = cachedStates.get(currentRule);
+                this.cachedRuleStates = cachedStates.get(selectedRule);
             }
 
-            // Update content only if this is the first invocation, editors were switched or
-            // the currently selected rule changed.
-            this.currentEditor = editor;
-            this.currentRule = currentRule;
-            this.currentRuleIndex = ruleIndex;
-            if (this.currentEditor) {
-                if (this.sendMessage(editor.document.uri, {
-                    command: "cacheATNLayout",
-                    file: editor.document.fileName,
-                    rule: this.currentRule,
-                })) {
-                    super.update(editor);
-                }
-            } else {
+            this.currentRule = selectedRule;
+            this.currentRuleIndex = selectedRuleIndex;
+            if (this.sendMessage(editor.document.uri, {
+                command: "cacheATNLayout",
+                file: editor.document.fileName,
+                rule: this.currentRule,
+            })) {
                 super.update(editor);
             }
         }
     }
 
     protected handleMessage(message: IWebviewMessage): boolean {
-        if (message.command === "saveATNState") {
+        const saveMessage = message as IATNStateSaveMessage;
+
+        if (saveMessage.command === "saveATNState") {
             // This is the bounce back from the script code for our call to `cacheATNLayout` triggered from
             // the `update()` function.
-            const hash = FrontendUtils.hashForPath(message.file as string);
-            const basePath = path.dirname(message.file as string);
+            const hash = FrontendUtils.hashForPath(saveMessage.file);
+            const basePath = path.dirname(saveMessage.file);
             const atnCachePath = path.join(basePath, ".antlr/cache");
 
-            let fileEntry = AntlrAtnGraphProvider.atnStates.get(hash);
+            let fileEntry = ATNGraphProvider.atnStates.get(hash);
             if (!fileEntry) {
                 fileEntry = new Map();
             }
 
-            let scale = 1;
-            let translateX = 0;
-            let translateY = 0;
-            const temp = (message.transform as string).split(/[(), ]/);
-            for (let i = 0; i < temp.length; ++i) {
-                if (temp[i] === "translate") {
-                    translateX = Number(temp[++i]);
-                    translateY = Number(temp[++i]);
-                } else if (temp[i] === "scale") {
-                    scale = Number(temp[++i]);
-                }
-            }
+            const { x: translateX, y: translateY, k: scale } = saveMessage.transform;
 
             // Convert the given translation back to what it was before applying the scaling, as that is what we need
             // to specify when we restore the translation.
@@ -200,18 +277,19 @@ export class AntlrAtnGraphProvider extends WebviewProvider {
                 states: [],
             };
 
-            for (const node of (message.nodes as IAtnNode[])) {
-                ruleEntry.states.push({ id: node.id, fx: node.fx as number, fy: node.fy as number });
+            for (const node of saveMessage.nodes) {
+                ruleEntry.states.push({ id: node.id, fx: node.fx, fy: node.fy as number });
             }
-            fileEntry.set(message.rule as string, ruleEntry);
-            AntlrAtnGraphProvider.atnStates.set(hash, fileEntry);
+
+            fileEntry.set(saveMessage.rule, ruleEntry);
+            ATNGraphProvider.atnStates.set(hash, fileEntry);
 
             fs.ensureDirSync(atnCachePath);
             try {
                 fs.writeFileSync(path.join(atnCachePath, hash + ".atn"), JSON.stringify(fileEntry),
                     { encoding: "utf-8" });
             } catch (error) {
-                void window.showErrorMessage(`Couldn't write ATN state data for: ${String(message.file)} (${hash})`);
+                void window.showErrorMessage(`Couldn't write ATN state data for: ${saveMessage.file} (${hash})`);
             }
 
             return true;

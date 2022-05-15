@@ -5,11 +5,12 @@
  * See LICENSE file for more info.
  */
 
-import * as path from "path";
+import { basename, join } from "path";
+
+import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 
 import { AntlrFacade } from "../../backend/facade";
 import { FrontendUtils } from "../FrontendUtils";
-import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 
 export interface IWebviewShowOptions {
     [key: string]: boolean | number | string;
@@ -27,25 +28,20 @@ export interface IWebviewMessage {
 export class WebviewProvider {
     protected currentRule: string | undefined;
     protected currentRuleIndex: number | undefined;
-    protected currentEditor: TextEditor | undefined;
 
     // Keep track of all created panels, to avoid duplicates.
     private webViewMap = new Map<String, [WebviewPanel, IWebviewShowOptions]>();
 
     public constructor(protected backend: AntlrFacade, protected context: ExtensionContext) { }
 
-    public showWebview(source: TextEditor | Uri, options: IWebviewShowOptions): void {
-        this.currentEditor = (source instanceof Uri) ? undefined : source;
-
-        const uri = (source instanceof Uri) ? source : source.document.uri;
+    public showWebview(uri: Uri, options: IWebviewShowOptions): void {
         const uriString = uri.toString();
 
         if (this.webViewMap.has(uriString)) {
             const [existingPanel] = this.webViewMap.get(uriString)!;
             existingPanel.title = options.title;
             if (!this.updateContent(uri)) {
-                existingPanel.webview.html = this.generateContent(existingPanel.webview,
-                    this.currentEditor ? this.currentEditor : uri, options);
+                existingPanel.webview.html = this.generateContent(existingPanel.webview, uri, options);
             }
 
             return;
@@ -61,8 +57,7 @@ export class WebviewProvider {
             this.webViewMap.delete(uriString);
         });
 
-        panel.webview.html = this.generateContent(panel.webview, this.currentEditor ? this.currentEditor : uri,
-            options);
+        panel.webview.html = this.generateContent(panel.webview, uri, options);
 
         panel.webview.onDidReceiveMessage((message: IWebviewMessage) => {
             if (this.handleMessage(message)) {
@@ -93,7 +88,7 @@ export class WebviewProvider {
 
                         let svg = '<?xml version="1.0" standalone="no"?>\n';
                         for (const stylesheet of css) {
-                            svg += `<?xml-stylesheet href="${path.basename(stylesheet)}" type="text/css"?>\n`;
+                            svg += `<?xml-stylesheet href="${basename(stylesheet)}" type="text/css"?>\n`;
                         }
 
                         svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
@@ -103,7 +98,7 @@ export class WebviewProvider {
                             if (typeof message.type === "string") {
                                 const section = "antlr4." + message.type;
                                 const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
-                                const target = path.join(saveDir, message.name + "." + message.type);
+                                const target = join(saveDir, message.name + "." + message.type);
                                 FrontendUtils.exportDataWithConfirmation(target,
                                     // eslint-disable-next-line @typescript-eslint/naming-convention
                                     { "Scalable Vector Graphic": ["svg"] }, svg, css,
@@ -132,7 +127,7 @@ export class WebviewProvider {
                         try {
                             const section = "antlr4." + message.type;
                             const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
-                            const target = path.join(saveDir, message.name + "." + message.type);
+                            const target = join(saveDir, message.name + "." + message.type);
                             FrontendUtils.exportDataWithConfirmation(target,
                                 // eslint-disable-next-line @typescript-eslint/naming-convention
                                 { HTML: ["html"] }, message.html as string, css);
@@ -155,17 +150,21 @@ export class WebviewProvider {
         if (this.webViewMap.has(editor.document.uri.toString())) {
             const [panel, options] = this.webViewMap.get(editor.document.uri.toString())!;
             if (!this.updateContent(editor.document.uri)) {
-                panel.webview.html = this.generateContent(panel.webview, editor, options);
+                panel.webview.html = this.generateContent(panel.webview, editor.document.uri, options);
             }
         }
     }
 
-    protected generateContent(_webView: Webview, _source: TextEditor | Uri,
-        _options: IWebviewShowOptions): string {
+    protected generateContent(_webView: Webview, _source: Uri, _options: IWebviewShowOptions): string {
         return "";
     }
 
-    protected generateContentSecurityPolicy(_: TextEditor | Uri): string {
+    /**
+     * Constructs the required CSP entry for webviews, which allows them to load local files.
+     *
+     * @returns The CSP string.
+     */
+    protected generateContentSecurityPolicy(): string {
         return `<meta http-equiv="Content-Security-Policy" content="default-src 'self';
             script-src vscode-resource: 'self' 'unsafe-inline' 'unsafe-eval' https:;
             style-src vscode-resource: 'self' 'unsafe-inline';
@@ -219,26 +218,6 @@ export class WebviewProvider {
         return scripts.map((source) => {
             return `<script type="text/javascript" src="${source}" nonce="${nonce}"></script>`;
         }).join("\n");
-    }
-
-    /**
-     * Queries the current text editor for a caret position (or loads that from the position cache)
-     * and tries to get a rule from the backend.
-     *
-     * @param editor The editor to get the caret position for.
-     *
-     * @returns A pair of values (rule name, rule index) for the current position.
-     */
-    protected findCurrentRule(editor: TextEditor): [string | undefined, number | undefined] {
-        const fileName = editor.document.uri.fsPath;
-        const caret = editor.selection.active;
-
-        const result = this.backend.ruleFromPosition(fileName, caret.character, caret.line + 1);
-        if (!result) {
-            return [undefined, undefined];
-        }
-
-        return result;
     }
 
     protected generateNonce(): string {

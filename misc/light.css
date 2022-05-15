@@ -6,14 +6,59 @@
  * This style sheet is also used for exported svg files.
  */
 
+ html {
+     height: 100%;
+ }
+
  body {
     padding-left: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 svg {
     background: rgba(0, 0, 0, 0.03);
+    flex: 1;
 }
 
+.header {
+    font-size: 12pt;
+    display: flex;
+    align-items: baseline;
+
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    cursor: default;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.graph-initial {
+    font-size: 30pt;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.rule-index {
+    font-size: 8pt;
+    padding-left: 6px;
+}
+
+#container {
+    margin-top: 45px;
+}
+
+.action-box {
+    font: 10pt monospace;
+    margin-left: 15px;
+    padding: 5px;
+    border: dotted 1px #606060;
+    cursor: default;
+}
 
 /* ATN graphs */
 
@@ -52,6 +97,12 @@ svg {
 .linkLabel > .heading {
     fill: cornflowerblue;
     font-weight: 800;
+}
+
+.linkLabel > .predicate {
+    fill: gray;
+    font-weight: 400;
+    font-size: 7pt
 }
 
 .state {
@@ -348,41 +399,6 @@ g .token-range {
 }
 
 /* Internal elements, only used in vscode */
-
-.header {
-    font-size: 12pt;
-    z-index: 9999;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 45px;
-    background-color: var(--background-color);
-    cursor: default;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.graph-initial {
-    font-size: 30pt;
-    font-weight: 600;
-    vertical-align: middle;
-}
-
-.rule-index {
-    font-size: 8pt;
-}
-
-#container {
-    margin-top: 45px;
-}
-
-.action-box {
-    font: 10pt monospace;
-    margin-left: 15px;
-    padding: 5px;
-    border: dotted 1px #606060;
-    cursor: default;
-}
 
 .atn-graph-color {
     color: rgba(206, 11, 70, 1);

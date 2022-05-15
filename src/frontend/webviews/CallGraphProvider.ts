@@ -6,18 +6,15 @@
  */
 
 import * as path from "path";
-import { TextEditor, Uri, Webview } from "vscode";
+import { Uri, Webview } from "vscode";
 
-import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
+import { WebviewProvider } from "./WebviewProvider";
 import { FrontendUtils } from "../FrontendUtils";
 import { ICallGraphEntry } from "../../webview-scripts/types";
 
-export class AntlrCallGraphProvider extends WebviewProvider {
+export class CallGraphProvider extends WebviewProvider {
 
-    public generateContent(webView: Webview, source: TextEditor | Uri,
-        _options: IWebviewShowOptions): string {
-        const uri = (source instanceof Uri) ? source : source.document.uri;
-
+    public generateContent(webView: Webview, uri: Uri): string {
         const fileName = uri.fsPath;
         const baseName = path.basename(fileName, path.extname(fileName));
 
@@ -46,7 +43,7 @@ export class AntlrCallGraphProvider extends WebviewProvider {
             <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
-                    ${this.generateContentSecurityPolicy(source)}
+                    ${this.generateContentSecurityPolicy()}
                     ${this.getStyles(webView)}
                     <base href="${uri.toString(true)}">
                     <script src="${graphLibPath}"></script>

@@ -13,34 +13,12 @@ interface IVSCode {
 
 declare const acquireVsCodeApi: () => IVSCode;
 
-const vscode = acquireVsCodeApi();
+export const vscode = acquireVsCodeApi();
 
 // These values directly correspond to the settings section names containing a "saveDir" entry.
 export type GraphType = "rrd" | "atn" | "call-graph";
 
 export class GraphExport {
-    public constructor() {
-        // Used to send messages from the extension to this webview.
-        window.addEventListener("message", (event) => {
-            switch (event.data.command) {
-                case "cacheATNLayout": {
-                    /*const args = {
-                        command: "saveATNState",
-                        nodes: this.atnTreeRenderer.nodes,
-                        file: event.data.file,
-                        rule: event.data.rule,
-                        transform: this.atnRenderer.transform,
-                    };
-
-                    vscode.postMessage(args);*/
-
-                    break;
-                }
-                default:
-            }
-        });
-    }
-
     /**
      * Triggers the SVG export for a graph.
      *

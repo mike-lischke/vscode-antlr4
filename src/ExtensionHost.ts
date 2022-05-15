@@ -22,8 +22,12 @@ import { FrontendUtils } from "./frontend/FrontendUtils";
 import { ProgressIndicator } from "./frontend/ProgressIndicator";
 import { AntlrDebugConfigurationProvider } from "./AntlrDebugConfigurationProvider";
 import { ActionsProvider } from "./frontend/ActionsProvider";
-import { AntlrAtnGraphProvider } from "./frontend/webviews/ATNGraphProvider";
-import { AntlrCallGraphProvider } from "./frontend/webviews/CallGraphProvider";
+
+import { ATNGraphProvider } from "./frontend/webviews/ATNGraphProvider";
+import { CallGraphProvider } from "./frontend/webviews/CallGraphProvider";
+import { RailroadDiagramProvider } from "./frontend/webviews/RailroadDiagramProvider";
+import { ParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
+
 import { ChannelsProvider } from "./frontend/ChannelsProvider";
 import { AntlrCodeLensProvider } from "./frontend/CodeLensProvider";
 import { AntlrCompletionItemProvider } from "./frontend/CompletionItemProvider";
@@ -34,8 +38,6 @@ import { ImportsProvider } from "./frontend/ImportsProvider";
 import { LexerSymbolsProvider } from "./frontend/LexerSymbolsProvider";
 import { ModesProvider } from "./frontend/ModesProvider";
 import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
-import { AntlrParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
-import { AntlrRailroadDiagramProvider } from "./frontend/webviews/RailroadDiagramProvider";
 import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
 import { AntlrRenameProvider } from "./frontend/RenameProvider";
 import { AntlrSymbolProvider } from "./frontend/SymbolProvider";
@@ -66,11 +68,11 @@ export class ExtensionHost {
     private modesProvider: ModesProvider;
     private actionsProvider: ActionsProvider;
 
-    private parseTreeProvider: AntlrParseTreeProvider;
+    private parseTreeProvider: ParseTreeProvider;
     private codeLensProvider: AntlrCodeLensProvider;
-    private diagramProvider: AntlrRailroadDiagramProvider;
-    private atnGraphProvider: AntlrAtnGraphProvider;
-    private callGraphProvider: AntlrCallGraphProvider;
+    private diagramProvider: RailroadDiagramProvider;
+    private atnGraphProvider: ATNGraphProvider;
+    private callGraphProvider: CallGraphProvider;
 
     private changeTimers = new Map<string, ReturnType<typeof setTimeout>>(); // Keyed by file name.
 
@@ -97,11 +99,11 @@ export class ExtensionHost {
         this.actionsProvider.actionTree = window.createTreeView("antlr4.actions",
             { treeDataProvider: this.actionsProvider });
 
-        this.parseTreeProvider = new AntlrParseTreeProvider(this.backend, context);
+        this.parseTreeProvider = new ParseTreeProvider(this.backend, context);
 
-        this.diagramProvider = new AntlrRailroadDiagramProvider(this.backend, context);
-        this.atnGraphProvider = new AntlrAtnGraphProvider(this.backend, context);
-        this.callGraphProvider = new AntlrCallGraphProvider(this.backend, context);
+        this.diagramProvider = new RailroadDiagramProvider(this.backend, context);
+        this.atnGraphProvider = new ATNGraphProvider(this.backend, context);
+        this.callGraphProvider = new CallGraphProvider(this.backend, context);
 
         // Initialize certain providers.
         const editor = window.activeTextEditor;
@@ -118,9 +120,13 @@ export class ExtensionHost {
             if (FrontendUtils.isGrammarFile(document)) {
                 const antlrPath = path.join(path.dirname(document.fileName), ".antlr");
                 void this.backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
-                AntlrAtnGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
+                ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
             }
         }
+    }
+
+    public shutDown(): void {
+        //ATNGraphProvider.saveStates();
     }
 
     private addSubscriptions(context: ExtensionContext): void {
@@ -145,7 +151,7 @@ export class ExtensionHost {
         // The single RRD diagram command.
         context.subscriptions.push(commands.registerTextEditorCommand("antlr.rrd.singleRule",
             (textEditor: TextEditor, _edit: TextEditorEdit) => {
-                this.diagramProvider.showWebview(textEditor, {
+                this.diagramProvider.showWebview(textEditor.document.uri, {
                     title: "RRD: " + path.basename(textEditor.document.fileName),
                     fullList: false,
                 });
@@ -155,7 +161,7 @@ export class ExtensionHost {
         // The full RRD diagram command.
         context.subscriptions.push(commands.registerTextEditorCommand("antlr.rrd.allRules",
             (textEditor: TextEditor, _edit: TextEditorEdit) => {
-                this.diagramProvider.showWebview(textEditor, {
+                this.diagramProvider.showWebview(textEditor.document.uri, {
                     title: "RRD: " + path.basename(textEditor.document.fileName),
                     fullList: true,
                 });
@@ -165,7 +171,7 @@ export class ExtensionHost {
         // The ATN graph command.
         context.subscriptions.push(commands.registerTextEditorCommand("antlr.atn.singleRule",
             (textEditor: TextEditor, _edit: TextEditorEdit) => {
-                this.atnGraphProvider.showWebview(textEditor, {
+                this.atnGraphProvider.showWebview(textEditor.document.uri, {
                     title: "ATN: " + path.basename(textEditor.document.fileName),
                 });
             }),
@@ -174,7 +180,7 @@ export class ExtensionHost {
         // The call graph command.
         context.subscriptions.push(commands.registerTextEditorCommand("antlr.call-graph",
             (textEditor: TextEditor, _edit: TextEditorEdit) => {
-                this.callGraphProvider.showWebview(textEditor, {
+                this.callGraphProvider.showWebview(textEditor.document.uri, {
                     title: "Call Graph: " + path.basename(textEditor.document.fileName),
                 });
             }),
