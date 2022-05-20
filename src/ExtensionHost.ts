@@ -57,7 +57,7 @@ export class ExtensionHost {
     private readonly importDir: string | undefined;
     private readonly backend: AntlrFacade;
     private readonly progress = new ProgressIndicator();
-    private readonly outputChannel = window.createOutputChannel("ANTLR4 Errors");
+    public static readonly outputChannel = window.createOutputChannel("ANTLR4 Errors");
 
     private readonly diagnosticCollection = languages.createDiagnosticCollection("antlr");
 
@@ -124,8 +124,8 @@ export class ExtensionHost {
                     ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
                 }
                 catch (error) {
-                    this.outputChannel.appendLine((error as string) + ` (${document.fileName})`);
-                    this.outputChannel.show(true);
+                    ExtensionHost.outputChannel.appendLine((error as string) + ` (${document.fileName})`);
+                    ExtensionHost.outputChannel.show(true);
                 }
             }
         }
@@ -206,9 +206,9 @@ export class ExtensionHost {
                     try {
                         config = JSON.parse(content) as ISentenceGenerationOptions;
                     } catch (reason) {
-                        this.outputChannel.appendLine("Cannot parse sentence generation config file:");
-                        this.outputChannel.appendLine((reason as SyntaxError).message);
-                        this.outputChannel.show(true);
+                        ExtensionHost.outputChannel.appendLine("Cannot parse sentence generation config file:");
+                        ExtensionHost.outputChannel.appendLine((reason as SyntaxError).message);
+                        ExtensionHost.outputChannel.show(true);
 
                         return;
                     }
@@ -224,8 +224,8 @@ export class ExtensionHost {
                 const [ruleName] = this.backend.ruleFromPosition(grammarFileName, caret.character, caret.line + 1);
 
                 if (!ruleName) {
-                    this.outputChannel.appendLine("ANTLR4 sentence generation: no rule selected");
-                    this.outputChannel.show(true);
+                    ExtensionHost.outputChannel.appendLine("ANTLR4 sentence generation: no rule selected");
+                    ExtensionHost.outputChannel.show(true);
 
                     return;
                 }
@@ -426,8 +426,8 @@ export class ExtensionHost {
                     }
                 } catch (reason) {
                     this.progress.stopAnimation();
-                    this.outputChannel.appendLine(reason as string);
-                    this.outputChannel.show(true);
+                    ExtensionHost.outputChannel.appendLine(reason as string);
+                    ExtensionHost.outputChannel.show(true);
                 }
             }
 
@@ -440,14 +440,14 @@ export class ExtensionHost {
                 this.progress.stopAnimation();
             }).catch((reason) => {
                 this.progress.stopAnimation();
-                this.outputChannel.appendLine(reason as string);
-                this.outputChannel.show(true);
+                ExtensionHost.outputChannel.appendLine(reason as string);
+                ExtensionHost.outputChannel.show(true);
             });
 
         }).catch((reason) => {
             this.progress.stopAnimation();
-            this.outputChannel.appendLine(reason as string);
-            this.outputChannel.show(true);
+            ExtensionHost.outputChannel.appendLine(reason as string);
+            ExtensionHost.outputChannel.show(true);
         });
     }
 
