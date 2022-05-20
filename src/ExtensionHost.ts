@@ -119,8 +119,14 @@ export class ExtensionHost {
         for (const document of workspace.textDocuments) {
             if (FrontendUtils.isGrammarFile(document)) {
                 const antlrPath = path.join(path.dirname(document.fileName), ".antlr");
-                void this.backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
-                ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
+                try {
+                    void this.backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
+                    ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
+                }
+                catch (error) {
+                    this.outputChannel.appendLine((error as string) + ` (${document.fileName})`);
+                    this.outputChannel.show(true);
+                }
             }
         }
     }
