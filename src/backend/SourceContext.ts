@@ -63,6 +63,7 @@ import { printableUnicodePoints } from "./Unicode";
 import { BackendUtils } from "./BackendUtils";
 
 import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types";
+import { printErrors } from "../ExtensionHost";
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
@@ -1597,24 +1598,32 @@ export class SourceContext {
         }
 
         if (fs.existsSync(lexerFile)) {
-            this.grammarLexerData = InterpreterDataReader.parseFile(lexerFile);
-            const map = new Map<string, number>();
-            for (let i = 0; i < this.grammarLexerData.ruleNames.length; ++i) {
-                map.set(this.grammarLexerData.ruleNames[i], i);
+            try {
+                this.grammarLexerData = InterpreterDataReader.parseFile(lexerFile);
+                const map = new Map<string, number>();
+                for (let i = 0; i < this.grammarLexerData.ruleNames.length; ++i) {
+                    map.set(this.grammarLexerData.ruleNames[i], i);
+                }
+                this.grammarLexerRuleMap = map;
+            } catch (error) {
+                printErrors([error, lexerFile], true);
             }
-            this.grammarLexerRuleMap = map;
         } else {
             this.grammarLexerData = undefined;
             this.grammarLexerRuleMap.clear();
         }
 
         if (fs.existsSync(parserFile)) {
-            this.grammarParserData = InterpreterDataReader.parseFile(parserFile);
-            const map = new Map<string, number>();
-            for (let i = 0; i < this.grammarParserData.ruleNames.length; ++i) {
-                map.set(this.grammarParserData.ruleNames[i], i);
+            try {
+                this.grammarParserData = InterpreterDataReader.parseFile(parserFile);
+                const map = new Map<string, number>();
+                for (let i = 0; i < this.grammarParserData.ruleNames.length; ++i) {
+                    map.set(this.grammarParserData.ruleNames[i], i);
+                }
+                this.grammarParserRuleMap = map;
+            } catch (error) {
+                printErrors([error, parserFile], true);
             }
-            this.grammarParserRuleMap = map;
         } else {
             this.grammarParserData = undefined;
             this.grammarParserRuleMap.clear();

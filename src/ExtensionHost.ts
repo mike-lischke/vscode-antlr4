@@ -42,6 +42,21 @@ import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
 import { AntlrRenameProvider } from "./frontend/RenameProvider";
 import { AntlrSymbolProvider } from "./frontend/SymbolProvider";
 
+const errorOutputChannel = window.createOutputChannel("ANTLR4 Errors");
+export const printErrors = (lines: unknown[], revealOutput: boolean): void => {
+    lines.forEach((line) => {
+        if (typeof line === "string") {
+            errorOutputChannel.appendLine(line);
+        } else if (line instanceof Error) {
+            errorOutputChannel.appendLine(line.stack ?? line.message);
+        }
+    });
+
+    if (revealOutput) {
+        errorOutputChannel.show(true);
+    }
+};
+
 // This is the main extension class.
 export class ExtensionHost {
     private static readonly diagnosticMap = new Map<DiagnosticType, DiagnosticSeverity>([
@@ -57,7 +72,6 @@ export class ExtensionHost {
     private readonly importDir: string | undefined;
     private readonly backend: AntlrFacade;
     private readonly progress = new ProgressIndicator();
-    private readonly outputChannel = window.createOutputChannel("ANTLR4 Errors");
 
     private readonly diagnosticCollection = languages.createDiagnosticCollection("antlr");
 
@@ -122,10 +136,8 @@ export class ExtensionHost {
                 try {
                     void this.backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
                     ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
-                }
-                catch (error) {
-                    this.outputChannel.appendLine((error as string) + ` (${document.fileName})`);
-                    this.outputChannel.show(true);
+                } catch (error) {
+                    printErrors([error], true);
                 }
             }
         }
@@ -206,9 +218,7 @@ export class ExtensionHost {
                     try {
                         config = JSON.parse(content) as ISentenceGenerationOptions;
                     } catch (reason) {
-                        this.outputChannel.appendLine("Cannot parse sentence generation config file:");
-                        this.outputChannel.appendLine((reason as SyntaxError).message);
-                        this.outputChannel.show(true);
+                        printErrors(["Cannot parse sentence generation config file:", reason], true);
 
                         return;
                     }
@@ -224,8 +234,7 @@ export class ExtensionHost {
                 const [ruleName] = this.backend.ruleFromPosition(grammarFileName, caret.character, caret.line + 1);
 
                 if (!ruleName) {
-                    this.outputChannel.appendLine("ANTLR4 sentence generation: no rule selected");
-                    this.outputChannel.show(true);
+                    printErrors(["ANTLR4 sentence generation: no rule selected"], true);
 
                     return;
                 }
@@ -426,8 +435,7 @@ export class ExtensionHost {
                     }
                 } catch (reason) {
                     this.progress.stopAnimation();
-                    this.outputChannel.appendLine(reason as string);
-                    this.outputChannel.show(true);
+                    printErrors([reason], true);
                 }
             }
 
@@ -440,14 +448,12 @@ export class ExtensionHost {
                 this.progress.stopAnimation();
             }).catch((reason) => {
                 this.progress.stopAnimation();
-                this.outputChannel.appendLine(reason as string);
-                this.outputChannel.show(true);
+                printErrors([reason], true);
             });
 
         }).catch((reason) => {
             this.progress.stopAnimation();
-            this.outputChannel.appendLine(reason as string);
-            this.outputChannel.show(true);
+            printErrors([reason], true);
         });
     }
 
