@@ -1212,7 +1212,7 @@ export class SourceContext {
 
                     case TransitionType.PREDICATE: {
                         const predicateTransition = transition as PredicateTransition;
-                        const index = predicateTransition.predIndex - 1; // One based indexes.
+                        const index = predicateTransition.predIndex;
                         labels.push({
                             content: `Predicate Transition (${index})`,
                             class: "heading",

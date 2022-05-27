@@ -5,11 +5,7 @@
  * See LICENSE file for more info.
  */
 
-interface IVSCode {
-    postMessage(message: { [key: string]: unknown }): void;
-    getState(): unknown;
-    setState(state: unknown): void;
-}
+import { IVSCode } from "./types";
 
 declare const acquireVsCodeApi: () => IVSCode;
 

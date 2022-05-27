@@ -5,11 +5,22 @@
  * See LICENSE file for more info.
  */
 
-// Types for use in webview modules. Don't use them in extension code, as this file is transpiled as ES module,
-// not like the extension code as CommonJS.
+// Types for use in webview modules.
 
 import { ATNStateType, TransitionType } from "antlr4ts/atn";
 import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
+import { Uri } from "vscode";
+
+export interface IWebviewMessage {
+    [key: string]: unknown;
+}
+
+/** Describes the structure of the object returned by `acquireVsCodeApi()`. */
+export interface IVSCode {
+    postMessage(message: IWebviewMessage): void;
+    getState(): unknown;
+    setState(state: unknown): void;
+}
 
 /**
  * A range within a text. Just like the range object in vscode the end position is not included in the range.
@@ -20,8 +31,8 @@ export interface ILexicalRange {
     start: { column: number; row: number };
     end: { column: number; row: number };
 }
-// The definition of a single symbol (range and content it is made of).
 
+/** The definition of a single symbol (range and content it is made of). */
 export interface IDefinition {
     text: string;
     range: ILexicalRange;
@@ -71,6 +82,28 @@ export interface IParseTreeNode {
     symbol?: ILexerToken; // Only valid for non-rule nodes.
 
     children: IParseTreeNode[]; // Available for all node types, but empty for non-rule types.
+}
+
+export interface IATNGraphRendererData {
+    uri: Uri;
+    ruleName?: string;
+    maxLabelCount: number;
+    graphData?: IATNGraphData;
+    initialScale: number;
+    initialTranslation: { x?: number; y?: number };
+}
+
+export interface IATNGraphUpdateMessageData {
+    command: "updateATNTreeData";
+    graphData: IATNGraphRendererData;
+}
+
+export interface IATNStateSaveMessage extends IWebviewMessage {
+    command: "saveATNState";
+    nodes: IATNGraphLayoutNode[];
+    uri: Uri;
+    rule: string;
+    transform: d3.ZoomTransform;
 }
 
 export interface IATNNode {

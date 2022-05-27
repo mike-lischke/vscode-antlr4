@@ -1,12 +1,17 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2020, Mike Lischke
+ * Copyright (c) 2018, 2022, Mike Lischke
  *
  * See LICENSE file for more info.
  */
 
 import { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum } from "d3";
-import { IATNGraphData, IATNNode, IATNGraphLayoutNode, IATNLink, IATNGraphLayoutLink } from "./types";
+import { Uri } from "vscode";
+
+import {
+    IATNGraphData, IATNNode, IATNGraphLayoutNode, IATNLink, IATNGraphLayoutLink, IATNGraphRendererData, IVSCode,
+    IATNGraphUpdateMessageData, IATNStateSaveMessage,
+} from "./types";
 
 const stateType = [
     {  // Pretend that this state type is a rule. It's normally the INVALID state type.
@@ -56,14 +61,6 @@ const ATNRuleType = ATNStateType.INVALID_TYPE;
 
 /* eslint-enable @typescript-eslint/naming-convention */
 
-interface IATNGraphRendererData {
-    objectName: string;
-    maxLabelCount: number;
-    data: IATNGraphData;
-    initialScale: number;
-    initialTranslation: { x?: number; y?: number };
-}
-
 interface ILine {
     x1: number;
     y1: number;
@@ -88,12 +85,35 @@ export class ATNGraphRenderer {
     private zoom: d3.ZoomBehavior<SVGElement, IATNGraphData>;
     private figures: ATNNodeSelection;
     private lines: ATNLinkSelection;
-    private text: ATNTextSelection;
+    private textSelection: ATNTextSelection;
     private descriptions: ATNTextSelection;
     private linkLabels: ATNLinkTextSelection;
     private simulation: d3.Simulation<IATNGraphLayoutNode, undefined>;
 
-    public constructor(private data: IATNGraphRendererData) { }
+    private uri: Uri;
+    private ruleName: string;
+    private currentNodes?: IATNGraphLayoutNode[];
+    private maxLabelCount: number;
+
+    public constructor(private vscode: IVSCode) {
+        this.svg = d3.select<SVGElement, IATNGraphData>("svg")
+            .attr("xmlns", "http://www.w3.org/2000/svg")
+            .attr("version", "1.1")
+            .attr("width", "100%"); // Height is determined by the flex layout.
+
+        this.zoom = d3.zoom<SVGElement, IATNGraphData>()
+            .scaleExtent([0.15, 3])
+            .on("zoom", (e: d3.D3ZoomEvent<SVGElement, IATNGraphData>) => {
+                this.topGroup.attr("transform", e.transform.toString());
+            });
+
+        // Register a listener for data changes.
+        window.addEventListener("message", (event: MessageEvent<IATNGraphUpdateMessageData>) => {
+            if (event.data.command === "updateATNTreeData") {
+                this.render(event.data.graphData);
+            }
+        });
+    }
 
     /**
      * This getter is used to return the current transformation details for caching.
@@ -104,54 +124,116 @@ export class ATNGraphRenderer {
         return d3.zoomTransform(this.topGroup.node()!);
     }
 
-    public get nodes(): IATNGraphLayoutNode[] {
-        return this.data.data.nodes;
-    }
+    public render(data: IATNGraphRendererData): void {
+        // Save the transformations of the existing graph (if there's one).
+        if (this.currentNodes) {
+            const args: IATNStateSaveMessage = {
+                command: "saveATNState",
+                nodes: this.currentNodes,
+                uri: this.uri,
+                rule: this.ruleName,
+                transform: d3.zoomTransform(this.topGroup.node()!),
+            };
 
-    public render(): void {
-        const nodes = this.data.data.nodes as IATNGraphLayoutNode[];
-        const links = this.data.data.links;
+            this.vscode.postMessage(args);
+        }
 
-        this.svg = d3.select<SVGElement, IATNGraphData>("svg")
-            .attr("xmlns", "http://www.w3.org/2000/svg")
-            .attr("version", "1.1")
-            .attr("width", "100%"); // Height is determined by the flex layout.
+        this.currentNodes = undefined;
 
-        this.topGroup = this.svg.append("g");
+        if (!data.ruleName) {
+            const label = document.createElement("label");
+            label.classList.add("noSelection");
+            label.innerText = "No rule selected";
 
-        this.zoom = d3.zoom<SVGElement, IATNGraphData>()
-            .scaleExtent([0.15, 3])
-            .on("zoom", (e: d3.D3ZoomEvent<SVGElement, IATNGraphData>) => {
-                this.topGroup.attr("transform", e.transform.toString());
-            });
+            if (this.topGroup) {
+                this.topGroup.remove();
+            }
 
-        this.resetTransformation();
+            document.body.appendChild(label);
+            this.svg.style("display", "none");
+
+            return;
+        }
+
+        if (!data.graphData) {
+            const label = document.createElement("label");
+            label.classList.add("noData");
+            label.innerText = "No ATN data found (code generation must run at least once in internal or external mode)";
+
+            if (this.topGroup) {
+                this.topGroup.remove();
+            }
+
+            document.body.appendChild(label);
+            this.svg.style("display", "none");
+
+            return;
+        }
+
+        // If we have data, remove any previous message we printed.
+        let labels = document.body.getElementsByClassName("noData");
+        while (labels.length > 0) {
+            labels.item(0)?.remove();
+        }
+
+        labels = document.body.getElementsByClassName("noSelection");
+        while (labels.length > 0) {
+            labels.item(0)?.remove();
+        }
+
+        this.svg.style("display", "block");
+
+        this.uri = data.uri;
+        this.ruleName = data.ruleName;
+
+        this.maxLabelCount = data.maxLabelCount;
+        this.currentNodes = data.graphData.nodes as IATNGraphLayoutNode[];
+        const links = data.graphData.links;
+
+        this.topGroup = this.svg.select(".topGroup");
+        this.topGroup.remove();
+        this.topGroup = this.svg.append("g").classed("topGroup", true);
+
+        const xTranslate = data.initialTranslation.x ?? (this.svg.node()?.clientWidth ?? 0) / 2;
+        const yTranslate = data.initialTranslation.y ?? (this.svg.node()?.clientHeight ?? 0) / 2;
+        this.svg.call(this.zoom)
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            .call(this.zoom.transform, d3.zoomIdentity
+                .scale(data.initialScale ?? 0.5)
+                .translate(xTranslate, yTranslate))
+            .on("dblclick.zoom", null);
 
         // Drawing primitives.
-        this.lines = this.topGroup.append("g").selectAll<SVGElement, SimulationLinkDatum<IATNGraphLayoutNode>>("line")
+        const linesHost = this.topGroup.append("g").classed("linesHost", true);
+
+        this.lines = linesHost.selectAll<SVGElement, SimulationLinkDatum<IATNGraphLayoutNode>>("line")
             .data(links)
             .enter().append("line")
             .attr("class", "transition")
             .attr("marker-end", (link) => {
-                if (nodes[link.target].type === ATNRuleType) {
+                if (this.currentNodes![link.target].type === ATNRuleType) {
                     return "url(#transitionEndRect)";
                 }
 
                 return "url(#transitionEndCircle)";
             });
 
-        const group = this.topGroup.append<SVGElement>("g");
-        for (const figure of nodes) {
+        const statesHost = this.topGroup.append("g").classed("statesHost", true);
+
+        const stateElements = statesHost.selectAll().data(this.currentNodes);
+        stateElements.enter().append<SVGElement>((node) => {
+            let s;
             let element;
 
-            let cssClass = "state " + stateType[figure.type].short;
-            const recursive = figure.name === this.data.objectName;
+            let cssClass = "state " + stateType[node.type].short;
+            const recursive = node.name === data.ruleName;
             if (recursive) {
                 cssClass += " recursive";
             }
 
-            if (figure.type === ATNRuleType) {
-                element = group.append<SVGElement>("rect")
+            if (node.type === ATNRuleType) {
+                element = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                s = d3.select<SVGElement, IATNGraphLayoutNode>(element)
                     .attr("width", 50) // Size and offset are updated below, depending on label size.
                     .attr("height", 50)
                     .attr("y", -25)
@@ -164,7 +246,8 @@ export class ATNGraphRenderer {
                         .on("drag", this.dragged),
                     );
             } else {
-                element = group.append<SVGElement>("circle")
+                element = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                s = d3.select<SVGElement, IATNGraphLayoutNode>(element)
                     .attr("r", 30)
                     .attr("class", cssClass)
                     .on("dblclick", this.doubleClicked)
@@ -174,14 +257,16 @@ export class ATNGraphRenderer {
                     );
             }
 
-            // Add a tooltip to each element.
-            element.append("title").text(stateType[figure.type].long);
-        }
+            s.append("title").text(stateType[node.type].long);
 
-        this.figures = group.selectAll<SVGElement, IATNGraphLayoutNode>(".state").data(nodes);
+            return element;
+        });
 
-        this.text = this.topGroup.append("g").selectAll("text")
-            .data(nodes)
+        this.figures = statesHost.selectAll<SVGElement, IATNGraphLayoutNode>(".state").data(this.currentNodes);
+
+        const textHost = this.topGroup.append("g").classed("textHost", true);
+        this.textSelection = textHost.selectAll("text")
+            .data(this.currentNodes)
             .enter().append("text")
             .attr("x", 0)
             .attr("y", 0)
@@ -191,12 +276,12 @@ export class ATNGraphRenderer {
             });
 
         // Go through all rect elements and resize/offset them according to their label sizes.
-        const textNodes = this.text.nodes();
+        const textNodes = this.textSelection.nodes();
         const rectNodes = this.figures.nodes();
 
         const border = 20;
         for (let i = 0; i < textNodes.length; ++i) {
-            if (nodes[i].type === ATNRuleType) {
+            if (this.currentNodes[i].type === ATNRuleType) {
                 const element = textNodes[i];
                 let width = Math.ceil(element.getComputedTextLength());
                 if (width < 70) {
@@ -207,12 +292,14 @@ export class ATNGraphRenderer {
                 rect.setAttribute("width", `${width}px`);
                 rect.setAttribute("x", `${-width / 2}px`);
 
-                nodes[i].width = width;
+                this.currentNodes[i].width = width;
             }
         }
 
-        this.descriptions = this.topGroup.append("g").selectAll("description")
-            .data(nodes)
+        const descriptionHost = this.topGroup.append("g").classed("descriptionHost", true);
+
+        this.descriptions = descriptionHost.selectAll<SVGTextElement, IATNGraphLayoutNode>("description")
+            .data(this.currentNodes)
             .enter().append("text")
             .attr("x", 0)
             .attr("y", 13)
@@ -221,7 +308,9 @@ export class ATNGraphRenderer {
                 return stateType[node.type].short;
             });
 
-        this.linkLabels = this.topGroup.append("g").selectAll("labels")
+        const labelsHost = this.topGroup.append("g").classed("labelsHost", true);
+
+        this.linkLabels = labelsHost.selectAll("labels")
             .data(links)
             .enter().append("text")
             .attr("x", 0)
@@ -229,7 +318,7 @@ export class ATNGraphRenderer {
             .attr("class", "linkLabel")
             .call(this.appendLinkText);
 
-        this.simulation = d3.forceSimulation(nodes)
+        this.simulation = d3.forceSimulation(this.currentNodes)
             .force("charge", d3.forceManyBody().strength(-400))
             .force("collide", d3.forceCollide(100).strength(0.5).iterations(3))
             .force("link", d3.forceLink(links)
@@ -250,25 +339,22 @@ export class ATNGraphRenderer {
         this.animationTick();
     }
 
-    public resetTransformation = (): void => {
-        const xTranslate = this.data.initialTranslation.x ?? (this.svg.node()?.clientWidth ?? 0) / 2;
-        const yTranslate = this.data.initialTranslation.y ?? (this.svg.node()?.clientHeight ?? 0) / 2;
+    public resetTransformation = (x: number | undefined, y: number | undefined, scale: number | undefined): void => {
+        const xTranslate = x ?? (this.svg.node()?.clientWidth ?? 0) / 2;
+        const yTranslate = y ?? (this.svg.node()?.clientHeight ?? 0) / 2;
         this.svg.call(this.zoom)
             // eslint-disable-next-line @typescript-eslint/unbound-method
             .call(this.zoom.transform, d3.zoomIdentity
-                .scale(this.data.initialScale)
-                .translate(xTranslate, yTranslate))
-            .on("dblclick.zoom", null);
+                .scale(scale ?? 0.5)
+                .translate(xTranslate, yTranslate));
 
         this.resetNodePositions();
     };
 
     private resetNodePositions(): void {
-        const nodes = this.data.data.nodes as IATNGraphLayoutNode[];
-
         // Mark start and end nodes as vertically fixed if not already done by the caller.
         // Because of the (initial) zoom translation the origin of the SVG is in the center.
-        for (const node of nodes) {
+        for (const node of this.currentNodes!) {
             node.fx = null;
             node.fy = null;
             if (node.type === ATNStateType.RULE_START) {
@@ -281,8 +367,8 @@ export class ATNGraphRenderer {
                     node.fy = 0;
                 }
             } else if (node.type === ATNStateType.RULE_STOP) {
-                // No initial x position for the end node. For unknown reasons this makes it appear left to the
-                // start node.
+                // Don't set an initial x position for the end node.
+                // For unknown reasons this makes it appear left to the start node.
                 if (!node.fy) {
                     node.fy = 0;
                 }
@@ -310,13 +396,13 @@ export class ATNGraphRenderer {
                     span.classed(label.class, true);
                 }
 
-                if (lineNumber === this.data.maxLabelCount) {
-                    const remainingCount = link.labels.length - this.data.maxLabelCount;
+                if (lineNumber === this.maxLabelCount) {
+                    const remainingCount = link.labels.length - this.maxLabelCount;
                     if (remainingCount > 0) {
                         element.append("tspan")
                             .attr("x", 0)
                             .attr("dy", "1.5em")
-                            .text(`${link.labels.length - this.data.maxLabelCount} more ...`);
+                            .text(`${link.labels.length - this.maxLabelCount} more ...`);
                     }
 
                     break;
@@ -327,7 +413,7 @@ export class ATNGraphRenderer {
 
     private animationTick = (): void => {
         this.figures.attr("transform", this.transform);
-        this.text.attr("transform", this.transform);
+        this.textSelection.attr("transform", this.transform);
         this.descriptions.attr("transform", this.transform);
 
         this.transformLines();
@@ -336,7 +422,7 @@ export class ATNGraphRenderer {
 
     private animationEnd = (): void => {
         this.figures.attr("transform", this.snapTransform);
-        this.text.attr("transform", this.snapTransform);
+        this.textSelection.attr("transform", this.snapTransform);
         this.descriptions.attr("transform", this.snapTransform);
 
         this.transformLines();
