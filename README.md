@@ -10,7 +10,7 @@
 
 
 # vscode-antlr4
-**The** extension for ANTLR4 support in Visual Studio code.
+**The** extension for ANTLR4 support in Visual Studio Code.
 
 ## What's New
 
@@ -77,12 +77,14 @@ Bug fixing and what feels appealing to hack on.
 - Fixed bug #104: Cannot read property 'document' of undefined error being thrown
 - Fixed bug #120: "antlr4.customcss": probably wrong type configuration.
 - Improved ATN diagrams:
-    - Labels for links now rotate sooner to horizontal position (45° instead of 75° of link angle), which makes for a nicer display.
     - Unused ATN states are no longer visible in the graph.
+    - Initial rendering of the graph is now much faster, by doing the initial element position computation as a separate step, instead of animating that.
     - Transitions for actions, predicates and precedence predicates now show a label that indicates their type.
+    - The action transitions now show their action (or predicate) in the ATN graph as additional label.
     - The custom CSS setting name has been changed to cause no spelling trouble (from `customcss` to `customCSS`). Documentation was updated as well.
 - Improved predicate execution:
     - Simplified the required JS code for predicate simulation in the debugger, sentence generation and test execution. See [Grammar Debugging](doc/grammar-debugging.md) for details.
+    - Labels for links now rotate sooner to horizontal position (45° instead of 75° of link angle), which makes for a nicer display.
 - Improved sentence generation:
     - Sentence generation is now available in grammar files. [Sentence Generation](doc/sentence-generation.md) for details.
     - Show a special char if no printable char could be generated (due to filtering).

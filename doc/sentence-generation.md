@@ -4,7 +4,7 @@
 
 For testing, validation or other tasks it is often useful to create random sentences from a grammar definition. It's sometimes pretty entertaining what input your grammar would accept. Usually rules are accepting more than what you would normally allow as syntax. For example MySQL identifiers can be constructed from all code points in the Unicode Basic Multilingual Plane (BMP). However this block contains many entries which are simply not useful for identifiers (control codes, unassigned code points, combining marks and more). However, sentence generation will by default create identifiers from all of those code points. More about that below.
 
-Sentence generation is not configured in the extension settings, but uses a side-car json file, to allow per-grammar generation.
+**Sentence generation is not configured in the extension settings, but uses a side-car json file, to allow per-grammar generation.**
 
 ## Usage
 
@@ -34,7 +34,7 @@ To configure sentence generation for a grammar, create a file with the name of t
 
 - **count** (number, default: 1): The number of sentences to generate in one call.
 - **clear** (boolean, default: true): Clear output window on each run (used for output printing in the UI).
-- **convergenceFactor** (number, default: 0.25: Determines how quick the weight for a decision to be select converges towards 0 (between 0 and 1).
+- **convergenceFactor** (number, default: 0.25: Determines how quick the weight for a decision converges towards 0 (between 0 and 1).
 - **minParserIterations** (number, default: 0): The minimum number of iterations used for `+` and `*` loops in the parser (default: 1 for `+`, 0 for `*`). Must be a positive integer (or 0) and must be smaller than `maxParserIterations` (if that is given). If set to 0 then for `+` loops 1 is used, automatically.
 - **maxParserIterations** (number, default: minParserIterations + 1): The maximum number of iterations in the parser. Must be a number > 0 and > `minParserIterations`. If that is not the case or the value is not specified then it is set to `minParserIterations` + 1.
 - **minLexerIterations** (number, default: 0): The minimum number of iterations in the lexer (default: 1 for `+`, 0 for `*`). Must be a positive integer (or 0) and must be smaller than `maxLexerIterations` (if that is given). If set to 0 then for `+` loops 1 is used, automatically.
@@ -46,6 +46,7 @@ To configure sentence generation for a grammar, create a file with the name of t
 ### Loops
 
 Rule definitions in grammars often use loops:
+
 - recursive invocations
 - BNF operators: `?`, `*` and `+`
 
