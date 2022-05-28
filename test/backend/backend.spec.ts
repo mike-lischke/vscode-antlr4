@@ -305,8 +305,8 @@ describe("vscode-antlr4 Backend Tests:", () => {
             );
         });
 
-        it("Reference Graph", async () => {
-            const graph = await backend.getReferenceGraph("test/backend/TParser.g4");
+        it("Reference Graph", () => {
+            const graph = backend.getReferenceGraph("test/backend/TParser.g4");
             expect(graph.size).toEqual(48);
 
             let element = graph.get("TParser.expr");

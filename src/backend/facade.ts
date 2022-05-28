@@ -318,7 +318,10 @@ export class AntlrFacade {
             }
 
             if (!dependency.isInterpreterDataLoaded) {
-                dependency.setupInterpreters(path.join(basePath, ".antlr"));
+                const errors = dependency.setupInterpreters(path.join(basePath, ".antlr"));
+                if (errors.length > 0) {
+                    callback(errors, 0);
+                }
             }
         }
 
@@ -366,7 +369,10 @@ export class AntlrFacade {
             }
 
             if (!dependency.isInterpreterDataLoaded) {
-                dependency.setupInterpreters(dataDir);
+                const errors = dependency.setupInterpreters(dataDir);
+                if (errors.length > 0) {
+                    return;
+                }
             }
         }
 

@@ -43,12 +43,15 @@ import { AntlrRenameProvider } from "./frontend/RenameProvider";
 import { AntlrSymbolProvider } from "./frontend/SymbolProvider";
 
 const errorOutputChannel = window.createOutputChannel("ANTLR4 Errors");
+
 export const printErrors = (lines: unknown[], revealOutput: boolean): void => {
     lines.forEach((line) => {
         if (typeof line === "string") {
             errorOutputChannel.appendLine(line);
         } else if (line instanceof Error) {
             errorOutputChannel.appendLine(line.stack ?? line.message);
+        } else {
+            errorOutputChannel.appendLine(String(line));
         }
     });
 

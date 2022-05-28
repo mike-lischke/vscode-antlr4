@@ -63,7 +63,6 @@ import { printableUnicodePoints } from "./Unicode";
 import { BackendUtils } from "./BackendUtils";
 
 import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types";
-import { printErrors } from "../ExtensionHost";
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
@@ -1028,9 +1027,12 @@ export class SourceContext {
      */
     public async generate(dependencies: Set<SourceContext>, options: IGenerationOptions): Promise<string[]> {
         if (options.loadOnly) {
-            this.setupInterpreters(options.outputDir);
-
-            return Promise.resolve([]);
+            const errors = this.setupInterpreters(options.outputDir);
+            if (errors.length === 0) {
+                return Promise.resolve([]);
+            } else {
+                return Promise.reject(errors);
+            }
         }
 
         const parameters = ["-jar"];
@@ -1559,8 +1561,10 @@ export class SourceContext {
      *
      * @param outputDir The path in which the output from the parser generation run, which contains the interpreter
      *                  data files.
+     *
+     * @returns An empty string if all went fine or the error text, if something went wrong.
      */
-    public setupInterpreters(outputDir?: string): void {
+    public setupInterpreters(outputDir?: string): string {
         // Load interpreter data if the code generation was successful.
         // For that we only need the final parser and lexer files, not any imported stuff.
         // The target path is either the output path (if one was given) or the grammar path.
@@ -1597,6 +1601,7 @@ export class SourceContext {
                 break;
         }
 
+        let errors = "";
         if (fs.existsSync(lexerFile)) {
             try {
                 this.grammarLexerData = InterpreterDataReader.parseFile(lexerFile);
@@ -1606,7 +1611,7 @@ export class SourceContext {
                 }
                 this.grammarLexerRuleMap = map;
             } catch (error) {
-                printErrors([error, lexerFile], true);
+                errors += `Error while reading lexer interpreter data (${lexerFile}): ${String(error)}\n`;
             }
         } else {
             this.grammarLexerData = undefined;
@@ -1622,12 +1627,14 @@ export class SourceContext {
                 }
                 this.grammarParserRuleMap = map;
             } catch (error) {
-                printErrors([error, parserFile], true);
+                errors += `Error while reading parser interpreter data (${lexerFile}): ${String(error)}\n`;
             }
         } else {
             this.grammarParserData = undefined;
             this.grammarParserRuleMap.clear();
         }
+
+        return errors;
     }
 
     /**
@@ -1669,8 +1676,7 @@ export class SourceContext {
             java.on("close", (_code) => {
                 errorParser.convertErrorsToDiagnostics(buffer).then((flag) => {
                     if (flag) {
-                        this.setupInterpreters(outputDir);
-                        resolve("");
+                        resolve(this.setupInterpreters(outputDir));
                     } else {
                         reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
                     }
