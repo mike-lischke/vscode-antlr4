@@ -14,7 +14,7 @@
 
 ## What's New
 
-The parser generation process has been improved by using the latest official ANTLR4 jar and by adding two settings which allow to specify an own jar and additional parameters to pass on during generation.
+The extension now features an improved ATN graph display, sentence generation, simpler predicate execution and more error tolerant parser generation.
 
 ## Features
 
