@@ -72,7 +72,7 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
-### 2.2.5
+### 2.3.0
 - Now using ANTLR 4.9. Cannot use the just released 4.10 because of TS runtime incompatibilities.
 - Fixed bug #104: Cannot read property 'document' of undefined error being thrown
 - Fixed bug #120: "antlr4.customcss": probably wrong type configuration.
