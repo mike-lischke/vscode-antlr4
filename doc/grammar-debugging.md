@@ -38,11 +38,10 @@ Executing this code alone makes not much sense, usually. It often requires the i
 For example:
 
 ```Javascript
-"use strict"
+"use strict";
 
-  const version = 2;
-  doesItBlend() { return true; }
-}
+const version = 2;
+const doesItBlend = () => true;
 ```
 
 Errors during execution are reported back to get a chance of fixing any problem. With that action JS file in place you can then use semantic predicates as shown in this animation:
