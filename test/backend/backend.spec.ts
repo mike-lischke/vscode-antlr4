@@ -766,7 +766,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
             }
         });
 
-        it("Generation with definitions", () => {
+        it("Generation with definitions with simple strings", () => {
             const ruleMappings: IRuleMappings = {
                 /* eslint-disable @typescript-eslint/naming-convention */
                 DIGITS: "12345",
@@ -806,12 +806,187 @@ describe("vscode-antlr4 Backend Tests:", () => {
             }
         });
 
+        it("Generation with definitions with single value arrays", () => {
+            const ruleMappings: IRuleMappings = {
+                /* eslint-disable @typescript-eslint/naming-convention */
+                DIGITS: ["12345"],
+                SimpleIdentifier: ["Mike"],
+                UnicodeIdentifier: ["µπåƒ"],
+                /* eslint-enable @typescript-eslint/naming-convention */
+            };
+
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                expect(errors).toHaveLength(0);
+
+                // In addition to error free generation check also that only known elements are in the sentence.
+                sentence = sentence.replace(/12345/g, "");
+                sentence = sentence.replace(/DEADBEEF/g, "");
+                sentence = sentence.replace(/Mike/g, "");
+                sentence = sentence.replace(/µπåƒ/g, "");
+                sentence = sentence.replace(/red/g, "");
+                sentence = sentence.replace(/green/g, "");
+                sentence = sentence.replace(/blue/g, "");
+                sentence = sentence.replace(/[0-9{},.:]/g, "");
+                sentence = sentence.trim();
+                //console.log(rule + ": " + sentence);
+                expect(sentence).toHaveLength(0);
+            };
+
+            const rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (const rule of rules) {
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 10,
+                    maxLexerIterations: 7,
+                    maxParserIterations: 7,
+                    ruleMappings,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                }, tester.bind(this, rule));
+            }
+        });
+
+        it("Generation with definitions with emtpy arrays", () => {
+            const ruleMappings: IRuleMappings = {
+                /* eslint-disable @typescript-eslint/naming-convention */
+                DIGITS: [],
+                SimpleIdentifier: [],
+                UnicodeIdentifier: [],
+                /* eslint-enable @typescript-eslint/naming-convention */
+            };
+
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                expect(errors).toHaveLength(0);
+
+                // In addition to error free generation check also that only known elements are in the sentence.
+                sentence = sentence.replace(/12345/g, "");
+                sentence = sentence.replace(/DEADBEEF/g, "");
+                sentence = sentence.replace(/Mike/g, "");
+                sentence = sentence.replace(/µπåƒ/g, "");
+                sentence = sentence.replace(/red/g, "");
+                sentence = sentence.replace(/green/g, "");
+                sentence = sentence.replace(/blue/g, "");
+                sentence = sentence.replace(/[0-9{},.:]/g, "");
+                sentence = sentence.trim();
+                //console.log(rule + ": " + sentence);
+            };
+
+            const rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (const rule of rules) {
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 10,
+                    maxLexerIterations: 7,
+                    maxParserIterations: 7,
+                    ruleMappings,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                }, tester.bind(this, rule));
+            }
+        });
+
+        it("Generation with definitions with arrays", () => {
+            const ruleMappings: IRuleMappings = {
+                /* eslint-disable @typescript-eslint/naming-convention */
+                DIGITS: ["12345", "54321"],
+                SimpleIdentifier: ["Mike", "John", "Mary"],
+                UnicodeIdentifier: ["µπåƒ", "você", "𓂷", "ꫪ𝚫", "𠦄𣛯𪃾", "പửၒ", "ᚱꙍ𒅍"],
+                /* eslint-enable @typescript-eslint/naming-convention */
+            };
+
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                expect(errors).toHaveLength(0);
+
+                // In addition to error free generation check also that only known elements are in the sentence.
+                sentence = sentence.replace(/12345/g, "");
+                sentence = sentence.replace(/54321/g, "");
+                sentence = sentence.replace(/DEADBEEF/g, "");
+                sentence = sentence.replace(/Mike/g, "");
+                sentence = sentence.replace(/John/g, "");
+                sentence = sentence.replace(/Mary/g, "");
+                sentence = sentence.replace(/µπåƒ/g, "");
+                sentence = sentence.replace(/você/g, "");
+                sentence = sentence.replace(/𓂷/g, "");
+                sentence = sentence.replace(/ꫪ𝚫/g, "");
+                sentence = sentence.replace(/𠦄𣛯𪃾/g, "");
+                sentence = sentence.replace(/പửၒ/g, "");
+                sentence = sentence.replace(/ᚱꙍ𒅍/g, "");
+                sentence = sentence.replace(/red/g, "");
+                sentence = sentence.replace(/green/g, "");
+                sentence = sentence.replace(/blue/g, "");
+                sentence = sentence.replace(/[0-9{},.:]/g, "");
+                sentence = sentence.trim();
+                //console.log(rule + ": " + sentence);
+                expect(sentence).toHaveLength(0);
+            };
+
+            const rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (const rule of rules) {
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 10,
+                    maxLexerIterations: 7,
+                    maxParserIterations: 7,
+                    ruleMappings,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                }, tester.bind(this, rule));
+            }
+        });
+
+        it("Generation with mixed definition values", () => {
+            const ruleMappings: IRuleMappings = {
+                /* eslint-disable @typescript-eslint/naming-convention */
+                DIGITS: "12345",
+                SimpleIdentifier: ["Mike"],
+                UnicodeIdentifier: ["µπåƒ", "você", "𓂷", "ꫪ𝚫", "𠦄𣛯𪃾", "പửၒ", "ᚱꙍ𒅍"],
+                /* eslint-enable @typescript-eslint/naming-convention */
+            };
+
+            const tester = (rule: string, sentence: string) => {
+                //console.log(rule + ": " + sentence);
+                const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
+                expect(errors).toHaveLength(0);
+
+                // In addition to error free generation check also that only known elements are in the sentence.
+                sentence = sentence.replace(/12345/g, "");
+                sentence = sentence.replace(/DEADBEEF/g, "");
+                sentence = sentence.replace(/Mike/g, "");
+                sentence = sentence.replace(/µπåƒ/g, "");
+                sentence = sentence.replace(/você/g, "");
+                sentence = sentence.replace(/𓂷/g, "");
+                sentence = sentence.replace(/ꫪ𝚫/g, "");
+                sentence = sentence.replace(/𠦄𣛯𪃾/g, "");
+                sentence = sentence.replace(/പửၒ/g, "");
+                sentence = sentence.replace(/ᚱꙍ𒅍/g, "");
+                sentence = sentence.replace(/red/g, "");
+                sentence = sentence.replace(/green/g, "");
+                sentence = sentence.replace(/blue/g, "");
+                sentence = sentence.replace(/[0-9{},.:]/g, "");
+                sentence = sentence.trim();
+                //console.log(rule + ": " + sentence);
+                expect(sentence).toHaveLength(0);
+            };
+
+            const rules = backend.getRuleList("test/backend/sentences.g4")!;
+            for (const rule of rules) {
+                backend.generateSentence("test/backend/sentences.g4", rule, {
+                    count: 10,
+                    maxLexerIterations: 7,
+                    maxParserIterations: 7,
+                    ruleMappings,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                }, tester.bind(this, rule));
+            }
+        });
+
         afterAll(() => {
             backend.releaseGrammar("test/backend/sentences.g4");
             backend.releaseGrammar("test/backend/CPP14.g4");
             fs.rmSync("generated", { recursive: true, force: true });
         });
     });
+    
 
     describe("Formatting:", () => {
         it("With all options (except alignment)", () => {
