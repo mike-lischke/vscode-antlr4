@@ -251,7 +251,12 @@ export class SentenceGenerator {
 
             const mapping = this.ruleMappings?.[ruleName];
             if (mapping) {
-                return [addSpace ? mapping + " " : mapping, false];
+                if (Array.isArray(mapping)) {
+                    const randomElement = mapping[Math.floor(Math.random() * mapping.length)];
+                    return [addSpace ? randomElement + " " : randomElement, false];
+                } else {
+                    return [addSpace ? mapping + " " : mapping, false];
+                }
             }
 
             if (!this.invokeRule(ruleName)) {
