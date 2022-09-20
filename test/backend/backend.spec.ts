@@ -890,7 +890,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
                 /* eslint-disable @typescript-eslint/naming-convention */
                 DIGITS: ["12345", "54321"],
                 SimpleIdentifier: ["Mike", "John", "Mary"],
-                UnicodeIdentifier: ["µπåƒ", "você", "𓂷", "ꫪ𝚫", "𠦄𣛯𪃾", "പửၒ", "ᚱꙍ𒅍"],
+                UnicodeIdentifier: ["µπåƒ", "você", "𑃖𓂷", "𑃖ꫪ𝚫", "𑃖𠦄𣛯𪃾", "𑃖പửၒ", "𑃖ᚱꙍ𒅍"],
                 /* eslint-enable @typescript-eslint/naming-convention */
             };
 
@@ -908,11 +908,11 @@ describe("vscode-antlr4 Backend Tests:", () => {
                 sentence = sentence.replace(/Mary/g, "");
                 sentence = sentence.replace(/µπåƒ/g, "");
                 sentence = sentence.replace(/você/g, "");
-                sentence = sentence.replace(/𓂷/g, "");
-                sentence = sentence.replace(/ꫪ𝚫/g, "");
-                sentence = sentence.replace(/𠦄𣛯𪃾/g, "");
-                sentence = sentence.replace(/പửၒ/g, "");
-                sentence = sentence.replace(/ᚱꙍ𒅍/g, "");
+                sentence = sentence.replace(/𑃖𓂷/g, "");
+                sentence = sentence.replace(/𑃖ꫪ𝚫/g, "");
+                sentence = sentence.replace(/𑃖𠦄𣛯𪃾/g, "");
+                sentence = sentence.replace(/𑃖പửၒ/g, "");
+                sentence = sentence.replace(/𑃖ᚱꙍ𒅍/g, "");
                 sentence = sentence.replace(/red/g, "");
                 sentence = sentence.replace(/green/g, "");
                 sentence = sentence.replace(/blue/g, "");
@@ -939,7 +939,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
                 /* eslint-disable @typescript-eslint/naming-convention */
                 DIGITS: "12345",
                 SimpleIdentifier: ["Mike"],
-                UnicodeIdentifier: ["µπåƒ", "você", "𓂷", "ꫪ𝚫", "𠦄𣛯𪃾", "പửၒ", "ᚱꙍ𒅍"],
+                UnicodeIdentifier: ["µπåƒ", "você", "𑃖𓂷", "𑃖ꫪ𝚫", "𑃖𠦄𣛯𪃾", "𑃖പửၒ", "𑃖ᚱꙍ𒅍"],
                 /* eslint-enable @typescript-eslint/naming-convention */
             };
 
@@ -950,20 +950,24 @@ describe("vscode-antlr4 Backend Tests:", () => {
 
                 // In addition to error free generation check also that only known elements are in the sentence.
                 sentence = sentence.replace(/12345/g, "");
+                sentence = sentence.replace(/54321/g, "");
                 sentence = sentence.replace(/DEADBEEF/g, "");
                 sentence = sentence.replace(/Mike/g, "");
+                sentence = sentence.replace(/John/g, "");
+                sentence = sentence.replace(/Mary/g, "");
                 sentence = sentence.replace(/µπåƒ/g, "");
                 sentence = sentence.replace(/você/g, "");
-                sentence = sentence.replace(/𓂷/g, "");
-                sentence = sentence.replace(/ꫪ𝚫/g, "");
-                sentence = sentence.replace(/𠦄𣛯𪃾/g, "");
-                sentence = sentence.replace(/പửၒ/g, "");
-                sentence = sentence.replace(/ᚱꙍ𒅍/g, "");
+                sentence = sentence.replace(/𑃖𓂷/g, "");
+                sentence = sentence.replace(/𑃖ꫪ𝚫/g, "");
+                sentence = sentence.replace(/𑃖𠦄𣛯𪃾/g, "");
+                sentence = sentence.replace(/𑃖പửၒ/g, "");
+                sentence = sentence.replace(/𑃖ᚱꙍ𒅍/g, "");
                 sentence = sentence.replace(/red/g, "");
                 sentence = sentence.replace(/green/g, "");
                 sentence = sentence.replace(/blue/g, "");
                 sentence = sentence.replace(/[0-9{},.:]/g, "");
                 sentence = sentence.trim();
+                sentence = sentence.trim();               
                 //console.log(rule + ": " + sentence);
                 expect(sentence).toHaveLength(0);
             };

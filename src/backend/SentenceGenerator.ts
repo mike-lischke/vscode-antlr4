@@ -252,15 +252,16 @@ export class SentenceGenerator {
             const mappingValue = this.ruleMappings?.[ruleName];
             if (mappingValue) {
                 let mapping: string | undefined;
-                if (Array.isArray(mapping)) {
-                    if (mapping.length < 0) {
-                        const randomIndex = Math.floor(Math.random() * mapping.length);
-                        const randomElement = mapping[randomIndex];
+
+                if (Array.isArray(mappingValue)) {
+                    if (mappingValue.length === 1) {
+                        mapping = mappingValue[0];
+                    } else if (mappingValue.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * mappingValue.length);
+                        const randomElement = mappingValue[randomIndex];
 
                         mapping = randomElement;
-                    } else if (mapping.length === 1) {
-                        mapping = mapping[0];
-                    }
+                    } 
                 } else {
                     mapping = mappingValue as string;
                 }
@@ -379,16 +380,18 @@ export class SentenceGenerator {
                                         if (tokenName) {
                                             const mappingValue = this.ruleMappings?.[tokenName];
                                             let mapping: string | undefined;
-
-                                            if (Array.isArray(mappingValue)) {
-                                                if (mappingValue.length < 0) {
-                                                    const randomIndex = Math.floor(Math.random() * mappingValue.length);
-                                                    mapping = mappingValue[randomIndex];
-                                                } else if (mappingValue.length === 1) {
-                                                    mapping = mappingValue[0];
+                                            
+                                            if (mappingValue) {
+                                                if (Array.isArray(mappingValue)) {
+                                                    if (mappingValue.length === 1) {
+                                                        mapping = mappingValue[0];
+                                                    } else if (mappingValue.length > 0) {
+                                                        const randomIndex = Math.floor(Math.random() * mappingValue.length);
+                                                        mapping = mappingValue[randomIndex];
+                                                    }
+                                                } else if (mappingValue) {
+                                                    mapping = mappingValue;
                                                 }
-                                            } else if (mappingValue) {
-                                                mapping = mappingValue;
                                             }
 
                                             if (mapping) {
