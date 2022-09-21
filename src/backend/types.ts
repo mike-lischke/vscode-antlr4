@@ -265,7 +265,7 @@ export interface ISentenceGenerationOptions {
  * Mappings from rule names to strings, which define output to use for specific rules when generating sentences.
  */
 export interface IRuleMappings {
-    [key: string]: string;
+    [key: string]: string | string[];
 }
 
 /**

@@ -249,9 +249,26 @@ export class SentenceGenerator {
                 return ["", false];
             }
 
-            const mapping = this.ruleMappings?.[ruleName];
-            if (mapping) {
-                return [addSpace ? mapping + " " : mapping, false];
+            const mappingValue = this.ruleMappings?.[ruleName];
+            if (mappingValue) {
+                let mapping: string | undefined;
+
+                if (Array.isArray(mappingValue)) {
+                    if (mappingValue.length === 1) {
+                        mapping = mappingValue[0];
+                    } else if (mappingValue.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * mappingValue.length);
+                        const randomElement = mappingValue[randomIndex];
+
+                        mapping = randomElement;
+                    } 
+                } else {
+                    mapping = mappingValue as string;
+                }
+
+                if (mapping) {
+                    return [addSpace ? mapping + " " : mapping, false];
+                }
             }
 
             if (!this.invokeRule(ruleName)) {
@@ -361,7 +378,22 @@ export class SentenceGenerator {
                                         // its name for the output.
                                         const tokenName = this.lexerData.vocabulary.getSymbolicName(token);
                                         if (tokenName) {
-                                            const mapping = this.ruleMappings?.[tokenName];
+                                            const mappingValue = this.ruleMappings?.[tokenName];
+                                            let mapping: string | undefined;
+                                            
+                                            if (mappingValue) {
+                                                if (Array.isArray(mappingValue)) {
+                                                    if (mappingValue.length === 1) {
+                                                        mapping = mappingValue[0];
+                                                    } else if (mappingValue.length > 0) {
+                                                        const randomIndex = Math.floor(Math.random() * mappingValue.length);
+                                                        mapping = mappingValue[randomIndex];
+                                                    }
+                                                } else if (mappingValue) {
+                                                    mapping = mappingValue;
+                                                }
+                                            }
+
                                             if (mapping) {
                                                 result += addSpace ? mapping + " " : mapping;
                                             } else {

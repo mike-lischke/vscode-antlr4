@@ -2,3 +2,5 @@ out
 node_modules
 generated
 coverage
+vscode-antlr4-*.vsix
+.antlr
