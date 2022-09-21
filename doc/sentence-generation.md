@@ -40,7 +40,7 @@ To configure sentence generation for a grammar, create a file with the name of t
 - **minLexerIterations** (number, default: 0): The minimum number of iterations in the lexer (default: 1 for `+`, 0 for `*`). Must be a positive integer (or 0) and must be smaller than `maxLexerIterations` (if that is given). If set to 0 then for `+` loops 1 is used, automatically.
 - **maxLexerIterations** (number, default: minLexerIterations + 10): The maximum number of iterations in the lexer. Must be a number > 0 and > than `minLexerIterations`. If that is not the case or the value is not specified then it is set to `minLexerIterations` + 10.
 - **maxRecursions** (number, default: 3): The maximum number of recursions (rules calling themselves directly or indirectly).
-- **ruleMappings** (object, default: none): A mapping of rule names to string literals, which should be used instead of running the generation for that rule. For more details see below.
+- **ruleMappings** (object, default: none): A mapping of rule names to string literals or array of strings, which should be used instead of running the generation for that rule. For more details see below.
 - **actionFile** (string, default: none): The name of a file which contains code to evaluate grammar actions and predicates.
 
 ### Loops
@@ -62,6 +62,17 @@ The rule mappings object provides a way to explicitly specify the value for lexe
 {
     "ruleMapping": {
         "SingleQuotedString": "'Lorem Ipsum'",
+    }
+}
+```
+
+There is also the possibility of using an array of strings as a mapping value. On this case, one of the items will be chosen randomly. This is useful to create a greater variety of tokens for more realistic sentences. As it is all random, these is no way to coordinate how the mappings are chosen. Note that an empty array will be treated as if no mapping was found, and an array with only one item is the same as having the mapping to a simple string. This could be a mapping for a calculator lexer:
+
+```json
+{
+    "ruleMapping": {
+        "OPERATION": ["+", "-", "*", "/"],
+	"OPERAND": ["0", "12", "3", "42", "1.456"],
     }
 }
 ```
