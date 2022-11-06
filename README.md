@@ -4,21 +4,17 @@
 [![CircleCI](https://circleci.com/gh/mike-lischke/vscode-antlr4/tree/master.svg?style=svg)](https://circleci.com/gh/mike-lischke/vscode-antlr4/tree/master)
 
 
-<p style="float:right;">
-  <img src="https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr-logo.png" alt="logo" width="64">
-</p>
+# <img src="https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr-logo.png" alt="logo" width="48"> VS Code Extension for ANTLR4 Grammars
 
-
-# vscode-antlr4
 **The** extension for ANTLR4 support in Visual Studio Code.
 
 ## What's New
 
-The extension now features an improved ATN graph display, sentence generation, simpler predicate execution and more error tolerant parser generation.
+This release fixes content security problems in VS Code web views.
 
 ## Features
 
-![Syntax Coloring](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/feature-overview.png)
+![Feature Overview](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/feature-overview.png)
 
 ### Syntax Coloring
 
@@ -71,6 +67,11 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
+
+### 2.3.1
+A bug fix release for even stricter content security policies in VS Code starting at version 1.73.
+
+- Fixed bug #192: Broken Parse Tree Window on VSCode v1.73
 
 ### 2.3.0
 - Now using ANTLR 4.9. Cannot use the just released 4.10 because of TS runtime incompatibilities.
