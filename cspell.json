@@ -142,10 +142,15 @@
         "visitormembers",
         "visitorpostinclude",
         "visitorpreinclude",
+        "você",
         "xdbg",
         "xdescribe",
         "xexact",
-        "µπåƒ"
+        "µπåƒ",
+        "𑃖പửၒ",
+        "𑃖ᚱꙍ𒅍",
+        "𑃖ꫪ𝚫",
+        "𑃖𓂷"
     ],
     "ignorePaths": [
         "node_modules"

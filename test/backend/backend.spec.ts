@@ -36,12 +36,12 @@ interface ITestRange {
     result: string;
 }
 
-describe("vscode-antlr4 Backend Tests:", () => {
+describe("vscode-antlr4 Backend Tests", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
     jest.setTimeout(60000); // 60 seconds for CircleCI
 
-    describe("Base Handling:", () => {
+    describe("Base Handling", () => {
         it("Create Backend", () => {
             expect(1).toBe(1);
             expect(backend).toHaveProperty("loadGrammar");
@@ -72,7 +72,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
         });
     });
 
-    describe("Symbol Info Retrieval (t.g4):", () => {
+    describe("Symbol Info Retrieval (t.g4)", () => {
         it("infoForSymbol", () => {
             const info = backend.symbolInfoAtPosition("test/backend/t.g4", 7, 2, true);
             expect(info).toBeDefined();
@@ -174,7 +174,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
         });
     });
 
-    describe("Symbol Info Retrieval (TParser.g4):", () => {
+    describe("Symbol Info Retrieval (TParser.g4)", () => {
         it("Symbol Listing", () => {
             backend.loadGrammar("test/backend/TParser.g4");
             const symbols = backend.listTopLevelSymbols("test/backend/TParser.g4", true);
@@ -281,7 +281,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
         });
     });
 
-    describe("Advanced Symbol Information:", () => {
+    describe("Advanced Symbol Information", () => {
 
         it("RRD diagram", () => {
             let diagram = backend.getRRDScript("test/backend/TLexer.g4", "Any");
@@ -329,7 +329,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
         });
     });
 
-    describe("ATN Related:", () => {
+    describe("ATN Related", () => {
         it("ATN Rule Graph, split grammar", async () => {
             // Need code generation here. Details will be tested later. The ATN retrieval will fail
             // anyway when generation fails.
@@ -388,7 +388,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
         });
     });
 
-    describe("Code Generation:", () => {
+    describe("Code Generation", () => {
         afterEach(() => {
             backend.releaseGrammar("test/backend/TParser.g4");
             backend.releaseGrammar("test/backend/TLexer.g4");
@@ -633,7 +633,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
         });
     });
 
-    describe("Test for Bugs:", () => {
+    describe("Test for Bugs", () => {
         it("Lexer token in a set-element context", () => {
             const info = backend.symbolInfoAtPosition("test/backend/TParser.g4", 30, 93, true);
             expect(info).toBeDefined();
@@ -659,7 +659,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
     // TODO: sentence generation is not ready yet.
     // Due to the nature of language definition by rules, we often generate invalid content.
     // This need investigation.
-    describe("Sentence Generation:", () => {
+    describe("Sentence Generation", () => {
         beforeAll(async () => {
             let result = await backend.generate("grammars/ANTLRv4Parser.g4", {
                 outputDir: "generated",
@@ -830,7 +830,6 @@ describe("vscode-antlr4 Backend Tests:", () => {
                 sentence = sentence.replace(/blue/g, "");
                 sentence = sentence.replace(/[0-9{},.:]/g, "");
                 sentence = sentence.trim();
-                //console.log(rule + ": " + sentence);
                 expect(sentence).toHaveLength(0);
             };
 
@@ -846,7 +845,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
             }
         });
 
-        it("Generation with definitions with emtpy arrays", () => {
+        it("Generation with definitions with empty arrays", () => {
             const ruleMappings: IRuleMappings = {
                 /* eslint-disable @typescript-eslint/naming-convention */
                 DIGITS: [],
@@ -967,7 +966,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
                 sentence = sentence.replace(/blue/g, "");
                 sentence = sentence.replace(/[0-9{},.:]/g, "");
                 sentence = sentence.trim();
-                sentence = sentence.trim();               
+                sentence = sentence.trim();
                 //console.log(rule + ": " + sentence);
                 expect(sentence).toHaveLength(0);
             };
@@ -990,9 +989,9 @@ describe("vscode-antlr4 Backend Tests:", () => {
             fs.rmSync("generated", { recursive: true, force: true });
         });
     });
-    
 
-    describe("Formatting:", () => {
+
+    describe("Formatting", () => {
         it("With all options (except alignment)", () => {
             // Format a file with all kinds of syntactic elements. Start out with default
             // formatting options and change them in the file to test all variations.
@@ -1048,7 +1047,7 @@ describe("vscode-antlr4 Backend Tests:", () => {
         });
     });
 
-    describe("Debugger:", () => {
+    describe("Debugger", () => {
         it("Run interpreter", async () => {
             await backend.generate("test/backend/CPP14.g4", {
                 outputDir: "generated",
