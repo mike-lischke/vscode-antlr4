@@ -29,7 +29,7 @@ At runtime, these constants can be found on the Diagram class.
         baseClass.prototype.$super = superClass.prototype;
     }
 
-    function unnull( /* children */ ) {
+    function unnull( /* children */) {
         return [].slice.call(arguments).reduce(function (sofar, x) {
             return sofar !== undefined ? sofar : x;
         });
@@ -294,8 +294,10 @@ At runtime, these constants can be found on the Diagram class.
             this.height += item.height;
             this.down = Math.max(this.down - item.height, item.down);
         }
-        if (this.items[0].needsSpace) this.width -= 10;
-        if (this.items[this.items.length - 1].needsSpace) this.width -= 10;
+        if (this.items.length > 0) {
+            if (this.items[0].needsSpace) this.width -= 10;
+            if (this.items[this.items.length - 1].needsSpace) this.width -= 10;
+        }
         if (Diagram.DEBUG) {
             this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
             this.attrs['data-type'] = "sequence"
@@ -994,9 +996,9 @@ At runtime, these constants can be found on the Diagram class.
     If you would like different names, adjust them here.
     */
     ['Diagram', 'ComplexDiagram', 'Sequence', 'Stack', 'OptionalSequence', 'Choice', 'MultipleChoice', 'Optional', 'OneOrMore', 'ZeroOrMore', 'Terminal', 'NonTerminal', 'Comment', 'Skip']
-    .forEach(function (e, i) {
-        root[e] = temp[i];
-    });
+        .forEach(function (e, i) {
+            root[e] = temp[i];
+        });
 }).call(this, {
     VERTICAL_SEPARATION: 24,
     ARC_RADIUS: 10,

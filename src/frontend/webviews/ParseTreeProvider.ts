@@ -22,29 +22,29 @@ export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsu
         this.updateContent(uri);
     }
 
-    public generateContent(webView: Webview, uri: Uri,
-        _options: IWebviewShowOptions): string {
+    public generateContent(webview: Webview, uri: Uri, _options: IWebviewShowOptions): string {
         const graph = this.debugger.currentParseTree;
 
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context,
-            webView);
+            webview);
         const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
-            webView);
-        const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
+            webview);
+        const graphLibPath = FrontendUtils.getNodeModulesPath(webview, "d3/dist/d3.js", this.context);
 
         const settings = workspace.getConfiguration("antlr4.debug");
         const horizontal = settings.get<boolean>("visualParseTreeHorizontal", true);
         const clustered = settings.get<boolean>("visualParseTreeClustered", false);
+        const nonce = this.generateNonce();
 
         const diagram = `<!DOCTYPE html>
             <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-                    ${this.generateContentSecurityPolicy()}
-                    ${this.getStyles(webView)}
+                    ${this.generateContentSecurityPolicy(webview, nonce)}
+                    ${this.getStyles(webview)}
                     <base target="_blank">
-                    <script src="${graphLibPath}"></script>
-                    <script>
+                    <script nonce="${nonce}" src="${graphLibPath}"></script>
+                    <script nonce="${nonce}">
                         let parseTreeRenderer;
                         let graphExport;
                     </script>
@@ -89,7 +89,7 @@ export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsu
                 </div>
 
                 <svg></svg>
-                <script type="module">
+                <script nonce="${nonce}" type="module">
                     import { ParseTreeRenderer } from "${rendererScriptPath}";
                     import { GraphExport } from "${exportScriptPath}";
 

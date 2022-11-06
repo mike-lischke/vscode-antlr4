@@ -15,20 +15,22 @@ import { FrontendUtils } from "../FrontendUtils";
 
 export class RailroadDiagramProvider extends WebviewProvider {
 
-    public generateContent(webView: Webview, uri: Uri, options: IWebviewShowOptions): string {
+    public generateContent(webview: Webview, uri: Uri, options: IWebviewShowOptions): string {
         const fileName = uri.fsPath;
         const baseName = basename(fileName, extname(fileName));
 
         const nonce = this.generateNonce();
         const scripts = [
-            FrontendUtils.getMiscPath("railroad-diagrams.js", this.context, webView),
+            FrontendUtils.getMiscPath("railroad-diagrams.js", this.context, webview),
         ];
+        const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
+            webview);
 
         if (!this.currentRule || this.currentRuleIndex === undefined) {
             return `<!DOCTYPE html>
                 <html>
                     <head>
-                        ${this.generateContentSecurityPolicy()}
+                        ${this.generateContentSecurityPolicy(webview, nonce)}
                     </head>
                     <body><span style="color: #808080; font-size: 16pt;">No rule selected</span></body>
                 </html>`;
@@ -38,31 +40,37 @@ export class RailroadDiagramProvider extends WebviewProvider {
             <html>
             <head>
                 <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
-                ${this.generateContentSecurityPolicy()}
-                ${this.getStyles(webView)}
+                ${this.generateContentSecurityPolicy(webview, nonce)}
+                ${this.getStyles(webview)}
                 <base href="${uri.toString(true)}">
+                <script nonce="${nonce}">
+                    let graphExport;
+                </script>
             </head>
 
             <body>
-            ${this.getScripts(nonce, scripts)}
-        `;
+            ${this.getScripts(nonce, scripts)}`;
 
         if (options.fullList) {
             diagram += `
                 <div class="header">
                     <span class="rrd-color"><span class="graph-initial">Ⓡ</span>rd&nbsp;&nbsp;</span>All rules
                     <span class="action-box">
-                    Save to HTML<a onClick="exportToHTML('rrd', '${baseName}');"><span class="rrd-save-image" /></a>
+                        Save to HTML<a onClick="graphExport.exportToHTML('rrd', '${baseName}');">
+                            <span class="rrd-save-image" />
+                        </a>
                     </span>
                 </div>
                 <div id="container">`;
+
             const symbols = this.backend.listTopLevelSymbols(fileName, false);
             for (const symbol of symbols) {
                 if (symbol.kind === SymbolKind.LexerRule
                     || symbol.kind === SymbolKind.ParserRule
                     || symbol.kind === SymbolKind.FragmentLexerToken) {
                     const script = this.backend.getRRDScript(fileName, symbol.name);
-                    diagram += `<h3 class="${symbol.name}-class">${symbol.name}</h3>\n<script>${script}</script>\n\n`;
+                    diagram += `<h3 class="${symbol.name}-class">${symbol.name}</h3>
+                        <script nonce="${nonce}">${script}</script>`;
                 }
             }
             diagram += "</div>";
@@ -76,17 +84,23 @@ export class RailroadDiagramProvider extends WebviewProvider {
                     </span>
                     <span class="action-box">
                         Save to SVG
-                        <a onClick="exportToSVG('rrd', '${this.currentRule}');">
+                        <a onClick="graphExport.exportToSVG('rrd', '${this.currentRule}');">
                             <span class="rrd-save-image" />
                         </a>
                     </span>
                 </div>
                 <div id="container">
-                    <script>${this.backend.getRRDScript(fileName, this.currentRule)}</script>
-                </div>
-            `;
+                    <script nonce="${nonce}" >${this.backend.getRRDScript(fileName, this.currentRule)}</script>
+                </div>`;
         }
-        diagram += "</body></html>";
+
+        diagram += `
+            <script nonce="${nonce}" type="module">
+                import { GraphExport } from "${exportScriptPath}";
+
+                graphExport = new GraphExport();
+            </script>
+        </body></html>`;
 
         return diagram;
     }

@@ -155,20 +155,24 @@ export class WebviewProvider {
         }
     }
 
-    protected generateContent(_webView: Webview, _source: Uri, _options: IWebviewShowOptions): string {
+    protected generateContent(_webview: Webview, _source: Uri, _options: IWebviewShowOptions): string {
         return "";
     }
 
     /**
      * Constructs the required CSP entry for webviews, which allows them to load local files.
      *
+     * @param webview The view for which to return the CSP tag.
+     * @param nonce A nonce for scripts.
+     *
      * @returns The CSP string.
      */
-    protected generateContentSecurityPolicy(): string {
-        return `<meta http-equiv="Content-Security-Policy" content="default-src 'self';
-            script-src vscode-resource: 'self' 'unsafe-inline' 'unsafe-eval' https:;
-            style-src vscode-resource: 'self' 'unsafe-inline';
-            img-src vscode-resource: 'self' "/>
+    protected generateContentSecurityPolicy(webview: Webview, nonce: string): string {
+        return `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
+            script-src 'nonce-${nonce}';
+            script-src-attr 'unsafe-inline';
+            style-src ${webview.cspSource} 'self' 'unsafe-inline';
+            img-src ${webview.cspSource} 'self' "/>
         `;
     }
 

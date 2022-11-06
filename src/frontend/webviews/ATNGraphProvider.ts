@@ -57,32 +57,32 @@ export class ATNGraphProvider extends WebviewProvider {
         }
     }
 
-    public generateContent(webView: Webview, uri: Uri): string {
+    public generateContent(webview: Webview, uri: Uri): string {
         const graphData = this.prepareRenderData(uri);
 
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/ATNGraphRenderer.js", this.context,
-            webView);
+            webview);
         const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
-            webView);
-        const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
+            webview);
+        const graphLibPath = FrontendUtils.getNodeModulesPath(webview, "d3/dist/d3.js", this.context);
 
         const name = graphData.ruleName ?? "";
+        const nonce = this.generateNonce();
 
         return `<!DOCTYPE html>
             <html style="width: 100%, height: 100%">
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-                    ${this.generateContentSecurityPolicy()}
-                    ${this.getStyles(webView)}
+                    ${this.generateContentSecurityPolicy(webview, nonce)}
+                    ${this.getStyles(webview)}
                     <base target="_blank">
-                    <script src="${graphLibPath}"></script>
-                    <script>
+                    <script nonce="${nonce}" src="${graphLibPath}"></script>
+                    <script nonce="${nonce}">
                         let atnGraphRenderer;
                         let graphExport;
                     </script>
                 </head>
                 <body>
-                    <script src="${graphLibPath}"></script>
                     <div class="header">
                         <span class="atn-graph-color">
                             <span class="graph-initial">Ⓡ</span>ule&nbsp;&nbsp;</span>
@@ -133,7 +133,7 @@ export class ATNGraphProvider extends WebviewProvider {
                         </defs>
                     </svg>
 
-                    <script type="module">
+                    <script nonce="${nonce}" type="module">
                         import { ATNGraphRenderer } from "${rendererScriptPath}";
                         import { GraphExport, vscode } from "${exportScriptPath}";
 

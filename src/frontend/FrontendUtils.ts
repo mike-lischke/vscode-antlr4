@@ -24,15 +24,15 @@ export class FrontendUtils {
      *
      * @param file The base file name.
      * @param context The context of this extension to get its path regardless where it is installed.
-     * @param webView When given format the path for use in this webview.
+     * @param webview When given format the path for use in this webview.
      *
      * @returns The computed path.
      */
-    public static getMiscPath(file: string, context: ExtensionContext, webView?: Webview): string {
-        if (webView) {
+    public static getMiscPath(file: string, context: ExtensionContext, webview?: Webview): string {
+        if (webview) {
             const uri = Uri.file(context.asAbsolutePath(path.join("misc", file)));
 
-            return webView.asWebviewUri(uri).toString();
+            return webview.asWebviewUri(uri).toString();
         }
 
         return context.asAbsolutePath(path.join("misc", file));
@@ -43,15 +43,15 @@ export class FrontendUtils {
      *
      * @param file The base file name.
      * @param context The context of this extension to get its path regardless where it is installed.
-     * @param webView When given format the path for use in this webview.
+     * @param webview When given format the path for use in this webview.
      *
      * @returns The computed path.
      */
-    public static getOutPath(file: string, context: ExtensionContext, webView?: Webview): string {
-        if (webView) {
+    public static getOutPath(file: string, context: ExtensionContext, webview?: Webview): string {
+        if (webview) {
             const uri = Uri.file(context.asAbsolutePath(path.join("out", file)));
 
-            return webView.asWebviewUri(uri).toString();
+            return webview.asWebviewUri(uri).toString();
         }
 
         return context.asAbsolutePath(path.join("out", file));
@@ -60,14 +60,16 @@ export class FrontendUtils {
     /**
      * Returns the absolute path to a file located in the node_modules folder.
      *
+     * @param webview The webview for which to create the path.
      * @param file The base file name.
      * @param context The context of this extension to get its path regardless where it is installed.
      *
      * @returns The computed path.
      */
-    public static getNodeModulesPath(file: string, context: ExtensionContext): string {
-        return Uri.file(context.asAbsolutePath(path.join("node_modules", file)))
-            .with({ scheme: "vscode-resource" }).toString();
+    public static getNodeModulesPath(webview: Webview, file: string, context: ExtensionContext): string {
+        const path = Uri.joinPath(context.extensionUri, "node_modules", file);
+
+        return webview.asWebviewUri(path).toString();
     }
 
     public static isAbsolute(p: string): boolean {

@@ -14,7 +14,7 @@ import { ICallGraphEntry } from "../../webview-scripts/types";
 
 export class CallGraphProvider extends WebviewProvider {
 
-    public generateContent(webView: Webview, uri: Uri): string {
+    public generateContent(webview: Webview, uri: Uri): string {
         const fileName = uri.fsPath;
         const baseName = path.basename(fileName, path.extname(fileName));
 
@@ -34,20 +34,21 @@ export class CallGraphProvider extends WebviewProvider {
         }
 
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/CallGraphRenderer.js", this.context,
-            webView);
+            webview);
         const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
-            webView);
-        const graphLibPath = FrontendUtils.getNodeModulesPath("d3/dist/d3.js", this.context);
+            webview);
+        const graphLibPath = FrontendUtils.getNodeModulesPath(webview, "d3/dist/d3.js", this.context);
+        const nonce = this.generateNonce();
 
         const diagram = `<!DOCTYPE html>
             <html>
                 <head>
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
-                    ${this.generateContentSecurityPolicy()}
-                    ${this.getStyles(webView)}
+                    ${this.generateContentSecurityPolicy(webview, nonce)}
+                    ${this.getStyles(webview)}
                     <base href="${uri.toString(true)}">
-                    <script src="${graphLibPath}"></script>
-                    <script>
+                    <script nonce="${nonce}" src="${graphLibPath}"></script>
+                    <script nonce="${nonce}">
                         let callGraphRenderer;
                         let graphExport;
                     </script>
@@ -66,7 +67,7 @@ export class CallGraphProvider extends WebviewProvider {
                                 vertical-align: middle;">+</span>
                         </a>&nbsp;
                         Save to SVG
-                        <a onClick="graphExport.exportToSVG("call-graph", "${baseName}");">
+                        <a onClick="graphExport.exportToSVG('call-graph', '${baseName}');">
                             <span class="call-graph-save-image" />
                         </a>
                     </span>
@@ -75,7 +76,7 @@ export class CallGraphProvider extends WebviewProvider {
                 <div id="container">
                     <svg></svg>
                 </div>
-                <script type="module">
+                <script nonce="${nonce}" type="module">
                     import { CallGraphRenderer } from "${rendererScriptPath}";
                     import { GraphExport } from "${exportScriptPath}";
 
