@@ -7,7 +7,7 @@
 
 import { EventEmitter } from "events";
 
-import { CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token } from "antlr4ts";
+import { CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer } from "antlr4ts";
 import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
@@ -207,10 +207,10 @@ export class GrammarDebugger extends EventEmitter {
     /**
      * @returns the list of tokens in the test input.
      */
-    public get tokenList(): Token[] {
+    public get tokenList(): CommonToken[] {
         this.tokenStream.fill();
 
-        return this.tokenStream.getTokens();
+        return this.tokenStream.getTokens() as CommonToken[];
     }
 
     public get errorCount(): number {
@@ -360,6 +360,10 @@ export class GrammarDebugger extends EventEmitter {
         return this.lexer.vocabulary.getSymbolicName(token.type) || `T__${token.type}`;
     }
 
+    public get recognizer(): Lexer {
+        return this.lexer;
+    }
+
     private sendEvent(event: string, ...args: unknown[]) {
         setImmediate((_) => {
             this.emit(event, ...args);
@@ -507,5 +511,3 @@ export class GrammarDebugger extends EventEmitter {
         }
     }
 }
-
-

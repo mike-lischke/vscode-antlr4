@@ -23,7 +23,7 @@ import { Subject } from "await-notify";
 import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger";
 import { ParseTreeProvider } from "./webviews/ParseTreeProvider";
 import { AntlrFacade } from "../backend/facade";
-import { Token, CommonToken } from "antlr4ts";
+import { CommonToken } from "antlr4ts";
 import { IParseTreeNode } from "../backend/types";
 
 /**
@@ -67,7 +67,7 @@ export class AntlrDebugSession extends DebugSession {
     private testInput = "";
 
     // Some variables, which are updated between each scope/var request.
-    private tokens: Token[];
+    private tokens: CommonToken[] | undefined;
     private variables: Array<[string, string]>;
 
     /**
@@ -351,32 +351,36 @@ export class AntlrDebugSession extends DebugSession {
     protected variablesRequest(response: DebugProtocol.VariablesResponse,
         args: DebugProtocol.VariablesArguments): void {
         const variables: DebugProtocol.Variable[] = [];
+
         switch (args.variablesReference) {
             case VarRef.Globals: {
-                variables.push({
-                    name: "Test Input",
-                    type: "string",
-                    value: this.testInput,
-                    variablesReference: 0,
-                });
-                variables.push({
-                    name: "Input Size",
-                    type: "number",
-                    value: this.debugger!.inputSize.toString(),
-                    variablesReference: 0,
-                });
-                variables.push({
-                    name: "Error Count",
-                    type: "number",
-                    value: this.debugger!.errorCount.toString(),
-                    variablesReference: 0,
-                });
-                variables.push({
-                    name: "Input Tokens",
-                    value: (this.tokens.length - this.debugger!.currentTokenIndex).toString(),
-                    variablesReference: VarRef.Tokens,
-                    indexedVariables: this.tokens.length - this.debugger!.currentTokenIndex,
-                });
+                if (this.tokens && this.debugger) {
+                    variables.push({
+                        name: "Test Input",
+                        type: "string",
+                        value: this.testInput,
+                        variablesReference: 0,
+                    });
+                    variables.push({
+                        name: "Input Size",
+                        type: "number",
+                        value: this.debugger.inputSize.toString(),
+                        variablesReference: 0,
+                    });
+                    variables.push({
+                        name: "Error Count",
+                        type: "number",
+                        value: this.debugger.errorCount.toString(),
+                        variablesReference: 0,
+                    });
+                    variables.push({
+                        name: "Input Tokens",
+                        value: (this.tokens.length - this.debugger.currentTokenIndex).toString(),
+                        variablesReference: VarRef.Tokens,
+                        indexedVariables: this.tokens.length - this.debugger.currentTokenIndex,
+                    });
+                }
+
                 break;
             }
 
@@ -385,23 +389,26 @@ export class AntlrDebugSession extends DebugSession {
             }
 
             case VarRef.Tokens: {
-                const start = this.debugger!.currentTokenIndex + (args.start ? args.start : 0);
-                const length = args.count ? args.count : this.tokens.length;
-                for (let i = 0; i < length; ++i) {
-                    const index = start + i;
-                    variables.push({
-                        name: `${index}: ${this.debugger!.tokenTypeName(this.tokens[index] as CommonToken)}`,
-                        type: "Token",
-                        value: "",
-                        variablesReference: VarRef.Tokens + index,
-                        presentationHint: { kind: "class", attributes: ["readonly"] },
-                    });
+                if (this.tokens) {
+                    const start = this.debugger!.currentTokenIndex + (args.start ? args.start : 0);
+                    const length = args.count ? args.count : this.tokens.length;
+                    for (let i = 0; i < length; ++i) {
+                        const index = start + i;
+                        variables.push({
+                            name: `${index}: ${this.debugger!.tokenTypeName(this.tokens[index])}`,
+                            type: "Token",
+                            value: "",
+                            variablesReference: VarRef.Tokens + index,
+                            presentationHint: { kind: "class", attributes: ["readonly"] },
+                        });
+                    }
                 }
+
                 break;
             }
 
             default: {
-                if (args.variablesReference >= VarRef.Tokens) {
+                if (args.variablesReference >= VarRef.Tokens && this.tokens) {
                     const tokenIndex = args.variablesReference % VarRef.Tokens;
                     if (tokenIndex >= 0 && tokenIndex < this.tokens.length) {
                         const token = this.tokens[tokenIndex];
@@ -569,12 +576,13 @@ export class AntlrDebugSession extends DebugSession {
             if (this.showTextualParseTree) {
                 let text = "";
                 if (!this.tokens) {
-                    this.tokens = this.debugger!.tokenList;
+                    this.tokens = this.debugger?.tokenList;
                 }
 
-                for (const token of this.tokens) {
-                    text += token.toString() + "\n";
-                }
+                const recognizer = this.debugger?.recognizer;
+                this.tokens?.forEach((token) => {
+                    text += token.toString(recognizer) + "\n";
+                });
                 this.sendEvent(new OutputEvent("Tokens:\n" + text + "\n"));
 
                 const tree = this.debugger?.currentParseTree;
