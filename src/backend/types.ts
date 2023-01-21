@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2022, Mike Lischke
+ * Copyright (c) 2022, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -9,10 +9,11 @@ export enum GrammarType {
     Unknown,
     Parser,
     Lexer,
-    Combined
+    Combined,
 }
 
-export enum SymbolGroupKind { // Multiple symbol kinds can be involved in a symbol lookup.
+/** Multiple symbol kinds can be involved in a symbol lookup. */
+export enum SymbolGroupKind {
     TokenRef,
     RuleRef,
     LexerMode,
@@ -50,7 +51,7 @@ export enum SymbolKind {
     LexerAction,
     ParserPredicate,
     LexerPredicate,
-    Arguments
+    Arguments,
 }
 
 /**
@@ -58,11 +59,11 @@ export enum SymbolKind {
  * Hence when start and end position are equal the range is empty.
  */
 export interface ILexicalRange {
-    start: { column: number; row: number };
-    end: { column: number; row: number };
+    start: { column: number; row: number; };
+    end: { column: number; row: number; };
 }
 
-// The definition of a single symbol (range and content it is made of).
+/** The definition of a single symbol (range and content it is made of). */
 export interface IDefinition {
     text: string;
     range: ILexicalRange;
@@ -73,14 +74,16 @@ export interface ISymbolInfo {
     name: string;
     source: string;
     definition?: IDefinition;
-    description?: string; // Used for code completion. Provides a small description for certain symbols.
+
+    /** Used for code completion. Provides a small description for certain symbols. */
+    description?: string;
 }
 
 export enum DiagnosticType {
     Hint,
     Info,
     Warning,
-    Error
+    Error,
 }
 
 export interface IDiagnosticEntry {
@@ -99,7 +102,9 @@ export interface ILexerToken {
     type: number;
     name: string;
     line: number;
-    offset: number; // Offset in the line.
+
+    /** Offset in the line. */
+    offset: number;
     channel: number;
     tokenIndex: number;
     startIndex: number;
@@ -123,17 +128,22 @@ export interface IIndexRange {
  */
 export interface IParseTreeNode {
     type: "rule" | "terminal" | "error";
-    id: number; // A unique id for D3.js.
 
-    ruleIndex?: number; // Only valid for the rule node type.
+    /** A unique id for D3.js. */
+    id: number;
+
+    /** Only valid for the rule node type. */
+    ruleIndex?: number;
     name: string;
-    start?: ILexerToken; // ditto
-    stop?: ILexerToken; // ditto
-    range?: IIndexRange; // ditto
+    start?: ILexerToken;
+    stop?: ILexerToken;
+    range?: IIndexRange;
 
-    symbol?: ILexerToken; // Only valid for non-rule nodes.
+    /** Only valid for non-rule nodes. */
+    symbol?: ILexerToken;
 
-    children: IParseTreeNode[]; // Available for all node types, but empty for non-rule types.
+    /** Available for all node types, but empty for non-rule types. */
+    children: IParseTreeNode[];
 }
 
 /**
@@ -154,57 +164,56 @@ export enum CodeActionType {
     ParserAction,
     LexerAction,
     ParserPredicate,
-    LexerPredicate
+    LexerPredicate,
 }
 
-/**
- * Options used by the parser files generation.
- */
+/** Options used by the parser files generation. */
 export interface IGenerationOptions {
-    // The folder in which to run the generation process. Should be an absolute path for predictable results.
-    // Used internally only.
+    /**
+     * The folder in which to run the generation process. Should be an absolute path for predictable results.
+     * Used internally only.
+     */
     baseDir?: string;
 
-    // Search path for the ANTLR tool.
+    /** Search path for the ANTLR tool. */
     libDir?: string;
 
-    // The folder where to place generated files in (relative to baseDir or absolute) (default: grammar dir),
+    /** The folder where to place generated files in (relative to baseDir or absolute) (default: grammar dir). */
     outputDir?: string;
 
-    // Package or namespace name for generated files (default: none).
+    /** Package or namespace name for generated files (default: none). */
     package?: string;
 
-    // The target language for the generated files. (default: what's given in the grammar or Java).
+    /** The target language for the generated files. (default: what's given in the grammar or Java). */
     language?: string;
 
-    // Generate listener files if set (default: true).
+    /** Generate listener files if set (default: true). */
     listeners?: boolean;
 
-    // Generate visitor files if set (default: false).
+    /** Generate visitor files if set (default: false). */
     visitors?: boolean;
 
-    // Don't generate anything. Just try to load interpreter data and do interpreter setup.
+    /** Don't generate anything. Just try to load interpreter data and do interpreter setup. */
     loadOnly?: boolean;
 
-    // Use this jar for work instead of the built-in one(s).
+    /** Used with `loadOnly` to generate if no interpreter data exists yet. */
+    generateIfNeeded?: boolean;
+
+    /** Use this jar for work instead of the built-in one(s). */
     alternativeJar?: string;
 
-    // Any additional parameter you want to send to ANTLR4 for generation (e.g. "-XdbgST").
+    /** Any additional parameter you want to send to ANTLR4 for generation (e.g. "-XdbgST"). */
     additionalParameters?: string;
 }
+
 /**
  * Options used by the sentence generation.
  */
-
 export interface ISentenceGenerationOptions {
-    /**
-     * The number of sentences to generate in one call.
-     */
+    /** The number of sentences to generate in one call. */
     count?: number;
 
-    /**
-     * Clear output on each run (used for output printing in the UI).
-     */
+    /** Clear output on each run (used for output printing in the UI). */
     clear?: boolean;
 
     /**
@@ -240,14 +249,10 @@ export interface ISentenceGenerationOptions {
      */
     maxLexerIterations?: number;
 
-    /**
-     * The maximum number of recursions (rules calling themselves directly or indirectly, default: 3).
-     */
+    /** The maximum number of recursions (rules calling themselves directly or indirectly, default: 3). */
     maxRecursions?: number;
 
-    /**
-     * The string to use when the maximum recursion level was reached (default: "⨱").
-     */
+    /** The string to use when the maximum recursion level was reached (default: "⨱"). */
     maxRecursionLabel?: string;
 
     /**
@@ -255,9 +260,7 @@ export interface ISentenceGenerationOptions {
      */
     ruleMappings?: IRuleMappings;
 
-    /**
-     * The name of a file which contains code to evaluate grammar actions and predicates.
-     */
+    /** The name of a file which contains code to evaluate grammar actions and predicates. */
     actionFile?: string;
 }
 
@@ -275,94 +278,106 @@ export interface IRuleMappings {
  * descriptions + examples.
  */
 export interface IFormattingOptions {
-    // Index signature to allow accessing properties via brackets.
+    /** Index signature to allow accessing properties via brackets. */
     [key: string]: boolean | number | string | undefined;
 
-    // Default: false
+    /** Default: false */
     alignTrailingComments?: boolean;
 
-    // Default: true;
+    /** Default: true; */
     allowShortBlocksOnASingleLine?: boolean;
 
-    // When true start predicates and actions on a new line. Default: false.
+    /** When true start predicates and actions on a new line. Default: false. */
     breakBeforeBraces?: boolean;
 
-    // Default: 100 chars.
+    /** Default: 100 chars. */
     columnLimit?: number;
 
-    // For line continuation (only used if useTab is false). Default: same as indentWith.
+    /** For line continuation (only used if useTab is false). Default: same as indentWith. */
     continuationIndentWidth?: number;
 
-    // Default: 4 chars.
+    /** Default: 4 chars. */
     indentWidth?: number;
 
-    // Default: false.
+    /** Default: false. */
     keepEmptyLinesAtTheStartOfBlocks?: boolean;
 
-    // Default: 1.
+    /** Default: 1. */
     maxEmptyLinesToKeep?: number;
 
-    // Default: true.
+    /** Default: true. */
     reflowComments?: boolean;
 
-    // Default: true
+    /** Default: true */
     spaceBeforeAssignmentOperators?: boolean;
 
-    // Default: 4.
+    /** Default: 4. */
     tabWidth?: number;
 
-    // Default: true.
+    /** Default: true. */
     useTab?: boolean;
 
-    // Values not found in clang-format:
-    // When set to "none" places the colon directly behind the rule name. Trailing alignment aligns colons of
-    // consecutive single line rules (with at least one whitespace between rule name and colon). Hanging alignment
-    // moves the colon to the next line (after the normal indentation, aligning it so with the alt pipe chars).
-    // Default: none.
+    /**
+     * Values not found in clang-format:
+     * When set to "none" places the colon directly behind the rule name. Trailing alignment aligns colons of
+     * consecutive single line rules (with at least one whitespace between rule name and colon). Hanging alignment
+     * moves the colon to the next line (after the normal indentation, aligning it so with the alt pipe chars).
+     * Default: none.
+     */
     alignColons?: "none" | "trailing" | "hanging";
 
-    // When `allowShortRulesOnASingleLine` is true and `alignColon` is set to "hanging" this setting determines which
-    // gets precedence. If true (the default) a rule is placed on a single line if it fits, ignoring the "hanging"
-    // setting.
+    /**
+     * When `allowShortRulesOnASingleLine` is true and `alignColon` is set to "hanging" this setting determines which
+     * gets precedence. If true (the default) a rule is placed on a single line if it fits, ignoring the "hanging"
+     * setting.
+     */
     singleLineOverrulesHangingColon?: boolean;
 
-    // Like allowShortBlocksOnASingleLine, but for entire rules. Default: true.
+    /** Like allowShortBlocksOnASingleLine, but for entire rules. Default: true. */
     allowShortRulesOnASingleLine?: boolean;
 
-    // Place semicolon behind last code token or on an own line (with or w/o indentation). Default: ownLine
-    // (no indentation). This setting has no effect for non-rule commands that end with a semicolon
-    // (e.g. "grammar Test;", "import Blah;" etc.). Such commands are always placed on a single line.
+    /**
+     * Place semicolon behind last code token or on an own line (with or w/o indentation). Default: ownLine
+     * (no indentation). This setting has no effect for non-rule commands that end with a semicolon
+     * (e.g. "grammar Test;", "import Blah;" etc.). Such commands are always placed on a single line.
+     */
     alignSemicolons?: "none" | "ownLine" | "hanging";
 
-    // For blocks: if true puts opening parentheses on an own line. Default: false.
+    /** For blocks: if true puts opening parentheses on an own line. Default: false. */
     breakBeforeParens?: boolean;
 
-    // Place rule internals (return value, local variables, @init, @after) all on a single line, if true.
-    // Default: false.
+    /**
+     * Place rule internals (return value, local variables, @init, @after) all on a single line, if true.
+     * Default: false.
+     */
     ruleInternalsOnSingleLine?: boolean;
 
-    // Between top level elements, how many empty lines must exist? Default: 0.
+    /** Between top level elements, how many empty lines must exist? Default: 0. */
     minEmptyLines?: number;
 
-    // When true alignments are organized in groups of lines where they apply. These line groups are separated
-    // by lines where a specific alignment type does not appear. Default: true.
+    /**
+     * When true alignments are organized in groups of lines where they apply. These line groups are separated
+     * by lines where a specific alignment type does not appear. Default: true.
+     */
     groupedAlignments?: boolean;
 
-    // Align first tokens in rules after the colon. Default: false.
+    /** Align first tokens in rules after the colon. Default: false. */
     alignFirstTokens?: boolean;
 
-    // Align arrows from lexer commands. Default: false.
+    /** Align arrows from lexer commands. Default: false. */
     alignLexerCommands?: boolean;
 
-    // Align actions ({} blocks in rules) and predicates. Default: false.
+    /** Align actions ({} blocks in rules) and predicates. Default: false. */
     alignActions?: boolean;
 
-    // Align alt labels (# name). Default: true.
+    /** Align alt labels (# name). Default: true. */
     alignLabels?: boolean;
 
-    // When true a single alignment for labels, actions, lexer commands and trailing comments is used instead of
-    // individual alignments for each type. This avoids large whitespace runs if you have a mix of these types.
-    // Setting alignTrailers disables the individual alignment settings of the mentioned types.
+    /**
+     * When true a single alignment for labels, actions, lexer commands and trailing comments is used instead of
+     * individual alignments for each type. This avoids large whitespace runs if you have a mix of these types.
+     * Setting alignTrailers disables the individual alignment settings of the mentioned types.
+     */
     alignTrailers?: boolean;
 }
 

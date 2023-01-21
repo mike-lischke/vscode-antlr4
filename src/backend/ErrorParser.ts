@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -115,7 +115,7 @@ export class ErrorParser {
      *
      * @returns True if the conversion was successful, false otherwise.
      */
-    public async convertErrorsToDiagnostics(text: string): Promise<boolean> {
+    public convertErrorsToDiagnostics(text: string): boolean {
         const lines = text.split("\n");
         for (const line of lines) {
             if (line.length > 0) {
@@ -233,7 +233,8 @@ export class ErrorParser {
                                         for (let i = 1; i < symbols.length; ++i) { // Not the first entry
                                             symbols.push(matches[i]);
                                         }
-                                        await this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error,
+
+                                        this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error,
                                             context);
                                         continue;
                                     }
@@ -264,7 +265,7 @@ export class ErrorParser {
                                 const matches = ErrorParser.errorCodeToPattern.get(errorCode)!.exec(errorText);
                                 if (matches) {
                                     // We're adding two entries here: one for each symbol.
-                                    await this.addDiagnosticsForSymbols([matches[1]], errorText, DiagnosticType.Warning,
+                                    this.addDiagnosticsForSymbols([matches[1]], errorText, DiagnosticType.Warning,
                                         context);
                                     range.end.column += matches[1].length - 1;
                                 }
@@ -292,7 +293,7 @@ export class ErrorParser {
                                 break;
 
                             case 202: { // "tokens {A; B;} syntax is now tokens {A, B} in ANTLR 4", ErrorSeverity.WARNING
-                                const enclosingRange = await context.enclosingSymbolAtPosition(range.start.column,
+                                const enclosingRange = context.enclosingSymbolAtPosition(range.start.column,
                                     range.start.row, true);
                                 if (enclosingRange && enclosingRange.definition) {
                                     range = enclosingRange.definition.range;
@@ -313,7 +314,7 @@ export class ErrorParser {
                                 break;
 
                             default: {
-                                const info = await context.symbolAtPosition(range.start.column, range.start.row, false);
+                                const info = context.symbolAtPosition(range.start.column, range.start.row, false);
                                 if (info) {
                                     range.end.column += info.name.length - 1;
                                 }
@@ -356,8 +357,7 @@ export class ErrorParser {
                                 const matches = /\[([^\]]+)]/.exec(errorText);
                                 if (matches) {
                                     const symbols = matches[1].split(",");
-                                    await this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error,
-                                        context);
+                                    this.addDiagnosticsForSymbols(symbols, errorText, DiagnosticType.Error, context);
                                 }
                                 break;
                             }
@@ -385,10 +385,10 @@ export class ErrorParser {
         return true;
     }
 
-    private async addDiagnosticsForSymbols(symbols: string[], text: string, type: DiagnosticType,
+    private addDiagnosticsForSymbols(symbols: string[], text: string, type: DiagnosticType,
         context: SourceContext) {
         for (const symbol of symbols) {
-            const info = await context.getSymbolInfo(symbol.trim());
+            const info = context.getSymbolInfo(symbol.trim());
             if (info) {
                 const error: IDiagnosticEntry = {
                     type,

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2022, Mike Lischke
+ * Copyright (c) 2016, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -184,6 +184,8 @@ export class SentenceGenerator {
         if (this.parserData) {
             return this.parserData.ruleNames[index];
         }
+
+        return undefined;
     }
 
     /**
@@ -261,9 +263,9 @@ export class SentenceGenerator {
                         const randomElement = mappingValue[randomIndex];
 
                         mapping = randomElement;
-                    } 
+                    }
                 } else {
-                    mapping = mappingValue as string;
+                    mapping = mappingValue;
                 }
 
                 if (mapping) {
@@ -380,13 +382,14 @@ export class SentenceGenerator {
                                         if (tokenName) {
                                             const mappingValue = this.ruleMappings?.[tokenName];
                                             let mapping: string | undefined;
-                                            
+
                                             if (mappingValue) {
                                                 if (Array.isArray(mappingValue)) {
                                                     if (mappingValue.length === 1) {
                                                         mapping = mappingValue[0];
                                                     } else if (mappingValue.length > 0) {
-                                                        const randomIndex = Math.floor(Math.random() * mappingValue.length);
+                                                        const randomIndex = Math.floor(Math.random() *
+                                                            mappingValue.length);
                                                         mapping = mappingValue[randomIndex];
                                                     }
                                                 } else if (mappingValue) {
@@ -537,6 +540,8 @@ export class SentenceGenerator {
                 return transition.target;
             }
         }
+
+        return undefined;
     }
 
     private blockStart(state: StarLoopEntryState): StarBlockStartState | undefined {

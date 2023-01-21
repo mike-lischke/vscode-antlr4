@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2017, 2022, Mike Lischke
+ * Copyright (c) 2017, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -138,7 +138,7 @@ export class FrontendUtils {
      * @param data The data to write.
      * @param extraFiles Files to copy to the target folder (e.g. css).
      */
-    public static exportDataWithConfirmation(fileName: string, filters: { [name: string]: string[] }, data: string,
+    public static exportDataWithConfirmation(fileName: string, filters: { [name: string]: string[]; }, data: string,
         extraFiles: string[]): void {
         void window.showSaveDialog({
             defaultUri: Uri.file(fileName),
@@ -189,6 +189,8 @@ export class FrontendUtils {
                 return entry;
             }
         }
+
+        return undefined;
     }
 
     /**

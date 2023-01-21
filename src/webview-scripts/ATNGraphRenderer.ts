@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2022, Mike Lischke
+ * Copyright (c) 2018, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -528,7 +528,7 @@ export class ATNGraphRenderer {
      *
      * @returns an object with the computed coordinates or undefined, if the lines are parallel.
      */
-    private lineIntersection(line1: ILine, line2: ILine): { x: number; y: number } | undefined {
+    private lineIntersection(line1: ILine, line2: ILine): { x: number; y: number; } | undefined {
         const s1X = line1.x2 - line1.x1;
         const s1Y = line1.y2 - line1.y1;
         const s2X = line2.x2 - line2.x1;
@@ -543,6 +543,8 @@ export class ATNGraphRenderer {
                 y: line1.y1 + (t * s1Y),
             };
         }
+
+        return undefined;
     }
 
     private transformLinkLabels(): void {

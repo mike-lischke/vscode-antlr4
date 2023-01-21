@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2022, Mike Lischke
+ * Copyright (c) 2022, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -137,7 +137,8 @@ export class ExtensionHost {
             if (FrontendUtils.isGrammarFile(document)) {
                 const antlrPath = path.join(path.dirname(document.fileName), ".antlr");
                 try {
-                    void this.backend.generate(document.fileName, { outputDir: antlrPath, loadOnly: true });
+                    void this.backend.generate(document.fileName,
+                        { outputDir: antlrPath, loadOnly: true, generateIfNeeded: true });
                     ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
                 } catch (error) {
                     printErrors([error], true);

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2022, Mike Lischke
+ * Copyright (c) 2018, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -8,7 +8,7 @@
 import { TreeDataProvider, TreeItem, EventEmitter, TextDocument, ProviderResult, Event } from "vscode";
 import { AntlrFacade } from "../backend/facade";
 
-export class AntlrTreeDataProvider<T> implements TreeDataProvider<T> {
+export class AntlrTreeDataProvider<T extends TreeItem> implements TreeDataProvider<T> {
     protected currentFile: string | undefined;
 
     private changeEvent = new EventEmitter<void>();

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2022, Mike Lischke
+ * Copyright (c) 2016, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -363,6 +363,8 @@ export class SourceContext {
                 return this.symbolTable.getSymbolInfo(symbol);
             }
         }
+
+        return undefined;
     }
 
     public listTopLevelSymbols(includeDependencies: boolean): ISymbolInfo[] {
@@ -1029,7 +1031,10 @@ export class SourceContext {
         if (options.loadOnly) {
             const errors = this.setupInterpreters(options.outputDir);
             if (errors.length === 0) {
-                return Promise.resolve([]);
+                // If no interpreter data was loaded at all then it might be we have to do a first generation run.
+                if (this.grammarParserData || this.grammarLexerData || !options.generateIfNeeded) {
+                    return Promise.resolve([]);
+                }
             } else {
                 return Promise.reject(errors);
             }
@@ -1187,7 +1192,7 @@ export class SourceContext {
                 const marker = transition.target.stateNumber * (transitsToRule ? state.stateNumber : 1);
                 const targetIndex = ensureATNNode(marker, transition.target);
 
-                const labels: Array<{ content: string; class?: string }> = [];
+                const labels: Array<{ content: string; class?: string; }> = [];
                 const link: IATNLink = {
                     source: sourceIndex,
                     target: targetIndex,
@@ -1568,9 +1573,9 @@ export class SourceContext {
         // Load interpreter data if the code generation was successful.
         // For that we only need the final parser and lexer files, not any imported stuff.
         // The target path is either the output path (if one was given) or the grammar path.
-        let lexerFile = "";
-        let parserFile = "";
-        let baseName = (this.fileName.endsWith(".g4")
+        let lexerInterpreterDataFile = "";
+        let parserInterpreterDataFile = "";
+        const baseName = (this.fileName.endsWith(".g4")
             ? path.basename(this.fileName, ".g4")
             : path.basename(this.fileName, ".g"));
         const grammarPath = (outputDir) ? outputDir : path.dirname(this.fileName);
@@ -1579,21 +1584,18 @@ export class SourceContext {
             case GrammarType.Combined: {
                 // In a combined grammar the lexer is implicitly extracted and treated as a separate file.
                 // We have no own source context for this case and hence load both lexer and parser data here.
-                parserFile = path.join(grammarPath, baseName) + ".interp";
-                if (baseName.endsWith("Parser")) {
-                    baseName = baseName.substring(0, baseName.length - "Parser".length);
-                }
-                lexerFile = path.join(grammarPath, baseName) + "Lexer.interp";
+                parserInterpreterDataFile = path.join(grammarPath, baseName) + ".interp";
+                lexerInterpreterDataFile = path.join(grammarPath, baseName) + "Lexer.interp";
                 break;
             }
 
             case GrammarType.Lexer: {
-                lexerFile = path.join(grammarPath, baseName) + ".interp";
+                lexerInterpreterDataFile = path.join(grammarPath, baseName) + ".interp";
                 break;
             }
 
             case GrammarType.Parser: {
-                parserFile = path.join(grammarPath, baseName) + ".interp";
+                parserInterpreterDataFile = path.join(grammarPath, baseName) + ".interp";
                 break;
             }
 
@@ -1602,32 +1604,34 @@ export class SourceContext {
         }
 
         let errors = "";
-        if (fs.existsSync(lexerFile)) {
+        if (fs.existsSync(lexerInterpreterDataFile)) {
             try {
-                this.grammarLexerData = InterpreterDataReader.parseFile(lexerFile);
+                this.grammarLexerData = InterpreterDataReader.parseFile(lexerInterpreterDataFile);
                 const map = new Map<string, number>();
                 for (let i = 0; i < this.grammarLexerData.ruleNames.length; ++i) {
                     map.set(this.grammarLexerData.ruleNames[i], i);
                 }
                 this.grammarLexerRuleMap = map;
             } catch (error) {
-                errors += `Error while reading lexer interpreter data (${lexerFile}): ${String(error)}\n`;
+                errors +=
+                    `Error while reading lexer interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
             }
         } else {
             this.grammarLexerData = undefined;
             this.grammarLexerRuleMap.clear();
         }
 
-        if (fs.existsSync(parserFile)) {
+        if (fs.existsSync(parserInterpreterDataFile)) {
             try {
-                this.grammarParserData = InterpreterDataReader.parseFile(parserFile);
+                this.grammarParserData = InterpreterDataReader.parseFile(parserInterpreterDataFile);
                 const map = new Map<string, number>();
                 for (let i = 0; i < this.grammarParserData.ruleNames.length; ++i) {
                     map.set(this.grammarParserData.ruleNames[i], i);
                 }
                 this.grammarParserRuleMap = map;
             } catch (error) {
-                errors += `Error while reading parser interpreter data (${lexerFile}): ${String(error)}\n`;
+                errors +=
+                    `Error while reading parser interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
             }
         } else {
             this.grammarParserData = undefined;
@@ -1674,15 +1678,12 @@ export class SourceContext {
             });
 
             java.on("close", (_code) => {
-                errorParser.convertErrorsToDiagnostics(buffer).then((flag) => {
-                    if (flag) {
-                        resolve(this.setupInterpreters(outputDir));
-                    } else {
-                        reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
-                    }
-                }).catch((reason) => {
-                    reject(reason);
-                });
+                const flag = errorParser.convertErrorsToDiagnostics(buffer);
+                if (flag) {
+                    resolve(this.setupInterpreters(outputDir));
+                } else {
+                    reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
+                }
             });
         });
     }

@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2022, Mike Lischke
+ * Copyright (c) 2016, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -122,6 +122,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         return this.rootContext;
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Resume parsing from the current ATN state until the end or we hit a breakpoint.
      *

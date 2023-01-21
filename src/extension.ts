@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2016, 2020, Mike Lischke
+ * Copyright (c) 2016, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -8,6 +8,7 @@
 import { ExtensionContext } from "vscode";
 import { ExtensionHost } from "./ExtensionHost";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let extensionHost: ExtensionHost;
 
 /**

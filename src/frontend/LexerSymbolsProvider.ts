@@ -1,6 +1,6 @@
 /*
  * This file is released under the MIT license.
- * Copyright (c) 2018, 2021, Mike Lischke
+ * Copyright (c) 2018, 2023, Mike Lischke
  *
  * See LICENSE file for more info.
  */
@@ -30,13 +30,12 @@ export class LexerSymbolItem extends TreeItem {
         super(label, collapsibleState);
         this.command = command;
     }
-
 }
 
 export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbolItem> {
 
     public getChildren(element?: LexerSymbolItem): ProviderResult<LexerSymbolItem[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (!element) {
                 let vocabulary;
                 if (this.currentFile) {
@@ -44,22 +43,19 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbolItem>
                 }
 
                 if (vocabulary) {
-                    const promises: Array<Promise<LexerSymbolItem>> = [];
+                    const items: LexerSymbolItem[] = [];
+                    items.push(new LexerSymbolItem("-1: EOF", TreeItemCollapsibleState.None, {
+                        title: "<unused>",
+                        command: "",
+                        arguments: [],
+                    }));
                     for (let i = 0; i <= vocabulary.maxTokenType; ++i) {
-                        promises.push(this.generateTreeItem(i, vocabulary));
+                        items.push(this.generateTreeItem(i, vocabulary));
                     }
 
-                    Promise.all(promises).then((items) => {
-                        items.unshift(new LexerSymbolItem("-1: EOF", TreeItemCollapsibleState.None, {
-                            title: "<unused>",
-                            command: "",
-                            arguments: [],
-                        }));
-                        resolve(items);
-                    }).catch((reason) => {
-                        reject(reason);
-                    });
-
+                    resolve(items);
+                } else {
+                    resolve(null);
                 }
             } else {
                 resolve(null);
@@ -67,7 +63,7 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbolItem>
         });
     }
 
-    private async generateTreeItem(index: number, vocabulary: Vocabulary): Promise<LexerSymbolItem> {
+    private generateTreeItem(index: number, vocabulary: Vocabulary): LexerSymbolItem {
         const literal = vocabulary.getLiteralName(index);
         const symbolic = vocabulary.getSymbolicName(index);
         let caption = `${index}: `;
@@ -86,8 +82,8 @@ export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbolItem>
         }
 
         const alternative = literal ?? "";
-        const info = await this.backend.infoForSymbol(this.currentFile ?? "",
-            symbolic ?? alternative.substr(1, alternative.length - 2));
+        const info = this.backend.infoForSymbol(this.currentFile ?? "",
+            symbolic ?? alternative.substring(1, alternative.length - 2));
 
         const parameters: Command = { title: "", command: "" };
         if (info && info.definition) {

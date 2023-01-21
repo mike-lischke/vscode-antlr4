@@ -153,6 +153,7 @@
         "𑃖𓂷"
     ],
     "ignorePaths": [
-        "node_modules"
+        "node_modules",
+        ".eslintrc.json"
     ]
 }
