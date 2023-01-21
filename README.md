@@ -87,7 +87,7 @@ A bug fix release for even stricter content security policies in VS Code startin
     - Simplified the required JS code for predicate simulation in the debugger, sentence generation and test execution. See [Grammar Debugging](doc/grammar-debugging.md) for details.
     - Labels for links now rotate sooner to horizontal position (45° instead of 75° of link angle), which makes for a nicer display.
 - Improved sentence generation:
-    - Sentence generation is now available in grammar files. [Sentence Generation](doc/sentence-generation.md) for details.
+    - Sentence generation is now available in grammar files. See [Sentence Generation](doc/sentence-generation.md) for details.
     - Show a special char if no printable char could be generated (due to filtering).
     - For virtual tokens the name is now printed instead of nothing (as they have no attached label), if no mapping is specified for them.
     - Inclusion of Unicode line terminators can now be enabled, to allow generating them where possible.

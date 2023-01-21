@@ -25,13 +25,13 @@ import { SourceContext } from "./SourceContext";
  * This class generates a number of strings, each valid input for a given ATN.
  */
 export class SentenceGenerator {
+    private static printableUnicode: IntervalSet;
+
     // Allow evaluating predicates.
     public runPredicate?: PredicateFunction;
 
     private lexerPredicates: LexerPredicateSymbol[];
     private parserPredicates: ParserPredicateSymbol[];
-
-    private printableUnicode: IntervalSet;
 
     // Convergence data for recursive rule invocations. We count here the invocation of each alt
     // of a decision state.
@@ -63,13 +63,6 @@ export class SentenceGenerator {
         private lexerData: IInterpreterData,
         private parserData: IInterpreterData | undefined,
         actionFile: string | undefined) {
-
-        this.printableUnicode = printableUnicodePoints({
-            excludeCJK: true,
-            excludeRTL: true,
-            limitToBMP: false,
-            includeLineTerminators: true,
-        });
 
         // Get the symbols for all predicates (to enable predicate evaluation).
         this.lexerPredicates = context.symbolTable.getNestedSymbolsOfTypeSync(LexerPredicateSymbol);
@@ -157,7 +150,7 @@ export class SentenceGenerator {
             }
 
             if (predicate.length > 2) {
-                predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                predicate = predicate.substring(1, predicate.length - 1); // Remove outer curly braces.
                 try {
                     return this.runPredicate(predicate);
                 } catch (e) {
@@ -577,7 +570,7 @@ export class SentenceGenerator {
 
     private getRandomCharacterFromInterval(set: IntervalSet): String {
         //const randomBlockSet = randomCodeBlocks();
-        const validSet = this.printableUnicode.and(set);
+        const validSet = SentenceGenerator.printableUnicode.and(set);
         if (validSet.size === 0) {
             // Very likely just a single script or a simple set of elements.
             return String.fromCodePoint(this.getIntervalElement(set, Math.floor(Math.random() * set.size)));
@@ -596,4 +589,16 @@ export class SentenceGenerator {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
+    static {
+        void printableUnicodePoints({
+            excludeCJK: true,
+            excludeRTL: true,
+            limitToBMP: false,
+            includeLineTerminators: true,
+        }).then((intervalSet) => {
+            this.printableUnicode = intervalSet;
+        });
+
+
+    }
 }

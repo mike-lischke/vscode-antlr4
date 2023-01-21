@@ -95,7 +95,7 @@ export class SourceContext {
         [ArgumentsSymbol, SymbolKind.Arguments],
     ]);
 
-    private static printableChars = printableUnicodePoints({});
+    private static printableChars: IntervalSet;
 
     public symbolTable: ContextSymbolTable;
     public sourceId: string;
@@ -1741,5 +1741,11 @@ export class SourceContext {
         }
 
         return result;
+    }
+
+    static {
+        void printableUnicodePoints({}).then((intervalSet) => {
+            this.printableChars = intervalSet;
+        });
     }
 }
