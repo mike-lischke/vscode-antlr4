@@ -1,8 +1,4 @@
-[![](https://vsmarketplacebadge.apphb.com/version-short/mike-lischke.vscode-antlr4.svg)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4)
-[![](https://vsmarketplacebadge.apphb.com/installs-short/mike-lischke.vscode-antlr4.svg)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4)
-[![](https://vsmarketplacebadge.apphb.com/rating-short/mike-lischke.vscode-antlr4.svg)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4)
-[![CircleCI](https://circleci.com/gh/mike-lischke/vscode-antlr4/tree/master.svg?style=svg)](https://circleci.com/gh/mike-lischke/vscode-antlr4/tree/master)
-
+[![Build & Test](https://github.com/mike-lischke/vscode-antlr4/actions/workflows/nodejs.yml/badge.svg?branch=master)](https://github.com/mike-lischke/vscode-antlr4/actions/workflows/nodejs.yml) [![](https://img.shields.io/visual-studio-marketplace/d/mike-lischke.vscode-antlr4?color=green&label=Downloads&logo=Microsoft)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4) [![](https://img.shields.io/visual-studio-marketplace/stars/mike-lischke.vscode-antlr4?color=green&label=Rating&logo=Microsoft)](https://marketplace.visualstudio.com/items?itemName=mike-lischke.vscode-antlr4)
 
 # <img src="https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/misc/antlr-logo.png" alt="logo" width="48"> VS Code Extension for ANTLR4 Grammars
 
