@@ -660,6 +660,34 @@ describe("vscode-antlr4 Backend Tests", () => {
     // Due to the nature of language definition by rules, we often generate invalid content.
     // This need investigation.
     describe("Sentence Generation", () => {
+        /**
+         * Remove occurrences of known strings that are inserted at non-deterministic positions.
+         *
+         * @param sentence The sentence to filter.
+         * @returns The filtered sentence.
+         */
+        const filter = (sentence: string): string => {
+            sentence = sentence.replace(/12345/g, "");
+            sentence = sentence.replace(/54321/g, "");
+            sentence = sentence.replace(/DEADBEEF/g, "");
+            sentence = sentence.replace(/Mike/g, "");
+            sentence = sentence.replace(/John/g, "");
+            sentence = sentence.replace(/Mary/g, "");
+            sentence = sentence.replace(/µπåƒ/g, "");
+            sentence = sentence.replace(/você/g, "");
+            sentence = sentence.replace(/𑃖𓂷/g, "");
+            sentence = sentence.replace(/𑃖ꫪ𝚫/g, "");
+            sentence = sentence.replace(/𑃖𠦄𣛯𪃾/g, "");
+            sentence = sentence.replace(/𑃖പửၒ/g, "");
+            sentence = sentence.replace(/𑃖ᚱꙍ𒅍/g, "");
+            sentence = sentence.replace(/red/g, "");
+            sentence = sentence.replace(/green/g, "");
+            sentence = sentence.replace(/blue/g, "");
+            sentence = sentence.replace(/[0-9{},.:]/g, "");
+
+            return sentence.trim();
+        };
+
         beforeAll(async () => {
             let result = await backend.generate("grammars/ANTLRv4Parser.g4", {
                 outputDir: "generated",
@@ -780,18 +808,7 @@ describe("vscode-antlr4 Backend Tests", () => {
                 const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                 expect(errors).toHaveLength(0);
 
-                // In addition to error free generation check also that only known elements are in the sentence.
-                sentence = sentence.replace(/12345/g, "");
-                sentence = sentence.replace(/DEADBEEF/g, "");
-                sentence = sentence.replace(/Mike/g, "");
-                sentence = sentence.replace(/µπåƒ/g, "");
-                sentence = sentence.replace(/red/g, "");
-                sentence = sentence.replace(/green/g, "");
-                sentence = sentence.replace(/blue/g, "");
-                sentence = sentence.replace(/[0-9{},.:]/g, "");
-                sentence = sentence.trim();
-                //console.log(rule + ": " + sentence);
-                expect(sentence).toHaveLength(0);
+                expect(filter(sentence)).toHaveLength(0);
             };
 
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
@@ -820,17 +837,7 @@ describe("vscode-antlr4 Backend Tests", () => {
                 const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                 expect(errors).toHaveLength(0);
 
-                // In addition to error free generation check also that only known elements are in the sentence.
-                sentence = sentence.replace(/12345/g, "");
-                sentence = sentence.replace(/DEADBEEF/g, "");
-                sentence = sentence.replace(/Mike/g, "");
-                sentence = sentence.replace(/µπåƒ/g, "");
-                sentence = sentence.replace(/red/g, "");
-                sentence = sentence.replace(/green/g, "");
-                sentence = sentence.replace(/blue/g, "");
-                sentence = sentence.replace(/[0-9{},.:]/g, "");
-                sentence = sentence.trim();
-                expect(sentence).toHaveLength(0);
+                expect(filter(sentence)).toHaveLength(0);
             };
 
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
@@ -858,18 +865,6 @@ describe("vscode-antlr4 Backend Tests", () => {
                 //console.log(rule + ": " + sentence);
                 const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                 expect(errors).toHaveLength(0);
-
-                // In addition to error free generation check also that only known elements are in the sentence.
-                sentence = sentence.replace(/12345/g, "");
-                sentence = sentence.replace(/DEADBEEF/g, "");
-                sentence = sentence.replace(/Mike/g, "");
-                sentence = sentence.replace(/µπåƒ/g, "");
-                sentence = sentence.replace(/red/g, "");
-                sentence = sentence.replace(/green/g, "");
-                sentence = sentence.replace(/blue/g, "");
-                sentence = sentence.replace(/[0-9{},.:]/g, "");
-                sentence = sentence.trim();
-                //console.log(rule + ": " + sentence);
             };
 
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
@@ -899,26 +894,7 @@ describe("vscode-antlr4 Backend Tests", () => {
                 expect(errors).toHaveLength(0);
 
                 // In addition to error free generation check also that only known elements are in the sentence.
-                sentence = sentence.replace(/12345/g, "");
-                sentence = sentence.replace(/54321/g, "");
-                sentence = sentence.replace(/DEADBEEF/g, "");
-                sentence = sentence.replace(/Mike/g, "");
-                sentence = sentence.replace(/John/g, "");
-                sentence = sentence.replace(/Mary/g, "");
-                sentence = sentence.replace(/µπåƒ/g, "");
-                sentence = sentence.replace(/você/g, "");
-                sentence = sentence.replace(/𑃖𓂷/g, "");
-                sentence = sentence.replace(/𑃖ꫪ𝚫/g, "");
-                sentence = sentence.replace(/𑃖𠦄𣛯𪃾/g, "");
-                sentence = sentence.replace(/𑃖പửၒ/g, "");
-                sentence = sentence.replace(/𑃖ᚱꙍ𒅍/g, "");
-                sentence = sentence.replace(/red/g, "");
-                sentence = sentence.replace(/green/g, "");
-                sentence = sentence.replace(/blue/g, "");
-                sentence = sentence.replace(/[0-9{},.:]/g, "");
-                sentence = sentence.trim();
-                //console.log(rule + ": " + sentence);
-                expect(sentence).toHaveLength(0);
+                expect(filter(sentence)).toHaveLength(0);
             };
 
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
@@ -947,28 +923,7 @@ describe("vscode-antlr4 Backend Tests", () => {
                 const errors = backend.parseTestInput("test/backend/sentences.g4", sentence, rule);
                 expect(errors).toHaveLength(0);
 
-                // In addition to error free generation check also that only known elements are in the sentence.
-                sentence = sentence.replace(/12345/g, "");
-                sentence = sentence.replace(/54321/g, "");
-                sentence = sentence.replace(/DEADBEEF/g, "");
-                sentence = sentence.replace(/Mike/g, "");
-                sentence = sentence.replace(/John/g, "");
-                sentence = sentence.replace(/Mary/g, "");
-                sentence = sentence.replace(/µπåƒ/g, "");
-                sentence = sentence.replace(/você/g, "");
-                sentence = sentence.replace(/𑃖𓂷/g, "");
-                sentence = sentence.replace(/𑃖ꫪ𝚫/g, "");
-                sentence = sentence.replace(/𑃖𠦄𣛯𪃾/g, "");
-                sentence = sentence.replace(/𑃖പửၒ/g, "");
-                sentence = sentence.replace(/𑃖ᚱꙍ𒅍/g, "");
-                sentence = sentence.replace(/red/g, "");
-                sentence = sentence.replace(/green/g, "");
-                sentence = sentence.replace(/blue/g, "");
-                sentence = sentence.replace(/[0-9{},.:]/g, "");
-                sentence = sentence.trim();
-                sentence = sentence.trim();
-                //console.log(rule + ": " + sentence);
-                expect(sentence).toHaveLength(0);
+                expect(filter(sentence)).toHaveLength(0);
             };
 
             const rules = backend.getRuleList("test/backend/sentences.g4")!;
