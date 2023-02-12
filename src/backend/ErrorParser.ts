@@ -20,7 +20,7 @@ import { SourceContext } from "./SourceContext";
  */
 
 export class ErrorParser {
-    private static errorPattern = /(\w+)\s*\((\d+)\):\s*([^:]*):(\d*):(\d*):\s*(.+)/;
+    private static errorPattern = /(\w+)\s*\((\d+)\):\s*((?:\w:)?[^:]*):(\d*):(\d*):\s*(.+)/;
     private static errorCodeToPattern: Map<number, RegExp> = new Map([
         [8, /grammar name (\w+)/],
         [56, /:\s+(\w+)/],
