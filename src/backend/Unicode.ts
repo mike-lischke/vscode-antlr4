@@ -302,14 +302,14 @@ let predefinedWeightSum = 0;
  * @returns A new set of Unicode code points.
  */
 const codePointsToIntervals = async (dataFile: string, existing?: IntervalSet): Promise<IntervalSet> => {
-    const charsToExclude: { default: number[]; } = await import("@unicode/unicode-11.0.0/" + dataFile);
+    const charsToExclude: number[] = await import("@unicode/unicode-11.0.0/" + dataFile);
     const result = existing ?? new IntervalSet([]);
 
     // Code points are sorted in increasing order, which we can use to speed up insertion.
-    let start = charsToExclude.default[0];
+    let start = charsToExclude[0];
     let end = start;
-    for (let i = 1; i < charsToExclude.default.length; ++i) {
-        const code = charsToExclude.default[i];
+    for (let i = 1; i < charsToExclude.length; ++i) {
+        const code = charsToExclude[i];
         if (end + 1 === code) {
             ++end;
             continue;
