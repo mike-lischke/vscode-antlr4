@@ -13,7 +13,7 @@
             "outFiles": [
                 "${workspaceRoot}/out/src/**/*.js"
             ],
-            "preLaunchTask": "tsc",
+            "preLaunchTask": "npm-tsc",
             "trace": false
         },
         {

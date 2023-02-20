@@ -2,11 +2,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "tsc",
-            "command": "tsc",
+            "label": "npm-tsc",
+            "command": "npm",
             "args": [
-                "-b",
-                "-w",
+                "run",
+                "tsc",
             ],
             "presentation": {
                 "echo": true,

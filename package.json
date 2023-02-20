@@ -547,7 +547,8 @@
         "local-test": "jest --watch --coverage",
         "test": "jest  --watchAll=false --no-coverage",
         "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
-        "lint": "eslint \"./src/**/*.ts\""
+        "lint": "eslint \"./src/**/*.ts\"",
+        "tsc": "tsc -b -w"
     },
     "dependencies": {
         "@unicode/unicode-11.0.0": "1.3.1",
