@@ -3,8 +3,9 @@
     "tasks": [
         {
             "label": "tsc",
-            "command": "tsc",
+            "command": "npx",
             "args": [
+                "tsc",
                 "-b",
                 "-w",
             ],
