@@ -8,6 +8,10 @@
 
 This release fixes content security problems in VS Code web views.
 
+## How To Contribute
+
+If you want to create your own version of this extension or plan to contribute to its development then follow the steps outlined in the [contribute.md](./doc/contribute.md) document.
+
 ## Features
 
 ![Feature Overview](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/feature-overview.png)
