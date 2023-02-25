@@ -133,12 +133,14 @@ export class ExtensionHost {
         this.addSubscriptions(context);
 
         // Load interpreter + cache data for each open document, if there's any.
+        const doNotGenerate = workspace.getConfiguration("antlr4.generation").mode === "none";
+
         for (const document of workspace.textDocuments) {
             if (FrontendUtils.isGrammarFile(document)) {
                 const antlrPath = path.join(path.dirname(document.fileName), ".antlr");
                 try {
                     void this.backend.generate(document.fileName,
-                        { outputDir: antlrPath, loadOnly: true, generateIfNeeded: true });
+                        { outputDir: antlrPath, loadOnly: true, generateIfNeeded: !doNotGenerate });
                     ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
                 } catch (error) {
                     printErrors([error], true);
