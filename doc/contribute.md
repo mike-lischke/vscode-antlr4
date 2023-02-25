@@ -26,9 +26,9 @@ With this in place you can already run the tests:
 npm run test
 ```
 
-Not: the sentence generation tests are based on random input, so they sometimes fail. Don't worry about that. Repeat the tests and likely they will succeed the next time.
+Note: the sentence generation tests are based on random input, so they sometimes fail. Don't worry about that. Repeat the tests and likely they will succeed the next time.
 
-Now it's time to start hacking of the extension. Launch VS Code and open the project folder. If you have VS Code setup to allow using the terminal, then you can open the project using:
+Now it's time to start hacking on the extension. Launch VS Code and open the project folder. If you have VS Code setup to allow using the terminal, then you can open the project using:
 
 ```bash
 vscode-antlr4> code .
