@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2018, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import { ICallGraphEntry } from "./types";
@@ -195,7 +193,7 @@ export class CallGraphRenderer {
      * @returns The root node of the hierarchy.
      */
     private packageHierarchy(entries: ICallGraphEntry[]): ICallGraphRenderNode {
-        const map: { [key: string]: ICallGraphRenderNode } = {};
+        const map: { [key: string]: ICallGraphRenderNode; } = {};
         const modules: string[] = [];
 
         const find = (name: string, rule?: ICallGraphEntry) => {
@@ -235,7 +233,7 @@ export class CallGraphRenderer {
     }
 
     private packageReferences(nodes: CallGraphLayoutNode[]): ICallGraphLayoutNodeLink[] {
-        const map: { [key: string]: CallGraphLayoutNode } = {};
+        const map: { [key: string]: CallGraphLayoutNode; } = {};
         const references: ICallGraphLayoutNodeLink[] = [];
 
         // Compute a map from name to node.

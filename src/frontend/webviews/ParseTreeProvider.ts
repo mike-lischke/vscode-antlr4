@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2018, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import { basename } from "path";
@@ -22,7 +20,7 @@ export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsu
         this.updateContent(uri);
     }
 
-    public generateContent(webview: Webview, uri: Uri, _options: IWebviewShowOptions): string {
+    public override generateContent(webview: Webview, uri: Uri, _options: IWebviewShowOptions): string {
         const graph = this.debugger.currentParseTree;
 
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/ParseTreeRenderer.js", this.context,
@@ -127,7 +125,7 @@ export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsu
         return diagram;
     }
 
-    public updateContent(uri: Uri): boolean {
+    public override updateContent(uri: Uri): boolean {
         const graph = this.debugger.currentParseTree;
         this.sendMessage(uri, {
             command: "updateParseTreeData",

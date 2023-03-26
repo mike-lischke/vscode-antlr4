@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
         "declaration": true,
-        "module": "CommonJS",
+        "module": "NodeNext",
         "target": "ES2022",
         "outDir": "out",
         "removeComments": true,
         "noImplicitAny": true,
+        "noImplicitOverride": true,
         "sourceMap": true,
         "inlineSources": true,
         "isolatedModules": false,

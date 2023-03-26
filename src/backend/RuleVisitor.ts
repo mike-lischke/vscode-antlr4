@@ -16,11 +16,9 @@
 */
 
 /*
- * Translated to TS and modified by
- * Copyright (c) 2017, 2020, Mike Lischke
- * under the MIT license.
- *
- * See LICENSE file for more info.
+ * Translated to TS and modified by Mike Lischke.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import { AbstractParseTreeVisitor, TerminalNode } from "antlr4ts/tree";
@@ -328,7 +326,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         }
     };
 
-    public visitTerminal = (node: TerminalNode): string => {
+    public override visitTerminal = (node: TerminalNode): string => {
         switch (node.symbol.type) {
             case ANTLRv4Lexer.STRING_LITERAL:
             case ANTLRv4Lexer.LEXER_CHAR_SET:

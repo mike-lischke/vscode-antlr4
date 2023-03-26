@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2018, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 /* eslint-disable max-classes-per-file */
@@ -16,7 +14,7 @@ import { FrontendUtils, IRangeHolder } from "./FrontendUtils";
 
 export class RootEntry extends TreeItem {
 
-    public contextValue = "actions";
+    public override contextValue = "actions";
 
     public constructor(label: string, id: string) {
         super(label, TreeItemCollapsibleState.Expanded);
@@ -35,7 +33,7 @@ export class ChildEntry extends TreeItem implements IRangeHolder {
         [CodeActionType.LexerPredicate, "predicate"],
     ]);
 
-    public contextValue = "action";
+    public override contextValue = "action";
 
     public constructor(
         public readonly parent: RootEntry,
@@ -117,7 +115,7 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
         return (element as ChildEntry).parent;
     }
 
-    public getChildren(element?: TreeItem): ProviderResult<TreeItem[]> {
+    public override getChildren(element?: TreeItem): ProviderResult<TreeItem[]> {
         if (!this.currentFile) {
             return null;
         }
@@ -297,4 +295,3 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
         });
     }
 }
-

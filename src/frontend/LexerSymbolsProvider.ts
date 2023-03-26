@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2018, 2023, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 /* eslint-disable max-classes-per-file */
@@ -15,16 +13,16 @@ import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class LexerSymbolItem extends TreeItem {
 
-    public iconPath = {
+    public override iconPath = {
         light: path.join(__dirname, "..", "..", "..", "misc", "token-light.svg"),
         dark: path.join(__dirname, "..", "..", "..", "misc", "token-dark.svg"),
     };
 
-    public contextValue = "lexerSymbols";
+    public override contextValue = "lexerSymbols";
 
     public constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
+        public override readonly label: string,
+        public override readonly collapsibleState: TreeItemCollapsibleState,
         command?: Command,
     ) {
         super(label, collapsibleState);
@@ -34,7 +32,7 @@ export class LexerSymbolItem extends TreeItem {
 
 export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbolItem> {
 
-    public getChildren(element?: LexerSymbolItem): ProviderResult<LexerSymbolItem[]> {
+    public override getChildren(element?: LexerSymbolItem): ProviderResult<LexerSymbolItem[]> {
         return new Promise((resolve) => {
             if (!element) {
                 let vocabulary;

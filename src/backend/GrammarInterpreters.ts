@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2016, 2023, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 // I want to keep all related classes (most of them really small) in a single place.
@@ -17,7 +15,7 @@ import {
 
 import { RuleStartState, ATNState, ATNStateType, TransitionType, Transition, ATNSimulator } from "antlr4ts/atn";
 import { TerminalNode } from "antlr4ts/tree";
-import { Symbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
+import { BaseSymbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 
 import { IInterpreterData } from "./InterpreterDataReader";
 import {
@@ -38,8 +36,8 @@ export enum RunMode {
 export interface IInternalStackFrame {
     name: string;
     source?: string;
-    current: Symbol[];
-    next: Symbol[];
+    current: BaseSymbol[];
+    next: BaseSymbol[];
 }
 
 export class GrammarLexerInterpreter extends LexerInterpreter {
@@ -62,7 +60,7 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         });
     }
 
-    public sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
+    public override sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
         if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.text;
@@ -275,7 +273,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         }
     }
 
-    public sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
+    public override sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
         if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.text;
@@ -294,7 +292,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         return true;
     }
 
-    public action(_localctx: RuleContext | undefined, _ruleIndex: number, _actionIndex: number): void {
+    public override action(_localctx: RuleContext | undefined, _ruleIndex: number, _actionIndex: number): void {
         // not used yet
     }
 
@@ -356,12 +354,12 @@ export class GrammarParserInterpreter extends ParserInterpreter {
      * @param start The symbol to start searching from.
      * @returns A list of reachable leaf symbols from the given symbol.
      */
-    private nextCandidates(start: Symbol): Symbol[] {
-        const result: Symbol[] = [];
+    private nextCandidates(start: BaseSymbol): BaseSymbol[] {
+        const result: BaseSymbol[] = [];
 
         // We can get a rule symbol as start, which means we want to get the candidates
         // from the rule's block, instead its sibling (which is another rule).
-        let next: Symbol | undefined;
+        let next: BaseSymbol | undefined;
         if (start instanceof RuleSymbol) {
             next = start.children[1]; // 3 children in a rule: the colon, the rule block and the semicolon.
         } else {
@@ -408,7 +406,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 // Nothing more in the current alt. Walk up the parent chain until we find a block with content.
                 let block = start;
                 while (true) {
-                    if (block.parent instanceof RuleSymbol) {
+                    if (block.parent instanceof RuleSymbol && block.lastSibling) {
                         result.push(block.lastSibling); // The semicolon.
 
                         return result;
@@ -464,8 +462,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         return result;
     }
 
-    private candidatesFromBlock(block: ScopedSymbol): Symbol[] {
-        const result: Symbol[] = [];
+    private candidatesFromBlock(block: ScopedSymbol): BaseSymbol[] {
+        const result: BaseSymbol[] = [];
         for (const symbol of block.children) {
             let next = (symbol instanceof ScopedSymbol) ? symbol.firstChild : undefined;
             if (next instanceof VariableSymbol) { // Jump over variable assignments.

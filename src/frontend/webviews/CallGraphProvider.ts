@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2017, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import * as path from "path";
@@ -14,7 +12,7 @@ import { ICallGraphEntry } from "../../webview-scripts/types";
 
 export class CallGraphProvider extends WebviewProvider {
 
-    public generateContent(webview: Webview, uri: Uri): string {
+    public override generateContent(webview: Webview, uri: Uri): string {
         const fileName = uri.fsPath;
         const baseName = path.basename(fileName, path.extname(fileName));
 

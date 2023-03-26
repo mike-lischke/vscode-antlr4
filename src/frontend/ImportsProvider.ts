@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2017, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 /* eslint-disable max-classes-per-file */
@@ -14,16 +12,16 @@ import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class Import extends TreeItem {
 
-    public iconPath = {
+    public override iconPath = {
         light: path.join(__dirname, "..", "..", "..", "misc", "dependency-light.svg"),
         dark: path.join(__dirname, "..", "..", "..", "misc", "dependency-dark.svg"),
     };
 
-    public contextValue = "grammar-dependency";
+    public override contextValue = "grammar-dependency";
 
     public constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
+        public override readonly label: string,
+        public override readonly collapsibleState: TreeItemCollapsibleState,
         command?: Command,
     ) {
         super(label, collapsibleState);
@@ -34,7 +32,7 @@ export class Import extends TreeItem {
 
 export class ImportsProvider extends AntlrTreeDataProvider<Import> {
 
-    public getChildren(element?: Import): ProviderResult<Import[]> {
+    public override getChildren(element?: Import): ProviderResult<Import[]> {
         if (!element) {
             let dependencies;
             if (this.currentFile) {

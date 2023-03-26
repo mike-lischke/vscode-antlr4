@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import { IParseTreeNode } from "./types";
@@ -94,7 +92,7 @@ export class ParseTreeRenderer {
      *
      * @param data The tree data to load.
      */
-    public loadNewTree(data: Partial<IRendererData> & { parseTreeData: IParseTreeNode }): void {
+    public loadNewTree(data: Partial<IRendererData> & { parseTreeData: IParseTreeNode; }): void {
         this.data = {
             horizontal: true,
             useCluster: false,
@@ -592,4 +590,3 @@ export class ParseTreeRenderer {
             `${(parentY + this.rectH / 2)}`;
     };
 }
-

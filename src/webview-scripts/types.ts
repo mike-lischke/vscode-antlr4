@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 // Types for use in webview modules.
@@ -28,8 +26,8 @@ export interface IVSCode {
  */
 
 export interface ILexicalRange {
-    start: { column: number; row: number };
-    end: { column: number; row: number };
+    start: { column: number; row: number; };
+    end: { column: number; row: number; };
 }
 
 /** The definition of a single symbol (range and content it is made of). */
@@ -90,7 +88,7 @@ export interface IATNGraphRendererData {
     maxLabelCount: number;
     graphData?: IATNGraphData;
     initialScale: number;
-    initialTranslation: { x?: number; y?: number };
+    initialTranslation: { x?: number; y?: number; };
 }
 
 export interface IATNGraphUpdateMessageData {
@@ -118,7 +116,7 @@ export interface IATNLink {
     source: number;
     target: number;
     type: TransitionType;
-    labels: Array<{ content: string; class?: string }>;
+    labels: Array<{ content: string; class?: string; }>;
 }
 
 /**
@@ -137,7 +135,7 @@ export interface IATNGraphLayoutNode extends SimulationNodeDatum, IATNNode {
 
 export interface IATNGraphLayoutLink extends SimulationLinkDatum<IATNGraphLayoutNode> {
     type: TransitionType;
-    labels: Array<{ content: string; class?: string }>;
+    labels: Array<{ content: string; class?: string; }>;
 }
 
 export interface ICallGraphEntry {

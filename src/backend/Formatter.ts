@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2016, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import { IFormattingOptions } from "./types";
@@ -12,51 +10,12 @@ import { Interval } from "antlr4ts/misc";
 
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
-// Insert markers are what the output pipeline (see below) is made of (if not direct token indices).
-enum InsertMarker {
-    // Token markers.
-    // EOF is -1
-    LineBreak = -2,
-    Space = -3,
-    Tab = -4,
-
-    // Markers for a group of elements.
-    Whitespace = -100,
-    Comment = -101,
-
-    // Action markers.
-    WhitespaceEraser = -102, // Marker for any future whitespace to be ignored.
-    Error = -103,
-
-    // Block markers.
-    Range = -100000,           // Indirect index into the range list.
-    Alignment = -200000,       // Indirect index into the alignment groups list.
-    WhitespaceBlock = -300000, // Indirect index into the whitespace list.
-}
+/** Insert markers are what the output pipeline (see below) is made of (if not direct token indices). */
+type InsertMarker = number;
 
 const formatIntroducer = "$antlr-format";
 
-/**
- * Tests if the marker belongs to the range block.
- *
- * @param marker The marker to test.
- *
- * @returns True if the marker is a range marker.
- */
-const isRangeBlock = (marker: InsertMarker): boolean => {
-    return (marker <= InsertMarker.Range) && (marker > InsertMarker.Alignment);
-};
-
-/**
- * Tests if the marker belongs to the whitespace block.
- *
- * @param marker The marker to test.
- *
- * @returns True if the marker is a whitespace marker.
- */
-const isWhitespaceBlock = (marker: InsertMarker): boolean => { return (marker <= InsertMarker.WhitespaceBlock); };
-
-// Enum used to address a specific alignment status in the alignment map.
+/** Enum used to address a specific alignment status in the alignment map. */
 enum AlignmentType {
     Colon,
     FirstToken,
@@ -64,23 +23,52 @@ enum AlignmentType {
     LexerCommand,
     Action,
     TrailingComment,
-    Trailers // Align all of label, action, trailing comment and lexer command (whatever comes first).
+
+    /** Align all of label, action, trailing comment and lexer command (whatever comes first). */
+    Trailers
 }
 
-// All alignments in the order they will be evaluated.
+/** All alignments in the order they will be evaluated. */
 const allAlignments = [
     AlignmentType.Colon, AlignmentType.FirstToken, AlignmentType.Label, AlignmentType.Action,
     AlignmentType.LexerCommand, AlignmentType.TrailingComment, AlignmentType.Trailers,
 ];
 
-// Holds line number and group index for a specific alignment. For each alignment type there's an own
-// status, to allow multiple alignments per line and ordered processing.
+/**
+ * Holds line number and group index for a specific alignment. For each alignment type there's an own
+ * status, to allow multiple alignments per line and ordered processing.
+ */
 interface IAlignmentStatus {
-    lastLine: number;   // The line number of the last alignment entry in the current group (if there's one currently).
-    groups: number[][]; // A list of output pipeline indices for groups of alignments.
+    /** The line number of the last alignment entry in the current group (if there's one currently). */
+    lastLine: number;
+
+    /** A list of output pipeline indices for groups of alignments. */
+    groups: number[][];
 }
 
 export class GrammarFormatter {
+    // Some predefined insert markers:
+    // Token markers (EOF is -1).
+    public static readonly LineBreak = -2;
+
+    public static readonly Space = -3;
+    public static readonly Tab = -4;
+
+    public static readonly Undefined = 0;
+
+    // Markers for a group of elements.
+    public static readonly Whitespace = -100;
+    public static readonly Comment = -101;
+
+    // Action markers.
+    public static readonly WhitespaceEraser = -102; // Marker for any future whitespace to be ignored.
+    public static readonly Error = -103;
+
+    // Block markers.
+    public static readonly Range = -100000;           // Indirect index into the range list.
+    public static readonly Alignment = -200000;       // Indirect index into the alignment groups list.
+    public static readonly WhitespaceBlock = -300000;  // Indirect index into the whitespace list.
+
     private options: IFormattingOptions;
 
     // The pipeline contains markers for constructing the final text.
@@ -138,7 +126,7 @@ export class GrammarFormatter {
         this.singleLineBlockNesting = 0;
 
         this.ranges = [];
-        this.currentRangeIndex = 0;
+        this.currentRangeIndex = GrammarFormatter.Undefined;
         this.rangeStart = -1;
 
         this.alignments.clear();
@@ -301,7 +289,7 @@ export class GrammarFormatter {
             const token = this.tokens[i];
 
             // If no whitespace is coming up we don't need the eraser marker anymore.
-            if (token.type !== ANTLRv4Lexer.WS && this.lastEntryIs(InsertMarker.WhitespaceEraser)) {
+            if (token.type !== ANTLRv4Lexer.WS && this.lastEntryIs(GrammarFormatter.WhitespaceEraser)) {
                 this.outputPipeline.pop();
             }
 
@@ -321,7 +309,7 @@ export class GrammarFormatter {
                     const localCommentAhead = (nextType === ANTLRv4Lexer.LINE_COMMENT
                         || nextType === ANTLRv4Lexer.BLOCK_COMMENT || nextType === ANTLRv4Lexer.DOC_COMMENT);
 
-                    if (this.lastEntryIs(InsertMarker.WhitespaceEraser)) {
+                    if (this.lastEntryIs(GrammarFormatter.WhitespaceEraser)) {
                         // And ignore these incoming whitespaces if there is an eraser marker
                         // (unless comments after a line break follow, which we want to stay on their line).
                         this.outputPipeline.pop();
@@ -336,7 +324,7 @@ export class GrammarFormatter {
                     const hasLineBreaks = text.indexOf("\n") >= 0;
                     if (!localCommentAhead || !hasLineBreaks) {
                         if (!hasLineBreaks || coalesceWhitespaces || this.singleLineBlockNesting > 0) {
-                            if (!this.lastEntryIs(InsertMarker.Whitespace)) {
+                            if (!this.lastEntryIs(GrammarFormatter.Whitespace)) {
                                 this.addSpace();
                             }
                             break;
@@ -354,7 +342,7 @@ export class GrammarFormatter {
                         // Take into account any line breaks that are already in the pipeline.
                         let j = this.outputPipeline.length - 1;
                         while (j >= 0) {
-                            if (this.entryIs(j, InsertMarker.LineBreak)) {
+                            if (this.entryIs(j, GrammarFormatter.LineBreak)) {
                                 ++breakCount;
                             } else {
                                 break;
@@ -367,7 +355,7 @@ export class GrammarFormatter {
                     }
                     this.removeTrailingWhitespaces();
 
-                    const lineBreaks: number[] = Array(breakCount).fill(InsertMarker.LineBreak);
+                    const lineBreaks: number[] = Array(breakCount).fill(GrammarFormatter.LineBreak);
                     this.outputPipeline.push(...lineBreaks);
                     this.currentLine += breakCount;
                     this.currentColumn = 0;
@@ -580,7 +568,7 @@ export class GrammarFormatter {
 
                     if (this.options.reflowComments && comment.indexOf("\n") > 0) {
                         const formatted = this.reflowComment(comment, token.type);
-                        const whitespaceIndex = InsertMarker.WhitespaceBlock - this.whitespaceList.length;
+                        const whitespaceIndex = GrammarFormatter.WhitespaceBlock - this.whitespaceList.length;
                         this.outputPipeline.push(whitespaceIndex);
                         this.whitespaceList.push(formatted);
 
@@ -611,13 +599,13 @@ export class GrammarFormatter {
                 case ANTLRv4Lexer.ASSIGN:
                 case ANTLRv4Lexer.PLUS_ASSIGN: {
                     if (this.options.spaceBeforeAssignmentOperators) {
-                        if (!this.lastEntryIs(InsertMarker.Whitespace)) {
+                        if (!this.lastEntryIs(GrammarFormatter.Whitespace)) {
                             this.addSpace();
                         }
                         this.add(i);
                         this.addSpace();
                     } else {
-                        if (this.lastEntryIs(InsertMarker.Whitespace)) {
+                        if (this.lastEntryIs(GrammarFormatter.Whitespace)) {
                             this.removeLastEntry();
                         }
                         this.add(i);
@@ -641,7 +629,7 @@ export class GrammarFormatter {
                     }
 
                     this.add(i);
-                    this.add(InsertMarker.WhitespaceEraser);
+                    this.add(GrammarFormatter.WhitespaceEraser);
                     break;
                 }
 
@@ -683,7 +671,7 @@ export class GrammarFormatter {
                             this.removeTrailingWhitespaces();
                             if (this.singleLineBlockNesting > 0) {
                                 this.addAlignmentEntry(AlignmentType.Colon);
-                                this.add(InsertMarker.WhitespaceEraser);
+                                this.add(GrammarFormatter.WhitespaceEraser);
                             }
                             this.add(i);
                             if (!this.nonBreakingTrailerAhead(i) && !inSingleLineRule) {
@@ -703,7 +691,7 @@ export class GrammarFormatter {
                     // Aligning the first token only makes sense if the entire rule is on a single line.
                     if (this.options.alignFirstTokens && inSingleLineRule) {
                         this.addAlignmentEntry(AlignmentType.FirstToken);
-                        this.add(InsertMarker.WhitespaceEraser);
+                        this.add(GrammarFormatter.WhitespaceEraser);
                     }
 
                     break;
@@ -712,7 +700,7 @@ export class GrammarFormatter {
                 case ANTLRv4Lexer.COLONCOLON:
                     this.removeTrailingWhitespaces();
                     this.add(i);
-                    this.add(InsertMarker.WhitespaceEraser);
+                    this.add(GrammarFormatter.WhitespaceEraser);
                     break;
 
                 case ANTLRv4Lexer.IMPORT:
@@ -781,7 +769,7 @@ export class GrammarFormatter {
                             this.singleLineBlockNesting = 0;
 
                             this.removeTrailingTabsAndSpaces();
-                            if (this.outputPipeline.length > 0 && !this.lastEntryIs(InsertMarker.LineBreak)) {
+                            if (this.outputPipeline.length > 0 && !this.lastEntryIs(GrammarFormatter.LineBreak)) {
                                 this.addLineBreak();
                             }
                             this.pushCurrentIndentation();
@@ -854,7 +842,7 @@ export class GrammarFormatter {
                             }
                         } else {
                             this.add(i);
-                            this.add(InsertMarker.WhitespaceEraser);
+                            this.add(GrammarFormatter.WhitespaceEraser);
                             ++this.currentIndentation;
                         }
 
@@ -913,7 +901,7 @@ export class GrammarFormatter {
                     } else if (this.options.alignLexerCommands) {
                         this.addAlignmentEntry(AlignmentType.LexerCommand);
                     } else {
-                        if (!this.lastEntryIs(InsertMarker.Space)) {
+                        if (!this.lastEntryIs(GrammarFormatter.Space)) {
                             this.addSpace();
                         }
                     }
@@ -953,7 +941,7 @@ export class GrammarFormatter {
                         }
                     }
 
-                    if (!willUseAlignment && !this.lastEntryIs(InsertMarker.Space)) {
+                    if (!willUseAlignment && !this.lastEntryIs(GrammarFormatter.Space)) {
                         this.addSpace();
                     }
                     this.add(i);
@@ -1022,7 +1010,7 @@ export class GrammarFormatter {
             }
         }
 
-        if (this.lastEntryIs(InsertMarker.WhitespaceEraser)) {
+        if (this.lastEntryIs(GrammarFormatter.WhitespaceEraser)) {
             this.removeLastEntry();
         }
 
@@ -1030,7 +1018,7 @@ export class GrammarFormatter {
         if (this.tokens[endIndex].type !== ANTLRv4Lexer.WS) {
             // If the end index is not at a whitespace then we neither apply any trailing alignments nor
             // keep trailing whitespaces in our output pipeline.
-            if (this.lastEntryIs(InsertMarker.Alignment)) {
+            if (this.lastEntryIs(GrammarFormatter.Alignment)) {
                 this.removeLastEntry();
             }
             this.removeTrailingWhitespaces();
@@ -1051,7 +1039,7 @@ export class GrammarFormatter {
         let hadErrorOnLine = false;
         for (const entry of this.outputPipeline) {
             switch (entry) {
-                case InsertMarker.LineBreak:
+                case GrammarFormatter.LineBreak:
                     if (pendingLineComment > 0) {
                         if (result.length > 0) {
                             const lastChar = result[result.length - 1];
@@ -1065,15 +1053,15 @@ export class GrammarFormatter {
                     result += "\n";
                     hadErrorOnLine = false;
                     break;
-                case InsertMarker.Space:
+                case GrammarFormatter.Space:
                     result += " ";
                     break;
-                case InsertMarker.Tab:
+                case GrammarFormatter.Tab:
                     result += "\t";
                     break;
-                case InsertMarker.WhitespaceEraser: // Ignore.
+                case GrammarFormatter.WhitespaceEraser: // Ignore.
                     break;
-                case InsertMarker.Error:
+                case GrammarFormatter.Error:
                     if (!hadErrorOnLine) { // Don't output more than one error per line.
                         result += "<<Unexpected input or wrong formatter command>>";
                         hadErrorOnLine = true;
@@ -1083,11 +1071,11 @@ export class GrammarFormatter {
                     if (entry < 0) {
                         // One of the block markers. Alignment blocks are removed at this point and
                         // replaced by whitespace indices.
-                        if (isWhitespaceBlock(entry)) {
-                            result += this.whitespaceList[-(entry - InsertMarker.WhitespaceBlock)];
-                        } else if (isRangeBlock(entry)) {
+                        if (this.isWhitespaceBlock(entry)) {
+                            result += this.whitespaceList[-(entry - GrammarFormatter.WhitespaceBlock)];
+                        } else if (this.isRangeBlock(entry)) {
                             // Copy an entire block.
-                            const rangeIndex = -(entry - InsertMarker.Range);
+                            const rangeIndex = -(entry - GrammarFormatter.Range);
                             const tokenStart = this.ranges[rangeIndex][0];
                             const tokenEnd = this.ranges[rangeIndex][1];
                             const interval = Interval.of(this.tokens[tokenStart].startIndex,
@@ -1165,23 +1153,24 @@ export class GrammarFormatter {
 
         const entry = this.outputPipeline[index];
         switch (marker) {
-            case InsertMarker.Whitespace: {
-                return entry === InsertMarker.LineBreak || entry === InsertMarker.Space || entry === InsertMarker.Tab;
+            case GrammarFormatter.Whitespace: {
+                return entry === GrammarFormatter.LineBreak || entry === GrammarFormatter.Space
+                    || entry === GrammarFormatter.Tab;
             }
 
-            case InsertMarker.Space: {
-                return entry === InsertMarker.Space;
+            case GrammarFormatter.Space: {
+                return entry === GrammarFormatter.Space;
             }
 
-            case InsertMarker.Tab: {
-                return entry === InsertMarker.Tab;
+            case GrammarFormatter.Tab: {
+                return entry === GrammarFormatter.Tab;
             }
 
-            case InsertMarker.LineBreak: {
-                return entry === InsertMarker.LineBreak;
+            case GrammarFormatter.LineBreak: {
+                return entry === GrammarFormatter.LineBreak;
             }
 
-            case InsertMarker.Comment: {
+            case GrammarFormatter.Comment: {
                 if (entry < 0) {
                     return false;
                 }
@@ -1209,8 +1198,8 @@ export class GrammarFormatter {
     private lineHasNonWhitespaceContent(): boolean {
         let index = this.outputPipeline.length;
         while (--index > 0) {
-            if (this.outputPipeline[index] !== InsertMarker.Space
-                && this.outputPipeline[index] !== InsertMarker.Tab) {
+            if (this.outputPipeline[index] !== GrammarFormatter.Space
+                && this.outputPipeline[index] !== GrammarFormatter.Tab) {
                 break;
             }
         }
@@ -1218,7 +1207,7 @@ export class GrammarFormatter {
             return false;
         }
 
-        return this.outputPipeline[index] !== InsertMarker.LineBreak;
+        return this.outputPipeline[index] !== GrammarFormatter.LineBreak;
     }
 
     /**
@@ -1231,10 +1220,10 @@ export class GrammarFormatter {
     private lastCodeTokenIs(marker: InsertMarker): boolean {
         let i = this.outputPipeline.length - 1;
         while (i >= 0) {
-            if (!this.entryIs(i, InsertMarker.WhitespaceEraser)
-                && !this.entryIs(i, InsertMarker.Whitespace)
-                && !this.entryIs(i, InsertMarker.LineBreak)
-                && !this.entryIs(i, InsertMarker.Comment)) {
+            if (!this.entryIs(i, GrammarFormatter.WhitespaceEraser)
+                && !this.entryIs(i, GrammarFormatter.Whitespace)
+                && !this.entryIs(i, GrammarFormatter.LineBreak)
+                && !this.entryIs(i, GrammarFormatter.Comment)) {
                 break;
             }
             --i;
@@ -1254,12 +1243,12 @@ export class GrammarFormatter {
         const lastEntry = this.outputPipeline[this.outputPipeline.length - 1];
         this.outputPipeline.pop();
         switch (lastEntry) {
-            case InsertMarker.WhitespaceEraser:
+            case GrammarFormatter.WhitespaceEraser:
                 break; // Ignore.
-            case InsertMarker.LineBreak:
+            case GrammarFormatter.LineBreak:
                 --this.currentLine;
                 break;
-            case InsertMarker.Tab: {
+            case GrammarFormatter.Tab: {
                 const offset = this.currentColumn % this.options.tabWidth!;
                 this.currentColumn -= (offset > 0 ? offset : this.options.tabWidth!);
                 break;
@@ -1281,7 +1270,7 @@ export class GrammarFormatter {
             return;
         }
 
-        while (this.lastEntryIs(InsertMarker.Space) || this.lastEntryIs(InsertMarker.Tab)) {
+        while (this.lastEntryIs(GrammarFormatter.Space) || this.lastEntryIs(GrammarFormatter.Tab)) {
             this.removeLastEntry();
         }
     }
@@ -1294,7 +1283,7 @@ export class GrammarFormatter {
             return;
         }
 
-        while (this.lastEntryIs(InsertMarker.Whitespace)) {
+        while (this.lastEntryIs(GrammarFormatter.Whitespace)) {
             this.removeLastEntry();
         }
     }
@@ -1305,32 +1294,32 @@ export class GrammarFormatter {
         }
 
         if (this.options.useTab) {
-            const tabs: number[] = Array(this.currentIndentation).fill(InsertMarker.Tab);
+            const tabs: number[] = Array(this.currentIndentation).fill(GrammarFormatter.Tab);
             this.outputPipeline.push(...tabs);
             this.currentColumn = this.currentIndentation * this.options.tabWidth!;
         } else {
             const spaces: number[] = Array(this.currentIndentation * (this.options.indentWidth ?? 4))
-                .fill(InsertMarker.Space);
+                .fill(GrammarFormatter.Space);
             this.outputPipeline.push(...spaces);
             this.currentColumn = this.currentIndentation * this.options.indentWidth!;
         }
     }
 
     private applyLineContinuation() {
-        while (this.lastEntryIs(InsertMarker.Space) || this.lastEntryIs(InsertMarker.Tab)) {
+        while (this.lastEntryIs(GrammarFormatter.Space) || this.lastEntryIs(GrammarFormatter.Tab)) {
             this.removeLastEntry();
         }
 
-        if (!this.lastEntryIs(InsertMarker.LineBreak)) {
-            this.outputPipeline.push(InsertMarker.LineBreak);
+        if (!this.lastEntryIs(GrammarFormatter.LineBreak)) {
+            this.outputPipeline.push(GrammarFormatter.LineBreak);
             ++this.currentLine;
         }
         this.currentColumn = 0;
         this.pushCurrentIndentation(true);
         if (this.options.useTab) {
-            this.outputPipeline.push(InsertMarker.Tab);
+            this.outputPipeline.push(GrammarFormatter.Tab);
         } else {
-            const spaces: number[] = Array(this.options.continuationIndentWidth).fill(InsertMarker.Space);
+            const spaces: number[] = Array(this.options.continuationIndentWidth).fill(GrammarFormatter.Space);
             this.outputPipeline.push(...spaces);
         }
         this.currentColumn += this.options.continuationIndentWidth!;
@@ -1339,7 +1328,7 @@ export class GrammarFormatter {
     /**
      * Adds the given marker to the output pipeline and updates current line + column.
      *
-     * @param marker The emarker to add.
+     * @param marker The marker to add.
      */
     private add(marker: InsertMarker) {
         if (this.formattingDisabled) {
@@ -1363,13 +1352,13 @@ export class GrammarFormatter {
         };
 
         switch (marker) {
-            case InsertMarker.WhitespaceEraser: { // Doesn't move current position.
+            case GrammarFormatter.WhitespaceEraser: { // Doesn't move current position.
                 this.outputPipeline.push(marker);
 
                 return;
             }
 
-            case InsertMarker.LineBreak: {
+            case GrammarFormatter.LineBreak: {
                 this.outputPipeline.push(marker);
                 ++this.currentLine;
                 this.currentColumn = 0;
@@ -1511,24 +1500,24 @@ export class GrammarFormatter {
             this.currentColumn += this.computeLineLength(text);
         }
         this.ranges.push([start, stop]);
-        this.outputPipeline.push(InsertMarker.Range - this.currentRangeIndex++);
+        this.outputPipeline.push(GrammarFormatter.Range - this.currentRangeIndex++);
     }
 
     private addSpace() {
         if (this.outputPipeline.length > 0
-            && !this.lastEntryIs(InsertMarker.Space)
+            && !this.lastEntryIs(GrammarFormatter.Space)
             && !this.lastEntryIs(ANTLRv4Lexer.LINE_COMMENT)) {
-            this.add(InsertMarker.Space);
+            this.add(GrammarFormatter.Space);
         }
     }
 
     private addLineBreak(force = false) {
         if (this.singleLineBlockNesting === 0 || force) {
             // If the current line ends with tabs/spaces, remove them first.
-            while (this.lastEntryIs(InsertMarker.Space) || this.lastEntryIs(InsertMarker.Tab)) {
+            while (this.lastEntryIs(GrammarFormatter.Space) || this.lastEntryIs(GrammarFormatter.Tab)) {
                 this.removeLastEntry();
             }
-            this.add(InsertMarker.LineBreak);
+            this.add(GrammarFormatter.LineBreak);
         }
     }
 
@@ -1544,20 +1533,20 @@ export class GrammarFormatter {
         if (this.options.minEmptyLines! > 0) {
             let lineBreakCount = Math.min(this.options.minEmptyLines!, this.options.maxEmptyLinesToKeep!) + 1;
             for (let i = this.outputPipeline.length - 1; i > 0 && lineBreakCount > 0; --i) {
-                if (this.entryIs(i, InsertMarker.LineBreak)) {
+                if (this.entryIs(i, GrammarFormatter.LineBreak)) {
                     --lineBreakCount;
-                } else if (!this.entryIs(i, InsertMarker.Whitespace)) {
+                } else if (!this.entryIs(i, GrammarFormatter.Whitespace)) {
                     break;
                 }
             }
 
-            const lineBreaks: number[] = Array(lineBreakCount).fill(InsertMarker.LineBreak);
+            const lineBreaks: number[] = Array(lineBreakCount).fill(GrammarFormatter.LineBreak);
             this.outputPipeline.push(...lineBreaks);
             this.currentLine += lineBreakCount;
             if (lineBreakCount > 0) {
                 this.currentColumn = 0;
             }
-        } else if (!this.lastEntryIs(InsertMarker.LineBreak)) {
+        } else if (!this.lastEntryIs(GrammarFormatter.LineBreak)) {
             this.addLineBreak();
         }
     }
@@ -1575,7 +1564,7 @@ export class GrammarFormatter {
      * @returns An object containing a flag the indicates if the given block contains alternatives and a number
      *          that gives the length of the block if it was to be formatted all on a single line.
      */
-    private getBlockInfo(i: number, stoppers: Set<number>): { containsAlts: boolean; singleLineLength: number } {
+    private getBlockInfo(i: number, stoppers: Set<number>): { containsAlts: boolean; singleLineLength: number; } {
         let containsAlts = false;
         let singleLineLength = 1;
         let nestingLevel = 0;
@@ -1830,7 +1819,7 @@ export class GrammarFormatter {
                                     }
                                 }
                             } else {
-                                this.add(InsertMarker.Error);
+                                this.add(GrammarFormatter.Error);
                             }
                             break;
                         }
@@ -1846,10 +1835,10 @@ export class GrammarFormatter {
                                 if (value !== undefined) {
                                     this.options[groups[1]] = value;
                                 } else {
-                                    this.add(InsertMarker.Error);
+                                    this.add(GrammarFormatter.Error);
                                 }
                             } else {
-                                this.add(InsertMarker.Error);
+                                this.add(GrammarFormatter.Error);
                             }
                             break;
                         }
@@ -1860,10 +1849,10 @@ export class GrammarFormatter {
                                 if (value === "none" || value === "trailing" || value === "hanging") {
                                     this.options.alignColons = value;
                                 } else {
-                                    this.add(InsertMarker.Error);
+                                    this.add(GrammarFormatter.Error);
                                 }
                             } else {
-                                this.add(InsertMarker.Error);
+                                this.add(GrammarFormatter.Error);
                             }
                             break;
                         }
@@ -1873,15 +1862,15 @@ export class GrammarFormatter {
                                 if (value === "none" || value === "ownLine" || value === "hanging") {
                                     this.options.alignSemicolons = value;
                                 } else {
-                                    this.add(InsertMarker.Error);
+                                    this.add(GrammarFormatter.Error);
                                 }
                             } else {
-                                this.add(InsertMarker.Error);
+                                this.add(GrammarFormatter.Error);
                             }
                             break;
                         }
                         default: {
-                            this.add(InsertMarker.Error);
+                            this.add(GrammarFormatter.Error);
                             break;
                         }
                     }
@@ -1927,7 +1916,7 @@ export class GrammarFormatter {
             if (startNewGroup) {
                 status.groups.push([this.outputPipeline.length]);
             }
-            this.outputPipeline.push(InsertMarker.Alignment);
+            this.outputPipeline.push(GrammarFormatter.Alignment);
 
             status.lastLine = this.currentLine;
         }
@@ -1947,11 +1936,11 @@ export class GrammarFormatter {
                     // If the group only consists of a single member then ignore it.
                     if (group.length === 1) {
                         if (group[0] < this.outputPipeline.length) {
-                            if (this.entryIs(group[0] - 1, InsertMarker.Whitespace)
+                            if (this.entryIs(group[0] - 1, GrammarFormatter.Whitespace)
                                 || this.entryIs(group[0] - 1, ANTLRv4Lexer.LPAREN)) {
-                                this.outputPipeline[group[0]] = InsertMarker.WhitespaceEraser;
+                                this.outputPipeline[group[0]] = GrammarFormatter.WhitespaceEraser;
                             } else {
-                                this.outputPipeline[group[0]] = InsertMarker.Space;
+                                this.outputPipeline[group[0]] = GrammarFormatter.Space;
                             }
                         }
                         continue;
@@ -1963,7 +1952,7 @@ export class GrammarFormatter {
                         // in the pipeline. However the associated alignment group still exists and
                         // may here try to access a non-existing pipeline entry.
                         if (member < this.outputPipeline.length) {
-                            console.assert(this.outputPipeline[member] <= InsertMarker.Alignment);
+                            console.assert(this.outputPipeline[member] <= GrammarFormatter.Alignment);
                             columns.push(this.columnForEntry(member));
                         }
                     }
@@ -1981,7 +1970,7 @@ export class GrammarFormatter {
                     // Compute required whitespace inserts and store them in the whitespace list.
                     // Replace the alignment markers in the current group with the indices in that list.
                     for (let i = 0; i < group.length; ++i) {
-                        const whitespaceIndex = InsertMarker.WhitespaceBlock - this.whitespaceList.length;
+                        const whitespaceIndex = GrammarFormatter.WhitespaceBlock - this.whitespaceList.length;
                         this.outputPipeline[group[i]] = whitespaceIndex;
 
                         let whitespaces;
@@ -2014,7 +2003,7 @@ export class GrammarFormatter {
         // Scan back to last line break.
         let run = offset;
         while (--run > -1) {
-            if (this.outputPipeline[run] === InsertMarker.LineBreak) {
+            if (this.outputPipeline[run] === GrammarFormatter.LineBreak) {
                 break;
             }
         }
@@ -2025,29 +2014,29 @@ export class GrammarFormatter {
         while (++run < offset) {
             const entry = this.outputPipeline[run];
             switch (entry) {
-                case InsertMarker.Space:
+                case GrammarFormatter.Space:
                     text += " ";
                     break;
-                case InsertMarker.Tab:
+                case GrammarFormatter.Tab:
                     text += "\t";
                     break;
-                case InsertMarker.WhitespaceEraser: // Ignore.
-                case InsertMarker.Error:
+                case GrammarFormatter.WhitespaceEraser: // Ignore.
+                case GrammarFormatter.Error:
                     break;
                 default:
                     // We cannot see alignment markers here (as we are currently processing one),
                     // nor whitespace blocks (we are inserting them afterwards).
                     if (entry < 0) {
-                        if (isRangeBlock(entry)) {
+                        if (this.isRangeBlock(entry)) {
                             // Copy an entire block.
-                            const rangeIndex = -(entry - InsertMarker.Range);
+                            const rangeIndex = -(entry - GrammarFormatter.Range);
                             const startIndex = this.ranges[rangeIndex][0];
                             const endIndex = this.ranges[rangeIndex][1];
                             const interval = Interval.of(this.tokens[startIndex].startIndex,
                                 this.tokens[endIndex].stopIndex);
                             text += this.tokens[0].inputStream!.getText(interval);
-                        } else if (isWhitespaceBlock(entry)) {
-                            const whitespaceIndex = -(entry - InsertMarker.WhitespaceBlock);
+                        } else if (this.isWhitespaceBlock(entry)) {
+                            const whitespaceIndex = -(entry - GrammarFormatter.WhitespaceBlock);
                             text += this.whitespaceList[whitespaceIndex];
                         }
                     } else {
@@ -2188,4 +2177,25 @@ export class GrammarFormatter {
         return result.join("\n" + indentation);
     }
 
+    /**
+     * Tests if the marker belongs to the range block.
+     *
+     * @param marker The marker to test.
+     *
+     * @returns True if the marker is a range marker.
+     */
+    private isRangeBlock = (marker: InsertMarker): boolean => {
+        return (marker <= GrammarFormatter.Range) && (marker > GrammarFormatter.Alignment);
+    };
+
+    /**
+     * Tests if the marker belongs to the whitespace block.
+     *
+     * @param marker The marker to test.
+     *
+     * @returns True if the marker is a whitespace marker.
+     */
+    private isWhitespaceBlock = (marker: InsertMarker): boolean => {
+        return (marker <= GrammarFormatter.WhitespaceBlock);
+    };
 }

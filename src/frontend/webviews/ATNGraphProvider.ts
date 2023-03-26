@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2017, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import * as fs from "fs-extra";
@@ -24,7 +22,7 @@ interface IATNStatePosition {
 // ATN graph state info for a single rule.
 interface IATNStateEntry {
     scale: number;
-    translation: { x: number | undefined; y: number | undefined };
+    translation: { x: number | undefined; y: number | undefined; };
     statePositions: {
         [key: number]: IATNStatePosition;
     };
@@ -57,7 +55,7 @@ export class ATNGraphProvider extends WebviewProvider {
         }
     }
 
-    public generateContent(webview: Webview, uri: Uri): string {
+    public override generateContent(webview: Webview, uri: Uri): string {
         const graphData = this.prepareRenderData(uri);
 
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/ATNGraphRenderer.js", this.context,
@@ -155,7 +153,7 @@ export class ATNGraphProvider extends WebviewProvider {
      * @param editor The editor that holds a grammar.
      * @param forced If true update regardless of the selected rule (e.g. when new ATN data was generated).
      */
-    public update(editor: TextEditor, forced = false): void {
+    public override update(editor: TextEditor, forced = false): void {
         // Keep track of the currently selected rule in the given editor and trigger a visual update
         // if the ATN graph is currently visible.
         const caret = editor.selection.active;
@@ -169,7 +167,7 @@ export class ATNGraphProvider extends WebviewProvider {
         }
     }
 
-    protected handleMessage(message: IWebviewMessage): boolean {
+    protected override handleMessage(message: IWebviewMessage): boolean {
         const saveMessage = message as IATNStateSaveMessage;
 
         if (saveMessage.command === "saveATNState") {
@@ -218,7 +216,7 @@ export class ATNGraphProvider extends WebviewProvider {
         return false;
     }
 
-    protected updateContent(uri: Uri): boolean {
+    protected override updateContent(uri: Uri): boolean {
         const graphData = this.prepareRenderData(uri);
 
         this.sendMessage(uri, {

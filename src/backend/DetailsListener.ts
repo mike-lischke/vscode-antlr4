@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2016, 2021, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 // Need explicit any and any-spread for constructor functions.
@@ -29,7 +27,7 @@ import {
 
 import { SourceContext } from "./SourceContext";
 
-import { LiteralSymbol, BlockSymbol, Symbol, VariableSymbol } from "antlr4-c3";
+import { LiteralSymbol, BlockSymbol, BaseSymbol, VariableSymbol, SymbolConstructor } from "antlr4-c3";
 import { ParseTree, TerminalNode } from "antlr4ts/tree";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
 
@@ -51,7 +49,7 @@ const unquote = (input: string, quoteChar?: string): string => {
 };
 
 export class DetailsListener implements ANTLRv4ParserListener {
-    private symbolStack: Symbol[] = [];
+    private symbolStack: BaseSymbol[] = [];
 
     public constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
 
@@ -406,7 +404,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
         }
     };
 
-    private currentSymbol<T extends Symbol>(): T | undefined {
+    private currentSymbol<T extends BaseSymbol>(): T | undefined {
         if (this.symbolStack.length === 0) {
             return undefined;
         }
@@ -423,7 +421,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
      *
      * @returns The new symbol.
      */
-    private addNewSymbol<T extends Symbol>(type: new (...args: any[]) => T, context: ParseTree,
+    private addNewSymbol<T extends BaseSymbol>(type: new (...args: any[]) => T, context: ParseTree,
         ...args: any[]): T {
         const symbol = this.symbolTable.addNewSymbolOfType(type, this.currentSymbol(), ...args);
         symbol.context = context;
@@ -440,16 +438,16 @@ export class DetailsListener implements ANTLRv4ParserListener {
      *
      * @returns The new scoped symbol.
      */
-    private pushNewSymbol<T extends Symbol>(type: new (...args: any[]) => T, context: ParseTree,
-        ...args: any[]): Symbol {
-        const symbol = this.symbolTable.addNewSymbolOfType<T>(type, this.currentSymbol(), ...args);
+    private pushNewSymbol<T extends BaseSymbol, Args extends unknown[]>(type: SymbolConstructor<T, Args>,
+        context: ParseTree, ...args: Args): BaseSymbol {
+        const symbol = this.symbolTable.addNewSymbolOfType<T, Args>(type, this.currentSymbol(), ...args);
         symbol.context = context;
         this.symbolStack.push(symbol);
 
         return symbol;
     }
 
-    private popSymbol(): Symbol | undefined {
+    private popSymbol(): BaseSymbol | undefined {
         return this.symbolStack.pop();
     }
 }

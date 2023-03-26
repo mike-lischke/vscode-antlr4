@@ -1,10 +1,7 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2018, 2020, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-
 /* eslint-disable max-classes-per-file */
 
 import * as path from "path";
@@ -14,16 +11,16 @@ import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class ModeEntry extends TreeItem {
 
-    public iconPath = {
+    public override iconPath = {
         light: path.join(__dirname, "..", "..", "..", "misc", "mode-light.svg"),
         dark: path.join(__dirname, "..", "..", "..", "misc", "mode-dark.svg"),
     };
 
-    public contextValue = "lexerSymbols";
+    public override contextValue = "lexerSymbols";
 
     public constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
+        public override readonly label: string,
+        public override readonly collapsibleState: TreeItemCollapsibleState,
         command?: Command,
     ) {
         super(label, collapsibleState);
@@ -33,11 +30,11 @@ export class ModeEntry extends TreeItem {
 
 export class ModesProvider extends AntlrTreeDataProvider<ModeEntry> {
 
-    public getTreeItem(element: ModeEntry): TreeItem {
+    public override getTreeItem(element: ModeEntry): TreeItem {
         return element;
     }
 
-    public getChildren(element?: ModeEntry): ProviderResult<ModeEntry[]> {
+    public override getChildren(element?: ModeEntry): ProviderResult<ModeEntry[]> {
         if (!element) {
             let modes;
             if (this.currentFile) {

@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2018, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 /* eslint-disable max-classes-per-file */
@@ -14,16 +12,16 @@ import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
 
 export class ParserSymbol extends TreeItem {
 
-    public iconPath = {
+    public override iconPath = {
         light: path.join(__dirname, "..", "..", "..", "misc", "rule-light.svg"),
         dark: path.join(__dirname, "..", "..", "..", "misc", "rule-dark.svg"),
     };
 
-    public contextValue = "parserSymbols";
+    public override contextValue = "parserSymbols";
 
     public constructor(
-        public readonly label: string,
-        public readonly collapsibleState: TreeItemCollapsibleState,
+        public override readonly label: string,
+        public override readonly collapsibleState: TreeItemCollapsibleState,
         command?: Command,
     ) {
         super(label, collapsibleState);
@@ -34,7 +32,7 @@ export class ParserSymbol extends TreeItem {
 
 export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbol> {
 
-    public getChildren(element?: ParserSymbol): ProviderResult<ParserSymbol[]> {
+    public override getChildren(element?: ParserSymbol): ProviderResult<ParserSymbol[]> {
         return new Promise((resolve) => {
             if (!element) {
                 let rules: string[] | undefined;

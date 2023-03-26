@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2022, 2023, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import * as path from "path";
@@ -11,7 +9,7 @@ import * as fs from "fs-extra";
 import {
     window, DiagnosticSeverity, ExtensionContext, workspace, languages, commands, debug, Diagnostic, TextDocument,
     TextDocumentChangeEvent, TextEditor, TextEditorEdit, TextEditorRevealType, TextEditorSelectionChangeEvent,
-    Selection, Range,
+    Selection, Range, ViewColumn,
 } from "vscode";
 
 import {
@@ -263,7 +261,7 @@ export class ExtensionHost {
         // Helper commands.
         context.subscriptions.push(commands.registerCommand("antlr.openGrammar", (grammar: string) => {
             void workspace.openTextDocument(grammar).then((document) => {
-                return window.showTextDocument(document, 0, false);
+                return window.showTextDocument(document, ViewColumn.Active, false);
             });
         }));
 

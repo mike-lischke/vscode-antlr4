@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2016, 2023, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 // This file contains the handling for a single source file. It provides syntactic and semantic
@@ -24,7 +22,7 @@ import {
 import { ParseCancellationException, IntervalSet, Interval } from "antlr4ts/misc";
 import { ParseTreeWalker, TerminalNode, ParseTree } from "antlr4ts/tree";
 
-import { CodeCompletionCore, Symbol, LiteralSymbol } from "antlr4-c3";
+import { CodeCompletionCore, BaseSymbol, LiteralSymbol } from "antlr4-c3";
 
 import {
     ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, OptionsSpecContext, ModeSpecContext,
@@ -67,7 +65,7 @@ import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types";
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
     private static globalSymbols = new ContextSymbolTable("Global Symbols", { allowDuplicateSymbols: false });
-    private static symbolToKindMap: Map<new () => Symbol, SymbolKind> = new Map([
+    private static symbolToKindMap: Map<new () => BaseSymbol, SymbolKind> = new Map([
         [GlobalNamedActionSymbol, SymbolKind.GlobalNamedAction],
         [LocalNamedActionSymbol, SymbolKind.LocalNamedAction],
         [ImportSymbol, SymbolKind.Import],
@@ -172,12 +170,12 @@ export class SourceContext {
         return false;
     }
 
-    public static getKindFromSymbol(symbol: Symbol): SymbolKind {
+    public static getKindFromSymbol(symbol: BaseSymbol): SymbolKind {
         if (symbol.name === "tokenVocab") {
             return SymbolKind.TokenVocab;
         }
 
-        return this.symbolToKindMap.get(symbol.constructor as typeof Symbol) || SymbolKind.Unknown;
+        return this.symbolToKindMap.get(symbol.constructor as typeof BaseSymbol) || SymbolKind.Unknown;
     }
 
     /**
@@ -598,7 +596,7 @@ export class SourceContext {
             }
         });
 
-        const promises: Array<Promise<Symbol[] | undefined>> = [];
+        const promises: Array<Promise<BaseSymbol[] | undefined>> = [];
         candidates.rules.forEach((candidateRule, key) => {
             switch (key) {
                 case ANTLRv4Parser.RULE_argActionBlock: {
@@ -846,7 +844,7 @@ export class SourceContext {
         this.runSemanticAnalysisIfNeeded();
 
         const result = new Map<string, IReferenceNode>();
-        for (const symbol of this.symbolTable.getAllSymbolsSync(Symbol, false)) {
+        for (const symbol of this.symbolTable.getAllSymbolsSync(BaseSymbol, false)) {
             if (symbol instanceof RuleSymbol
                 || symbol instanceof TokenSymbol
                 || symbol instanceof FragmentTokenSymbol) {
@@ -960,14 +958,14 @@ export class SourceContext {
         return result;
     }
 
-    public async getAllSymbols(recursive: boolean): Promise<Symbol[]> {
+    public async getAllSymbols(recursive: boolean): Promise<BaseSymbol[]> {
         // The symbol table returns symbols of itself and those it depends on (if recursive is true).
-        const result = await this.symbolTable.getAllSymbols(Symbol, !recursive);
+        const result = await this.symbolTable.getAllSymbols(BaseSymbol, !recursive);
 
         // Add also symbols from contexts referencing us, this time not recursive
         // as we have added our content already.
         for (const reference of this.references) {
-            const symbols = await reference.symbolTable.getAllSymbols(Symbol, true);
+            const symbols = await reference.symbolTable.getAllSymbols(BaseSymbol, true);
             symbols.forEach((value) => {
                 result.push(value);
             });
@@ -1545,11 +1543,11 @@ export class SourceContext {
         return errors;
     }
 
-    public getSymbolInfo(symbol: string | Symbol): ISymbolInfo | undefined {
+    public getSymbolInfo(symbol: string | BaseSymbol): ISymbolInfo | undefined {
         return this.symbolTable.getSymbolInfo(symbol);
     }
 
-    public resolveSymbol(symbolName: string): Symbol | undefined {
+    public resolveSymbol(symbolName: string): BaseSymbol | undefined {
         return this.symbolTable.resolveSync(symbolName, false);
     }
 

@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2017, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 // Have to disable these rules here for the await-notify functionality.
@@ -92,11 +90,11 @@ export class AntlrDebugSession extends DebugSession {
         }
     }
 
-    public shutdown(): void {
+    public override shutdown(): void {
         // Nothing to do for now.
     }
 
-    protected initializeRequest(response: DebugProtocol.InitializeResponse,
+    protected override initializeRequest(response: DebugProtocol.InitializeResponse,
         _args: DebugProtocol.InitializeRequestArguments): void {
 
         response.body = {
@@ -108,14 +106,14 @@ export class AntlrDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse,
+    protected override configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse,
         args: DebugProtocol.ConfigurationDoneArguments): void {
 
         super.configurationDoneRequest(response, args);
         this.configurationDone.notify();
     }
 
-    protected launchRequest(response: DebugProtocol.LaunchResponse, args: ILaunchRequestArguments): void {
+    protected override launchRequest(response: DebugProtocol.LaunchResponse, args: ILaunchRequestArguments): void {
         if (!args.input) {
             this.sendErrorResponse(response, {
                 id: 1,
@@ -237,7 +235,7 @@ export class AntlrDebugSession extends DebugSession {
         });
     }
 
-    protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse,
+    protected override setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse,
         args: DebugProtocol.SetBreakpointsArguments): void {
         this.debugger!.clearBreakPoints();
         if (args.breakpoints && args.source.path) {
@@ -258,7 +256,7 @@ export class AntlrDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
+    protected override threadsRequest(response: DebugProtocol.ThreadsResponse): void {
         // We have no threads, so return a dummy entry.
         response.body = {
             threads: [
@@ -268,7 +266,7 @@ export class AntlrDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    protected stackTraceRequest(response: DebugProtocol.StackTraceResponse,
+    protected override stackTraceRequest(response: DebugProtocol.StackTraceResponse,
         args: DebugProtocol.StackTraceArguments): void {
 
         if (!this.debugger) {
@@ -329,7 +327,8 @@ export class AntlrDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
+    protected override scopesRequest(response: DebugProtocol.ScopesResponse,
+        args: DebugProtocol.ScopesArguments): void {
         // Cache a few values that stay the same during a single request for scopes and variables.
         if (this.debugger) {
             this.tokens = this.debugger.tokenList;
@@ -348,7 +347,7 @@ export class AntlrDebugSession extends DebugSession {
         }
     }
 
-    protected variablesRequest(response: DebugProtocol.VariablesResponse,
+    protected override variablesRequest(response: DebugProtocol.VariablesResponse,
         args: DebugProtocol.VariablesArguments): void {
         const variables: DebugProtocol.Variable[] = [];
 
@@ -480,35 +479,35 @@ export class AntlrDebugSession extends DebugSession {
         this.sendResponse(response);
     }
 
-    protected pauseRequest(response: DebugProtocol.PauseResponse, _args: DebugProtocol.PauseArguments): void {
+    protected override pauseRequest(response: DebugProtocol.PauseResponse, _args: DebugProtocol.PauseArguments): void {
         this.debugger?.pause();
         this.sendResponse(response);
     }
 
-    protected continueRequest(response: DebugProtocol.ContinueResponse, _args: DebugProtocol.ContinueArguments): void {
+    protected override continueRequest(response: DebugProtocol.ContinueResponse): void {
         this.debugger?.continue();
         this.sendResponse(response);
     }
 
-    protected nextRequest(response: DebugProtocol.NextResponse, _args: DebugProtocol.NextArguments): void {
+    protected override nextRequest(response: DebugProtocol.NextResponse): void {
         this.debugger?.stepOver();
         this.sendResponse(response);
 
     }
 
-    protected stepInRequest(response: DebugProtocol.StepInResponse, _args: DebugProtocol.StepInArguments): void {
+    protected override stepInRequest(response: DebugProtocol.StepInResponse): void {
         this.debugger?.stepIn();
         this.sendResponse(response);
 
     }
 
-    protected stepOutRequest(response: DebugProtocol.StepOutResponse, _args: DebugProtocol.StepOutArguments): void {
+    protected override stepOutRequest(response: DebugProtocol.StepOutResponse): void {
         this.debugger?.stepOut();
         this.sendResponse(response);
 
     }
 
-    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, _args: DebugProtocol.EvaluateArguments): void {
+    protected override evaluateRequest(response: DebugProtocol.EvaluateResponse): void {
         response.body = {
             result: "evaluation not supported",
             variablesReference: 0,

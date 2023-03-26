@@ -11,9 +11,9 @@ import { Interval } from "antlr4ts/misc";
 import { ANTLRv4Lexer } from "./ANTLRv4Lexer";
 
 export abstract class LexerAdaptor extends Lexer {
-    private currentRuleType : number = Token.INVALID_TYPE;
+    private currentRuleType: number = Token.INVALID_TYPE;
 
-    public emit(): Token {
+    public override emit(): Token {
         if (this.type === ANTLRv4Lexer.ID) {
             const firstChar = this.inputStream.getText(
                 new Interval(this._tokenStartCharIndex, this._tokenStartCharIndex),

@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2020, 2022 Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import { ANTLRErrorListener, Recognizer, RecognitionException } from "antlr4ts";
@@ -36,4 +34,3 @@ export class ContextLexerErrorListener implements ANTLRErrorListener<number> {
         this.errorList.push(error);
     }
 }
-

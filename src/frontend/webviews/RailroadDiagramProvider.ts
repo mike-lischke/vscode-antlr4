@@ -1,8 +1,6 @@
 /*
- * This file is released under the MIT license.
- * Copyright (c) 2017, 2022, Mike Lischke
- *
- * See LICENSE file for more info.
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
 import { basename, extname } from "path";
@@ -15,7 +13,7 @@ import { FrontendUtils } from "../FrontendUtils";
 
 export class RailroadDiagramProvider extends WebviewProvider {
 
-    public generateContent(webview: Webview, uri: Uri, options: IWebviewShowOptions): string {
+    public override generateContent(webview: Webview, uri: Uri, options: IWebviewShowOptions): string {
         const fileName = uri.fsPath;
         const baseName = basename(fileName, extname(fileName));
 
@@ -114,7 +112,7 @@ export class RailroadDiagramProvider extends WebviewProvider {
      * @param editor The editor that holds a grammar.
      * @param forced If true update regardless of the selected rule (e.g. when new ATN data was generated).
      */
-    public update(editor: TextEditor, forced = false): void {
+    public override update(editor: TextEditor, forced = false): void {
         // Keep track of the currently selected rule in the given editor and trigger a visual update
         // if the ATN graph is currently visible.
         const caret = editor.selection.active;

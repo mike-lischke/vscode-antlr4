@@ -1,12 +1,12 @@
 /*
- * Parts of this file not copied from the original ATNDeserializer.ts file are released under the MIT license.
+/*
+ * Copyright (c) Mike Lischke. All rights reserved.
  *
- * Copyright (c) 2016, 2022, Mike Lischke
+ * Parts of this file not copied from the original ATNDeserializer.ts file are released under the MIT license.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
  *
  * All copied parts are released under the BSD-3-Clause.
  * Copyright 2016 The ANTLR Project. All rights reserved.
- *
- * See LICENSE file for more info.
  */
 
 /* spell-checker: disable */
@@ -89,7 +89,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
      * serialized ATN at or after the feature identified by `feature` was
      * introduced; otherwise, `false`.
      */
-    public static isFeatureSupported(feature: UUID, actualUuid: UUID): boolean {
+    public static override isFeatureSupported(feature: UUID, actualUuid: UUID): boolean {
         const featureIndex = CompatibleATNDeserializer.SUPPORTED_UUIDS2.findIndex((e) => { return e.equals(feature); });
         if (featureIndex < 0) {
             return false;
@@ -480,7 +480,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         return true;
     }
 
-    public deserialize(@NotNull data: Uint16Array): ATN {
+    public override deserialize(@NotNull data: Uint16Array): ATN {
         // Each Uint16 value in data is shifted by +2 at the entry to this method. This is an encoding optimization
         // targeting the serialized values 0 and -1 (serialized to 0xFFFF), each of which are very common in the
         // serialized form of the ATN. In the modified UTF-8 that Java uses for compiled string literals, these two
@@ -674,7 +674,7 @@ export class CompatibleATNDeserializer extends ATNDeserializer {
         }
 
         // edges for rule stop states can be derived, so they aren't serialized
-        interface T { stopState: number; returnState: number; outermostPrecedenceReturn: number }
+        interface T { stopState: number; returnState: number; outermostPrecedenceReturn: number; }
         const returnTransitionsSet = new Array2DHashSet<T>({
             hashCode: (o: T) => { return o.stopState ^ o.returnState ^ o.outermostPrecedenceReturn; },
 

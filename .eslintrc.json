@@ -618,9 +618,23 @@
                 ]
             },
             {
-                "selector": "enumMember",
+                "selector": [
+                    "enumMember"
+                ],
                 "format": [
                     "PascalCase"
+                ]
+            },
+            {
+                "selector": [
+                    "classProperty"
+                ],
+                "modifiers": [
+                    "static"
+                ],
+                "format": [
+                    "PascalCase",
+                    "camelCase"
                 ]
             },
             {
