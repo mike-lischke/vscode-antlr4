@@ -378,23 +378,28 @@
         "commands": [
             {
                 "command": "antlr.atn.singleRule",
-                "title": "Show ATN Graph for Rule"
+                "title": "Show ATN Graph for Rule",
+                "category": "ANTLR"
             },
             {
                 "command": "antlr.rrd.singleRule",
-                "title": "Show Railroad Diagram for Rule"
+                "title": "Show Railroad Diagram for Rule",
+                "category": "ANTLR"
             },
             {
                 "command": "antlr.rrd.allRules",
-                "title": "Show Railroad Diagram for All Rules"
+                "title": "Show Railroad Diagram for All Rules",
+                "category": "ANTLR"
             },
             {
                 "command": "antlr.call-graph",
-                "title": "Show Grammar Call Graph"
+                "title": "Show Grammar Call Graph",
+                "category": "ANTLR"
             },
             {
                 "command": "antlr.tools.generateSentences",
-                "title": "Generate Valid Input for Rule"
+                "title": "Generate Valid Input for Rule",
+                "category": "ANTLR"
             }
         ],
         "menus": {
