@@ -6,9 +6,9 @@ import {
     TextDocument, CancellationToken, Range, Location, Uri, SymbolInformation, DocumentSymbolProvider, ProviderResult,
 } from "vscode";
 
-import { AntlrFacade } from "../backend/facade";
-import { SymbolKind } from "../backend/types";
-import { symbolDescriptionFromEnum, translateSymbolKind } from "./Symbol";
+import { AntlrFacade } from "../backend/facade.js";
+import { SymbolKind } from "../backend/types.js";
+import { symbolDescriptionFromEnum, translateSymbolKind } from "./Symbol.js";
 
 export class AntlrSymbolProvider implements DocumentSymbolProvider {
     public constructor(private backend: AntlrFacade) { }

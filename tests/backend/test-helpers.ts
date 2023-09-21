@@ -10,7 +10,7 @@ import fs from "fs";
  */
 export const createAlignmentGrammar = (): void => {
     let grammar = "grammar alignment;\n\n// $antlr-format reset, columnLimit 200\n";
-    const template = fs.readFileSync("test/backend/formatting/alignment-template.g4", { encoding: "utf8" });
+    const template = fs.readFileSync("tests/backend/formatting/alignment-template.g4", { encoding: "utf8" });
     const sections = template.split("\n");
 
     // For each section create 100 rules with some random parts.
@@ -104,7 +104,7 @@ export const createAlignmentGrammar = (): void => {
         }
     }
 
-    fs.writeFileSync("test/backend/formatting/alignment.g4", grammar, "utf8");
+    fs.writeFileSync("tests/backend/formatting/alignment.g4", grammar, "utf8");
 };
 
 /**

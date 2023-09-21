@@ -3,19 +3,18 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { ANTLRErrorListener, Recognizer, RecognitionException } from "antlr4ts";
+import { BaseErrorListener, Recognizer, RecognitionException, LexerATNSimulator, Token } from "antlr4ng";
 
-import { Override } from "antlr4ts/Decorators";
-import { IDiagnosticEntry, DiagnosticType } from "./types";
+import { IDiagnosticEntry, DiagnosticType } from "./types.js";
 
-export class ContextLexerErrorListener implements ANTLRErrorListener<number> {
+export class ContextLexerErrorListener extends BaseErrorListener<LexerATNSimulator> {
     public constructor(private errorList: IDiagnosticEntry[]) {
+        super();
     }
 
-    @Override
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public syntaxError<T extends number>(recognizer: Recognizer<T, any>, offendingSymbol: T | undefined, line: number,
-        charPositionInLine: number, msg: string, _e: RecognitionException | undefined): void {
+    public override syntaxError<T extends Token>(recognizer: Recognizer<LexerATNSimulator>, offendingSymbol: T | null,
+        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | null): void {
         const error: IDiagnosticEntry = {
             type: DiagnosticType.Error,
             message: msg,

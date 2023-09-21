@@ -3,28 +3,30 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { IDiagnosticEntry, DiagnosticType, SymbolGroupKind } from "./types";
-import { ContextSymbolTable } from "./ContextSymbolTable";
-import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener";
+import { Token, ParserRuleContext, TerminalNode } from "antlr4ng";
+
+import { IDiagnosticEntry, DiagnosticType, SymbolGroupKind } from "./types.js";
+import { ContextSymbolTable } from "./ContextSymbolTable.js";
+import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 import {
     TerminalRuleContext, RulerefContext, SetElementContext, LexerCommandContext, LexerRuleSpecContext,
     ParserRuleSpecContext,
-} from "../parser/ANTLRv4Parser";
+} from "../parser/ANTLRv4Parser.js";
 
-import { Token, ParserRuleContext } from "antlr4ts";
-import { TerminalNode } from "antlr4ts/tree";
 
-export class SemanticListener implements ANTLRv4ParserListener {
+export class SemanticListener extends ANTLRv4ParserListener {
 
     private seenSymbols = new Map<string, Token>();
 
-    public constructor(private diagnostics: IDiagnosticEntry[], private symbolTable: ContextSymbolTable) { }
+    public constructor(private diagnostics: IDiagnosticEntry[], private symbolTable: ContextSymbolTable) {
+        super();
+    }
 
     // Check references to other lexer tokens.
-    public exitTerminalRule = (ctx: TerminalRuleContext): void => {
+    public override exitTerminalRule = (ctx: TerminalRuleContext): void => {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
-            const symbol = tokenRef.text;
+            const symbol = tokenRef.getText();
             this.checkSymbolExistence(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference",
                 tokenRef.symbol);
             this.symbolTable.incrementSymbolRefCount(symbol);
@@ -32,20 +34,20 @@ export class SemanticListener implements ANTLRv4ParserListener {
     };
 
     // Check references to other parser rules.
-    public exitRuleref = (ctx: RulerefContext): void => {
+    public override exitRuleref = (ctx: RulerefContext): void => {
         const ruleRef = ctx.RULE_REF();
         if (ruleRef) {
-            const symbol = ruleRef.text;
+            const symbol = ruleRef.getText();
             this.checkSymbolExistence(true, SymbolGroupKind.RuleRef, symbol, "Unknown parser rule", ruleRef.symbol);
             this.symbolTable.incrementSymbolRefCount(symbol);
         }
     };
 
     // Check references to other lexer tokens.
-    public exitSetElement = (ctx: SetElementContext): void => {
+    public override exitSetElement = (ctx: SetElementContext): void => {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
-            const symbol = tokenRef.text;
+            const symbol = tokenRef.getText();
             this.checkSymbolExistence(true, SymbolGroupKind.TokenRef, symbol, "Unknown token reference",
                 tokenRef.symbol);
             this.symbolTable.incrementSymbolRefCount(symbol);
@@ -53,11 +55,11 @@ export class SemanticListener implements ANTLRv4ParserListener {
     };
 
     // Check references to modes + channels in lexer actions.
-    public exitLexerCommand = (ctx: LexerCommandContext): void => {
+    public override exitLexerCommand = (ctx: LexerCommandContext): void => {
         const lexerCommandExpr = ctx.lexerCommandExpr();
         const lexerCommandExprId = lexerCommandExpr ? lexerCommandExpr.identifier() : undefined;
         if (lexerCommandExprId) {
-            let name = ctx.lexerCommandName().text;
+            let name = ctx.lexerCommandName().getText();
             let kind = SymbolGroupKind.TokenRef;
 
             const value = name.toLowerCase();
@@ -67,16 +69,16 @@ export class SemanticListener implements ANTLRv4ParserListener {
             } else if (value === "channel") {
                 kind = SymbolGroupKind.TokenChannel;
             }
-            const symbol = lexerCommandExprId.text;
-            this.checkSymbolExistence(true, kind, symbol, "Unknown " + name, lexerCommandExprId.start);
+            const symbol = lexerCommandExprId.getText();
+            this.checkSymbolExistence(true, kind, symbol, "Unknown " + name, lexerCommandExprId.start!);
             this.symbolTable.incrementSymbolRefCount(symbol);
         }
     };
 
     // Check definition of a lexer token.
-    public exitLexerRuleSpec = (ctx: LexerRuleSpecContext): void => {
-        const tokenRef = ctx.TOKEN_REF();
-        const name = tokenRef.text;
+    public override exitLexerRuleSpec = (ctx: LexerRuleSpecContext): void => {
+        const tokenRef = ctx.TOKEN_REF()!;
+        const name = tokenRef.getText();
 
         // The symbol table already contains an entry for this symbol. So we can only partially use that
         // for duplicate checks. `seenSymbols` tracks occurrences for symbols in the main symbol table.
@@ -91,10 +93,10 @@ export class SemanticListener implements ANTLRv4ParserListener {
     };
 
     // Check definition of a parser rule.
-    public exitParserRuleSpec = (ctx: ParserRuleSpecContext): void => {
+    public override exitParserRuleSpec = (ctx: ParserRuleSpecContext): void => {
         // Same processing here as for lexer rules.
-        const ruleRef = ctx.RULE_REF();
-        const name = ruleRef.text;
+        const ruleRef = ctx.RULE_REF()!;
+        const name = ruleRef.getText();
         const seenSymbol = this.seenSymbols.get(name);
         if (seenSymbol) {
             this.reportDuplicateSymbol(name, ruleRef.symbol, seenSymbol);
@@ -104,7 +106,7 @@ export class SemanticListener implements ANTLRv4ParserListener {
         }
     };
 
-    public visitTerminal = (_node: TerminalNode): void => {
+    public override visitTerminal = (_node: TerminalNode): void => {
         // Nothing to do here.
     };
 
@@ -116,12 +118,12 @@ export class SemanticListener implements ANTLRv4ParserListener {
                 message: message + " '" + symbol + "'",
                 range: {
                     start: {
-                        column: offendingToken.charPositionInLine,
+                        column: offendingToken.column,
                         row: offendingToken.line,
                     },
                     end: {
-                        column: offendingToken.charPositionInLine + offendingToken.stopIndex -
-                            offendingToken.startIndex + 1,
+                        column: offendingToken.column + offendingToken.stop -
+                            offendingToken.start + 1,
                         row: offendingToken.line,
                     },
                 },
@@ -136,12 +138,12 @@ export class SemanticListener implements ANTLRv4ParserListener {
             message: "Duplicate symbol '" + symbol + "'",
             range: {
                 start: {
-                    column: offendingToken.charPositionInLine,
+                    column: offendingToken.column,
                     row: offendingToken.line,
                 },
                 end: {
-                    column: offendingToken.charPositionInLine + offendingToken.stopIndex -
-                        offendingToken.startIndex + 1,
+                    column: offendingToken.column + offendingToken.stop -
+                        offendingToken.start + 1,
                     row: offendingToken.line,
                 },
             },
@@ -155,13 +157,13 @@ export class SemanticListener implements ANTLRv4ParserListener {
         const symbol = await this.symbolTable.resolve(name);
         if (symbol) {
             if (symbol.root !== this.symbolTable) {
-                let start;
+                let start: Token | null = null;
                 if (symbol.context instanceof ParserRuleContext) {
                     start = symbol.context.start;
                 } else if (symbol.context instanceof TerminalNode) {
                     start = symbol.context.symbol;
                 }
-                this.reportDuplicateSymbol(name, ruleRef.symbol, start);
+                this.reportDuplicateSymbol(name, ruleRef.symbol, start ?? undefined);
             }
         }
 

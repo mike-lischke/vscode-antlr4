@@ -4,21 +4,22 @@
  */
 
 import * as fs from "fs";
+import * as path from "path";
 
-import { AntlrFacade } from "../../src/backend/facade";
+import { AntlrFacade } from "../../src/backend/facade.js";
 
 describe("ATN Tests", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
-    jest.setTimeout(30000);
 
     it("ATN Rule Graph, split grammar", async () => {
         // Need code generation here. Details will be tested later. The ATN retrieval will fail
         // anyway when generation fails.
         const files = await backend.generate("grammars/ANTLRv4Parser.g4", {
             outputDir: "generated-atn",
-            language: "Typescript",
-            alternativeJar: "antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar",
+            language: "TypeScript",
+            alternativeJar: path.join(process.cwd(), "node_modules/antlr4ng/cli/antlr4-4.13.2-SNAPSHOT-complete.jar"),
         });
+
         files.forEach((file) => {
             const diagnostics = backend.getDiagnostics(file);
             if (diagnostics.length > 0) {

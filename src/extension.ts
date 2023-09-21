@@ -4,7 +4,7 @@
  */
 
 import { ExtensionContext } from "vscode";
-import { ExtensionHost } from "./ExtensionHost";
+import { ExtensionHost } from "./ExtensionHost.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let extensionHost: ExtensionHost;

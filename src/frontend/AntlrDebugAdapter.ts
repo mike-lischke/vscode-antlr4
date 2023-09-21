@@ -18,11 +18,12 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Subject } from "await-notify";
 
-import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger";
-import { ParseTreeProvider } from "./webviews/ParseTreeProvider";
-import { AntlrFacade } from "../backend/facade";
-import { CommonToken } from "antlr4ts";
-import { IParseTreeNode } from "../backend/types";
+import { CommonToken } from "antlr4ng";
+
+import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger.js";
+import { ParseTreeProvider } from "./webviews/ParseTreeProvider.js";
+import { AntlrFacade } from "../backend/facade.js";
+import { IParseTreeNode } from "../backend/types.js";
 
 /**
  * Interface that reflects the arguments as specified in package.json.
@@ -45,7 +46,7 @@ export interface IDebuggerConsumer {
     debuggerStopped(uri: Uri): void; // Called after each stop of the debugger (step, pause, breakpoint).
 }
 
-enum VarRef {
+const enum VarRef {
     Globals = 1000,
     ParseTree = 1002,
     Context = 2000,
@@ -237,22 +238,25 @@ export class AntlrDebugSession extends DebugSession {
 
     protected override setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse,
         args: DebugProtocol.SetBreakpointsArguments): void {
-        this.debugger!.clearBreakPoints();
-        if (args.breakpoints && args.source.path) {
-            const actualBreakpoints = args.breakpoints.map((sourceBreakPoint) => {
-                const { validated, line, id } = this.debugger!.addBreakPoint(args.source.path!,
-                    this.convertDebuggerLineToClient(sourceBreakPoint.line));
-                const targetBreakPoint = <DebugProtocol.Breakpoint>new Breakpoint(validated,
-                    this.convertClientLineToDebugger(line));
-                targetBreakPoint.id = id;
+        if (this.debugger) {
+            this.debugger.clearBreakPoints();
+            if (args.breakpoints && args.source.path) {
+                const actualBreakpoints = args.breakpoints.map((sourceBreakPoint) => {
+                    const { validated, line, id } = this.debugger!.addBreakPoint(args.source.path!,
+                        this.convertDebuggerLineToClient(sourceBreakPoint.line));
+                    const targetBreakPoint = <DebugProtocol.Breakpoint>new Breakpoint(validated,
+                        this.convertClientLineToDebugger(line));
+                    targetBreakPoint.id = id;
 
-                return targetBreakPoint;
-            });
+                    return targetBreakPoint;
+                });
 
-            response.body = {
-                breakpoints: actualBreakpoints,
-            };
+                response.body = {
+                    breakpoints: actualBreakpoints,
+                };
+            }
         }
+
         this.sendResponse(response);
     }
 
@@ -388,13 +392,13 @@ export class AntlrDebugSession extends DebugSession {
             }
 
             case VarRef.Tokens: {
-                if (this.tokens) {
-                    const start = this.debugger!.currentTokenIndex + (args.start ? args.start : 0);
+                if (this.tokens && this.debugger) {
+                    const start = this.debugger.currentTokenIndex + (args.start ? args.start : 0);
                     const length = args.count ? args.count : this.tokens.length;
                     for (let i = 0; i < length; ++i) {
                         const index = start + i;
                         variables.push({
-                            name: `${index}: ${this.debugger!.tokenTypeName(this.tokens[index])}`,
+                            name: `${index}: ${this.debugger.tokenTypeName(this.tokens[index])}`,
                             type: "Token",
                             value: "",
                             variablesReference: VarRef.Tokens + index,
@@ -435,7 +439,7 @@ export class AntlrDebugSession extends DebugSession {
                         variables.push({
                             name: "offset",
                             type: "number",
-                            value: String(token.charPositionInLine),
+                            value: String(token.column),
                             variablesReference: 0,
                         });
 
@@ -456,14 +460,14 @@ export class AntlrDebugSession extends DebugSession {
                         variables.push({
                             name: "startIndex",
                             type: "number",
-                            value: String(token.startIndex),
+                            value: String(token.start),
                             variablesReference: 0,
                         });
 
                         variables.push({
                             name: "stopIndex",
                             type: "number",
-                            value: String(token.stopIndex),
+                            value: String(token.stop),
                             variablesReference: 0,
                         });
 
@@ -620,7 +624,7 @@ export class AntlrDebugSession extends DebugSession {
         let result = " ".repeat(level);
         switch (node.type) {
             case "rule": {
-                const name = this.debugger!.ruleNameFromIndex(node.ruleIndex!);
+                const name = this.debugger?.ruleNameFromIndex(node.ruleIndex!);
                 result += name ? name : "<unknown rule>";
 
                 if (node.children.length > 0) {

@@ -10,9 +10,9 @@ import {
     window,
 } from "vscode";
 
-import { AntlrFacade } from "./backend/facade";
-import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter";
-import { ParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
+import { AntlrFacade } from "./backend/facade.js";
+import { AntlrDebugSession } from "./frontend/AntlrDebugAdapter.js";
+import { ParseTreeProvider } from "./frontend/webviews/ParseTreeProvider.js";
 
 /**
  * Validates launch configuration for grammar debugging.

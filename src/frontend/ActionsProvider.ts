@@ -8,9 +8,10 @@
 import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, TextEditor, TreeView, ProviderResult } from "vscode";
-import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
-import { ILexicalRange, CodeActionType } from "../backend/types";
-import { FrontendUtils, IRangeHolder } from "./FrontendUtils";
+
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
+import { ILexicalRange, CodeActionType } from "../backend/types.js";
+import { FrontendUtils, IRangeHolder } from "./FrontendUtils.js";
 
 export class RootEntry extends TreeItem {
 

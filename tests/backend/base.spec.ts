@@ -3,12 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { AntlrFacade } from "../../src/backend/facade";
-import { SourceContext } from "../../src/backend/SourceContext";
+import { AntlrFacade } from "../../src/backend/facade.js";
+import { SourceContext } from "../../src/backend/SourceContext.js";
 
 describe("Base Handling", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
-    jest.setTimeout(30000);
 
     it("Create Backend", () => {
         expect(1).toBe(1);
@@ -22,20 +21,20 @@ describe("Base Handling", () => {
 
     let c1: SourceContext;
     it("Load Grammar", () => {
-        c1 = backend.loadGrammar("test/backend/t.g4");
+        c1 = backend.loadGrammar("tests/backend/t.g4");
         expect(c1).toBeInstanceOf(SourceContext);
     });
 
     it("Unload grammar", () => {
-        backend.releaseGrammar("test/backend/t.g4");
-        let context = backend.loadGrammar("test/backend/t.g"); // Non-existing grammar.
+        backend.releaseGrammar("tests/backend/t.g4");
+        let context = backend.loadGrammar("tests/backend/t.g"); // Non-existing grammar.
         expect(context).toBeInstanceOf(SourceContext);
         expect(context).not.toEqual(c1);
 
-        backend.releaseGrammar("test/backend/t.g");
-        c1 = backend.loadGrammar("test/backend/t.g4");
-        context = backend.loadGrammar("test/backend/t.g4");
+        backend.releaseGrammar("tests/backend/t.g");
+        c1 = backend.loadGrammar("tests/backend/t.g4");
+        context = backend.loadGrammar("tests/backend/t.g4");
         expect(context).toEqual(c1);
-        backend.releaseGrammar("test/backend/t.g4");
+        backend.releaseGrammar("tests/backend/t.g4");
     });
 });

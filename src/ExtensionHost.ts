@@ -14,31 +14,31 @@ import {
 
 import {
     AntlrFacade,
-} from "./backend/facade";
-import { DiagnosticType, IGenerationOptions, ILexicalRange, ISentenceGenerationOptions } from "./backend/types";
-import { FrontendUtils } from "./frontend/FrontendUtils";
-import { ProgressIndicator } from "./frontend/ProgressIndicator";
-import { AntlrDebugConfigurationProvider } from "./AntlrDebugConfigurationProvider";
-import { ActionsProvider } from "./frontend/ActionsProvider";
+} from "./backend/facade.js";
+import { DiagnosticType, IGenerationOptions, ILexicalRange, ISentenceGenerationOptions } from "./backend/types.js";
+import { FrontendUtils } from "./frontend/FrontendUtils.js";
+import { ProgressIndicator } from "./frontend/ProgressIndicator.js";
+import { AntlrDebugConfigurationProvider } from "./AntlrDebugConfigurationProvider.js";
+import { ActionsProvider } from "./frontend/ActionsProvider.js";
 
-import { ATNGraphProvider } from "./frontend/webviews/ATNGraphProvider";
-import { CallGraphProvider } from "./frontend/webviews/CallGraphProvider";
-import { RailroadDiagramProvider } from "./frontend/webviews/RailroadDiagramProvider";
-import { ParseTreeProvider } from "./frontend/webviews/ParseTreeProvider";
+import { ATNGraphProvider } from "./frontend/webviews/ATNGraphProvider.js";
+import { CallGraphProvider } from "./frontend/webviews/CallGraphProvider.js";
+import { RailroadDiagramProvider } from "./frontend/webviews/RailroadDiagramProvider.js";
+import { ParseTreeProvider } from "./frontend/webviews/ParseTreeProvider.js";
 
-import { ChannelsProvider } from "./frontend/ChannelsProvider";
-import { AntlrCodeLensProvider } from "./frontend/CodeLensProvider";
-import { AntlrCompletionItemProvider } from "./frontend/CompletionItemProvider";
-import { AntlrDefinitionProvider } from "./frontend/DefinitionProvider";
-import { AntlrFormattingProvider } from "./frontend/FormattingProvider";
-import { AntlrHoverProvider } from "./frontend/HoverProvider";
-import { ImportsProvider } from "./frontend/ImportsProvider";
-import { LexerSymbolsProvider } from "./frontend/LexerSymbolsProvider";
-import { ModesProvider } from "./frontend/ModesProvider";
-import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider";
-import { AntlrReferenceProvider } from "./frontend/ReferenceProvider";
-import { AntlrRenameProvider } from "./frontend/RenameProvider";
-import { AntlrSymbolProvider } from "./frontend/SymbolProvider";
+import { ChannelsProvider } from "./frontend/ChannelsProvider.js";
+import { AntlrCodeLensProvider } from "./frontend/CodeLensProvider.js";
+import { AntlrCompletionItemProvider } from "./frontend/CompletionItemProvider.js";
+import { AntlrDefinitionProvider } from "./frontend/DefinitionProvider.js";
+import { AntlrFormattingProvider } from "./frontend/FormattingProvider.js";
+import { AntlrHoverProvider } from "./frontend/HoverProvider.js";
+import { ImportsProvider } from "./frontend/ImportsProvider.js";
+import { LexerSymbolsProvider } from "./frontend/LexerSymbolsProvider.js";
+import { ModesProvider } from "./frontend/ModesProvider.js";
+import { ParserSymbolsProvider } from "./frontend/ParserSymbolsProvider.js";
+import { AntlrReferenceProvider } from "./frontend/ReferenceProvider.js";
+import { AntlrRenameProvider } from "./frontend/RenameProvider.js";
+import { AntlrSymbolProvider } from "./frontend/SymbolProvider.js";
 
 const errorOutputChannel = window.createOutputChannel("ANTLR4 Errors");
 

@@ -3,8 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { ParserRuleContext } from "antlr4ts";
-import { ParseTree, TerminalNode } from "antlr4ts/tree";
+import { ParseTree, ParserRuleContext, TerminalNode } from "antlr4ng";
 
 export class BackendUtils {
     /**
@@ -16,32 +15,34 @@ export class BackendUtils {
      *
      * @returns The parse tree which covers the given position or undefined if none could be found.
      */
-    public static parseTreeFromPosition = (root: ParseTree, column: number, row: number): ParseTree | undefined => {
+    public static parseTreeFromPosition = (root: ParseTree, column: number, row: number): ParseTree | null => {
         // Does the root node actually contain the position? If not we don't need to look further.
         if (root instanceof TerminalNode) {
             const terminal = (root);
             const token = terminal.symbol;
-            if (token.line !== row) { return undefined; }
+            if (token.line !== row) {
+                return null;
+            }
 
-            const tokenStop = token.charPositionInLine + (token.stopIndex - token.startIndex + 1);
-            if (token.charPositionInLine <= column && tokenStop >= column) {
+            const tokenStop = token.column + (token.stop - token.start + 1);
+            if (token.column <= column && tokenStop >= column) {
                 return terminal;
             }
 
-            return undefined;
+            return null;
         } else {
             const context = (root as ParserRuleContext);
             if (!context.start || !context.stop) { // Invalid tree?
-                return undefined;
+                return null;
             }
 
-            if (context.start.line > row || (context.start.line === row && column < context.start.charPositionInLine)) {
-                return undefined;
+            if (context.start.line > row || (context.start.line === row && column < context.start.column)) {
+                return null;
             }
 
-            const tokenStop = context.stop.charPositionInLine + (context.stop.stopIndex - context.stop.startIndex + 1);
+            const tokenStop = context.stop.column + (context.stop.stop - context.stop.start + 1);
             if (context.stop.line < row || (context.stop.line === row && tokenStop < column)) {
-                return undefined;
+                return null;
             }
 
             if (context.children) {

@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import { Vocabulary } from "antlr4ts";
+import { Vocabulary } from "antlr4ng";
 
 export interface IContextEntry {
     context: SourceContext;
@@ -16,13 +16,13 @@ export interface IContextEntry {
 }
 
 // Import modules that depend on these enums after their definition, to allow for static initializations.
-import { SourceContext } from "./SourceContext";
-import { GrammarDebugger } from "./GrammarDebugger";
+import { SourceContext } from "./SourceContext.js";
+import { GrammarDebugger } from "./GrammarDebugger.js";
 import {
     ISelfDiagnostics, ISymbolInfo, CodeActionType, IDiagnosticEntry, IReferenceNode, IGenerationOptions,
     ISentenceGenerationOptions, IFormattingOptions, IContextDetails,
-} from "./types";
-import { IATNGraphData } from "../webview-scripts/types";
+} from "./types.js";
+import { IATNGraphData } from "../webview-scripts/types.js";
 
 export class AntlrFacade {
     // Mapping file names to SourceContext instances.
@@ -83,7 +83,7 @@ export class AntlrFacade {
         if (!contextEntry) {
             if (!source) {
                 try {
-                    fs.statSync(fileName);
+                    fs.statSync(path.join(process.cwd(), fileName));
                     source = fs.readFileSync(fileName, "utf8");
                 } catch (e) {
                     source = "";
@@ -444,13 +444,17 @@ export class AntlrFacade {
 
         for (const dep of newDependencies) {
             const depContext = this.loadDependency(contextEntry, dep);
-            if (depContext) { contextEntry.context.addAsReferenceTo(depContext); }
+            if (depContext) {
+                contextEntry.context.addAsReferenceTo(depContext);
+            }
         }
 
         // Release all old dependencies. This will only unload grammars which have
         // not been ref-counted by the above dependency loading (or which are not used by other
         // grammars).
-        for (const dep of oldDependencies) { this.releaseGrammar(dep); }
+        for (const dep of oldDependencies) {
+            this.releaseGrammar(dep);
+        }
     }
 
     private internalReleaseGrammar(fileName: string, referencing?: IContextEntry): void {

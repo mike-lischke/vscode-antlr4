@@ -5,9 +5,7 @@
 
 import * as fs from "fs";
 
-import { ATN } from "antlr4ts/atn";
-import { Vocabulary, VocabularyImpl } from "antlr4ts";
-import { CompatibleATNDeserializer } from "./CompatibleATNDeserializer";
+import { ATN, ATNDeserializer, Vocabulary } from "antlr4ng";
 
 export interface IInterpreterData {
     atn: ATN;
@@ -100,7 +98,9 @@ export class InterpreterDataReader {
         line = lines[index++];
         const elements = line.split(",");
         let value;
-        const serializedATN = new Uint16Array(elements.length);
+
+        //const serializedATN = new Uint16Array(elements.length);
+        const serializedATN: number[] = [];
         for (let i = 0; i < elements.length; ++i) {
             const element = elements[i];
             if (element.startsWith("[")) {
@@ -113,11 +113,11 @@ export class InterpreterDataReader {
             serializedATN[i] = value;
         }
 
-        const deserializer = new CompatibleATNDeserializer();
+        const deserializer = new ATNDeserializer();
 
         return {
             atn: deserializer.deserialize(serializedATN),
-            vocabulary: new VocabularyImpl(literalNames, symbolicNames, []),
+            vocabulary: new Vocabulary(literalNames, symbolicNames, []),
             ruleNames,
             channels,
             modes,

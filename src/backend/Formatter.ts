@@ -3,12 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { IFormattingOptions } from "./types";
+import { Interval, Token } from "antlr4ng";
 
-import { Token } from "antlr4ts";
-import { Interval } from "antlr4ts/misc";
-
-import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
+import { IFormattingOptions } from "./types.js";
+import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
 
 /** Insert markers are what the output pipeline (see below) is made of (if not direct token indices). */
 type InsertMarker = number;
@@ -158,7 +156,7 @@ export class GrammarFormatter {
         if (this.options.reflowComments && this.tokens[startIndex].type === ANTLRv4Lexer.LINE_COMMENT) {
             let runningIndex = startIndex;
             while (runningIndex > 0) {
-                if (this.tokens[runningIndex--].text!.indexOf(formatIntroducer) >= 0) {
+                if (this.tokens[runningIndex--].text.indexOf(formatIntroducer) >= 0) {
                     break; // Don't include comment lines containing (potential) formatting instructions.
                 }
 
@@ -175,13 +173,13 @@ export class GrammarFormatter {
             }
         }
 
-        let targetStart = this.tokens[startIndex].startIndex;
+        let targetStart = this.tokens[startIndex].start;
         let startRow = this.tokens[startIndex].line;
-        const targetStop = this.tokens[endIndex].stopIndex;
+        const targetStop = this.tokens[endIndex].stop;
 
         // If the start token doesn't begin at the first column walk back in the text to ensure the target
         // range starts directly after a line break, to allow fixing the indentation on the start line.
-        targetStart -= this.tokens[startIndex].charPositionInLine;
+        targetStart -= this.tokens[startIndex].column;
 
         // Next step is to determine the context the start token is in.
         let run = startIndex;
@@ -248,7 +246,7 @@ export class GrammarFormatter {
                 case ANTLRv4Lexer.AT: // A named action. Want this to be formatted as a whole.
                     startRow = this.tokens[run].line;
                     startIndex = run;
-                    targetStart = this.tokens[run].startIndex;
+                    targetStart = this.tokens[run].start;
                     done = true;
                     break;
                 case ANTLRv4Lexer.LBRACE:
@@ -320,7 +318,7 @@ export class GrammarFormatter {
                     }
 
                     // Analyze whitespaces, we can have a mix of tab/space and line breaks here.
-                    const text = token.text!.replace("\r\n", "\n");
+                    const text = token.text.replace("\r\n", "\n");
                     const hasLineBreaks = text.indexOf("\n") >= 0;
                     if (!localCommentAhead || !hasLineBreaks) {
                         if (!hasLineBreaks || coalesceWhitespaces || this.singleLineBlockNesting > 0) {
@@ -528,7 +526,7 @@ export class GrammarFormatter {
                     // If this comment is the first non-whitespace entry on the current line
                     // some extra processing is required.
                     const hasLineContent = this.lineHasNonWhitespaceContent();
-                    let comment = token.text!;
+                    let comment = token.text;
                     if (hasLineContent) {
                         if (token.type === ANTLRv4Lexer.LINE_COMMENT) {
                             // There's something before the comment on the current line.
@@ -546,21 +544,21 @@ export class GrammarFormatter {
                         // which stand alone on a line.
                         while (true) {
                             let nextToken = this.tokens[i + 1];
-                            if (nextToken.type === ANTLRv4Lexer.EOF) {
+                            if (nextToken.type === Token.EOF) {
                                 break;
                             }
-                            const content = nextToken.text!; // Must be whitespaces.
+                            const content = nextToken.text; // Must be whitespaces.
                             if (content.split("\n").length > 2) { // More than a single line break. Stop here.
                                 break;
                             }
 
                             nextToken = this.tokens[i + 2];
                             if (nextToken.type !== ANTLRv4Lexer.LINE_COMMENT
-                                || nextToken.text!.indexOf(formatIntroducer) >= 0) {
+                                || nextToken.text.indexOf(formatIntroducer) >= 0) {
                                 break;
                             }
 
-                            comment += "\n" + nextToken.text!;
+                            comment += "\n" + nextToken.text;
                             i += 2;
                             this.processFormattingCommands(i);
                         }
@@ -1078,9 +1076,9 @@ export class GrammarFormatter {
                             const rangeIndex = -(entry - GrammarFormatter.Range);
                             const tokenStart = this.ranges[rangeIndex][0];
                             const tokenEnd = this.ranges[rangeIndex][1];
-                            const interval = Interval.of(this.tokens[tokenStart].startIndex,
-                                this.tokens[tokenEnd].stopIndex);
-                            result += this.tokens[0].inputStream!.getText(interval);
+                            const interval = Interval.of(this.tokens[tokenStart].start,
+                                this.tokens[tokenEnd].stop);
+                            result += this.tokens[0].getInputStream().getText(interval);
                         }
                     } else {
                         if (this.tokens[entry].type === ANTLRv4Lexer.LINE_COMMENT) {
@@ -1341,9 +1339,9 @@ export class GrammarFormatter {
          * @param token The token for which to enter the block.
          */
         const insertBlock = (token: Token): void => {
-            const parts = token.text!.split("\n");
+            const parts = token.text.split("\n");
             if (parts.length === 1) {
-                this.currentColumn += token.text!.length;
+                this.currentColumn += token.text.length;
             } else {
                 this.currentLine += parts.length - 1;
                 this.currentColumn = this.computeLineLength(parts[parts.length - 1]);
@@ -1387,7 +1385,7 @@ export class GrammarFormatter {
                         }
 
                         default: {
-                            const tokenLength = token.stopIndex - token.startIndex + 1;
+                            const tokenLength = token.stop - token.start + 1;
                             if (this.currentColumn + tokenLength > this.options.columnLimit!) {
                                 // Note: this implementation works on non-aligned content and allows alignments
                                 // after the word wrapping.
@@ -1429,13 +1427,13 @@ export class GrammarFormatter {
         if (charIndex < 0) {
             return 0;
         }
-        if (charIndex >= this.tokens[0].inputStream!.size) {
+        if (charIndex >= this.tokens[0].getInputStream().size) {
             return this.tokens.length - 1;
         }
 
         for (let i = 0; i < this.tokens.length; ++i) {
             const token = this.tokens[i];
-            if (token.startIndex > charIndex) {
+            if (token.start > charIndex) {
                 if (i === 0) {
                     return i;
                 }
@@ -1489,8 +1487,8 @@ export class GrammarFormatter {
      * @param stop The end index for the raw range.
      */
     private addRaw(start: InsertMarker, stop: InsertMarker): void {
-        const interval = Interval.of(this.tokens[start].startIndex, this.tokens[stop].stopIndex);
-        const text = this.tokens[0].inputStream!.getText(interval);
+        const interval = Interval.of(this.tokens[start].start, this.tokens[stop].stop);
+        const text = this.tokens[0].getInputStream().getText(interval);
 
         if (text.indexOf("\n") >= 0) {
             const parts = text.split("\n");
@@ -1576,12 +1574,12 @@ export class GrammarFormatter {
 
         const checkTrailingComment = () => {
             while (this.tokens[++i].type === ANTLRv4Lexer.WS) {
-                if (this.tokens[i].text!.indexOf("\n") >= 0) {
+                if (this.tokens[i].text.indexOf("\n") >= 0) {
                     break;
                 }
             }
             if (this.tokens[i].type === ANTLRv4Lexer.LINE_COMMENT) {
-                singleLineLength += this.tokens[i].text!.length;
+                singleLineLength += this.tokens[i].text.length;
             }
         };
 
@@ -1644,10 +1642,10 @@ export class GrammarFormatter {
                 case ANTLRv4Lexer.BLOCK_COMMENT:
                 case ANTLRv4Lexer.DOC_COMMENT: {
                     // If the comment contains a line break we cannot format the block as single line.
-                    if (token.text!.indexOf("\n") >= 0) {
+                    if (token.text.indexOf("\n") >= 0) {
                         return { containsAlts, singleLineLength: 1e100 };
                     } else {
-                        singleLineLength += token.text!.length + 1;
+                        singleLineLength += token.text.length + 1;
                     }
                     break;
                 }
@@ -1705,7 +1703,7 @@ export class GrammarFormatter {
      */
     private nonBreakingTrailerAhead(i: number): boolean {
         if (this.tokens[++i].type === ANTLRv4Lexer.WS) {
-            if (this.tokens[i].text!.indexOf("\n") >= 0) {
+            if (this.tokens[i].text.indexOf("\n") >= 0) {
                 return false;
             }
             ++i;
@@ -1732,7 +1730,7 @@ export class GrammarFormatter {
             }
         };
 
-        let text = this.tokens[index].text!;
+        let text = this.tokens[index].text;
         text = text.substr(2, text.length - 2).trim();
         if (text.startsWith(formatIntroducer)) {
             const entries = text.substr(formatIntroducer.length + 1, text.length).split(",");
@@ -2032,9 +2030,9 @@ export class GrammarFormatter {
                             const rangeIndex = -(entry - GrammarFormatter.Range);
                             const startIndex = this.ranges[rangeIndex][0];
                             const endIndex = this.ranges[rangeIndex][1];
-                            const interval = Interval.of(this.tokens[startIndex].startIndex,
-                                this.tokens[endIndex].stopIndex);
-                            text += this.tokens[0].inputStream!.getText(interval);
+                            const interval = Interval.of(this.tokens[startIndex].start,
+                                this.tokens[endIndex].stop);
+                            text += this.tokens[0].getInputStream().getText(interval);
                         } else if (this.isWhitespaceBlock(entry)) {
                             const whitespaceIndex = -(entry - GrammarFormatter.WhitespaceBlock);
                             text += this.whitespaceList[whitespaceIndex];

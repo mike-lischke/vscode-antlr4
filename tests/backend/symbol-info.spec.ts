@@ -5,19 +5,18 @@
 
 import * as fs from "fs";
 
-import { AntlrFacade } from "../../src/backend/facade";
-import { SymbolKind } from "../../src/backend/types";
+import { AntlrFacade } from "../../src/backend/facade.js";
+import { SymbolKind } from "../../src/backend/types.js";
 
 describe("Symbol Info Retrieval (t.g4)", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
-    jest.setTimeout(30000);
 
     it("Symbol Listing 1", () => {
-        const info = backend.symbolInfoAtPosition("test/backend/test-data/t.g4", 7, 2, true);
+        const info = backend.symbolInfoAtPosition("tests/backend/test-data/t.g4", 7, 2, true);
         expect(info).toBeDefined();
         if (info) {
             expect(info.name).toEqual("B");
-            expect(info.source).toEqual("test/backend/test-data/t.g4");
+            expect(info.source).toEqual("tests/backend/test-data/t.g4");
             expect(info.kind).toEqual(SymbolKind.LexerRule);
 
             expect(info.definition).toBeDefined();
@@ -32,12 +31,12 @@ describe("Symbol Info Retrieval (t.g4)", () => {
     });
 
     it("listTopLevelSymbols", () => {
-        const symbols = backend.listTopLevelSymbols("test/backend/test-data/t.g4", true);
+        const symbols = backend.listTopLevelSymbols("tests/backend/test-data/t.g4", true);
         expect(symbols).toHaveLength(10);
 
         const info = symbols[8];
         expect(info.name).toEqual("x");
-        expect(info.source).toEqual("test/backend/test-data/t.g4");
+        expect(info.source).toEqual("tests/backend/test-data/t.g4");
         expect(info.kind).toEqual(SymbolKind.ParserRule);
 
         expect(info.definition).toBeDefined();
@@ -51,7 +50,7 @@ describe("Symbol Info Retrieval (t.g4)", () => {
     });
 
     it("Diagnostics 1", () => {
-        const diagnostics = backend.getDiagnostics("test/backend/test-data/t.g4");
+        const diagnostics = backend.getDiagnostics("tests/backend/test-data/t.g4");
         expect(diagnostics).toHaveLength(2);
 
         expect(diagnostics[0].message).toEqual("Unknown token reference 'ZZ'");
@@ -68,11 +67,11 @@ describe("Symbol Info Retrieval (t.g4)", () => {
     });
 
     it("reparse", () => {
-        backend.loadGrammar("test/backend/test-data/t.g4");
+        backend.loadGrammar("tests/backend/test-data/t.g4");
         try {
-            backend.setText("test/backend/test-data/t.g4", "grammar A; a:: b \n| c; c: b+;");
-            backend.reparse("test/backend/test-data/t.g4");
-            let diagnostics = backend.getDiagnostics("test/backend/test-data/t.g4");
+            backend.setText("tests/backend/test-data/t.g4", "grammar A; a:: b \n| c; c: b+;");
+            backend.reparse("tests/backend/test-data/t.g4");
+            let diagnostics = backend.getDiagnostics("tests/backend/test-data/t.g4");
 
             expect(diagnostics).toHaveLength(4);
 
@@ -90,9 +89,9 @@ describe("Symbol Info Retrieval (t.g4)", () => {
             expect(diagnostics[1].range.end.column).toEqual(1);
             expect(diagnostics[1].range.end.row).toEqual(2);
 
-            backend.setText("test/backend/test-data/t.g4", "grammar A; a: b \n| c; c: b+;");
-            backend.reparse("test/backend/test-data/t.g4");
-            diagnostics = backend.getDiagnostics("test/backend/test-data/t.g4");
+            backend.setText("tests/backend/test-data/t.g4", "grammar A; a: b \n| c; c: b+;");
+            backend.reparse("tests/backend/test-data/t.g4");
+            diagnostics = backend.getDiagnostics("tests/backend/test-data/t.g4");
 
             expect(diagnostics).toHaveLength(2);
 
@@ -108,18 +107,18 @@ describe("Symbol Info Retrieval (t.g4)", () => {
             expect(diagnostics[1].range.end.column).toEqual(9);
             expect(diagnostics[1].range.end.row).toEqual(2);
         } finally {
-            backend.releaseGrammar("test/backend/test-data/t.g4");
+            backend.releaseGrammar("tests/backend/test-data/t.g4");
         }
     });
 
     it("Symbol Listing 2", () => {
-        backend.loadGrammar("test/backend/test-data/TParser.g4");
-        const symbols = backend.listTopLevelSymbols("test/backend/test-data/TParser.g4", true);
+        backend.loadGrammar("tests/backend/test-data/TParser.g4");
+        const symbols = backend.listTopLevelSymbols("tests/backend/test-data/TParser.g4", true);
         expect(symbols).toHaveLength(56);
 
         const info = symbols[38];
         expect(info.name).toEqual("Mode2");
-        expect(info.source).toEqual("test/backend/test-data/TLexer.g4");
+        expect(info.source).toEqual("tests/backend/test-data/TLexer.g4");
         expect(info.kind).toEqual(SymbolKind.LexerMode);
 
         expect(info.definition).toBeDefined();
@@ -131,49 +130,49 @@ describe("Symbol Info Retrieval (t.g4)", () => {
             expect(info.definition.range.end.row).toEqual(86);
         }
 
-        let [ruleName] = backend.ruleFromPosition("test/backend/test-data/TParser.g4", 37, 103);
+        let [ruleName] = backend.ruleFromPosition("tests/backend/test-data/TParser.g4", 37, 103);
         expect(ruleName).toEqual("expr");
-        [ruleName] = backend.ruleFromPosition("test/backend/test-data/TParser.g4", 100, 123);
+        [ruleName] = backend.ruleFromPosition("tests/backend/test-data/TParser.g4", 100, 123);
         expect(ruleName).toBeUndefined();
-        [ruleName] = backend.ruleFromPosition("test/backend/test-data/TParser.g4", 2, 119)!;
+        [ruleName] = backend.ruleFromPosition("tests/backend/test-data/TParser.g4", 2, 119)!;
         expect(ruleName).toEqual("any");
-        [ruleName] = backend.ruleFromPosition("test/backend/test-data/TParser.g4", 103, 82)!;
+        [ruleName] = backend.ruleFromPosition("tests/backend/test-data/TParser.g4", 103, 82)!;
         expect(ruleName).toEqual("special");
-        [ruleName] = backend.ruleFromPosition("test/backend/test-data/TParser.g4", 64, 68);
+        [ruleName] = backend.ruleFromPosition("tests/backend/test-data/TParser.g4", 64, 68);
         expect(ruleName).toBeUndefined();
 
-        [ruleName] = backend.ruleFromPosition("test/backend/test-data/TLexer.g4", 62, 77)!;
+        [ruleName] = backend.ruleFromPosition("tests/backend/test-data/TLexer.g4", 62, 77)!;
         expect(ruleName).toEqual("Comment");
-        [ruleName] = backend.ruleFromPosition("test/backend/test-data/TLexer.g4", 0, 50)!;
+        [ruleName] = backend.ruleFromPosition("tests/backend/test-data/TLexer.g4", 0, 50)!;
         expect(ruleName).toEqual("ID");
     });
 
     it("Editing", () => {
         // Change the source. This will release the lexer reference and reload it.
         // If that does not work we'll get a lot of unknown-symbol errors (for all lexer symbols).
-        const source = fs.readFileSync("test/backend/test-data/TParser.g4", "utf8");
-        backend.setText("test/backend/test-data/TParser.g4", source + "\nblah: any idarray;");
-        backend.reparse("test/backend/test-data/TParser.g4");
+        const source = fs.readFileSync("tests/backend/test-data/TParser.g4", "utf8");
+        backend.setText("tests/backend/test-data/TParser.g4", source + "\nblah: any idarray;");
+        backend.reparse("tests/backend/test-data/TParser.g4");
 
         // This also updates the symbol reference counts.
-        const parserDiags = backend.getDiagnostics("test/backend/test-data/TParser.g4");
+        const parserDiags = backend.getDiagnostics("tests/backend/test-data/TParser.g4");
         expect(parserDiags).toHaveLength(0);
     });
 
     it("Diagnostics 2", () => {
-        const lexerDiags = backend.getDiagnostics("test/backend/test-data/TLexer.g4");
+        const lexerDiags = backend.getDiagnostics("tests/backend/test-data/TLexer.g4");
         expect(lexerDiags).toHaveLength(0);
 
-        let refCount = backend.countReferences("test/backend/test-data/TParser.g4", "Semicolon");
+        let refCount = backend.countReferences("tests/backend/test-data/TParser.g4", "Semicolon");
         expect(refCount).toEqual(4);
 
-        refCount = backend.countReferences("test/backend/test-data/TLexer.g4", "Bar");
+        refCount = backend.countReferences("tests/backend/test-data/TLexer.g4", "Bar");
         expect(refCount).toEqual(2);
-        backend.releaseGrammar("test/backend/test-data/TParser.g4");
+        backend.releaseGrammar("tests/backend/test-data/TParser.g4");
     });
 
     it("Symbol ranges", () => {
-        let symbol = backend.enclosingSymbolAtPosition("test/backend/test-data/TParser.g4", 100, 4); // options {} block
+        let symbol = backend.enclosingSymbolAtPosition("tests/backend/test-data/TParser.g4", 100, 4);
         expect(symbol).toBeDefined();
         expect(symbol!.definition).toBeDefined();
         expect(symbol!.definition!.range.start.row).toEqual(3);
@@ -181,7 +180,7 @@ describe("Symbol Info Retrieval (t.g4)", () => {
         expect(symbol!.definition!.range.end.row).toEqual(5);
         expect(symbol!.definition!.range.end.column).toEqual(0);
 
-        symbol = backend.enclosingSymbolAtPosition("test/backend/test-data/TParser.g4", 9, 34); // action block
+        symbol = backend.enclosingSymbolAtPosition("tests/backend/test-data/TParser.g4", 9, 34); // action block
         expect(symbol).toBeDefined();
         expect(symbol?.definition).toBeDefined();
         if (symbol?.definition) {
@@ -191,11 +190,11 @@ describe("Symbol Info Retrieval (t.g4)", () => {
             expect(symbol.definition.range.end.column).toEqual(0);
         }
 
-        symbol = backend.enclosingSymbolAtPosition("test/backend/test-data/TParser.g4", 1000, 1000); // beyond EOF
+        symbol = backend.enclosingSymbolAtPosition("tests/backend/test-data/TParser.g4", 1000, 1000); // beyond EOF
         expect(symbol).toBeUndefined();
 
         // argument action block
-        symbol = backend.enclosingSymbolAtPosition("test/backend/test-data/TParser.g4", 79, 82);
+        symbol = backend.enclosingSymbolAtPosition("tests/backend/test-data/TParser.g4", 79, 82);
         expect(symbol).toBeDefined();
         expect(symbol?.definition).toBeDefined();
         if (symbol?.definition) {
@@ -206,7 +205,7 @@ describe("Symbol Info Retrieval (t.g4)", () => {
         }
 
         // same pos, rule context
-        symbol = backend.enclosingSymbolAtPosition("test/backend/test-data/TParser.g4", 79, 82, true);
+        symbol = backend.enclosingSymbolAtPosition("tests/backend/test-data/TParser.g4", 79, 82, true);
         expect(symbol).toBeDefined();
         expect(symbol?.definition).toBeDefined();
         if (symbol?.definition) {

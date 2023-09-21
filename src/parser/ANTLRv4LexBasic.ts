@@ -1,215 +1,176 @@
-// Generated from grammars/ANTLRv4LexBasic.g4 by ANTLR 4.9.0-SNAPSHOT
+// Generated from grammars/ANTLRv4LexBasic.g4 by ANTLR 4.13.1
+
+import * as antlr from "antlr4ng";
+import { Token } from "antlr4ng";
 
 
-import { ATN } from "antlr4ts/atn/ATN";
-import { ATNDeserializer } from "antlr4ts/atn/ATNDeserializer";
-import { CharStream } from "antlr4ts/CharStream";
-import { Lexer } from "antlr4ts/Lexer";
-import { LexerATNSimulator } from "antlr4ts/atn/LexerATNSimulator";
-import { NotNull } from "antlr4ts/Decorators";
-import { Override } from "antlr4ts/Decorators";
-import { RuleContext } from "antlr4ts/RuleContext";
-import { Vocabulary } from "antlr4ts/Vocabulary";
-import { VocabularyImpl } from "antlr4ts/VocabularyImpl";
+export class ANTLRv4LexBasic extends antlr.Lexer {
 
-import * as Utils from "antlr4ts/misc/Utils";
-
-
-export class ANTLRv4LexBasic extends Lexer {
-
-    // tslint:disable:no-trailing-whitespace
-    public static readonly channelNames: string[] = [
-        "DEFAULT_TOKEN_CHANNEL", "HIDDEN",
+    public static readonly channelNames = [
+        "DEFAULT_TOKEN_CHANNEL", "HIDDEN"
     ];
 
-    // tslint:disable:no-trailing-whitespace
-    public static readonly modeNames: string[] = [
+    public static readonly literalNames = [
+    ];
+
+    public static readonly symbolicNames = [
+    ];
+
+    public static readonly modeNames = [
         "DEFAULT_MODE",
     ];
 
-    public static readonly ruleNames: string[] = [
-        "Ws", "Hws", "Vws", "BlockComment", "DocComment", "LineComment", "EscSeq",
-        "EscAny", "UnicodeEsc", "DecimalNumeral", "HexDigit", "DecDigit", "BoolLiteral",
-        "CharLiteral", "SQuoteLiteral", "DQuoteLiteral", "USQuoteLiteral", "NameChar",
-        "NameStartChar", "Int", "Esc", "Colon", "DColon", "SQuote", "DQuote",
-        "LParen", "RParen", "LBrace", "RBrace", "LBrack", "RBrack", "RArrow",
-        "Lt", "Gt", "Equal", "Question", "Star", "Plus", "PlusAssign", "Underscore",
-        "Pipe", "Dollar", "Comma", "Semi", "Dot", "Range", "At", "Pound", "Tilde",
+    public static readonly ruleNames = [
+        "Ws", "Hws", "Vws", "BlockComment", "DocComment", "LineComment", 
+        "EscSeq", "EscAny", "UnicodeEsc", "DecimalNumeral", "HexDigit", 
+        "DecDigit", "BoolLiteral", "CharLiteral", "SQuoteLiteral", "DQuoteLiteral", 
+        "USQuoteLiteral", "NameChar", "NameStartChar", "Int", "Esc", "Colon", 
+        "DColon", "SQuote", "DQuote", "LParen", "RParen", "LBrace", "RBrace", 
+        "LBrack", "RBrack", "RArrow", "Lt", "Gt", "Equal", "Question", "Star", 
+        "Plus", "PlusAssign", "Underscore", "Pipe", "Dollar", "Comma", "Semi", 
+        "Dot", "Range", "At", "Pound", "Tilde",
     ];
 
-    private static readonly _LITERAL_NAMES: Array<string | undefined> = [
-    ];
-    private static readonly _SYMBOLIC_NAMES: Array<string | undefined> = [
-    ];
-    public static readonly VOCABULARY: Vocabulary = new VocabularyImpl(ANTLRv4LexBasic._LITERAL_NAMES, ANTLRv4LexBasic._SYMBOLIC_NAMES, []);
 
-    // @Override
-    // @NotNull
-    public get vocabulary(): Vocabulary {
-        return ANTLRv4LexBasic.VOCABULARY;
-    }
-    // tslint:enable:no-trailing-whitespace
-
-
-    constructor(input: CharStream) {
+    public constructor(input: antlr.CharStream) {
         super(input);
-        this._interp = new LexerATNSimulator(ANTLRv4LexBasic._ATN, this);
+        this.interpreter = new antlr.LexerATNSimulator(this, ANTLRv4LexBasic._ATN, ANTLRv4LexBasic.decisionsToDFA, new antlr.PredictionContextCache());
     }
 
-    // @Override
     public get grammarFileName(): string { return "ANTLRv4LexBasic.g4"; }
 
-    // @Override
+    public get literalNames(): (string | null)[] { return ANTLRv4LexBasic.literalNames; }
+    public get symbolicNames(): (string | null)[] { return ANTLRv4LexBasic.symbolicNames; }
     public get ruleNames(): string[] { return ANTLRv4LexBasic.ruleNames; }
 
-    // @Override
-    public override get serializedATN(): string { return ANTLRv4LexBasic._serializedATN; }
+    public get serializedATN(): number[] { return ANTLRv4LexBasic._serializedATN; }
 
-    // @Override
     public get channelNames(): string[] { return ANTLRv4LexBasic.channelNames; }
 
-    // @Override
     public get modeNames(): string[] { return ANTLRv4LexBasic.modeNames; }
 
-    public static readonly _serializedATN: string =
-        "\x03\uC91D\uCABA\u058D\uAFBA\u4F53\u0607\uEA8B\uC241\x02\x02\u0130\b\x01" +
-        "\x04\x02\t\x02\x04\x03\t\x03\x04\x04\t\x04\x04\x05\t\x05\x04\x06\t\x06" +
-        "\x04\x07\t\x07\x04\b\t\b\x04\t\t\t\x04\n\t\n\x04\v\t\v\x04\f\t\f\x04\r" +
-        "\t\r\x04\x0E\t\x0E\x04\x0F\t\x0F\x04\x10\t\x10\x04\x11\t\x11\x04\x12\t" +
-        "\x12\x04\x13\t\x13\x04\x14\t\x14\x04\x15\t\x15\x04\x16\t\x16\x04\x17\t" +
-        "\x17\x04\x18\t\x18\x04\x19\t\x19\x04\x1A\t\x1A\x04\x1B\t\x1B\x04\x1C\t" +
-        "\x1C\x04\x1D\t\x1D\x04\x1E\t\x1E\x04\x1F\t\x1F\x04 \t \x04!\t!\x04\"\t" +
-        "\"\x04#\t#\x04$\t$\x04%\t%\x04&\t&\x04\'\t\'\x04(\t(\x04)\t)\x04*\t*\x04" +
-        "+\t+\x04,\t,\x04-\t-\x04.\t.\x04/\t/\x040\t0\x041\t1\x042\t2\x03\x02\x03" +
-        "\x02\x05\x02h\n\x02\x03\x03\x03\x03\x03\x04\x03\x04\x03\x05\x03\x05\x03" +
-        "\x05\x03\x05\x07\x05r\n\x05\f\x05\x0E\x05u\v\x05\x03\x05\x03\x05\x03\x05" +
-        "\x05\x05z\n\x05\x03\x06\x03\x06\x03\x06\x03\x06\x03\x06\x07\x06\x81\n" +
-        "\x06\f\x06\x0E\x06\x84\v\x06\x03\x06\x03\x06\x03\x06\x05\x06\x89\n\x06" +
-        "\x03\x07\x03\x07\x03\x07\x03\x07\x07\x07\x8F\n\x07\f\x07\x0E\x07\x92\v" +
-        "\x07\x03\b\x03\b\x03\b\x03\b\x03\b\x05\b\x99\n\b\x03\t\x03\t\x03\t\x03" +
-        "\n\x03\n\x03\n\x03\n\x03\n\x05\n\xA3\n\n\x05\n\xA5\n\n\x05\n\xA7\n\n\x05" +
-        "\n\xA9\n\n\x03\v\x03\v\x03\v\x07\v\xAE\n\v\f\v\x0E\v\xB1\v\v\x05\v\xB3" +
-        "\n\v\x03\f\x03\f\x03\r\x03\r\x03\x0E\x03\x0E\x03\x0E\x03\x0E\x03\x0E\x03" +
-        "\x0E\x03\x0E\x03\x0E\x03\x0E\x05\x0E\xC2\n\x0E\x03\x0F\x03\x0F\x03\x0F" +
-        "\x05\x0F\xC7\n\x0F\x03\x0F\x03\x0F\x03\x10\x03\x10\x03\x10\x07\x10\xCE" +
-        "\n\x10\f\x10\x0E\x10\xD1\v\x10\x03\x10\x03\x10\x03\x11\x03\x11\x03\x11" +
-        "\x07\x11\xD8\n\x11\f\x11\x0E\x11\xDB\v\x11\x03\x11\x03\x11\x03\x12\x03" +
-        "\x12\x03\x12\x07\x12\xE2\n\x12\f\x12\x0E\x12\xE5\v\x12\x03\x13\x03\x13" +
-        "\x03\x13\x03\x13\x05\x13\xEB\n\x13\x03\x14\x03\x14\x03\x15\x03\x15\x03" +
-        "\x15\x03\x15\x03\x16\x03\x16\x03\x17\x03\x17\x03\x18\x03\x18\x03\x18\x03" +
-        "\x19\x03\x19\x03\x1A\x03\x1A\x03\x1B\x03\x1B\x03\x1C\x03\x1C\x03\x1D\x03" +
-        "\x1D\x03\x1E\x03\x1E\x03\x1F\x03\x1F\x03 \x03 \x03!\x03!\x03!\x03\"\x03" +
-        "\"\x03#\x03#\x03$\x03$\x03%\x03%\x03&\x03&\x03\'\x03\'\x03(\x03(\x03(" +
-        "\x03)\x03)\x03*\x03*\x03+\x03+\x03,\x03,\x03-\x03-\x03.\x03.\x03/\x03" +
-        "/\x03/\x030\x030\x031\x031\x032\x032\x04s\x82\x02\x023\x03\x02\x02\x05" +
-        "\x02\x02\x07\x02\x02\t\x02\x02\v\x02\x02\r\x02\x02\x0F\x02\x02\x11\x02" +
-        "\x02\x13\x02\x02\x15\x02\x02\x17\x02\x02\x19\x02\x02\x1B\x02\x02\x1D\x02" +
-        "\x02\x1F\x02\x02!\x02\x02#\x02\x02%\x02\x02\'\x02\x02)\x02\x02+\x02\x02" +
-        "-\x02\x02/\x02\x021\x02\x023\x02\x025\x02\x027\x02\x029\x02\x02;\x02\x02" +
-        "=\x02\x02?\x02\x02A\x02\x02C\x02\x02E\x02\x02G\x02\x02I\x02\x02K\x02\x02" +
-        "M\x02\x02O\x02\x02Q\x02\x02S\x02\x02U\x02\x02W\x02\x02Y\x02\x02[\x02\x02" +
-        "]\x02\x02_\x02\x02a\x02\x02c\x02\x02\x03\x02\r\x04\x02\v\v\"\"\x04\x02" +
-        "\f\f\x0E\x0F\x04\x02\f\f\x0F\x0F\n\x02$$))^^ddhhppttvv\x03\x023;\x05\x02" +
-        "2;CHch\x03\x022;\x06\x02\f\f\x0F\x0F))^^\x06\x02\f\f\x0F\x0F$$^^\x05\x02" +
-        "\xB9\xB9\u0302\u0371\u2041\u2042\x0F\x02C\\c|\xC2\xD8\xDA\xF8\xFA\u0301" +
-        "\u0372\u037F\u0381\u2001\u200E\u200F\u2072\u2191\u2C02\u2FF1\u3003\uD801" +
-        "\uF902\uFDD1\uFDF2\uFFFF\x02\u0118\x03g\x03\x02\x02\x02\x05i\x03\x02\x02" +
-        "\x02\x07k\x03\x02\x02\x02\tm\x03\x02\x02\x02\v{\x03\x02\x02\x02\r\x8A" +
-        "\x03\x02\x02\x02\x0F\x93\x03\x02\x02\x02\x11\x9A\x03\x02\x02\x02\x13\x9D" +
-        "\x03\x02\x02\x02\x15\xB2\x03\x02\x02\x02\x17\xB4\x03\x02\x02\x02\x19\xB6" +
-        "\x03\x02\x02\x02\x1B\xC1\x03\x02\x02\x02\x1D\xC3\x03\x02\x02\x02\x1F\xCA" +
-        "\x03\x02\x02\x02!\xD4\x03\x02\x02\x02#\xDE\x03\x02\x02\x02%\xEA\x03\x02" +
-        "\x02\x02\'\xEC\x03\x02\x02\x02)\xEE\x03\x02\x02\x02+\xF2\x03\x02\x02\x02" +
-        "-\xF4\x03\x02\x02\x02/\xF6\x03\x02\x02\x021\xF9\x03\x02\x02\x023\xFB\x03" +
-        "\x02\x02\x025\xFD\x03\x02\x02\x027\xFF\x03\x02\x02\x029\u0101\x03\x02" +
-        "\x02\x02;\u0103\x03\x02\x02\x02=\u0105\x03\x02\x02\x02?\u0107\x03\x02" +
-        "\x02\x02A\u0109\x03\x02\x02\x02C\u010C\x03\x02\x02\x02E\u010E\x03\x02" +
-        "\x02\x02G\u0110\x03\x02\x02\x02I\u0112\x03\x02\x02\x02K\u0114\x03\x02" +
-        "\x02\x02M\u0116\x03\x02\x02\x02O\u0118\x03\x02\x02\x02Q\u011B\x03\x02" +
-        "\x02\x02S\u011D\x03\x02\x02\x02U\u011F\x03\x02\x02\x02W\u0121\x03\x02" +
-        "\x02\x02Y\u0123\x03\x02\x02\x02[\u0125\x03\x02\x02\x02]\u0127\x03\x02" +
-        "\x02\x02_\u012A\x03\x02\x02\x02a\u012C\x03\x02\x02\x02c\u012E\x03\x02" +
-        "\x02\x02eh\x05\x05\x03\x02fh\x05\x07\x04\x02ge\x03\x02\x02\x02gf\x03\x02" +
-        "\x02\x02h\x04\x03\x02\x02\x02ij\t\x02\x02\x02j\x06\x03\x02\x02\x02kl\t" +
-        "\x03\x02\x02l\b\x03\x02\x02\x02mn\x071\x02\x02no\x07,\x02\x02os\x03\x02" +
-        "\x02\x02pr\v\x02\x02\x02qp\x03\x02\x02\x02ru\x03\x02\x02\x02st\x03\x02" +
-        "\x02\x02sq\x03\x02\x02\x02ty\x03\x02\x02\x02us\x03\x02\x02\x02vw\x07," +
-        "\x02\x02wz\x071\x02\x02xz\x07\x02\x02\x03yv\x03\x02\x02\x02yx\x03\x02" +
-        "\x02\x02z\n\x03\x02\x02\x02{|\x071\x02\x02|}\x07,\x02\x02}~\x07,\x02\x02" +
-        "~\x82\x03\x02\x02\x02\x7F\x81\v\x02\x02\x02\x80\x7F\x03\x02\x02\x02\x81" +
-        "\x84\x03\x02\x02\x02\x82\x83\x03\x02\x02\x02\x82\x80\x03\x02\x02\x02\x83" +
-        "\x88\x03\x02\x02\x02\x84\x82\x03\x02\x02\x02\x85\x86\x07,\x02\x02\x86" +
-        "\x89\x071\x02\x02\x87\x89\x07\x02\x02\x03\x88\x85\x03\x02\x02\x02\x88" +
-        "\x87\x03\x02\x02\x02\x89\f\x03\x02\x02\x02\x8A\x8B\x071\x02\x02\x8B\x8C" +
-        "\x071\x02\x02\x8C\x90\x03\x02\x02\x02\x8D\x8F\n\x04\x02\x02\x8E\x8D\x03" +
-        "\x02\x02\x02\x8F\x92\x03\x02\x02\x02\x90\x8E\x03\x02\x02\x02\x90\x91\x03" +
-        "\x02\x02\x02\x91\x0E\x03\x02\x02\x02\x92\x90\x03\x02\x02\x02\x93\x98\x05" +
-        "+\x16\x02\x94\x99\t\x05\x02\x02\x95\x99\x05\x13\n\x02\x96\x99\v\x02\x02" +
-        "\x02\x97\x99\x07\x02\x02\x03\x98\x94\x03\x02\x02\x02\x98\x95\x03\x02\x02" +
-        "\x02\x98\x96\x03\x02\x02\x02\x98\x97\x03\x02\x02\x02\x99\x10\x03\x02\x02" +
-        "\x02\x9A\x9B\x05+\x16\x02\x9B\x9C\v\x02\x02\x02\x9C\x12\x03\x02\x02\x02" +
-        "\x9D\xA8\x07w\x02\x02\x9E\xA6\x05\x17\f\x02\x9F\xA4\x05\x17\f\x02\xA0" +
-        "\xA2\x05\x17\f\x02\xA1\xA3\x05\x17\f\x02\xA2\xA1\x03\x02\x02\x02\xA2\xA3" +
-        "\x03\x02\x02\x02\xA3\xA5\x03\x02\x02\x02\xA4\xA0\x03\x02\x02\x02\xA4\xA5" +
-        "\x03\x02\x02\x02\xA5\xA7\x03\x02\x02\x02\xA6\x9F\x03\x02\x02\x02\xA6\xA7" +
-        "\x03\x02\x02\x02\xA7\xA9\x03\x02\x02\x02\xA8\x9E\x03\x02\x02\x02\xA8\xA9" +
-        "\x03\x02\x02\x02\xA9\x14\x03\x02\x02\x02\xAA\xB3\x072\x02\x02\xAB\xAF" +
-        "\t\x06\x02\x02\xAC\xAE\x05\x19\r\x02\xAD\xAC\x03\x02\x02\x02\xAE\xB1\x03" +
-        "\x02\x02\x02\xAF\xAD\x03\x02\x02\x02\xAF\xB0\x03\x02\x02\x02\xB0\xB3\x03" +
-        "\x02\x02\x02\xB1\xAF\x03\x02\x02\x02\xB2\xAA\x03\x02\x02\x02\xB2\xAB\x03" +
-        "\x02\x02\x02\xB3\x16\x03\x02\x02\x02\xB4\xB5\t\x07\x02\x02\xB5\x18\x03" +
-        "\x02\x02\x02\xB6\xB7\t\b\x02\x02\xB7\x1A\x03\x02\x02\x02\xB8\xB9\x07v" +
-        "\x02\x02\xB9\xBA\x07t\x02\x02\xBA\xBB\x07w\x02\x02\xBB\xC2\x07g\x02\x02" +
-        "\xBC\xBD\x07h\x02\x02\xBD\xBE\x07c\x02\x02\xBE\xBF\x07n\x02\x02\xBF\xC0" +
-        "\x07u\x02\x02\xC0\xC2\x07g\x02\x02\xC1\xB8\x03\x02\x02\x02\xC1\xBC\x03" +
-        "\x02\x02\x02\xC2\x1C\x03\x02\x02\x02\xC3\xC6\x051\x19\x02\xC4\xC7\x05" +
-        "\x0F\b\x02\xC5\xC7\n\t\x02\x02\xC6\xC4\x03\x02\x02\x02\xC6\xC5\x03\x02" +
-        "\x02\x02\xC7\xC8\x03\x02\x02\x02\xC8\xC9\x051\x19\x02\xC9\x1E\x03\x02" +
-        "\x02\x02\xCA\xCF\x051\x19\x02\xCB\xCE\x05\x0F\b\x02\xCC\xCE\n\t\x02\x02" +
-        "\xCD\xCB\x03\x02\x02\x02\xCD\xCC\x03\x02\x02\x02\xCE\xD1\x03\x02\x02\x02" +
-        "\xCF\xCD\x03\x02\x02\x02\xCF\xD0\x03\x02\x02\x02\xD0\xD2\x03\x02\x02\x02" +
-        "\xD1\xCF\x03\x02\x02\x02\xD2\xD3\x051\x19\x02\xD3 \x03\x02\x02\x02\xD4" +
-        "\xD9\x053\x1A\x02\xD5\xD8\x05\x0F\b\x02\xD6\xD8\n\n\x02\x02\xD7\xD5\x03" +
-        "\x02\x02\x02\xD7\xD6\x03\x02\x02\x02\xD8\xDB\x03\x02\x02\x02\xD9\xD7\x03" +
-        "\x02\x02\x02\xD9\xDA\x03\x02\x02\x02\xDA\xDC\x03\x02\x02\x02\xDB\xD9\x03" +
-        "\x02\x02\x02\xDC\xDD\x053\x1A\x02\xDD\"\x03\x02\x02\x02\xDE\xE3\x051\x19" +
-        "\x02\xDF\xE2\x05\x0F\b\x02\xE0\xE2\n\t\x02\x02\xE1\xDF\x03\x02\x02\x02" +
-        "\xE1\xE0\x03\x02\x02\x02\xE2\xE5\x03\x02\x02\x02\xE3\xE1\x03\x02\x02\x02" +
-        "\xE3\xE4\x03\x02\x02\x02\xE4$\x03\x02\x02\x02\xE5\xE3\x03\x02\x02\x02" +
-        "\xE6\xEB\x05\'\x14\x02\xE7\xEB\x042;\x02\xE8\xEB\x05Q)\x02\xE9\xEB\t\v" +
-        "\x02\x02\xEA\xE6\x03\x02\x02\x02\xEA\xE7\x03\x02\x02\x02\xEA\xE8\x03\x02" +
-        "\x02\x02\xEA\xE9\x03\x02\x02\x02\xEB&\x03\x02\x02\x02\xEC\xED\t\f\x02" +
-        "\x02\xED(\x03\x02\x02\x02\xEE\xEF\x07k\x02\x02\xEF\xF0\x07p\x02\x02\xF0" +
-        "\xF1\x07v\x02\x02\xF1*\x03\x02\x02\x02\xF2\xF3\x07^\x02\x02\xF3,\x03\x02" +
-        "\x02\x02\xF4\xF5\x07<\x02\x02\xF5.\x03\x02\x02\x02\xF6\xF7\x07<\x02\x02" +
-        "\xF7\xF8\x07<\x02\x02\xF80\x03\x02\x02\x02\xF9\xFA\x07)\x02\x02\xFA2\x03" +
-        "\x02\x02\x02\xFB\xFC\x07$\x02\x02\xFC4\x03\x02\x02\x02\xFD\xFE\x07*\x02" +
-        "\x02\xFE6\x03\x02\x02\x02\xFF\u0100\x07+\x02\x02\u01008\x03\x02\x02\x02" +
-        "\u0101\u0102\x07}\x02\x02\u0102:\x03\x02\x02\x02\u0103\u0104\x07\x7F\x02" +
-        "\x02\u0104<\x03\x02\x02\x02\u0105\u0106\x07]\x02\x02\u0106>\x03\x02\x02" +
-        "\x02\u0107\u0108\x07_\x02\x02\u0108@\x03\x02\x02\x02\u0109\u010A\x07/" +
-        "\x02\x02\u010A\u010B\x07@\x02\x02\u010BB\x03\x02\x02\x02\u010C\u010D\x07" +
-        ">\x02\x02\u010DD\x03\x02\x02\x02\u010E\u010F\x07@\x02\x02\u010FF\x03\x02" +
-        "\x02\x02\u0110\u0111\x07?\x02\x02\u0111H\x03\x02\x02\x02\u0112\u0113\x07" +
-        "A\x02\x02\u0113J\x03\x02\x02\x02\u0114\u0115\x07,\x02\x02\u0115L\x03\x02" +
-        "\x02\x02\u0116\u0117\x07-\x02\x02\u0117N\x03\x02\x02\x02\u0118\u0119\x07" +
-        "-\x02\x02\u0119\u011A\x07?\x02\x02\u011AP\x03\x02\x02\x02\u011B\u011C" +
-        "\x07a\x02\x02\u011CR\x03\x02\x02\x02\u011D\u011E\x07~\x02\x02\u011ET\x03" +
-        "\x02\x02\x02\u011F\u0120\x07&\x02\x02\u0120V\x03\x02\x02\x02\u0121\u0122" +
-        "\x07.\x02\x02\u0122X\x03\x02\x02\x02\u0123\u0124\x07=\x02\x02\u0124Z\x03" +
-        "\x02\x02\x02\u0125\u0126\x070\x02\x02\u0126\\\x03\x02\x02\x02\u0127\u0128" +
-        "\x070\x02\x02\u0128\u0129\x070\x02\x02\u0129^\x03\x02\x02\x02\u012A\u012B" +
-        "\x07B\x02\x02\u012B`\x03\x02\x02\x02\u012C\u012D\x07%\x02\x02\u012Db\x03" +
-        "\x02\x02\x02\u012E\u012F\x07\x80\x02\x02\u012Fd\x03\x02\x02\x02\x19\x02" +
-        "gsy\x82\x88\x90\x98\xA2\xA4\xA6\xA8\xAF\xB2\xC1\xC6\xCD\xCF\xD7\xD9\xE1" +
-        "\xE3\xEA\x02";
-    public static __ATN: ATN;
-    public static get _ATN(): ATN {
+    public static readonly _serializedATN: number[] = [
+        4,0,0,302,6,-1,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,
+        6,7,6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,
+        7,13,2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,
+        2,20,7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,
+        7,26,2,27,7,27,2,28,7,28,2,29,7,29,2,30,7,30,2,31,7,31,2,32,7,32,
+        2,33,7,33,2,34,7,34,2,35,7,35,2,36,7,36,2,37,7,37,2,38,7,38,2,39,
+        7,39,2,40,7,40,2,41,7,41,2,42,7,42,2,43,7,43,2,44,7,44,2,45,7,45,
+        2,46,7,46,2,47,7,47,2,48,7,48,1,0,1,0,3,0,102,8,0,1,1,1,1,1,2,1,
+        2,1,3,1,3,1,3,1,3,5,3,112,8,3,10,3,12,3,115,9,3,1,3,1,3,1,3,3,3,
+        120,8,3,1,4,1,4,1,4,1,4,1,4,5,4,127,8,4,10,4,12,4,130,9,4,1,4,1,
+        4,1,4,3,4,135,8,4,1,5,1,5,1,5,1,5,5,5,141,8,5,10,5,12,5,144,9,5,
+        1,6,1,6,1,6,1,6,1,6,3,6,151,8,6,1,7,1,7,1,7,1,8,1,8,1,8,1,8,1,8,
+        3,8,161,8,8,3,8,163,8,8,3,8,165,8,8,3,8,167,8,8,1,9,1,9,1,9,5,9,
+        172,8,9,10,9,12,9,175,9,9,3,9,177,8,9,1,10,1,10,1,11,1,11,1,12,1,
+        12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,3,12,192,8,12,1,13,1,13,1,
+        13,3,13,197,8,13,1,13,1,13,1,14,1,14,1,14,5,14,204,8,14,10,14,12,
+        14,207,9,14,1,14,1,14,1,15,1,15,1,15,5,15,214,8,15,10,15,12,15,217,
+        9,15,1,15,1,15,1,16,1,16,1,16,5,16,224,8,16,10,16,12,16,227,9,16,
+        1,17,1,17,1,17,1,17,3,17,233,8,17,1,18,1,18,1,19,1,19,1,19,1,19,
+        1,20,1,20,1,21,1,21,1,22,1,22,1,22,1,23,1,23,1,24,1,24,1,25,1,25,
+        1,26,1,26,1,27,1,27,1,28,1,28,1,29,1,29,1,30,1,30,1,31,1,31,1,31,
+        1,32,1,32,1,33,1,33,1,34,1,34,1,35,1,35,1,36,1,36,1,37,1,37,1,38,
+        1,38,1,38,1,39,1,39,1,40,1,40,1,41,1,41,1,42,1,42,1,43,1,43,1,44,
+        1,44,1,45,1,45,1,45,1,46,1,46,1,47,1,47,1,48,1,48,2,113,128,0,49,
+        1,0,3,0,5,0,7,0,9,0,11,0,13,0,15,0,17,0,19,0,21,0,23,0,25,0,27,0,
+        29,0,31,0,33,0,35,0,37,0,39,0,41,0,43,0,45,0,47,0,49,0,51,0,53,0,
+        55,0,57,0,59,0,61,0,63,0,65,0,67,0,69,0,71,0,73,0,75,0,77,0,79,0,
+        81,0,83,0,85,0,87,0,89,0,91,0,93,0,95,0,97,0,1,0,11,2,0,9,9,32,32,
+        2,0,10,10,12,13,2,0,10,10,13,13,8,0,34,34,39,39,92,92,98,98,102,
+        102,110,110,114,114,116,116,1,0,49,57,3,0,48,57,65,70,97,102,1,0,
+        48,57,4,0,10,10,13,13,39,39,92,92,4,0,10,10,13,13,34,34,92,92,3,
+        0,183,183,768,879,8255,8256,13,0,65,90,97,122,192,214,216,246,248,
+        767,880,893,895,8191,8204,8205,8304,8591,11264,12271,12289,55295,
+        63744,64975,65008,65533,278,1,101,1,0,0,0,3,103,1,0,0,0,5,105,1,
+        0,0,0,7,107,1,0,0,0,9,121,1,0,0,0,11,136,1,0,0,0,13,145,1,0,0,0,
+        15,152,1,0,0,0,17,155,1,0,0,0,19,176,1,0,0,0,21,178,1,0,0,0,23,180,
+        1,0,0,0,25,191,1,0,0,0,27,193,1,0,0,0,29,200,1,0,0,0,31,210,1,0,
+        0,0,33,220,1,0,0,0,35,232,1,0,0,0,37,234,1,0,0,0,39,236,1,0,0,0,
+        41,240,1,0,0,0,43,242,1,0,0,0,45,244,1,0,0,0,47,247,1,0,0,0,49,249,
+        1,0,0,0,51,251,1,0,0,0,53,253,1,0,0,0,55,255,1,0,0,0,57,257,1,0,
+        0,0,59,259,1,0,0,0,61,261,1,0,0,0,63,263,1,0,0,0,65,266,1,0,0,0,
+        67,268,1,0,0,0,69,270,1,0,0,0,71,272,1,0,0,0,73,274,1,0,0,0,75,276,
+        1,0,0,0,77,278,1,0,0,0,79,281,1,0,0,0,81,283,1,0,0,0,83,285,1,0,
+        0,0,85,287,1,0,0,0,87,289,1,0,0,0,89,291,1,0,0,0,91,293,1,0,0,0,
+        93,296,1,0,0,0,95,298,1,0,0,0,97,300,1,0,0,0,99,102,3,3,1,0,100,
+        102,3,5,2,0,101,99,1,0,0,0,101,100,1,0,0,0,102,2,1,0,0,0,103,104,
+        7,0,0,0,104,4,1,0,0,0,105,106,7,1,0,0,106,6,1,0,0,0,107,108,5,47,
+        0,0,108,109,5,42,0,0,109,113,1,0,0,0,110,112,9,0,0,0,111,110,1,0,
+        0,0,112,115,1,0,0,0,113,114,1,0,0,0,113,111,1,0,0,0,114,119,1,0,
+        0,0,115,113,1,0,0,0,116,117,5,42,0,0,117,120,5,47,0,0,118,120,5,
+        0,0,1,119,116,1,0,0,0,119,118,1,0,0,0,120,8,1,0,0,0,121,122,5,47,
+        0,0,122,123,5,42,0,0,123,124,5,42,0,0,124,128,1,0,0,0,125,127,9,
+        0,0,0,126,125,1,0,0,0,127,130,1,0,0,0,128,129,1,0,0,0,128,126,1,
+        0,0,0,129,134,1,0,0,0,130,128,1,0,0,0,131,132,5,42,0,0,132,135,5,
+        47,0,0,133,135,5,0,0,1,134,131,1,0,0,0,134,133,1,0,0,0,135,10,1,
+        0,0,0,136,137,5,47,0,0,137,138,5,47,0,0,138,142,1,0,0,0,139,141,
+        8,2,0,0,140,139,1,0,0,0,141,144,1,0,0,0,142,140,1,0,0,0,142,143,
+        1,0,0,0,143,12,1,0,0,0,144,142,1,0,0,0,145,150,3,41,20,0,146,151,
+        7,3,0,0,147,151,3,17,8,0,148,151,9,0,0,0,149,151,5,0,0,1,150,146,
+        1,0,0,0,150,147,1,0,0,0,150,148,1,0,0,0,150,149,1,0,0,0,151,14,1,
+        0,0,0,152,153,3,41,20,0,153,154,9,0,0,0,154,16,1,0,0,0,155,166,5,
+        117,0,0,156,164,3,21,10,0,157,162,3,21,10,0,158,160,3,21,10,0,159,
+        161,3,21,10,0,160,159,1,0,0,0,160,161,1,0,0,0,161,163,1,0,0,0,162,
+        158,1,0,0,0,162,163,1,0,0,0,163,165,1,0,0,0,164,157,1,0,0,0,164,
+        165,1,0,0,0,165,167,1,0,0,0,166,156,1,0,0,0,166,167,1,0,0,0,167,
+        18,1,0,0,0,168,177,5,48,0,0,169,173,7,4,0,0,170,172,3,23,11,0,171,
+        170,1,0,0,0,172,175,1,0,0,0,173,171,1,0,0,0,173,174,1,0,0,0,174,
+        177,1,0,0,0,175,173,1,0,0,0,176,168,1,0,0,0,176,169,1,0,0,0,177,
+        20,1,0,0,0,178,179,7,5,0,0,179,22,1,0,0,0,180,181,7,6,0,0,181,24,
+        1,0,0,0,182,183,5,116,0,0,183,184,5,114,0,0,184,185,5,117,0,0,185,
+        192,5,101,0,0,186,187,5,102,0,0,187,188,5,97,0,0,188,189,5,108,0,
+        0,189,190,5,115,0,0,190,192,5,101,0,0,191,182,1,0,0,0,191,186,1,
+        0,0,0,192,26,1,0,0,0,193,196,3,47,23,0,194,197,3,13,6,0,195,197,
+        8,7,0,0,196,194,1,0,0,0,196,195,1,0,0,0,197,198,1,0,0,0,198,199,
+        3,47,23,0,199,28,1,0,0,0,200,205,3,47,23,0,201,204,3,13,6,0,202,
+        204,8,7,0,0,203,201,1,0,0,0,203,202,1,0,0,0,204,207,1,0,0,0,205,
+        203,1,0,0,0,205,206,1,0,0,0,206,208,1,0,0,0,207,205,1,0,0,0,208,
+        209,3,47,23,0,209,30,1,0,0,0,210,215,3,49,24,0,211,214,3,13,6,0,
+        212,214,8,8,0,0,213,211,1,0,0,0,213,212,1,0,0,0,214,217,1,0,0,0,
+        215,213,1,0,0,0,215,216,1,0,0,0,216,218,1,0,0,0,217,215,1,0,0,0,
+        218,219,3,49,24,0,219,32,1,0,0,0,220,225,3,47,23,0,221,224,3,13,
+        6,0,222,224,8,7,0,0,223,221,1,0,0,0,223,222,1,0,0,0,224,227,1,0,
+        0,0,225,223,1,0,0,0,225,226,1,0,0,0,226,34,1,0,0,0,227,225,1,0,0,
+        0,228,233,3,37,18,0,229,233,2,48,57,0,230,233,3,79,39,0,231,233,
+        7,9,0,0,232,228,1,0,0,0,232,229,1,0,0,0,232,230,1,0,0,0,232,231,
+        1,0,0,0,233,36,1,0,0,0,234,235,7,10,0,0,235,38,1,0,0,0,236,237,5,
+        105,0,0,237,238,5,110,0,0,238,239,5,116,0,0,239,40,1,0,0,0,240,241,
+        5,92,0,0,241,42,1,0,0,0,242,243,5,58,0,0,243,44,1,0,0,0,244,245,
+        5,58,0,0,245,246,5,58,0,0,246,46,1,0,0,0,247,248,5,39,0,0,248,48,
+        1,0,0,0,249,250,5,34,0,0,250,50,1,0,0,0,251,252,5,40,0,0,252,52,
+        1,0,0,0,253,254,5,41,0,0,254,54,1,0,0,0,255,256,5,123,0,0,256,56,
+        1,0,0,0,257,258,5,125,0,0,258,58,1,0,0,0,259,260,5,91,0,0,260,60,
+        1,0,0,0,261,262,5,93,0,0,262,62,1,0,0,0,263,264,5,45,0,0,264,265,
+        5,62,0,0,265,64,1,0,0,0,266,267,5,60,0,0,267,66,1,0,0,0,268,269,
+        5,62,0,0,269,68,1,0,0,0,270,271,5,61,0,0,271,70,1,0,0,0,272,273,
+        5,63,0,0,273,72,1,0,0,0,274,275,5,42,0,0,275,74,1,0,0,0,276,277,
+        5,43,0,0,277,76,1,0,0,0,278,279,5,43,0,0,279,280,5,61,0,0,280,78,
+        1,0,0,0,281,282,5,95,0,0,282,80,1,0,0,0,283,284,5,124,0,0,284,82,
+        1,0,0,0,285,286,5,36,0,0,286,84,1,0,0,0,287,288,5,44,0,0,288,86,
+        1,0,0,0,289,290,5,59,0,0,290,88,1,0,0,0,291,292,5,46,0,0,292,90,
+        1,0,0,0,293,294,5,46,0,0,294,295,5,46,0,0,295,92,1,0,0,0,296,297,
+        5,64,0,0,297,94,1,0,0,0,298,299,5,35,0,0,299,96,1,0,0,0,300,301,
+        5,126,0,0,301,98,1,0,0,0,23,0,101,113,119,128,134,142,150,160,162,
+        164,166,173,176,191,196,203,205,213,215,223,225,232,0
+    ];
+
+    private static __ATN: antlr.ATN;
+    public static get _ATN(): antlr.ATN {
         if (!ANTLRv4LexBasic.__ATN) {
-            ANTLRv4LexBasic.__ATN = new ATNDeserializer().deserialize(Utils.toCharArray(ANTLRv4LexBasic._serializedATN));
+            ANTLRv4LexBasic.__ATN = new antlr.ATNDeserializer().deserialize(ANTLRv4LexBasic._serializedATN);
         }
 
         return ANTLRv4LexBasic.__ATN;
     }
 
+
+    private static readonly vocabulary = new antlr.Vocabulary(ANTLRv4LexBasic.literalNames, ANTLRv4LexBasic.symbolicNames, []);
+
+    public override get vocabulary(): antlr.Vocabulary {
+        return ANTLRv4LexBasic.vocabulary;
+    }
+
+    private static readonly decisionsToDFA = ANTLRv4LexBasic._ATN.decisionToState.map( (ds: antlr.DecisionState, index: number) => new antlr.DFA(ds, index) );
 }

@@ -10,6 +10,7 @@ import {
     IATNGraphData, IATNNode, IATNGraphLayoutNode, IATNLink, IATNGraphLayoutLink, IATNGraphRendererData, IVSCode,
     IATNGraphUpdateMessageData, IATNStateSaveMessage,
 } from "./types";
+import { ATNStateType } from "antlr4ng";
 
 const stateType = [
     {  // Pretend that this state type is a rule. It's normally the INVALID state type.
@@ -33,31 +34,6 @@ const stateType = [
     },
     { short: "LEND", long: "Loop end\nMarks the end of a * or + loop." },
 ];
-
-/* eslint-disable @typescript-eslint/naming-convention */
-
-// This enum is a copy of the declaration in antlr4ts. It's here to avoid having to import it.
-// Pure types disappear when this file is transpiled to JS. Not this type though (enums become vars and importing
-// them results in a wrong import statement in the transpiled file).
-enum ATNStateType {
-    INVALID_TYPE = 0,
-    BASIC = 1,
-    RULE_START = 2,
-    BLOCK_START = 3,
-    PLUS_BLOCK_START = 4,
-    STAR_BLOCK_START = 5,
-    TOKEN_START = 6,
-    RULE_STOP = 7,
-    BLOCK_END = 8,
-    STAR_LOOP_BACK = 9,
-    STAR_LOOP_ENTRY = 10,
-    PLUS_LOOP_BACK = 11,
-    LOOP_END = 12
-}
-
-const ATNRuleType = ATNStateType.INVALID_TYPE;
-
-/* eslint-enable @typescript-eslint/naming-convention */
 
 interface ILine {
     x1: number;
@@ -209,7 +185,7 @@ export class ATNGraphRenderer {
             .enter().append("line")
             .attr("class", "transition")
             .attr("marker-end", (link) => {
-                if (this.currentNodes![link.target].type === ATNRuleType) {
+                if (this.currentNodes![link.target].type === ATNStateType.INVALID_TYPE) {
                     return "url(#transitionEndRect)";
                 }
 
@@ -229,7 +205,7 @@ export class ATNGraphRenderer {
                 cssClass += " recursive";
             }
 
-            if (node.type === ATNRuleType) {
+            if (node.type === ATNStateType.INVALID_TYPE) {
                 element = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 s = d3.select<SVGElement, IATNGraphLayoutNode>(element)
                     .attr("width", 50) // Size and offset are updated below, depending on label size.
@@ -279,7 +255,7 @@ export class ATNGraphRenderer {
 
         const border = 20;
         for (let i = 0; i < textNodes.length; ++i) {
-            if (this.currentNodes[i].type === ATNRuleType) {
+            if (this.currentNodes[i].type === ATNStateType.INVALID_TYPE) {
                 const element = textNodes[i];
                 let width = Math.ceil(element.getComputedTextLength());
                 if (width < 70) {
@@ -447,7 +423,7 @@ export class ATNGraphRenderer {
      */
     private endCoordinate(horizontal: boolean, element: IATNLink): number {
         if (this.isATNLayoutNode(element.source) && this.isATNLayoutNode(element.target)) {
-            if (element.target.type === ATNRuleType) {
+            if (element.target.type === ATNStateType.INVALID_TYPE) {
                 const sourceX = element.source.x ?? 0;
                 const sourceY = element.source.y ?? 0;
 

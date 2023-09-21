@@ -8,7 +8,7 @@
 import * as path from "path";
 
 import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
-import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
 
 export class ParserSymbol extends TreeItem {
 

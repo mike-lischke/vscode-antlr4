@@ -7,17 +7,17 @@ import * as vm from "vm";
 import * as fs from "fs";
 
 import {
-    ATNState, ATNStateType, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType,
-    RuleTransition, StarBlockStartState, RuleStartState, NotSetTransition, DecisionState, PredicateTransition,
-} from "antlr4ts/atn";
+    ATNState, BlockStartState, PlusBlockStartState, StarLoopEntryState, TransitionType,
+    RuleTransition, StarBlockStartState, RuleStartState, DecisionState, PredicateTransition,
+    IntervalSet, ATNStateType,
+} from "antlr4ng";
 
-import { ISentenceGenerationOptions, IRuleMappings, PredicateFunction } from "./types";
-import { IntervalSet } from "antlr4ts/misc";
+import { ISentenceGenerationOptions, IRuleMappings, PredicateFunction } from "./types.js";
 
-import { printableUnicodePoints, fullUnicodeSet } from "./Unicode";
-import { IInterpreterData } from "./InterpreterDataReader";
-import { LexerPredicateSymbol, ParserPredicateSymbol } from "./ContextSymbolTable";
-import { SourceContext } from "./SourceContext";
+import { printableUnicodePoints, fullUnicodeSet } from "./Unicode.js";
+import { IInterpreterData } from "./InterpreterDataReader.js";
+import { LexerPredicateSymbol, ParserPredicateSymbol } from "./ContextSymbolTable.js";
+import { SourceContext } from "./SourceContext.js";
 
 /**
  * This class generates a number of strings, each valid input for a given ATN.
@@ -139,11 +139,11 @@ export class SentenceGenerator {
             let predicate = "";
             if (inLexer) {
                 if (predIndex < this.lexerPredicates.length) {
-                    predicate = this.lexerPredicates[predIndex].context!.text;
+                    predicate = this.lexerPredicates[predIndex].context!.getText();
                 }
             } else {
                 if (predIndex < this.parserPredicates.length) {
-                    predicate = this.parserPredicates[predIndex].context!.text;
+                    predicate = this.parserPredicates[predIndex].context!.getText();
                 }
             }
 
@@ -290,7 +290,7 @@ export class SentenceGenerator {
                         result += this.generateFromDecisionState(run as PlusBlockStartState, !inLexer);
                     }
 
-                    run = loopBack.transition(1).target;
+                    run = loopBack.transitions[1].target;
 
                     break;
                 }
@@ -310,7 +310,7 @@ export class SentenceGenerator {
                 }
 
                 default: {
-                    const transition = run.transition(0);
+                    const transition = run.transitions[0];
                     switch (transition.serializationType) {
                         case TransitionType.RULE: { // Transition into a sub rule.
                             run = (transition as RuleTransition).followState;
@@ -355,15 +355,15 @@ export class SentenceGenerator {
                             // Any other basic transition. See if there is a label we can use.
                             if (inLexer) {
                                 if (transition.label && transition.label.minElement > -1) {
-                                    let label = transition.label;
-                                    if (transition instanceof NotSetTransition) {
+                                    const label = transition.label;
+                                    /*if (transition instanceof NotSetTransition) {
                                         label = label.complement(IntervalSet.COMPLETE_CHAR_SET);
-                                    }
+                                    }*/
                                     result += this.getRandomCharacterFromInterval(label);
                                 }
                             } else {
                                 if (transition.label && transition.label.maxElement > -1) {
-                                    const randomIndex = Math.floor(Math.random() * transition.label.size);
+                                    const randomIndex = Math.floor(Math.random() * transition.label.length);
                                     const token = this.getIntervalElement(transition.label, randomIndex);
                                     const tokenIndex = this.lexerData.atn.ruleToTokenType.indexOf(token);
                                     if (tokenIndex === -1) {
@@ -451,7 +451,7 @@ export class SentenceGenerator {
             const altCounts = decisionCounts.get(state.decision)!;
             ++altCounts[decision];
 
-            let endState;
+            let endState: ATNState;
             switch (state.stateType) {
                 case ATNStateType.STAR_BLOCK_START:
                 case ATNStateType.BLOCK_START: {
@@ -469,7 +469,7 @@ export class SentenceGenerator {
                 }
             }
 
-            [result, blocked] = this.generateFromATNSequence(state.transition(decision).target, endState, addSpace);
+            [result, blocked] = this.generateFromATNSequence(state.transitions[decision].target, endState, addSpace);
             if (blocked) {
                 altCounts[decision] = 1e6; // Set a large execution count to effectively disable this decision.
             }
@@ -490,10 +490,10 @@ export class SentenceGenerator {
     private getRandomDecision(state: DecisionState): number {
         const decisionCounts = state.atn === this.lexerData.atn ? this.lexerDecisionCounts : this.parserDecisionCounts;
 
-        const weights = new Array<number>(state.numberOfTransitions).fill(1);
+        const weights = new Array<number>(state.transitions.length).fill(1);
         let altCounts = decisionCounts.get(state.decision);
         if (!altCounts) {
-            altCounts = new Array<number>(state.numberOfTransitions).fill(0);
+            altCounts = new Array<number>(state.transitions.length).fill(0);
             decisionCounts.set(state.decision, altCounts);
         } else {
             for (let i = 0; i < altCounts.length; ++i) {
@@ -526,7 +526,7 @@ export class SentenceGenerator {
      * @returns The found state or undefined.
      */
     private loopEnd(state: ATNState): ATNState | undefined {
-        for (const transition of state.getTransitions()) {
+        for (const transition of state.transitions) {
             if (transition.target.stateType === ATNStateType.LOOP_END) {
                 return transition.target;
             }
@@ -536,7 +536,7 @@ export class SentenceGenerator {
     }
 
     private blockStart(state: StarLoopEntryState): StarBlockStartState | undefined {
-        for (const transition of state.getTransitions()) {
+        for (const transition of state.transitions) {
             if (transition.target.stateType === ATNStateType.STAR_BLOCK_START) {
                 return transition.target as StarBlockStartState;
             }
@@ -555,10 +555,10 @@ export class SentenceGenerator {
      */
     private getIntervalElement(set: IntervalSet, index: number): number {
         let runningIndex = 0;
-        for (const interval of set.intervals) {
-            const intervalSize = interval.b - interval.a + 1;
+        for (const interval of set) {
+            const intervalSize = interval.stop - interval.start + 1;
             if (index < runningIndex + intervalSize) {
-                return interval.a + index - runningIndex;
+                return interval.start + index - runningIndex;
             }
             runningIndex += intervalSize;
         }
@@ -566,15 +566,15 @@ export class SentenceGenerator {
         return runningIndex;
     }
 
-    private getRandomCharacterFromInterval(set: IntervalSet): String {
+    private getRandomCharacterFromInterval(set: IntervalSet): string {
         //const randomBlockSet = randomCodeBlocks();
         const validSet = SentenceGenerator.printableUnicode.and(set);
-        if (validSet.size === 0) {
+        if (validSet.length === 0) {
             // Very likely just a single script or a simple set of elements.
-            return String.fromCodePoint(this.getIntervalElement(set, Math.floor(Math.random() * set.size)));
+            return String.fromCodePoint(this.getIntervalElement(set, Math.floor(Math.random() * set.length)));
         }
 
-        return String.fromCodePoint(this.getIntervalElement(validSet, Math.floor(Math.random() * validSet.size)));
+        return String.fromCodePoint(this.getIntervalElement(validSet, Math.floor(Math.random() * validSet.length)));
     }
 
     private getRandomLoopCount(inLexer: boolean, forPlusLoop: boolean): number {
@@ -586,17 +586,12 @@ export class SentenceGenerator {
 
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
-
-    static {
-        void printableUnicodePoints({
-            excludeCJK: true,
-            excludeRTL: true,
-            limitToBMP: false,
-            includeLineTerminators: true,
-        }).then((intervalSet) => {
-            this.printableUnicode = intervalSet;
-        });
-
-
-    }
 }
+
+// @ts-expect-error, because printableUnicode is (for good reasons) private.
+SentenceGenerator.printableUnicode = await printableUnicodePoints({
+    excludeCJK: true,
+    excludeRTL: true,
+    limitToBMP: false,
+    includeLineTerminators: true,
+});

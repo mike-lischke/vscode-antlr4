@@ -3,10 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { IntervalSet, Interval } from "antlr4ts/misc";
+import { Interval, IntervalSet } from "antlr4ng";
 
-// This structure contains all currently defined Unicode blocks (according to https://unicode-table.com/en/blocks/)
-// together with a weight value that determines the probability to select a given block in the random block selection.
+/**
+ * This structure contains all currently defined Unicode blocks (according to https://unicode-table.com/en/blocks/)
+ * together with a weight value that determines the probability to select a given block in the random block selection.
+ */
 const unicodeBlocks: Array<[Interval, string, number]> = [
     [new Interval(0x0000, 0x001F), "Control character", 0],
     [new Interval(0x0020, 0x007F), "Basic Latin", 100],
@@ -300,30 +302,30 @@ let predefinedWeightSum = 0;
  * @returns A new set of Unicode code points.
  */
 const codePointsToIntervals = async (dataFile: string, existing?: IntervalSet): Promise<IntervalSet> => {
-    const charsToExclude: number[] = await import("@unicode/unicode-11.0.0/" + dataFile);
-    const result = existing ?? new IntervalSet([]);
+    const charsToExclude: { default: number[]; } = await import("@unicode/unicode-11.0.0/" + dataFile);
+    const result = existing ?? new IntervalSet();
 
     // Code points are sorted in increasing order, which we can use to speed up insertion.
-    let start = charsToExclude[0];
+    let start = charsToExclude.default[0];
     let end = start;
-    for (let i = 1; i < charsToExclude.length; ++i) {
-        const code = charsToExclude[i];
+    for (let i = 1; i < charsToExclude.default.length; ++i) {
+        const code = charsToExclude.default[i];
         if (end + 1 === code) {
             ++end;
             continue;
         }
 
-        result.add(start, end);
+        result.addRange(start, end);
         start = code;
         end = code;
     }
 
-    result.add(start, end);
+    result.addRange(start, end);
 
     return result;
 };
 
-export const fullUnicodeSet = new IntervalSet([new Interval(0, 0x10FFFF)]);
+export const fullUnicodeSet = IntervalSet.of(0, 0x10FFFF);
 
 export interface IUnicodeOptions {
     // The CJK scripts consist of so many code points, any generated random string will contain mostly CJK
@@ -386,13 +388,13 @@ export const printableUnicodePoints = async (options: IUnicodeOptions): Promise<
 
     if (options.includeLineTerminators) {
         // Unicode line terminators are implicitly taken out by the above code, so we add them in here.
-        intervalsToExclude.remove(0x0A); // NL, New Line.
-        intervalsToExclude.remove(0x0B); // VT, Vertical Tab
-        intervalsToExclude.remove(0x0C); // FF, Form Feed
-        intervalsToExclude.remove(0x0D); // CR, Carriage Return
-        intervalsToExclude.remove(0x85); // NEL, Next Line
-        intervalsToExclude.remove(0x2028); // LS, Line Separator
-        intervalsToExclude.remove(0x2029); // PS, Paragraph Separator
+        intervalsToExclude.removeOne(0x0A); // NL, New Line.
+        intervalsToExclude.removeOne(0x0B); // VT, Vertical Tab
+        intervalsToExclude.removeOne(0x0C); // FF, Form Feed
+        intervalsToExclude.removeOne(0x0D); // CR, Carriage Return
+        intervalsToExclude.removeOne(0x85); // NEL, Next Line
+        intervalsToExclude.removeOne(0x2028); // LS, Line Separator
+        intervalsToExclude.removeOne(0x2029); // PS, Paragraph Separator
     }
 
     let sourceIntervals: IntervalSet;
@@ -444,7 +446,7 @@ export const randomCodeBlocks = (blockOverrides?: Map<string, number>): Interval
 
             randomValue -= weight;
             if (randomValue < 0) {
-                set.add(entry[0].a, entry[0].b);
+                set.addRange(entry[0].start, entry[0].stop);
             }
         }
     }

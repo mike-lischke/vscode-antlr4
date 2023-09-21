@@ -5,8 +5,8 @@
 
 /* eslint-disable max-len */
 
-import { IDiagnosticEntry, DiagnosticType } from "./types";
-import { SourceContext } from "./SourceContext";
+import { IDiagnosticEntry, DiagnosticType } from "./types.js";
+import { SourceContext } from "./SourceContext.js";
 
 /**
  * ANTLR uses ST templates for generating messages. We use the "antlr" message format which is generated from

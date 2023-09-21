@@ -5,12 +5,11 @@
 
 /* eslint-disable max-classes-per-file */
 
-import { ParserRuleContext } from "antlr4ts";
-import { SymbolTable, SymbolTableOptions, BaseSymbol, ScopedSymbol, SymbolConstructor } from "antlr4-c3";
+import { ParseTree, ParserRuleContext } from "antlr4ng";
+import { SymbolTable, ISymbolTableOptions, BaseSymbol, ScopedSymbol, SymbolConstructor } from "antlr4-c3";
 
-import { ISymbolInfo, CodeActionType, SymbolKind, SymbolGroupKind } from "./types";
-import { SourceContext } from "./SourceContext";
-import { ParseTree } from "antlr4ts/tree";
+import { ISymbolInfo, CodeActionType, SymbolKind, SymbolGroupKind } from "./types.js";
+import { SourceContext } from "./SourceContext.js";
 
 export class OptionSymbol extends BaseSymbol {
     public value: string;
@@ -63,7 +62,7 @@ export class ContextSymbolTable extends SymbolTable {
     private parserPredicates: BaseSymbol[] = [];
     private lexerPredicates: BaseSymbol[] = [];
 
-    public constructor(name: string, options: SymbolTableOptions, public owner?: SourceContext) {
+    public constructor(name: string, options: ISymbolTableOptions, public owner?: SourceContext) {
         super(name, options);
     }
 
@@ -71,8 +70,8 @@ export class ContextSymbolTable extends SymbolTable {
         // Before clearing the dependencies make sure the owners are updated.
         if (this.owner) {
             for (const dep of this.dependencies) {
-                if ((dep as ContextSymbolTable).owner) {
-                    this.owner.removeDependency((dep as ContextSymbolTable).owner!);
+                if (dep instanceof ContextSymbolTable && dep.owner) {
+                    this.owner.removeDependency(dep.owner);
                 }
             }
         }
@@ -278,7 +277,7 @@ export class ContextSymbolTable extends SymbolTable {
                     name: entry.name,
                     source: this.owner ? this.owner.fileName : "",
                     definition,
-                    description: entry.context!.text,
+                    description: entry.context!.getText(),
                 });
             }
         } catch (e) {
@@ -443,7 +442,7 @@ export class ContextSymbolTable extends SymbolTable {
                     continue;
                 }
 
-                if (symbol.context.sourceInterval.properlyContains(context.sourceInterval)) {
+                if (symbol.context.getSourceInterval().properlyContains(context.getSourceInterval())) {
                     let child;
                     if (symbol instanceof ScopedSymbol) {
                         child = findRecursive(symbol);

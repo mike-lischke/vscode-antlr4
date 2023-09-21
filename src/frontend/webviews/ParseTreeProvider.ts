@@ -7,10 +7,10 @@ import { basename } from "path";
 
 import { Uri, Webview, workspace } from "vscode";
 
-import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
-import { FrontendUtils } from "../FrontendUtils";
-import { IDebuggerConsumer } from "../AntlrDebugAdapter";
-import { GrammarDebugger } from "../../backend/GrammarDebugger";
+import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider.js";
+import { FrontendUtils } from "../FrontendUtils.js";
+import { IDebuggerConsumer } from "../AntlrDebugAdapter.js";
+import { GrammarDebugger } from "../../backend/GrammarDebugger.js";
 
 export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsumer {
 

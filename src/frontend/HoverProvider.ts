@@ -5,9 +5,9 @@
 
 import { TextDocument, Position, CancellationToken, Hover, ProviderResult, HoverProvider } from "vscode";
 
-import { AntlrFacade } from "../backend/facade";
+import { AntlrFacade } from "../backend/facade.js";
 
-import { symbolDescriptionFromEnum } from "./Symbol";
+import { symbolDescriptionFromEnum } from "./Symbol.js";
 
 import * as path from "path";
 

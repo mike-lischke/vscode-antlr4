@@ -21,9 +21,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { AbstractParseTreeVisitor, TerminalNode } from "antlr4ts/tree";
-import { ANTLRv4ParserVisitor } from "../parser/ANTLRv4ParserVisitor";
-import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
+import { TerminalNode } from "antlr4ng";
+
+import { ANTLRv4ParserVisitor } from "../parser/ANTLRv4ParserVisitor.js";
+import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
 import {
     ParserRuleSpecContext, RuleAltListContext, LexerRuleSpecContext, LexerAltListContext, LexerAltContext,
     LexerElementsContext, LexerElementContext, LabeledLexerElementContext, AltListContext, AlternativeContext,
@@ -31,9 +32,9 @@ import {
     NotSetContext, BlockSetContext, CharacterRangeContext, TerminalRuleContext, SetElementContext,
 
     RuleBlockContext, LexerRuleBlockContext, ElementOptionsContext,
-} from "../parser/ANTLRv4Parser";
+} from "../parser/ANTLRv4Parser.js";
 
-export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANTLRv4ParserVisitor<string> {
+export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
 
     public constructor(private scripts: Map<string, string>) {
         super();
@@ -43,18 +44,18 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return "";
     }
 
-    public visitParserRuleSpec(ctx: ParserRuleSpecContext): string {
-        if (!ctx.tryGetRuleContext(0, RuleBlockContext)) {
+    public override visitParserRuleSpec = (ctx: ParserRuleSpecContext): string => {
+        if (!ctx.getRuleContext(0, RuleBlockContext)) {
             return "# Syntax Error #";
         }
 
         const diagram = "ComplexDiagram(" + this.visitRuleAltList(ctx.ruleBlock().ruleAltList()) + ").addTo()";
-        this.scripts.set(ctx.RULE_REF().text, diagram);
+        this.scripts.set(ctx.RULE_REF()!.getText(), diagram);
 
         return diagram;
-    }
+    };
 
-    public visitRuleAltList = (ctx: RuleAltListContext): string => {
+    public override visitRuleAltList = (ctx: RuleAltListContext): string => {
         let script = "Choice(0";
         const alternatives = ctx.labeledAlt();
         for (const alternative of alternatives) {
@@ -64,19 +65,19 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return script + ")";
     };
 
-    public visitLexerRuleSpec = (ctx: LexerRuleSpecContext): string => {
-        if (!ctx.tryGetRuleContext(0, LexerRuleBlockContext)) {
+    public override visitLexerRuleSpec = (ctx: LexerRuleSpecContext): string => {
+        if (!ctx.getRuleContext(0, LexerRuleBlockContext)) {
             return "# Syntax Error #";
         }
 
         const diagram = "Diagram(" + this.visitLexerAltList(ctx.lexerRuleBlock()!.lexerAltList()) + ").addTo()";
 
-        this.scripts.set(ctx.TOKEN_REF().text, diagram);
+        this.scripts.set(ctx.TOKEN_REF()!.getText(), diagram);
 
         return diagram;
     };
 
-    public visitLexerAltList = (ctx: LexerAltListContext): string => {
+    public override visitLexerAltList = (ctx: LexerAltListContext): string => {
         let script = "Choice(0";
 
         for (const alternative of ctx.lexerAlt()) {
@@ -86,7 +87,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return script + ")";
     };
 
-    public visitLexerAlt = (ctx: LexerAltContext): string => {
+    public override visitLexerAlt = (ctx: LexerAltContext): string => {
         if (ctx.lexerElements()) {
             return this.visitLexerElements(ctx.lexerElements()!);
         }
@@ -94,7 +95,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return "";
     };
 
-    public visitLexerElements = (ctx: LexerElementsContext): string => {
+    public override visitLexerElements = (ctx: LexerElementsContext): string => {
         let script = "";
 
         for (const element of ctx.lexerElement()) {
@@ -107,8 +108,8 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return "Sequence(" + script + ")";
     };
 
-    public visitLexerElement = (ctx: LexerElementContext): string => {
-        const hasEbnfSuffix = (ctx.ebnfSuffix() !== undefined);
+    public override visitLexerElement = (ctx: LexerElementContext): string => {
+        const hasEbnfSuffix = (ctx.ebnfSuffix() !== null);
 
         if (ctx.labeledLexerElement()) {
             if (hasEbnfSuffix) {
@@ -131,13 +132,13 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
                 return this.visitLexerAltList(ctx.lexerBlock()!.lexerAltList());
             }
         } else if (ctx.QUESTION()) {
-            return "Comment('" + ctx.actionBlock()!.text + "?')";
+            return "Comment('" + ctx.actionBlock()!.getText() + "?')";
         } else {
             return "Comment('{ action code }')";
         }
     };
 
-    public visitLabeledLexerElement = (ctx: LabeledLexerElementContext): string => {
+    public override visitLabeledLexerElement = (ctx: LabeledLexerElementContext): string => {
         if (ctx.lexerAtom()) {
             return this.visitLexerAtom(ctx.lexerAtom()!);
         } else if (ctx.block()) {
@@ -147,7 +148,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return "";
     };
 
-    public visitAltList = (ctx: AltListContext): string => {
+    public override visitAltList = (ctx: AltListContext): string => {
         let script = "Choice(0";
         for (const alternative of ctx.alternative()) {
             script += ", " + this.visitAlternative(alternative);
@@ -156,7 +157,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return script + ")";
     };
 
-    public visitAlternative = (ctx: AlternativeContext): string => {
+    public override visitAlternative = (ctx: AlternativeContext): string => {
         let script = "";
 
         const optionsContext = ctx.elementOptions();
@@ -174,8 +175,8 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return "Sequence(" + script + ")";
     };
 
-    public visitElement = (ctx: ElementContext): string => {
-        const hasEbnfSuffix = (ctx.ebnfSuffix() !== undefined);
+    public override visitElement = (ctx: ElementContext): string => {
+        const hasEbnfSuffix = (ctx.ebnfSuffix() !== null);
 
         if (ctx.labeledElement()) {
             if (hasEbnfSuffix) {
@@ -193,17 +194,17 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         } else if (ctx.ebnf()) {
             return this.visitEbnf(ctx.ebnf()!);
         } else if (ctx.QUESTION()) {
-            return "Comment('" + ctx.actionBlock()!.text + "?')";
+            return "Comment('" + ctx.actionBlock()!.getText() + "?')";
         } else {
             return "Comment('{ action code }')";
         }
     };
 
-    public visitElementOptions = (ctx: ElementOptionsContext): string => {
-        return "Comment('" + ctx.text + "')";
+    public override visitElementOptions = (ctx: ElementOptionsContext): string => {
+        return "Comment('" + ctx.getText() + "')";
     };
 
-    public visitLabeledElement = (ctx: LabeledElementContext): string => {
+    public override visitLabeledElement = (ctx: LabeledElementContext): string => {
         if (ctx.atom()) {
             return this.visitAtom(ctx.atom()!);
         } else {
@@ -211,7 +212,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         }
     };
 
-    public visitEbnf = (ctx: EbnfContext): string => {
+    public override visitEbnf = (ctx: EbnfContext): string => {
         if (!ctx.block()) {
             return "# Syntax Error #";
         }
@@ -224,8 +225,8 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         }
     };
 
-    public visitEbnfSuffix = (ctx: EbnfSuffixContext): string => {
-        const text = ctx.text;
+    public override visitEbnfSuffix = (ctx: EbnfSuffixContext): string => {
+        const text = ctx.getText();
 
         if (text === "?") {
             return "Optional";
@@ -236,7 +237,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         }
     };
 
-    public visitLexerAtom = (ctx: LexerAtomContext): string => {
+    public override visitLexerAtom = (ctx: LexerAtomContext): string => {
         if (ctx.characterRange()) {
             return this.visitCharacterRange(ctx.characterRange()!);
         } else if (ctx.terminalRule()) {
@@ -258,13 +259,13 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return "Terminal('any char')";
     };
 
-    public visitAtom = (ctx: AtomContext): string => {
+    public override visitAtom = (ctx: AtomContext): string => {
         if (ctx.characterRange()) {
             return this.visitCharacterRange(ctx.characterRange()!);
         } else if (ctx.terminalRule()) {
             return this.visitTerminalRule(ctx.terminalRule()!);
         } else if (ctx.ruleref()) {
-            return this.visitTerminal(ctx.ruleref()!.RULE_REF());
+            return this.visitTerminal(ctx.ruleref()!.RULE_REF()!);
         } else if (ctx.notSet()) {
             return this.visitNotSet(ctx.notSet()!);
         }
@@ -280,7 +281,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return "NonTerminal('any token')";
     };
 
-    public visitNotSet = (ctx: NotSetContext): string => {
+    public override visitNotSet = (ctx: NotSetContext): string => {
         if (ctx.setElement() != null) {
             return "Sequence(Comment('not'), " + this.visitSetElement(ctx.setElement()!) + ")";
         } else {
@@ -288,7 +289,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         }
     };
 
-    public visitBlockSet = (ctx: BlockSetContext): string => {
+    public override visitBlockSet = (ctx: BlockSetContext): string => {
         let script = "Choice(0";
         for (const element of ctx.setElement()) {
             script += ", " + this.visitSetElement(element);
@@ -297,7 +298,7 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return script + ")";
     };
 
-    public visitSetElement = (ctx: SetElementContext): string => {
+    public override visitSetElement = (ctx: SetElementContext): string => {
         if (ctx.characterRange()) {
             return this.visitCharacterRange(ctx.characterRange()!);
         } else if (ctx.TOKEN_REF()) {
@@ -309,16 +310,16 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
         return this.visitTerminal(ctx.LEXER_CHAR_SET()!);
     };
 
-    public visitCharacterRange = (ctx: CharacterRangeContext): string => {
+    public override visitCharacterRange = (ctx: CharacterRangeContext): string => {
         // The second literal can be non-existing (e.g. if not properly quoted).
         if (ctx.STRING_LITERAL().length > 1) {
-            return this.escapeTerminal(ctx.STRING_LITERAL(0)) + " .. " + this.escapeTerminal(ctx.STRING_LITERAL(1));
+            return this.escapeTerminal(ctx.STRING_LITERAL(0)!) + " .. " + this.escapeTerminal(ctx.STRING_LITERAL(1)!);
         }
 
-        return this.escapeTerminal(ctx.STRING_LITERAL(0)) + " .. ?";
+        return this.escapeTerminal(ctx.STRING_LITERAL(0)!) + " .. ?";
     };
 
-    public visitTerminalRule = (ctx: TerminalRuleContext): string => {
+    public override visitTerminalRule = (ctx: TerminalRuleContext): string => {
         if (ctx.TOKEN_REF()) {
             return this.visitTerminal(ctx.TOKEN_REF()!);
         } else {
@@ -333,15 +334,15 @@ export class RuleVisitor extends AbstractParseTreeVisitor<string> implements ANT
                 return "Terminal('" + this.escapeTerminal(node) + "')";
 
             case ANTLRv4Lexer.TOKEN_REF:
-                return "Terminal('" + node.text + "')";
+                return "Terminal('" + node.getText() + "')";
 
             default:
-                return "NonTerminal('" + node.text + "')";
+                return "NonTerminal('" + node.getText() + "')";
         }
     };
 
     private escapeTerminal(node: TerminalNode): string {
-        const text = node.text;
+        const text = node.getText();
         const escaped = text.replace(/\\/g, "\\\\");
 
         switch (node.symbol.type) {

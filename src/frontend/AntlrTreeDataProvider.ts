@@ -4,7 +4,8 @@
  */
 
 import { TreeDataProvider, TreeItem, EventEmitter, TextDocument, ProviderResult, Event } from "vscode";
-import { AntlrFacade } from "../backend/facade";
+
+import { AntlrFacade } from "../backend/facade.js";
 
 export class AntlrTreeDataProvider<T extends TreeItem> implements TreeDataProvider<T> {
     protected currentFile: string | undefined;

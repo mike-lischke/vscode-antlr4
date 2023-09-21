@@ -6,8 +6,8 @@
 import {
     TextDocument, Position, CancellationToken, CompletionItem, ProviderResult, CompletionList,
 } from "vscode";
-import { AntlrFacade } from "../backend/facade";
-import { translateCompletionKind } from "./Symbol";
+import { AntlrFacade } from "../backend/facade.js";
+import { translateCompletionKind } from "./Symbol.js";
 
 // Determines the sort order in the completion list. One value for each SymbolKind.
 const sortKeys = [

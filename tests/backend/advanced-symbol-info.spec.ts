@@ -3,23 +3,22 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { AntlrFacade } from "../../src/backend/facade";
+import { AntlrFacade } from "../../src/backend/facade.js";
 
 describe("Advanced Symbol Information", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
-    jest.setTimeout(30000);
 
     it("RRD diagram", () => {
-        let diagram = backend.getRRDScript("test/backend/test-data/TLexer.g4", "Any");
+        let diagram = backend.getRRDScript("tests/backend/test-data/TLexer.g4", "Any");
         expect(diagram).toEqual("Diagram(Choice(0, Sequence(Terminal('Foo'), Terminal('Dot'), " +
             "Optional(Terminal('Bar')), Terminal('DotDot'), Terminal('Baz'), Terminal('Bar')))).addTo()");
 
-        diagram = backend.getRRDScript("test/backend/test-data/TParser.g4", "idarray");
+        diagram = backend.getRRDScript("tests/backend/test-data/TParser.g4", "idarray");
         expect(diagram).toEqual("ComplexDiagram(Choice(0, Sequence(Terminal('OpenCurly'), " +
             "NonTerminal('id'), ZeroOrMore(Choice(0, Sequence(Terminal('Comma'), NonTerminal('id')))), " +
             "Terminal('CloseCurly')))).addTo()");
 
-        diagram = backend.getRRDScript("test/backend/test-data/TParser.g4", "expr");
+        diagram = backend.getRRDScript("tests/backend/test-data/TParser.g4", "expr");
         expect(diagram).toEqual("ComplexDiagram(Choice(0, Sequence(NonTerminal('expr'), " +
             "Terminal('Star'), NonTerminal('expr'))," +
             " Sequence(NonTerminal('expr'), Terminal('Plus'), NonTerminal('expr')), Sequence(Terminal('OpenPar')," +
@@ -32,7 +31,7 @@ describe("Advanced Symbol Information", () => {
     });
 
     it("Reference Graph", () => {
-        const graph = backend.getReferenceGraph("test/backend/test-data/TParser.g4");
+        const graph = backend.getReferenceGraph("tests/backend/test-data/TParser.g4");
         expect(graph.size).toEqual(48);
 
         let element = graph.get("TParser.expr");

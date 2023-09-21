@@ -6,7 +6,8 @@
 import {
     TextDocument, Position, CancellationToken, Range, Uri, ProviderResult, WorkspaceEdit, RenameProvider,
 } from "vscode";
-import { AntlrFacade } from "../backend/facade";
+
+import { AntlrFacade } from "../backend/facade.js";
 
 export class AntlrRenameProvider implements RenameProvider {
     public constructor(private backend: AntlrFacade) { }

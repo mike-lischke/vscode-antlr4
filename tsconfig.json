@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "declaration": true,
         "module": "NodeNext",
+        "moduleResolution": "Node16",
         "target": "ES2022",
         "outDir": "out",
         "removeComments": true,
@@ -12,7 +12,6 @@
         "isolatedModules": false,
         "allowSyntheticDefaultImports": true,
         "allowUmdGlobalAccess": true, // For D3.js
-        "moduleResolution": "node",
         "experimentalDecorators": true,
         "strictNullChecks": true,
         "alwaysStrict": true,
@@ -29,7 +28,7 @@
         "src/backend/**/*.ts",
         "src/frontend/**/*.ts",
         "src/parser/**/*.ts",
-        "test/**/*.ts"
+        "tests/**/*.ts"
     ],
     "exclude": [
         "node_modules",

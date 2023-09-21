@@ -38,7 +38,7 @@ vscode-antlr4> code .
 
 The package.json file contains a number of scripts (you just used one of them, for testing). There are few others, which allow generating the parser + lexer files for the ANTLR4 language or to run eslint or to package and publish the extension.
 
-The generated files are part of the repository, so it is not necessary that your regenerate them again to build the extension, but just in case you want to refresh the files use the `antlr4ts` NPM script. It uses the same ANTLR4 jar like the extension, for generating parser files.
+The generated files are part of the repository, so it is not necessary that your regenerate them again to build the extension, but just in case you want to refresh the files use the `generate` NPM script. It uses the same ANTLR4 jar like the extension, for generating parser files.
 
 To build the extension you can either run the `vscode:prepublish` script or start a debug session, which will run tsc in watch mode as first step. For that change to the debug view and select `Launch Extension` from the configuration dropdown. Then start the debug session by clicking the green triangle or use your configured hot key. After a few seconds you should see a new VS Code window, titled `[Extension Development Host]`.
 

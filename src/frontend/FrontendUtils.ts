@@ -8,8 +8,9 @@ import * as crypto from "crypto";
 import * as path from "path";
 
 import { ExtensionContext, Uri, window, Webview, commands, ProviderResult, TextDocument } from "vscode";
-import { AntlrFacade } from "../backend/facade";
-import { ILexicalRange, GrammarType } from "../backend/types";
+
+import { AntlrFacade } from "../backend/facade.js";
+import { ILexicalRange, GrammarType } from "../backend/types.js";
 
 export interface IRangeHolder {
     range?: ILexicalRange;

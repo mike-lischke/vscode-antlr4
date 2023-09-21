@@ -5,29 +5,26 @@
  * See LICENSE file for more info.
  */
 
-import { Lexer, Token } from "antlr4ts";
-import { Interval } from "antlr4ts/misc";
+import { Lexer, Token } from "antlr4ng";
 
-import { ANTLRv4Lexer } from "./ANTLRv4Lexer";
+import { ANTLRv4Lexer } from "./ANTLRv4Lexer.js";
 
 export abstract class LexerAdaptor extends Lexer {
     private currentRuleType: number = Token.INVALID_TYPE;
 
     public override emit(): Token {
-        if (this.type === ANTLRv4Lexer.ID) {
-            const firstChar = this.inputStream.getText(
-                new Interval(this._tokenStartCharIndex, this._tokenStartCharIndex),
-            );
+        if (this._type === ANTLRv4Lexer.ID) {
+            const firstChar = this.inputStream.getText(this._tokenStartCharIndex, this._tokenStartCharIndex);
             if (firstChar.charAt(0) === firstChar.charAt(0).toUpperCase()) {
-                this.type = ANTLRv4Lexer.TOKEN_REF;
+                this._type = ANTLRv4Lexer.TOKEN_REF;
             } else {
-                this.type = ANTLRv4Lexer.RULE_REF;
+                this._type = ANTLRv4Lexer.RULE_REF;
             }
 
             if (this.currentRuleType === Token.INVALID_TYPE) { // if outside of rule def
-                this.currentRuleType = this.type; // set to inside lexer or parser rule
+                this.currentRuleType = this._type; // set to inside lexer or parser rule
             }
-        } else if (this.type === ANTLRv4Lexer.SEMI) { // exit rule def
+        } else if (this._type === ANTLRv4Lexer.SEMI) { // exit rule def
             this.currentRuleType = Token.INVALID_TYPE;
         }
 
@@ -46,16 +43,16 @@ export abstract class LexerAdaptor extends Lexer {
     protected handleEndArgument(): void {
         this.popMode();
         // eslint-disable-next-line no-underscore-dangle
-        if (this._modeStack.size > 0) {
-            this.type = ANTLRv4Lexer.ARGUMENT_CONTENT;
+        if (this._modeStack.length > 0) {
+            this._type = ANTLRv4Lexer.ARGUMENT_CONTENT;
         }
     }
 
     protected handleEndAction(): void {
         this.popMode();
         // eslint-disable-next-line no-underscore-dangle
-        if (this._modeStack.size > 0) {
-            this.type = ANTLRv4Lexer.ACTION_CONTENT;
+        if (this._modeStack.length > 0) {
+            this._type = ANTLRv4Lexer.ACTION_CONTENT;
         }
     }
 }

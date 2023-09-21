@@ -8,7 +8,7 @@ import {
     ReferenceContext,
 } from "vscode";
 
-import { AntlrFacade } from "../backend/facade";
+import { AntlrFacade } from "../backend/facade.js";
 
 export class AntlrReferenceProvider implements ReferenceProvider {
     public constructor(private backend: AntlrFacade) { }

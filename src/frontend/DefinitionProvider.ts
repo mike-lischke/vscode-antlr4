@@ -6,7 +6,7 @@
 import {
     TextDocument, Position, CancellationToken, Range, Location, Uri, ProviderResult, DefinitionProvider,
 } from "vscode";
-import { AntlrFacade } from "../backend/facade";
+import { AntlrFacade } from "../backend/facade.js";
 
 export class AntlrDefinitionProvider implements DefinitionProvider {
     public constructor(private backend: AntlrFacade) { }

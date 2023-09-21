@@ -9,22 +9,21 @@
 /* eslint-disable no-underscore-dangle */
 
 import {
-    LexerInterpreter, ParserInterpreter, TokenStream, CommonToken, ParserRuleContext, RecognitionException,
-    ANTLRErrorListener, Recognizer, Token, Lexer, RuleContext, CharStream,
-} from "antlr4ts";
+    LexerInterpreter, ParserInterpreter, TokenStream, ParserRuleContext, RecognitionException,
+    BaseErrorListener, Recognizer, Token, Lexer, RuleContext, CharStream, ATNState, RuleStartState, Transition,
+    ATNSimulator, TerminalNode, LexerATNSimulator, ParserATNSimulator, ATNStateType, TransitionType,
+} from "antlr4ng";
 
-import { RuleStartState, ATNState, ATNStateType, TransitionType, Transition, ATNSimulator } from "antlr4ts/atn";
-import { TerminalNode } from "antlr4ts/tree";
 import { BaseSymbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 
-import { IInterpreterData } from "./InterpreterDataReader";
+import { IInterpreterData } from "./InterpreterDataReader.js";
 import {
     ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, LexerPredicateSymbol,
     ParserPredicateSymbol, LexerActionSymbol, ParserActionSymbol,
-} from "./ContextSymbolTable";
-import { SourceContext } from "./SourceContext";
-import { PredicateFunction } from "./types";
-import { TerminalRuleContext } from "../parser/ANTLRv4Parser";
+} from "./ContextSymbolTable.js";
+import { SourceContext } from "./SourceContext.js";
+import { PredicateFunction } from "./types.js";
+import { TerminalRuleContext } from "../parser/ANTLRv4Parser.js";
 
 export enum RunMode {
     Normal,
@@ -60,12 +59,12 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         });
     }
 
-    public override sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
+    public override sempred(_localctx: RuleContext | null, ruleIndex: number, predIndex: number): boolean {
         if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
-                let predicate = this.predicates[predIndex].context!.text;
+                let predicate = this.predicates[predIndex].context!.getText();
                 if (predicate.length > 2) {
-                    predicate = predicate.substring(1, predicate.length - 2); // Remove outer curly braces.
+                    predicate = predicate.substring(1, predicate.length - 1); // Remove outer curly braces.
                     try {
                         return this.runPredicate(predicate);
                     } catch (e) {
@@ -77,6 +76,10 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         }
 
         return true;
+    }
+
+    public override action(_localctx: RuleContext | null, _ruleIndex: number, _actionIndex: number): void {
+        // not used yet
     }
 }
 
@@ -135,7 +138,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         // If we are not going to jump into a rule then make step over a step in.
         // This way we can use step over exclusively for rule processing.
         let p = this.atnState;
-        if (p.transition(0).serializationType !== TransitionType.RULE && runMode === RunMode.StepOver) {
+        if (p.transitions[0].serializationType !== TransitionType.RULE && runMode === RunMode.StepOver) {
             runMode = RunMode.StepIn;
         }
 
@@ -155,7 +158,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
             switch (p.stateType) {
                 case ATNStateType.RULE_STOP: {
-                    if (this._ctx.isEmpty) {
+                    if (this._ctx.isEmpty()) {
                         // End of start rule.
                         if (this.startIsPrecedenceRule) {
                             const result = this._ctx;
@@ -209,7 +212,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                         this.visitState(p);
                     } catch (e) {
                         if (e instanceof RecognitionException) {
-                            this.state = this._atn.ruleToStopState[p.ruleIndex].stateNumber;
+                            this.state = this.atn.ruleToStopState[p.ruleIndex].stateNumber;
                             this.context.exception = e;
                             this.errorHandler.reportError(this, e);
                             this.recover(e);
@@ -223,8 +226,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
             // Update the list of next symbols if there's a label or rule ahead.
             p = this.atnState;
-            if (p.numberOfTransitions === 1) {
-                const transition = p.transition(0);
+            if (p.transitions.length === 1) {
+                const transition = p.transitions[0];
                 switch (transition.serializationType) {
                     case TransitionType.RULE:
                     case TransitionType.ATOM:
@@ -273,12 +276,12 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         }
     }
 
-    public override sempred(_localctx: RuleContext | undefined, ruleIndex: number, predIndex: number): boolean {
+    public override sempred(_localctx: RuleContext | null, ruleIndex: number, predIndex: number): boolean {
         if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
-                let predicate = this.predicates[predIndex].context!.text;
+                let predicate = this.predicates[predIndex].context!.getText();
                 if (predicate.length > 2) {
-                    predicate = predicate.substr(1, predicate.length - 2); // Remove outer curly braces.
+                    predicate = predicate.substring(1, predicate.length - 1); // Remove outer curly braces.
                     try {
                         return this.runPredicate(predicate);
                     } catch (e) {
@@ -292,7 +295,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         return true;
     }
 
-    public override action(_localctx: RuleContext | undefined, _ruleIndex: number, _actionIndex: number): void {
+    public override action(_localctx: RuleContext | null, _ruleIndex: number, _actionIndex: number): void {
         // not used yet
     }
 
@@ -316,7 +319,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         frame.next = [];
 
         const terminalMatches = (node: TerminalNode): boolean => {
-            const type = this.tokenIndexFromName(node.symbol.text!);
+            const type = this.tokenIndexFromName(node.symbol.text);
             const currentType = this.inputStream.LA(1);
             if (type === currentType
                 && transition.matches(currentType, Lexer.MIN_CHAR_VALUE, Lexer.MAX_CHAR_VALUE)) {
@@ -521,27 +524,28 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
         return -1;
     }
-
 }
 
-export class InterpreterLexerErrorListener implements ANTLRErrorListener<number> {
+export class InterpreterLexerErrorListener extends BaseErrorListener<LexerATNSimulator> {
     public constructor(private eventSink: (event: string | symbol, ...args: unknown[]) => void) {
+        super();
     }
 
-    public syntaxError<T extends number>(recognizer: Recognizer<T, ATNSimulator>, offendingSymbol: T | undefined,
-        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | undefined): void {
+    public override syntaxError<T extends Token>(recognizer: Recognizer<ATNSimulator>, offendingSymbol: T | undefined,
+        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | null): void {
         this.eventSink("output", `Lexer error (${line}, ${charPositionInLine + 1}): ${msg}`,
-            recognizer.inputStream!.sourceName, line, charPositionInLine, true);
+            recognizer.inputStream.getSourceName(), line, charPositionInLine, true);
     }
 }
 
-export class InterpreterParserErrorListener implements ANTLRErrorListener<CommonToken> {
+export class InterpreterParserErrorListener extends BaseErrorListener<ParserATNSimulator> {
     public constructor(private eventSink: (event: string | symbol, ...args: unknown[]) => void) {
+        super();
     }
 
-    public syntaxError<T extends Token>(recognizer: Recognizer<T, ATNSimulator>, offendingSymbol: T | undefined,
-        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | undefined): void {
+    public override syntaxError<T extends Token>(recognizer: Recognizer<ATNSimulator>, offendingSymbol: T | undefined,
+        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | null): void {
         this.eventSink("output", `Parser error (${line}, ${charPositionInLine + 1}): ${msg}`,
-            recognizer.inputStream!.sourceName, line, charPositionInLine, true);
+            recognizer.inputStream.getSourceName(), line, charPositionInLine, true);
     }
 }

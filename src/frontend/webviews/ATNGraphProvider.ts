@@ -6,13 +6,15 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { WebviewProvider, IWebviewMessage } from "./WebviewProvider";
-import { FrontendUtils } from "../FrontendUtils";
+import { ATNStateType } from "antlr4ng";
+
 import { window, workspace, Uri, TextEditor, Webview } from "vscode";
+
+import { WebviewProvider, IWebviewMessage } from "./WebviewProvider.js";
+import { FrontendUtils } from "../FrontendUtils.js";
 import {
     IATNGraphData, IATNGraphLayoutNode, IATNGraphRendererData, IATNStateSaveMessage,
-} from "../../webview-scripts/types";
-import { ATNStateType } from "antlr4ts/atn";
+} from "../../webview-scripts/types.js";
 
 interface IATNStatePosition {
     fx?: number;

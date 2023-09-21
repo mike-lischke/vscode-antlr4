@@ -7,8 +7,8 @@ import { basename, join } from "path";
 
 import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 
-import { AntlrFacade } from "../../backend/facade";
-import { FrontendUtils } from "../FrontendUtils";
+import { AntlrFacade } from "../../backend/facade.js";
+import { FrontendUtils } from "../FrontendUtils.js";
 
 export interface IWebviewShowOptions {
     [key: string]: boolean | number | string;

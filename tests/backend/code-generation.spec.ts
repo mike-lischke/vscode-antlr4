@@ -5,28 +5,27 @@
 
 import * as fs from "fs";
 
-import { AntlrFacade } from "../../src/backend/facade";
+import { AntlrFacade } from "../../src/backend/facade.js";
 
 describe("Code Generation", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
-    jest.setTimeout(30000);
 
     afterEach(() => {
-        backend.releaseGrammar("test/backend/test-data/TParser.g4");
-        backend.releaseGrammar("test/backend/test-data/TLexer.g4");
-        backend.releaseGrammar("test/backend/test-data/t2.g4");
-        backend.releaseGrammar("test/backend/test-data/TParser2.g4");
-        backend.releaseGrammar("test/backend/test-data/TLexer2.g4");
+        backend.releaseGrammar("tests/backend/test-data/TParser.g4");
+        backend.releaseGrammar("tests/backend/test-data/TLexer.g4");
+        backend.releaseGrammar("tests/backend/test-data/t2.g4");
+        backend.releaseGrammar("tests/backend/test-data/TParser2.g4");
+        backend.releaseGrammar("tests/backend/test-data/TLexer2.g4");
 
         fs.rmSync("generated-general", { recursive: true, force: true });
     });
 
     it("A standard generation run (CSharp), split grammar", async () => {
-        let result = await backend.generate("test/backend/test-data/TParser.g4", {
+        let result = await backend.generate("tests/backend/test-data/TParser.g4", {
             outputDir: "generated-general",
             language: "CSharp",
         });
-        expect(result).toEqual(["test/backend/test-data/TLexer.g4", "test/backend/test-data/TParser.g4"]);
+        expect(result).toEqual(["tests/backend/test-data/TLexer.g4", "tests/backend/test-data/TParser.g4"]);
 
         expect(fs.existsSync("generated-general/TLexer.cs")).toBeTruthy();
         expect(fs.existsSync("generated-general/TParser.cs")).toBeTruthy();
@@ -38,16 +37,16 @@ describe("Code Generation", () => {
         expect(fs.existsSync("generated-general/TLexer.interp"));
 
         // Release the grammars, so no interpreter data exists anymore.
-        backend.releaseGrammar("test/backend/test-data/TParser.g4");
-        backend.releaseGrammar("test/backend/test-data/TLexer.g4");
+        backend.releaseGrammar("tests/backend/test-data/TParser.g4");
+        backend.releaseGrammar("tests/backend/test-data/TLexer.g4");
 
-        let temp = backend.getATNGraph("test/backend/test-data/TLexer.g4", "Dollar");
+        let temp = backend.getATNGraph("tests/backend/test-data/TLexer.g4", "Dollar");
         expect(temp).toBeUndefined();
-        temp = backend.getATNGraph("test/backend/test-data/TParser.g4", "stat");
+        temp = backend.getATNGraph("tests/backend/test-data/TParser.g4", "stat");
         expect(temp).toBeUndefined();
 
         // Load interpreter data only (no real generation happens), using the data generated above.
-        result = await backend.generate("test/backend/test-data/TParser.g4", {
+        result = await backend.generate("tests/backend/test-data/TParser.g4", {
             outputDir: "generated-general",
             language: "CSharp",
             loadOnly: true,
@@ -57,14 +56,14 @@ describe("Code Generation", () => {
         expect(result).toHaveLength(0);
 
         // Now load the lexer data too.
-        result = await backend.generate("test/backend/test-data/TLexer.g4", {
+        result = await backend.generate("tests/backend/test-data/TLexer.g4", {
             outputDir: "generated-general",
             language: "CSharp",
             loadOnly: true,
         });
 
-        const dollarGraph = backend.getATNGraph("test/backend/test-data/TLexer.g4", "Dollar");
-        const statGraph = backend.getATNGraph("test/backend/test-data/TParser.g4", "stat");
+        const dollarGraph = backend.getATNGraph("tests/backend/test-data/TLexer.g4", "Dollar");
+        const statGraph = backend.getATNGraph("tests/backend/test-data/TParser.g4", "stat");
 
         expect(dollarGraph).toBeDefined();
         if (dollarGraph) {
@@ -144,7 +143,7 @@ describe("Code Generation", () => {
     });
 
     it("Interpreter load w/o existing data, split grammar", async () => {
-        const result = await backend.generate("test/backend/test-data/TParser.g4", {
+        const result = await backend.generate("tests/backend/test-data/TParser.g4", {
             outputDir: "generated-general",
             language: "CSharp",
             loadOnly: true,
@@ -152,7 +151,7 @@ describe("Code Generation", () => {
         expect(result).toHaveLength(0);
         expect(!fs.existsSync("generated-general/"));
 
-        const graph = backend.getATNGraph("test/backend/test-data/TParser.g4", "stat");
+        const graph = backend.getATNGraph("tests/backend/test-data/TParser.g4", "stat");
         expect(graph).toBeUndefined();
     });
 
@@ -161,30 +160,30 @@ describe("Code Generation", () => {
         expect(fs.existsSync("generated-general/typescript")).toBeTruthy();
 
         // Path names are relative to the given base dir.
-        let result = await backend.generate("test/backend/test-data/TParser.g4", {
+        let result = await backend.generate("tests/backend/test-data/TParser.g4", {
             baseDir: process.cwd(),
             libDir: "generated-general/typescript",
             outputDir: "generated-general",
-            language: "typescript",
+            language: "TypeScript",
             package: "parser",
             listeners: false,
             visitors: true,
         });
-        expect(result).toEqual(["test/backend/test-data/TLexer.g4", "test/backend/test-data/TParser.g4"]);
+        expect(result).toEqual(["tests/backend/test-data/TLexer.g4", "tests/backend/test-data/TParser.g4"]);
 
         expect(fs.existsSync("generated-general/TLexer.ts")).toBeTruthy();
         expect(fs.existsSync("generated-general/TParser.ts")).toBeTruthy();
         expect(fs.existsSync("generated-general/TParserListener.ts")).toBeFalsy();
         expect(fs.existsSync("generated-general/TParserVisitor.ts")).toBeTruthy();
 
-        backend.releaseGrammar("test/backend/test-data/TParser.g4");
-        backend.releaseGrammar("test/backend/test-data/TLexer.g4");
+        backend.releaseGrammar("tests/backend/test-data/TParser.g4");
+        backend.releaseGrammar("tests/backend/test-data/TLexer.g4");
 
         // The same grammar for the C++ target.
         fs.mkdirSync("generated-general/cpp", { recursive: true });
         expect(fs.existsSync("generated-general/cpp")).toBeTruthy();
 
-        result = await backend.generate("test/backend/test-data/TParser.g4", {
+        result = await backend.generate("tests/backend/test-data/TParser.g4", {
             baseDir: process.cwd(),
             libDir: "generated-general/cpp",
             outputDir: "generated-general",
@@ -193,7 +192,7 @@ describe("Code Generation", () => {
             listeners: true,
             visitors: false,
         });
-        expect(result).toEqual(["test/backend/test-data/TLexer.g4", "test/backend/test-data/TParser.g4"]);
+        expect(result).toEqual(["tests/backend/test-data/TLexer.g4", "tests/backend/test-data/TParser.g4"]);
 
         expect(fs.existsSync("generated-general/TLexer.cpp")).toBeTruthy();
         expect(fs.existsSync("generated-general/TParser.cpp")).toBeTruthy();
@@ -206,16 +205,15 @@ describe("Code Generation", () => {
     it("Generation with semantic error, combined grammar (C++)", async () => {
         // File contains left recursive rule which are detected only by the ANTLR.
         // Hence we need a generation run to report them.
-        const parserDiags = backend.getDiagnostics("test/backend/test-data/t2.g4");
+        const parserDiags = backend.getDiagnostics("tests/backend/test-data/t2.g4");
         expect(parserDiags).toHaveLength(0); // No error here yet.
 
-        await backend.generate("test/backend/test-data/t2.g4", {
+        await backend.generate("tests/backend/test-data/t2.g4", {
             outputDir: "generated-general",
             language: "Cpp",
             package: "parser",
             listeners: false,
             visitors: true,
-            alternativeJar: "antlr/antlr-4.9.2-complete.jar",
         });
         expect(parserDiags).toHaveLength(3);
     });
@@ -224,13 +222,12 @@ describe("Code Generation", () => {
         // Testing a grammar with an awful lot of (implicit) lexer tokens.
         // Crashes ANTLR and we need to report that separately.
         try {
-            await backend.generate("test/backend/test-data/OddExpr.g4", {
+            await backend.generate("tests/backend/test-data/OddExpr.g4", {
                 outputDir: "generated-general",
                 language: "Java",
                 package: "parser",
                 listeners: false,
                 visitors: true,
-                alternativeJar: "antlr/antlr-4.9.2-complete.jar",
             });
         } catch (error) {
             expect(error).toContain("java.lang.UnsupportedOperationException: Serialized ATN data " +
@@ -240,17 +237,16 @@ describe("Code Generation", () => {
 
     it("Generation with errors, split grammar (C++)", async () => {
         // Asking for parser generation, getting lexer error back.
-        const result = await backend.generate("test/backend/test-data/TParser2.g4", {
+        const result = await backend.generate("tests/backend/test-data/TParser2.g4", {
             outputDir: "generated-general",
             language: "Cpp",
             package: "parser",
             listeners: false,
             visitors: false,
-            alternativeJar: "antlr/antlr-4.9.2-complete.jar",
         });
-        expect(result).toEqual(["test/backend/test-data/TLexer2.g4", "test/backend/test-data/TParser2.g4"]);
-        const diagnostics = backend.getDiagnostics("test/backend/test-data/TLexer2.g4");
+        expect(result).toEqual(["tests/backend/test-data/TLexer2.g4", "tests/backend/test-data/TParser2.g4"]);
+        const diagnostics = backend.getDiagnostics("tests/backend/test-data/TLexer2.g4");
         expect(diagnostics).toHaveLength(1);
-        expect(diagnostics[0].message).toEqual("cannot find tokens file test/backend/test-data/nonexisting.tokens");
+        expect(diagnostics[0].message).toEqual("cannot find tokens file tests/backend/test-data/nonexisting.tokens");
     });
 });

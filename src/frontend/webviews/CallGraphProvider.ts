@@ -6,9 +6,9 @@
 import * as path from "path";
 import { Uri, Webview } from "vscode";
 
-import { WebviewProvider } from "./WebviewProvider";
-import { FrontendUtils } from "../FrontendUtils";
-import { ICallGraphEntry } from "../../webview-scripts/types";
+import { WebviewProvider } from "./WebviewProvider.js";
+import { FrontendUtils } from "../FrontendUtils.js";
+import { ICallGraphEntry } from "../../webview-scripts/types.js";
 
 export class CallGraphProvider extends WebviewProvider {
 

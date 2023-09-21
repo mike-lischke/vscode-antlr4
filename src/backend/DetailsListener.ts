@@ -7,7 +7,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
-import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener";
+import { LiteralSymbol, BlockSymbol, BaseSymbol, VariableSymbol, SymbolConstructor } from "antlr4-c3";
+import { ParseTree, TerminalNode } from "antlr4ng";
+
+import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 import {
     LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,
     ModeSpecContext, DelegateGrammarContext, TerminalRuleContext, RulerefContext,
@@ -15,7 +18,7 @@ import {
     OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledElementContext,
     LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext, NamedActionContext,
     LexerCommandContext, OptionContext, OptionValueContext, ANTLRv4Parser,
-} from "../parser/ANTLRv4Parser";
+} from "../parser/ANTLRv4Parser.js";
 
 import {
     ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
@@ -23,13 +26,11 @@ import {
     ArgumentSymbol, OperatorSymbol, GlobalNamedActionSymbol, ExceptionActionSymbol, FinallyActionSymbol,
     ParserActionSymbol, LexerActionSymbol, OptionsSymbol, OptionSymbol, LexerPredicateSymbol,
     ParserPredicateSymbol, LocalNamedActionSymbol, LexerCommandSymbol,
-} from "./ContextSymbolTable";
+} from "./ContextSymbolTable.js";
 
-import { SourceContext } from "./SourceContext";
+import { SourceContext } from "./SourceContext.js";
 
-import { LiteralSymbol, BlockSymbol, BaseSymbol, VariableSymbol, SymbolConstructor } from "antlr4-c3";
-import { ParseTree, TerminalNode } from "antlr4ts/tree";
-import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
+import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
 
 /**
  * Removes outer quotes from the input.
@@ -48,10 +49,12 @@ const unquote = (input: string, quoteChar?: string): string => {
     return input;
 };
 
-export class DetailsListener implements ANTLRv4ParserListener {
+export class DetailsListener extends ANTLRv4ParserListener {
     private symbolStack: BaseSymbol[] = [];
 
-    public constructor(private symbolTable: ContextSymbolTable, private imports: string[]) { }
+    public constructor(private symbolTable: ContextSymbolTable, private imports: string[]) {
+        super();
+    }
 
     /**
      * The symbol stack usually contains entries beginning with a rule context, followed by a number of blocks and alts
@@ -65,144 +68,144 @@ export class DetailsListener implements ANTLRv4ParserListener {
         return this.symbolStack.length === 0 ? "" : this.symbolStack[0].name;
     }
 
-    public enterParserRuleSpec(ctx: ParserRuleSpecContext): void {
-        this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF().text);
-    }
+    public override enterParserRuleSpec = (ctx: ParserRuleSpecContext): void => {
+        this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF()!.getText());
+    };
 
-    public exitParserRuleSpec(_ctx: ParserRuleSpecContext): void {
+    public override exitParserRuleSpec = (_ctx: ParserRuleSpecContext): void => {
         this.popSymbol();
-    }
+    };
 
-    public enterRuleBlock(ctx: RuleBlockContext): void {
+    public override enterRuleBlock = (ctx: RuleBlockContext): void => {
         this.pushNewSymbol(BlockSymbol, ctx, "");
-    }
+    };
 
-    public exitRuleBlock(): void {
+    public override exitRuleBlock = (): void => {
         this.popSymbol();
-    }
+    };
 
-    public enterLexerRuleSpec(ctx: LexerRuleSpecContext): void {
+    public override enterLexerRuleSpec = (ctx: LexerRuleSpecContext): void => {
         if (ctx.FRAGMENT()) {
-            this.pushNewSymbol(FragmentTokenSymbol, ctx, ctx.TOKEN_REF().text);
+            this.pushNewSymbol(FragmentTokenSymbol, ctx, ctx.TOKEN_REF()!.getText());
         } else {
-            this.pushNewSymbol(TokenSymbol, ctx, ctx.TOKEN_REF().text);
+            this.pushNewSymbol(TokenSymbol, ctx, ctx.TOKEN_REF()!.getText());
         }
-    }
+    };
 
-    public exitLexerRuleSpec(): void {
+    public override exitLexerRuleSpec = (): void => {
         this.popSymbol();
-    }
+    };
 
-    public enterLexerRuleBlock(ctx: LexerRuleBlockContext): void {
+    public override enterLexerRuleBlock = (ctx: LexerRuleBlockContext): void => {
         this.pushNewSymbol(BlockSymbol, ctx, "");
-    }
+    };
 
-    public exitLexerRuleBlock(_ctx: LexerRuleBlockContext): void {
+    public override exitLexerRuleBlock = (_ctx: LexerRuleBlockContext): void => {
         this.popSymbol();
-    }
+    };
 
-    public enterBlock(ctx: BlockContext): void {
+    public override enterBlock = (ctx: BlockContext): void => {
         this.pushNewSymbol(BlockSymbol, ctx, "");
-    }
+    };
 
-    public exitBlock(_ctx: BlockContext): void {
+    public override exitBlock = (_ctx: BlockContext): void => {
         this.popSymbol();
-    }
+    };
 
-    public enterAlternative(ctx: AlternativeContext): void {
+    public override enterAlternative = (ctx: AlternativeContext): void => {
         this.pushNewSymbol(AlternativeSymbol, ctx, "");
-    }
+    };
 
-    public exitAlternative(_ctx: AlternativeContext): void {
+    public override exitAlternative = (_ctx: AlternativeContext): void => {
         this.popSymbol();
-    }
+    };
 
-    public enterLexerAlt(ctx: LexerAltContext): void {
+    public override enterLexerAlt = (ctx: LexerAltContext): void => {
         this.pushNewSymbol(AlternativeSymbol, ctx, "");
-    }
+    };
 
-    public exitLexerAlt(_ctx: LexerAltContext): void {
+    public override exitLexerAlt = (_ctx: LexerAltContext): void => {
         this.popSymbol();
-    }
+    };
 
-    public exitTokensSpec(ctx: TokensSpecContext): void {
+    public override exitTokensSpec = (ctx: TokensSpecContext): void => {
         const idList = ctx.idList();
         if (idList) {
             for (const identifier of idList.identifier()) {
-                this.addNewSymbol(VirtualTokenSymbol, ctx, identifier.text);
+                this.addNewSymbol(VirtualTokenSymbol, ctx, identifier.getText());
             }
         }
-    }
+    };
 
-    public exitChannelsSpec(ctx: ChannelsSpecContext): void {
+    public override exitChannelsSpec = (ctx: ChannelsSpecContext): void => {
         const idList = ctx.idList();
         if (idList) {
             for (const identifier of idList.identifier()) {
-                this.addNewSymbol(TokenChannelSymbol, ctx, identifier.text);
+                this.addNewSymbol(TokenChannelSymbol, ctx, identifier.getText());
             }
         }
-    }
+    };
 
-    public exitTerminalRule(ctx: TerminalRuleContext): void {
+    public override exitTerminalRule = (ctx: TerminalRuleContext): void => {
         let token = ctx.TOKEN_REF();
         if (token) {
-            this.addNewSymbol(TokenReferenceSymbol, ctx, token.text);
+            this.addNewSymbol(TokenReferenceSymbol, ctx, token.getText());
         } else {
             // Must be a string literal then.
             token = ctx.STRING_LITERAL();
             if (token) {
-                const refName = unquote(token.text, "'");
+                const refName = unquote(token.getText(), "'");
                 this.addNewSymbol(LiteralSymbol, token, refName, refName);
             }
         }
-    }
+    };
 
-    public exitRuleref(ctx: RulerefContext): void {
+    public override exitRuleref = (ctx: RulerefContext): void => {
         const token = ctx.RULE_REF();
         if (token) {
-            this.addNewSymbol(RuleReferenceSymbol, ctx, token.text);
+            this.addNewSymbol(RuleReferenceSymbol, ctx, token.getText());
         }
-    }
+    };
 
-    public exitModeSpec(ctx: ModeSpecContext): void {
-        this.addNewSymbol(LexerModeSymbol, ctx, ctx.identifier().text);
-    }
+    public override exitModeSpec = (ctx: ModeSpecContext): void => {
+        this.addNewSymbol(LexerModeSymbol, ctx, ctx.identifier().getText());
+    };
 
-    public exitDelegateGrammar(ctx: DelegateGrammarContext): void {
+    public override exitDelegateGrammar = (ctx: DelegateGrammarContext): void => {
         const context = ctx.identifier()[ctx.identifier().length - 1];
         if (context) {
             const name = SourceContext.definitionForContext(context, false)!.text;
             this.addNewSymbol(ImportSymbol, context, name);
             this.imports.push(name);
         }
-    }
+    };
 
-    public enterOptionsSpec(ctx: OptionsSpecContext): void {
+    public override enterOptionsSpec = (ctx: OptionsSpecContext): void => {
         this.pushNewSymbol(OptionsSymbol, ctx, "options");
-    }
+    };
 
-    public exitOptionsSpec(_ctx: OptionsSpecContext): void {
+    public override exitOptionsSpec = (_ctx: OptionsSpecContext): void => {
         this.popSymbol();
-    }
+    };
 
-    public exitOption(ctx: OptionContext): void {
-        const option = ctx.identifier().text;
-        const valueContext = ctx.tryGetRuleContext(0, OptionValueContext);
-        if (valueContext && valueContext.childCount > 0) {
-            const symbol = this.addNewSymbol(OptionSymbol, valueContext.getChild(0), option);
-            symbol.value = valueContext.text;
+    public override exitOption = (ctx: OptionContext): void => {
+        const option = ctx.identifier().getText();
+        const valueContext = ctx.getRuleContext(0, OptionValueContext);
+        if (valueContext && valueContext.getChildCount() > 0) {
+            const symbol = this.addNewSymbol(OptionSymbol, valueContext.getChild(0)!, option);
+            symbol.value = valueContext.getText();
             if (option === "tokenVocab") {
-                this.imports.push(valueContext.text);
+                this.imports.push(valueContext.getText());
             }
         }
-    }
+    };
 
     /**
      * Handles all types of native actions in various locations, instead of doing that in individual listener methods.
      *
      * @param ctx The parser context for the action block.
      */
-    public exitActionBlock(ctx: ActionBlockContext): void {
+    public override exitActionBlock = (ctx: ActionBlockContext): void => {
         let run = ctx.parent;
 
         while (run) {
@@ -220,11 +223,11 @@ export class DetailsListener implements ANTLRv4ParserListener {
 
                     const actionScopeName = localContext.actionScopeName();
                     if (actionScopeName) {
-                        prefix = actionScopeName.text + "::";
+                        prefix = actionScopeName.getText() + "::";
                     }
 
                     const symbol = this.addNewSymbol(GlobalNamedActionSymbol, ctx,
-                        prefix + localContext.identifier().text);
+                        prefix + localContext.identifier().getText());
                     this.symbolTable.defineNamedAction(symbol);
 
                     return;
@@ -285,14 +288,14 @@ export class DetailsListener implements ANTLRv4ParserListener {
                 }
             }
         }
-    }
+    };
 
     /**
      * Handles argument action code blocks.
      *
      * @param ctx The parser context for the action block.
      */
-    public exitArgActionBlock(ctx: ArgActionBlockContext): void {
+    public override exitArgActionBlock = (ctx: ArgActionBlockContext): void => {
         if (this.symbolStack.length === 0) {
             return;
         }
@@ -345,25 +348,25 @@ export class DetailsListener implements ANTLRv4ParserListener {
                 }
             }
         }
-    }
+    };
 
-    public exitEbnfSuffix(ctx: EbnfSuffixContext): void {
-        this.addNewSymbol(EbnfSuffixSymbol, ctx, ctx.text);
-    }
+    public override exitEbnfSuffix = (ctx: EbnfSuffixContext): void => {
+        this.addNewSymbol(EbnfSuffixSymbol, ctx, ctx.getText());
+    };
 
-    public enterLexerCommand(ctx: LexerCommandContext): void {
-        this.pushNewSymbol(LexerCommandSymbol, ctx, ctx.lexerCommandName().text);
-    }
+    public override enterLexerCommand = (ctx: LexerCommandContext): void => {
+        this.pushNewSymbol(LexerCommandSymbol, ctx, ctx.lexerCommandName().getText());
+    };
 
-    public exitLexerCommand(_ctx: LexerCommandContext): void {
+    public override exitLexerCommand = (_ctx: LexerCommandContext): void => {
         this.popSymbol();
-    }
+    };
 
-    public exitLabeledElement(ctx: LabeledElementContext): void {
-        this.addNewSymbol(VariableSymbol, ctx, ctx.identifier().text);
-    }
+    public override exitLabeledElement = (ctx: LabeledElementContext): void => {
+        this.addNewSymbol(VariableSymbol, ctx, ctx.identifier().getText());
+    };
 
-    public visitTerminal = (node: TerminalNode): void => {
+    public override visitTerminal = (node: TerminalNode): void => {
         // Ignore individual terminals under certain circumstances.
         if (this.currentSymbol() instanceof LexerCommandSymbol) {
             return;
@@ -393,7 +396,7 @@ export class DetailsListener implements ANTLRv4ParserListener {
             case ANTLRv4Lexer.AT:
             case ANTLRv4Lexer.POUND:
             case ANTLRv4Lexer.NOT: {
-                this.addNewSymbol(OperatorSymbol, node, node.text);
+                this.addNewSymbol(OperatorSymbol, node, node.getText());
                 break;
             }
 

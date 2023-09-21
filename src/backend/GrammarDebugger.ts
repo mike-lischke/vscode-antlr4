@@ -5,19 +5,20 @@
 
 import { EventEmitter } from "events";
 
-import { CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer } from "antlr4ts";
-import { ParseTree, ErrorNode, TerminalNode } from "antlr4ts/tree";
+import {
+    CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, ErrorNode, ParseTree, TerminalNode,
+} from "antlr4ng";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
-import { IInterpreterData } from "./InterpreterDataReader";
-import { ILexerToken, ILexicalRange, IParseTreeNode, PredicateFunction } from "./types";
+import { IInterpreterData } from "./InterpreterDataReader.js";
+import { ILexerToken, ILexicalRange, IParseTreeNode, PredicateFunction } from "./types.js";
 
-import { RuleSymbol } from "./ContextSymbolTable";
-import { SourceContext } from "./SourceContext";
+import { RuleSymbol } from "./ContextSymbolTable.js";
+import { SourceContext } from "./SourceContext.js";
 import {
     GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
     RunMode,
-} from "./GrammarInterpreters";
+} from "./GrammarInterpreters.js";
 
 import * as vm from "vm";
 import * as fs from "fs";
@@ -105,7 +106,7 @@ export class GrammarDebugger extends EventEmitter {
             if (this.parserData) {
                 this.parser = new GrammarParserInterpreter(eventSink, predicateFunction, this.contexts[0],
                     this.parserData, this.tokenStream);
-                this.parser.buildParseTree = true;
+                this.parser.buildParseTrees = true;
                 this.parser.removeErrorListeners();
                 this.parser.addErrorListener(new InterpreterParserErrorListener(eventSink));
             }
@@ -130,7 +131,7 @@ export class GrammarDebugger extends EventEmitter {
         this.parser.breakPoints.clear();
 
         if (noDebug) {
-            this.parser.setProfile(false).then(() => {
+            /*this.parser.setProfile(false).then(() => {
                 if (this.parser) {
                     this.parseTree = this.parser.parse(startRuleIndex);
                 }
@@ -138,7 +139,8 @@ export class GrammarDebugger extends EventEmitter {
                 this.sendEvent("end");
             }).catch((reason) => {
                 this.sendEvent("error", reason);
-            });
+            });*/
+            this.parseTree = this.parser.parse(startRuleIndex);
         } else {
             this.breakPoints.forEach((breakPoint) => {
                 this.validateBreakPoint(breakPoint);
@@ -216,7 +218,7 @@ export class GrammarDebugger extends EventEmitter {
             return 0;
         }
 
-        return this.parser.numberOfSyntaxErrors;
+        return this.parser.syntaxErrorCount;
     }
 
     public get inputSize(): number {
@@ -270,18 +272,18 @@ export class GrammarDebugger extends EventEmitter {
 
                 for (const next of frame.next) {
                     if (next.context instanceof ParserRuleContext) {
-                        const start = next.context.start;
+                        const start = next.context.start!;
                         const stop = next.context.stop;
                         externalFrame.next.push({
-                            start: { column: start.charPositionInLine, row: start.line },
-                            end: { column: stop ? stop.charPositionInLine : 0, row: stop ? stop.line : start.line },
+                            start: { column: start.column, row: start.line },
+                            end: { column: stop ? stop.column : 0, row: stop ? stop.line : start.line },
                         });
                     } else {
                         const terminal = (next.context as TerminalNode).symbol;
-                        const length = terminal.stopIndex - terminal.startIndex + 1;
+                        const length = terminal.stop - terminal.start + 1;
                         externalFrame.next.push({
-                            start: { column: terminal.charPositionInLine, row: terminal.line },
-                            end: { column: terminal.charPositionInLine + length, row: terminal.line },
+                            start: { column: terminal.column, row: terminal.line },
+                            end: { column: terminal.column + length, row: terminal.line },
                         });
                     }
                 }
@@ -380,6 +382,8 @@ export class GrammarDebugger extends EventEmitter {
                 }
             }
 
+            const sourceInterval = tree.getSourceInterval();
+
             return {
                 type: "rule",
                 ruleIndex: tree.ruleIndex,
@@ -388,9 +392,9 @@ export class GrammarDebugger extends EventEmitter {
                 stop: this.convertToken(tree.stop as CommonToken),
                 id: this.computeHash(tree),
                 range: {
-                    startIndex: tree.sourceInterval.a,
-                    stopIndex: tree.sourceInterval.b,
-                    length: tree.sourceInterval.length,
+                    startIndex: sourceInterval.start,
+                    stopIndex: sourceInterval.stop,
+                    length: sourceInterval.length(),
                 },
                 children,
             };
@@ -430,7 +434,7 @@ export class GrammarDebugger extends EventEmitter {
         let hash = 0;
         if (input instanceof ParserRuleContext) {
             // Seed with a value that for sure goes beyond any possible token index.
-            hash = (31 * hash) + input.start.inputStream!.size;
+            hash = (31 * hash) + input.start!.getInputStream().size;
             if (input.parent) {
                 // Multiple invocations of the same rule which matches nothing appear as nodes in the parse tree with
                 // the same start token, so we need an additional property to tell them apart: the child index.
@@ -440,9 +444,9 @@ export class GrammarDebugger extends EventEmitter {
             }
             hash = (31 * hash) + input.depth();
             hash = (31 * hash) + input.ruleIndex;
-            hash = (31 * hash) + input.start.type >>> 0;
-            hash = (31 * hash) + input.start.tokenIndex >>> 0;
-            hash = (31 * hash) + input.start.channel >>> 0;
+            hash = (31 * hash) + input.start!.type >>> 0;
+            hash = (31 * hash) + input.start!.tokenIndex >>> 0;
+            hash = (31 * hash) + input.start!.channel >>> 0;
         } else if (input instanceof CommonToken) {
             hash = (31 * hash) + input.tokenIndex >>> 0;
             hash = (31 * hash) + input.type >>> 0;
@@ -462,11 +466,11 @@ export class GrammarDebugger extends EventEmitter {
             type: token.type,
             name: this.tokenTypeName(token),
             line: token.line,
-            offset: token.charPositionInLine,
+            offset: token.column,
             channel: token.channel,
             tokenIndex: token.tokenIndex,
-            startIndex: token.startIndex,
-            stopIndex: token.stopIndex,
+            startIndex: token.start,
+            stopIndex: token.stop,
         };
     }
 
@@ -498,10 +502,10 @@ export class GrammarDebugger extends EventEmitter {
                 // If the breakpoint's line is on the rule's end (the semicolon) then
                 // use the rule's end state for break.
                 const stop = this.parserData.atn.ruleToStopState[index];
-                this.parser!.breakPoints.add(stop);
+                this.parser?.breakPoints.add(stop);
             } else {
                 const start = this.parserData.atn.ruleToStartState[index];
-                this.parser!.breakPoints.add(start);
+                this.parser?.breakPoints.add(start);
                 breakPoint.line = rule.definition!.range.start.row;
             }
 

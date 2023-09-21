@@ -9,7 +9,7 @@
     },
     "version": "2.3.1",
     "publisher": "mike-lischke",
-    "license": "SEE LICENSE IN LICENSE.txt",
+    "license": "SEE LICENSE IN License.txt",
     "repository": {
         "type": "git",
         "url": "https://github.com/mike-lischke/vscode-antlr4"
@@ -19,13 +19,17 @@
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.66.0"
+        "vscode": "^1.75.0"
     },
     "categories": [
         "Programming Languages",
         "Debuggers"
     ],
     "main": "./out/src/extension",
+    "type": "module",
+    "activationEvents": [
+        "onLanguage:antlr-injection"
+    ],
     "contributes": {
         "languages": [
             {
@@ -544,63 +548,40 @@
         "publish": "vsce publish",
         "package": "vsce package",
         "vscode:prepublish": "tsc -b",
-        "local-test": "jest --coverage",
-        "test": "jest  --watchAll=false --no-coverage",
-        "antlr4ts": "antlr4ts -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
+        "local-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --no-coverage",
+        "generate": "antlr4ng -Dlanguage=TypeScript -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\""
     },
     "dependencies": {
-        "@unicode/unicode-11.0.0": "1.3.1",
-        "@vscode/debugadapter": "1.59.0",
-        "@vscode/debugprotocol": "1.59.0",
-        "antlr4-c3": "3.0.0",
-        "antlr4ts": "0.5.0-alpha.4",
-        "antlr4ts-cli": "0.5.0-alpha.4",
+        "@unicode/unicode-11.0.0": "1.5.2",
+        "@vscode/debugadapter": "1.63.0",
+        "@vscode/debugprotocol": "1.63.0",
+        "antlr4-c3": "3.2.4",
+        "antlr4ng": "1.1.1",
         "await-notify": "1.0.1",
-        "d3": "7.8.3",
+        "d3": "7.8.5",
         "fs-extra": "11.1.1"
     },
     "devDependencies": {
         "@types/d3": "7.4.0",
-        "@types/fs-extra": "11.0.1",
+        "@types/fs-extra": "11.0.2",
         "@types/glob": "8.1.0",
-        "@types/jest": "29.5.0",
-        "@types/lodash": "4.14.191",
-        "@types/node": "18.13.0",
+        "@types/jest": "29.5.5",
+        "@types/lodash": "4.14.198",
+        "@types/node": "20.6.2",
         "@types/vscode": "1.66.0",
-        "@typescript-eslint/eslint-plugin": "5.56.0",
-        "@typescript-eslint/parser": "5.56.0",
-        "eslint": "8.36.0",
-        "eslint-plugin-import": "2.27.5",
-        "eslint-plugin-jsdoc": "40.1.0",
+        "@typescript-eslint/eslint-plugin": "6.7.2",
+        "@typescript-eslint/eslint-plugin-tslint": "6.7.2",
+        "@typescript-eslint/parser": "6.7.2",
+        "antlr4ng-cli": "1.0.1",
+        "eslint": "8.49.0",
+        "eslint-plugin-import": "2.28.1",
+        "eslint-plugin-jsdoc": "46.8.1",
         "eslint-plugin-prefer-arrow": "1.2.3",
-        "jest": "29.5.0",
-        "ts-jest": "29.0.5",
-        "typescript": "5.0.2"
-    },
-    "jest": {
-        "preset": "ts-jest",
-        "testMatch": [
-            "**/test/**/*.spec.ts"
-        ],
-        "collectCoverageFrom": [
-            "src/**/*.ts",
-            "!src/generated/**",
-            "!src/parsers/**",
-            "!src/webview-scripts/**",
-            "!src/**/*.d.ts"
-        ],
-        "coverageReporters": [
-            "text",
-            "html"
-        ],
-        "coverageThreshold": {
-            "global": {
-                "statements": 54,
-                "branch": 49,
-                "functions": 43,
-                "lines": 54
-            }
-        }
+        "jest": "29.7.0",
+        "ts-jest": "29.1.1",
+        "ts-node": "10.9.1",
+        "typescript": "5.2.2"
     }
 }

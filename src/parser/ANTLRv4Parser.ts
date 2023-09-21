@@ -1,33 +1,17 @@
-// Generated from grammars/ANTLRv4Parser.g4 by ANTLR 4.9.0-SNAPSHOT
+// Generated from grammars/ANTLRv4Parser.g4 by ANTLR 4.13.1
+
+import * as antlr from "antlr4ng";
+import { Token } from "antlr4ng";
+
+import { ANTLRv4ParserListener } from "./ANTLRv4ParserListener.js";
+import { ANTLRv4ParserVisitor } from "./ANTLRv4ParserVisitor.js";
+
+// for running tests with parameters, TODO: discuss strategy for typed parameters in CI
+// eslint-disable-next-line no-unused-vars
+type int = number;
 
 
-import { ATN } from "antlr4ts/atn/ATN";
-import { ATNDeserializer } from "antlr4ts/atn/ATNDeserializer";
-import { FailedPredicateException } from "antlr4ts/FailedPredicateException";
-import { NotNull } from "antlr4ts/Decorators";
-import { NoViableAltException } from "antlr4ts/NoViableAltException";
-import { Override } from "antlr4ts/Decorators";
-import { Parser } from "antlr4ts/Parser";
-import { ParserRuleContext } from "antlr4ts/ParserRuleContext";
-import { ParserATNSimulator } from "antlr4ts/atn/ParserATNSimulator";
-import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
-import { ParseTreeVisitor } from "antlr4ts/tree/ParseTreeVisitor";
-import { RecognitionException } from "antlr4ts/RecognitionException";
-import { RuleContext } from "antlr4ts/RuleContext";
-//import { RuleVersion } from "antlr4ts/RuleVersion";
-import { TerminalNode } from "antlr4ts/tree/TerminalNode";
-import { Token } from "antlr4ts/Token";
-import { TokenStream } from "antlr4ts/TokenStream";
-import { Vocabulary } from "antlr4ts/Vocabulary";
-import { VocabularyImpl } from "antlr4ts/VocabularyImpl";
-
-import * as Utils from "antlr4ts/misc/Utils";
-
-import { ANTLRv4ParserListener } from "./ANTLRv4ParserListener";
-import { ANTLRv4ParserVisitor } from "./ANTLRv4ParserVisitor";
-
-
-export class ANTLRv4Parser extends Parser {
+export class ANTLRv4Parser extends antlr.Parser {
     public static readonly TOKEN_REF = 1;
     public static readonly RULE_REF = 2;
     public static readonly LEXER_CHAR_SET = 3;
@@ -151,135 +135,124 @@ export class ANTLRv4Parser extends Parser {
     public static readonly RULE_elementOptions = 60;
     public static readonly RULE_elementOption = 61;
     public static readonly RULE_identifier = 62;
-    // tslint:disable:no-trailing-whitespace
-    public static readonly ruleNames: string[] = [
-        "grammarSpec", "grammarType", "prequelConstruct", "optionsSpec", "option",
-        "optionValue", "delegateGrammars", "delegateGrammar", "tokensSpec", "channelsSpec",
-        "idList", "namedAction", "actionScopeName", "actionBlock", "argActionBlock",
-        "modeSpec", "rules", "ruleSpec", "parserRuleSpec", "exceptionGroup", "exceptionHandler",
-        "finallyClause", "rulePrequel", "ruleReturns", "throwsSpec", "localsSpec",
-        "ruleAction", "ruleModifiers", "ruleModifier", "ruleBlock", "ruleAltList",
-        "labeledAlt", "lexerRuleSpec", "lexerRuleBlock", "lexerAltList", "lexerAlt",
-        "lexerElements", "lexerElement", "labeledLexerElement", "lexerBlock",
-        "lexerCommands", "lexerCommand", "lexerCommandName", "lexerCommandExpr",
-        "altList", "alternative", "element", "labeledElement", "ebnf", "blockSuffix",
-        "ebnfSuffix", "lexerAtom", "atom", "notSet", "blockSet", "setElement",
-        "block", "ruleref", "characterRange", "terminalRule", "elementOptions",
+
+    public static readonly literalNames = [
+        null, null, null, null, null, null, null, null, null, null, null, 
+        null, "'options'", "'tokens'", "'channels'", "'import'", "'fragment'", 
+        "'lexer'", "'parser'", "'grammar'", "'protected'", "'public'", "'private'", 
+        "'returns'", "'locals'", "'throws'", "'catch'", "'finally'", "'mode'"
+    ];
+
+    public static readonly symbolicNames = [
+        null, "TOKEN_REF", "RULE_REF", "LEXER_CHAR_SET", "DOC_COMMENT", 
+        "BLOCK_COMMENT", "LINE_COMMENT", "INT", "STRING_LITERAL", "UNTERMINATED_STRING_LITERAL", 
+        "BEGIN_ARGUMENT", "BEGIN_ACTION", "OPTIONS", "TOKENS", "CHANNELS", 
+        "IMPORT", "FRAGMENT", "LEXER", "PARSER", "GRAMMAR", "PROTECTED", 
+        "PUBLIC", "PRIVATE", "RETURNS", "LOCALS", "THROWS", "CATCH", "FINALLY", 
+        "MODE", "COLON", "COLONCOLON", "COMMA", "SEMI", "LPAREN", "RPAREN", 
+        "LBRACE", "RBRACE", "RARROW", "LT", "GT", "ASSIGN", "QUESTION", 
+        "STAR", "PLUS_ASSIGN", "PLUS", "OR", "DOLLAR", "RANGE", "DOT", "AT", 
+        "POUND", "NOT", "ID", "WS", "END_ARGUMENT", "UNTERMINATED_ARGUMENT", 
+        "ARGUMENT_CONTENT", "END_ACTION", "UNTERMINATED_ACTION", "ACTION_CONTENT", 
+        "UNTERMINATED_CHAR_SET"
+    ];
+    public static readonly ruleNames = [
+        "grammarSpec", "grammarType", "prequelConstruct", "optionsSpec", 
+        "option", "optionValue", "delegateGrammars", "delegateGrammar", 
+        "tokensSpec", "channelsSpec", "idList", "namedAction", "actionScopeName", 
+        "actionBlock", "argActionBlock", "modeSpec", "rules", "ruleSpec", 
+        "parserRuleSpec", "exceptionGroup", "exceptionHandler", "finallyClause", 
+        "rulePrequel", "ruleReturns", "throwsSpec", "localsSpec", "ruleAction", 
+        "ruleModifiers", "ruleModifier", "ruleBlock", "ruleAltList", "labeledAlt", 
+        "lexerRuleSpec", "lexerRuleBlock", "lexerAltList", "lexerAlt", "lexerElements", 
+        "lexerElement", "labeledLexerElement", "lexerBlock", "lexerCommands", 
+        "lexerCommand", "lexerCommandName", "lexerCommandExpr", "altList", 
+        "alternative", "element", "labeledElement", "ebnf", "blockSuffix", 
+        "ebnfSuffix", "lexerAtom", "atom", "notSet", "blockSet", "setElement", 
+        "block", "ruleref", "characterRange", "terminalRule", "elementOptions", 
         "elementOption", "identifier",
     ];
 
-    private static readonly _LITERAL_NAMES: Array<string | undefined> = [
-        undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-        undefined, undefined, undefined, undefined, undefined, "'options'", "'tokens'",
-        "'channels'", "'import'", "'fragment'", "'lexer'", "'parser'", "'grammar'",
-        "'protected'", "'public'", "'private'", "'returns'", "'locals'", "'throws'",
-        "'catch'", "'finally'", "'mode'",
-    ];
-    private static readonly _SYMBOLIC_NAMES: Array<string | undefined> = [
-        undefined, "TOKEN_REF", "RULE_REF", "LEXER_CHAR_SET", "DOC_COMMENT", "BLOCK_COMMENT",
-        "LINE_COMMENT", "INT", "STRING_LITERAL", "UNTERMINATED_STRING_LITERAL",
-        "BEGIN_ARGUMENT", "BEGIN_ACTION", "OPTIONS", "TOKENS", "CHANNELS", "IMPORT",
-        "FRAGMENT", "LEXER", "PARSER", "GRAMMAR", "PROTECTED", "PUBLIC", "PRIVATE",
-        "RETURNS", "LOCALS", "THROWS", "CATCH", "FINALLY", "MODE", "COLON", "COLONCOLON",
-        "COMMA", "SEMI", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "RARROW", "LT",
-        "GT", "ASSIGN", "QUESTION", "STAR", "PLUS_ASSIGN", "PLUS", "OR", "DOLLAR",
-        "RANGE", "DOT", "AT", "POUND", "NOT", "ID", "WS", "END_ARGUMENT", "UNTERMINATED_ARGUMENT",
-        "ARGUMENT_CONTENT", "END_ACTION", "UNTERMINATED_ACTION", "ACTION_CONTENT",
-        "UNTERMINATED_CHAR_SET",
-    ];
-    public static readonly VOCABULARY: Vocabulary = new VocabularyImpl(ANTLRv4Parser._LITERAL_NAMES, ANTLRv4Parser._SYMBOLIC_NAMES, []);
-
-    // @Override
-    // @NotNull
-    public get vocabulary(): Vocabulary {
-        return ANTLRv4Parser.VOCABULARY;
-    }
-    // tslint:enable:no-trailing-whitespace
-
-    // @Override
     public get grammarFileName(): string { return "ANTLRv4Parser.g4"; }
-
-    // @Override
+    public get literalNames(): (string | null)[] { return ANTLRv4Parser.literalNames; }
+    public get symbolicNames(): (string | null)[] { return ANTLRv4Parser.symbolicNames; }
     public get ruleNames(): string[] { return ANTLRv4Parser.ruleNames; }
+    public get serializedATN(): number[] { return ANTLRv4Parser._serializedATN; }
 
-    // @Override
-    public override get serializedATN(): string { return ANTLRv4Parser._serializedATN; }
-
-    protected createFailedPredicateException(predicate?: string, message?: string): FailedPredicateException {
-        return new FailedPredicateException(this, predicate, message);
+    protected createFailedPredicateException(predicate?: string, message?: string): antlr.FailedPredicateException {
+        return new antlr.FailedPredicateException(this, predicate, message);
     }
 
-    constructor(input: TokenStream) {
+    public constructor(input: antlr.TokenStream) {
         super(input);
-        this._interp = new ParserATNSimulator(ANTLRv4Parser._ATN, this);
+        this.interpreter = new antlr.ParserATNSimulator(this, ANTLRv4Parser._ATN, ANTLRv4Parser.decisionsToDFA, new antlr.PredictionContextCache());
     }
-    // @RuleVersion(0)
     public grammarSpec(): GrammarSpecContext {
-        let _localctx: GrammarSpecContext = new GrammarSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 0, ANTLRv4Parser.RULE_grammarSpec);
+        let localContext = new GrammarSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 0, ANTLRv4Parser.RULE_grammarSpec);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 129;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.DOC_COMMENT) {
-                    {
-                        {
-                            this.state = 126;
-                            this.match(ANTLRv4Parser.DOC_COMMENT);
-                        }
-                    }
-                    this.state = 131;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
+            this.state = 129;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 4) {
+                {
+                {
+                this.state = 126;
+                this.match(ANTLRv4Parser.DOC_COMMENT);
                 }
-                this.state = 132;
-                this.grammarType();
-                this.state = 133;
-                this.identifier();
-                this.state = 134;
-                this.match(ANTLRv4Parser.SEMI);
-                this.state = 138;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.OPTIONS) | (1 << ANTLRv4Parser.TOKENS) | (1 << ANTLRv4Parser.CHANNELS) | (1 << ANTLRv4Parser.IMPORT))) !== 0) || _la === ANTLRv4Parser.AT) {
-                    {
-                        {
-                            this.state = 135;
-                            this.prequelConstruct();
-                        }
-                    }
-                    this.state = 140;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
-                this.state = 141;
-                this.rules();
-                this.state = 145;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.MODE) {
-                    {
-                        {
-                            this.state = 142;
-                            this.modeSpec();
-                        }
-                    }
-                    this.state = 147;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
+                this.state = 131;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 132;
+            this.grammarType();
+            this.state = 133;
+            this.identifier();
+            this.state = 134;
+            this.match(ANTLRv4Parser.SEMI);
+            this.state = 138;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 61440) !== 0) || _la === 49) {
+                {
+                {
+                this.state = 135;
+                this.prequelConstruct();
                 }
-                this.state = 148;
-                this.match(ANTLRv4Parser.EOF);
+                }
+                this.state = 140;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 141;
+            this.rules();
+            this.state = 145;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 28) {
+                {
+                {
+                this.state = 142;
+                this.modeSpec();
+                }
+                }
+                this.state = 147;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 148;
+            this.match(ANTLRv4Parser.EOF);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -287,50 +260,49 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public grammarType(): GrammarTypeContext {
-        let _localctx: GrammarTypeContext = new GrammarTypeContext(this._ctx, this.state);
-        this.enterRule(_localctx, 2, ANTLRv4Parser.RULE_grammarType);
+        let localContext = new GrammarTypeContext(this._ctx, this.state);
+        this.enterRule(localContext, 2, ANTLRv4Parser.RULE_grammarType);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 155;
-                this._errHandler.sync(this);
-                switch (this._input.LA(1)) {
-                    case ANTLRv4Parser.LEXER:
-                        {
-                            this.state = 150;
-                            this.match(ANTLRv4Parser.LEXER);
-                            this.state = 151;
-                            this.match(ANTLRv4Parser.GRAMMAR);
-                        }
-                        break;
-                    case ANTLRv4Parser.PARSER:
-                        {
-                            this.state = 152;
-                            this.match(ANTLRv4Parser.PARSER);
-                            this.state = 153;
-                            this.match(ANTLRv4Parser.GRAMMAR);
-                        }
-                        break;
-                    case ANTLRv4Parser.GRAMMAR:
-                        {
-                            this.state = 154;
-                            this.match(ANTLRv4Parser.GRAMMAR);
-                        }
-                        break;
-                    default:
-                        throw new NoViableAltException(this);
+            this.state = 155;
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.LEXER:
+                {
+                this.state = 150;
+                this.match(ANTLRv4Parser.LEXER);
+                this.state = 151;
+                this.match(ANTLRv4Parser.GRAMMAR);
                 }
+                break;
+            case ANTLRv4Parser.PARSER:
+                {
+                this.state = 152;
+                this.match(ANTLRv4Parser.PARSER);
+                this.state = 153;
+                this.match(ANTLRv4Parser.GRAMMAR);
+                }
+                break;
+            case ANTLRv4Parser.GRAMMAR:
+                {
+                this.state = 154;
+                this.match(ANTLRv4Parser.GRAMMAR);
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -338,60 +310,59 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public prequelConstruct(): PrequelConstructContext {
-        let _localctx: PrequelConstructContext = new PrequelConstructContext(this._ctx, this.state);
-        this.enterRule(_localctx, 4, ANTLRv4Parser.RULE_prequelConstruct);
+        let localContext = new PrequelConstructContext(this._ctx, this.state);
+        this.enterRule(localContext, 4, ANTLRv4Parser.RULE_prequelConstruct);
         try {
             this.state = 162;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.OPTIONS:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 157;
-                        this.optionsSpec();
-                    }
-                    break;
-                case ANTLRv4Parser.IMPORT:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 158;
-                        this.delegateGrammars();
-                    }
-                    break;
-                case ANTLRv4Parser.TOKENS:
-                    this.enterOuterAlt(_localctx, 3);
-                    {
-                        this.state = 159;
-                        this.tokensSpec();
-                    }
-                    break;
-                case ANTLRv4Parser.CHANNELS:
-                    this.enterOuterAlt(_localctx, 4);
-                    {
-                        this.state = 160;
-                        this.channelsSpec();
-                    }
-                    break;
-                case ANTLRv4Parser.AT:
-                    this.enterOuterAlt(_localctx, 5);
-                    {
-                        this.state = 161;
-                        this.namedAction();
-                    }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.OPTIONS:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 157;
+                this.optionsSpec();
+                }
+                break;
+            case ANTLRv4Parser.IMPORT:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 158;
+                this.delegateGrammars();
+                }
+                break;
+            case ANTLRv4Parser.TOKENS:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 159;
+                this.tokensSpec();
+                }
+                break;
+            case ANTLRv4Parser.CHANNELS:
+                this.enterOuterAlt(localContext, 4);
+                {
+                this.state = 160;
+                this.channelsSpec();
+                }
+                break;
+            case ANTLRv4Parser.AT:
+                this.enterOuterAlt(localContext, 5);
+                {
+                this.state = 161;
+                this.namedAction();
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -399,45 +370,44 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public optionsSpec(): OptionsSpecContext {
-        let _localctx: OptionsSpecContext = new OptionsSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 6, ANTLRv4Parser.RULE_optionsSpec);
+        let localContext = new OptionsSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 6, ANTLRv4Parser.RULE_optionsSpec);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 164;
-                this.match(ANTLRv4Parser.OPTIONS);
-                this.state = 165;
-                this.match(ANTLRv4Parser.LBRACE);
-                this.state = 171;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.TOKEN_REF || _la === ANTLRv4Parser.RULE_REF) {
-                    {
-                        {
-                            this.state = 166;
-                            this.option();
-                            this.state = 167;
-                            this.match(ANTLRv4Parser.SEMI);
-                        }
-                    }
-                    this.state = 173;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
+            this.state = 164;
+            this.match(ANTLRv4Parser.OPTIONS);
+            this.state = 165;
+            this.match(ANTLRv4Parser.LBRACE);
+            this.state = 171;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 1 || _la === 2) {
+                {
+                {
+                this.state = 166;
+                this.option();
+                this.state = 167;
+                this.match(ANTLRv4Parser.SEMI);
                 }
-                this.state = 174;
-                this.match(ANTLRv4Parser.RBRACE);
+                }
+                this.state = 173;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 174;
+            this.match(ANTLRv4Parser.RBRACE);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -445,28 +415,27 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public option(): OptionContext {
-        let _localctx: OptionContext = new OptionContext(this._ctx, this.state);
-        this.enterRule(_localctx, 8, ANTLRv4Parser.RULE_option);
+        let localContext = new OptionContext(this._ctx, this.state);
+        this.enterRule(localContext, 8, ANTLRv4Parser.RULE_option);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 176;
-                this.identifier();
-                this.state = 177;
-                this.match(ANTLRv4Parser.ASSIGN);
-                this.state = 178;
-                this.optionValue();
+            this.state = 176;
+            this.identifier();
+            this.state = 177;
+            this.match(ANTLRv4Parser.ASSIGN);
+            this.state = 178;
+            this.optionValue();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -474,71 +443,70 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public optionValue(): OptionValueContext {
-        let _localctx: OptionValueContext = new OptionValueContext(this._ctx, this.state);
-        this.enterRule(_localctx, 10, ANTLRv4Parser.RULE_optionValue);
+        let localContext = new OptionValueContext(this._ctx, this.state);
+        this.enterRule(localContext, 10, ANTLRv4Parser.RULE_optionValue);
         let _la: number;
         try {
             this.state = 191;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.TOKEN_REF:
-                case ANTLRv4Parser.RULE_REF:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.RULE_REF:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 180;
+                this.identifier();
+                this.state = 185;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                while (_la === 48) {
                     {
-                        this.state = 180;
-                        this.identifier();
-                        this.state = 185;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        while (_la === ANTLRv4Parser.DOT) {
-                            {
-                                {
-                                    this.state = 181;
-                                    this.match(ANTLRv4Parser.DOT);
-                                    this.state = 182;
-                                    this.identifier();
-                                }
-                            }
-                            this.state = 187;
-                            this._errHandler.sync(this);
-                            _la = this._input.LA(1);
-                        }
-                    }
-                    break;
-                case ANTLRv4Parser.STRING_LITERAL:
-                    this.enterOuterAlt(_localctx, 2);
                     {
-                        this.state = 188;
-                        this.match(ANTLRv4Parser.STRING_LITERAL);
+                    this.state = 181;
+                    this.match(ANTLRv4Parser.DOT);
+                    this.state = 182;
+                    this.identifier();
                     }
-                    break;
-                case ANTLRv4Parser.BEGIN_ACTION:
-                    this.enterOuterAlt(_localctx, 3);
-                    {
-                        this.state = 189;
-                        this.actionBlock();
                     }
-                    break;
-                case ANTLRv4Parser.INT:
-                    this.enterOuterAlt(_localctx, 4);
-                    {
-                        this.state = 190;
-                        this.match(ANTLRv4Parser.INT);
-                    }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
+                    this.state = 187;
+                    this.errorHandler.sync(this);
+                    _la = this.tokenStream.LA(1);
+                }
+                }
+                break;
+            case ANTLRv4Parser.STRING_LITERAL:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 188;
+                this.match(ANTLRv4Parser.STRING_LITERAL);
+                }
+                break;
+            case ANTLRv4Parser.BEGIN_ACTION:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 189;
+                this.actionBlock();
+                }
+                break;
+            case ANTLRv4Parser.INT:
+                this.enterOuterAlt(localContext, 4);
+                {
+                this.state = 190;
+                this.match(ANTLRv4Parser.INT);
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -546,45 +514,44 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public delegateGrammars(): DelegateGrammarsContext {
-        let _localctx: DelegateGrammarsContext = new DelegateGrammarsContext(this._ctx, this.state);
-        this.enterRule(_localctx, 12, ANTLRv4Parser.RULE_delegateGrammars);
+        let localContext = new DelegateGrammarsContext(this._ctx, this.state);
+        this.enterRule(localContext, 12, ANTLRv4Parser.RULE_delegateGrammars);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 193;
-                this.match(ANTLRv4Parser.IMPORT);
-                this.state = 194;
+            this.state = 193;
+            this.match(ANTLRv4Parser.IMPORT);
+            this.state = 194;
+            this.delegateGrammar();
+            this.state = 199;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 31) {
+                {
+                {
+                this.state = 195;
+                this.match(ANTLRv4Parser.COMMA);
+                this.state = 196;
                 this.delegateGrammar();
-                this.state = 199;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.COMMA) {
-                    {
-                        {
-                            this.state = 195;
-                            this.match(ANTLRv4Parser.COMMA);
-                            this.state = 196;
-                            this.delegateGrammar();
-                        }
-                    }
-                    this.state = 201;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
-                this.state = 202;
-                this.match(ANTLRv4Parser.SEMI);
+                }
+                this.state = 201;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 202;
+            this.match(ANTLRv4Parser.SEMI);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -592,42 +559,40 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public delegateGrammar(): DelegateGrammarContext {
-        let _localctx: DelegateGrammarContext = new DelegateGrammarContext(this._ctx, this.state);
-        this.enterRule(_localctx, 14, ANTLRv4Parser.RULE_delegateGrammar);
+        let localContext = new DelegateGrammarContext(this._ctx, this.state);
+        this.enterRule(localContext, 14, ANTLRv4Parser.RULE_delegateGrammar);
         try {
             this.state = 209;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 9, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 204;
-                        this.identifier();
-                        this.state = 205;
-                        this.match(ANTLRv4Parser.ASSIGN);
-                        this.state = 206;
-                        this.identifier();
-                    }
-                    break;
-
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 208;
-                        this.identifier();
-                    }
-                    break;
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 9, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 204;
+                this.identifier();
+                this.state = 205;
+                this.match(ANTLRv4Parser.ASSIGN);
+                this.state = 206;
+                this.identifier();
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 208;
+                this.identifier();
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -635,39 +600,38 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public tokensSpec(): TokensSpecContext {
-        let _localctx: TokensSpecContext = new TokensSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 16, ANTLRv4Parser.RULE_tokensSpec);
+        let localContext = new TokensSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 16, ANTLRv4Parser.RULE_tokensSpec);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 211;
-                this.match(ANTLRv4Parser.TOKENS);
-                this.state = 212;
-                this.match(ANTLRv4Parser.LBRACE);
-                this.state = 214;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.TOKEN_REF || _la === ANTLRv4Parser.RULE_REF) {
-                    {
-                        this.state = 213;
-                        this.idList();
-                    }
+            this.state = 211;
+            this.match(ANTLRv4Parser.TOKENS);
+            this.state = 212;
+            this.match(ANTLRv4Parser.LBRACE);
+            this.state = 214;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 1 || _la === 2) {
+                {
+                this.state = 213;
+                this.idList();
                 }
+            }
 
-                this.state = 216;
-                this.match(ANTLRv4Parser.RBRACE);
+            this.state = 216;
+            this.match(ANTLRv4Parser.RBRACE);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -675,39 +639,38 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public channelsSpec(): ChannelsSpecContext {
-        let _localctx: ChannelsSpecContext = new ChannelsSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 18, ANTLRv4Parser.RULE_channelsSpec);
+        let localContext = new ChannelsSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 18, ANTLRv4Parser.RULE_channelsSpec);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 218;
-                this.match(ANTLRv4Parser.CHANNELS);
-                this.state = 219;
-                this.match(ANTLRv4Parser.LBRACE);
-                this.state = 221;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.TOKEN_REF || _la === ANTLRv4Parser.RULE_REF) {
-                    {
-                        this.state = 220;
-                        this.idList();
-                    }
+            this.state = 218;
+            this.match(ANTLRv4Parser.CHANNELS);
+            this.state = 219;
+            this.match(ANTLRv4Parser.LBRACE);
+            this.state = 221;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 1 || _la === 2) {
+                {
+                this.state = 220;
+                this.idList();
                 }
+            }
 
-                this.state = 223;
-                this.match(ANTLRv4Parser.RBRACE);
+            this.state = 223;
+            this.match(ANTLRv4Parser.RBRACE);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -715,54 +678,53 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public idList(): IdListContext {
-        let _localctx: IdListContext = new IdListContext(this._ctx, this.state);
-        this.enterRule(_localctx, 20, ANTLRv4Parser.RULE_idList);
+        let localContext = new IdListContext(this._ctx, this.state);
+        this.enterRule(localContext, 20, ANTLRv4Parser.RULE_idList);
         let _la: number;
         try {
-            let _alt: number;
-            this.enterOuterAlt(_localctx, 1);
+            let alternative: number;
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 225;
-                this.identifier();
-                this.state = 230;
-                this._errHandler.sync(this);
-                _alt = this.interpreter.adaptivePredict(this._input, 12, this._ctx);
-                while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
-                    if (_alt === 1) {
-                        {
-                            {
-                                this.state = 226;
-                                this.match(ANTLRv4Parser.COMMA);
-                                this.state = 227;
-                                this.identifier();
-                            }
-                        }
-                    }
-                    this.state = 232;
-                    this._errHandler.sync(this);
-                    _alt = this.interpreter.adaptivePredict(this._input, 12, this._ctx);
-                }
-                this.state = 234;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.COMMA) {
+            this.state = 225;
+            this.identifier();
+            this.state = 230;
+            this.errorHandler.sync(this);
+            alternative = this.interpreter.adaptivePredict(this.tokenStream, 12, this._ctx);
+            while (alternative !== 2 && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {
+                if (alternative === 1) {
                     {
-                        this.state = 233;
-                        this.match(ANTLRv4Parser.COMMA);
+                    {
+                    this.state = 226;
+                    this.match(ANTLRv4Parser.COMMA);
+                    this.state = 227;
+                    this.identifier();
+                    }
                     }
                 }
+                this.state = 232;
+                this.errorHandler.sync(this);
+                alternative = this.interpreter.adaptivePredict(this.tokenStream, 12, this._ctx);
+            }
+            this.state = 234;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 31) {
+                {
+                this.state = 233;
+                this.match(ANTLRv4Parser.COMMA);
+                }
+            }
 
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -770,40 +732,39 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public namedAction(): NamedActionContext {
-        let _localctx: NamedActionContext = new NamedActionContext(this._ctx, this.state);
-        this.enterRule(_localctx, 22, ANTLRv4Parser.RULE_namedAction);
+        let localContext = new NamedActionContext(this._ctx, this.state);
+        this.enterRule(localContext, 22, ANTLRv4Parser.RULE_namedAction);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 236;
-                this.match(ANTLRv4Parser.AT);
-                this.state = 240;
-                this._errHandler.sync(this);
-                switch (this.interpreter.adaptivePredict(this._input, 14, this._ctx)) {
-                    case 1:
-                        {
-                            this.state = 237;
-                            this.actionScopeName();
-                            this.state = 238;
-                            this.match(ANTLRv4Parser.COLONCOLON);
-                        }
-                        break;
+            this.state = 236;
+            this.match(ANTLRv4Parser.AT);
+            this.state = 240;
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 14, this._ctx) ) {
+            case 1:
+                {
+                this.state = 237;
+                this.actionScopeName();
+                this.state = 238;
+                this.match(ANTLRv4Parser.COLONCOLON);
                 }
-                this.state = 242;
-                this.identifier();
-                this.state = 243;
-                this.actionBlock();
+                break;
+            }
+            this.state = 242;
+            this.identifier();
+            this.state = 243;
+            this.actionBlock();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -811,175 +772,46 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public actionScopeName(): ActionScopeNameContext {
-        let _localctx: ActionScopeNameContext = new ActionScopeNameContext(this._ctx, this.state);
-        this.enterRule(_localctx, 24, ANTLRv4Parser.RULE_actionScopeName);
+        let localContext = new ActionScopeNameContext(this._ctx, this.state);
+        this.enterRule(localContext, 24, ANTLRv4Parser.RULE_actionScopeName);
         try {
             this.state = 248;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.TOKEN_REF:
-                case ANTLRv4Parser.RULE_REF:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 245;
-                        this.identifier();
-                    }
-                    break;
-                case ANTLRv4Parser.LEXER:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 246;
-                        this.match(ANTLRv4Parser.LEXER);
-                    }
-                    break;
-                case ANTLRv4Parser.PARSER:
-                    this.enterOuterAlt(_localctx, 3);
-                    {
-                        this.state = 247;
-                        this.match(ANTLRv4Parser.PARSER);
-                    }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
-            }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
-            }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
-    public actionBlock(): ActionBlockContext {
-        let _localctx: ActionBlockContext = new ActionBlockContext(this._ctx, this.state);
-        this.enterRule(_localctx, 26, ANTLRv4Parser.RULE_actionBlock);
-        let _la: number;
-        try {
-            this.enterOuterAlt(_localctx, 1);
-            {
-                this.state = 250;
-                this.match(ANTLRv4Parser.BEGIN_ACTION);
-                this.state = 254;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.ACTION_CONTENT) {
-                    {
-                        {
-                            this.state = 251;
-                            this.match(ANTLRv4Parser.ACTION_CONTENT);
-                        }
-                    }
-                    this.state = 256;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
-                }
-                this.state = 257;
-                this.match(ANTLRv4Parser.END_ACTION);
-            }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
-            }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
-    public argActionBlock(): ArgActionBlockContext {
-        let _localctx: ArgActionBlockContext = new ArgActionBlockContext(this._ctx, this.state);
-        this.enterRule(_localctx, 28, ANTLRv4Parser.RULE_argActionBlock);
-        let _la: number;
-        try {
-            this.enterOuterAlt(_localctx, 1);
-            {
-                this.state = 259;
-                this.match(ANTLRv4Parser.BEGIN_ARGUMENT);
-                this.state = 263;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.ARGUMENT_CONTENT) {
-                    {
-                        {
-                            this.state = 260;
-                            this.match(ANTLRv4Parser.ARGUMENT_CONTENT);
-                        }
-                    }
-                    this.state = 265;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
-                }
-                this.state = 266;
-                this.match(ANTLRv4Parser.END_ARGUMENT);
-            }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
-            }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
-    public modeSpec(): ModeSpecContext {
-        let _localctx: ModeSpecContext = new ModeSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 30, ANTLRv4Parser.RULE_modeSpec);
-        let _la: number;
-        try {
-            this.enterOuterAlt(_localctx, 1);
-            {
-                this.state = 268;
-                this.match(ANTLRv4Parser.MODE);
-                this.state = 269;
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.RULE_REF:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 245;
                 this.identifier();
-                this.state = 270;
-                this.match(ANTLRv4Parser.SEMI);
-                this.state = 274;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.TOKEN_REF) | (1 << ANTLRv4Parser.DOC_COMMENT) | (1 << ANTLRv4Parser.FRAGMENT))) !== 0)) {
-                    {
-                        {
-                            this.state = 271;
-                            this.lexerRuleSpec();
-                        }
-                    }
-                    this.state = 276;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
+                break;
+            case ANTLRv4Parser.LEXER:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 246;
+                this.match(ANTLRv4Parser.LEXER);
+                }
+                break;
+            case ANTLRv4Parser.PARSER:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 247;
+                this.match(ANTLRv4Parser.PARSER);
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -987,37 +819,40 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
-    public rules(): RulesContext {
-        let _localctx: RulesContext = new RulesContext(this._ctx, this.state);
-        this.enterRule(_localctx, 32, ANTLRv4Parser.RULE_rules);
+    public actionBlock(): ActionBlockContext {
+        let localContext = new ActionBlockContext(this._ctx, this.state);
+        this.enterRule(localContext, 26, ANTLRv4Parser.RULE_actionBlock);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 280;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.TOKEN_REF) | (1 << ANTLRv4Parser.RULE_REF) | (1 << ANTLRv4Parser.DOC_COMMENT) | (1 << ANTLRv4Parser.FRAGMENT) | (1 << ANTLRv4Parser.PROTECTED) | (1 << ANTLRv4Parser.PUBLIC) | (1 << ANTLRv4Parser.PRIVATE))) !== 0)) {
-                    {
-                        {
-                            this.state = 277;
-                            this.ruleSpec();
-                        }
-                    }
-                    this.state = 282;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
+            this.state = 250;
+            this.match(ANTLRv4Parser.BEGIN_ACTION);
+            this.state = 254;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 59) {
+                {
+                {
+                this.state = 251;
+                this.match(ANTLRv4Parser.ACTION_CONTENT);
                 }
+                }
+                this.state = 256;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 257;
+            this.match(ANTLRv4Parser.END_ACTION);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1025,38 +860,157 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
+    public argActionBlock(): ArgActionBlockContext {
+        let localContext = new ArgActionBlockContext(this._ctx, this.state);
+        this.enterRule(localContext, 28, ANTLRv4Parser.RULE_argActionBlock);
+        let _la: number;
+        try {
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 259;
+            this.match(ANTLRv4Parser.BEGIN_ARGUMENT);
+            this.state = 263;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 56) {
+                {
+                {
+                this.state = 260;
+                this.match(ANTLRv4Parser.ARGUMENT_CONTENT);
+                }
+                }
+                this.state = 265;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 266;
+            this.match(ANTLRv4Parser.END_ARGUMENT);
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public modeSpec(): ModeSpecContext {
+        let localContext = new ModeSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 30, ANTLRv4Parser.RULE_modeSpec);
+        let _la: number;
+        try {
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 268;
+            this.match(ANTLRv4Parser.MODE);
+            this.state = 269;
+            this.identifier();
+            this.state = 270;
+            this.match(ANTLRv4Parser.SEMI);
+            this.state = 274;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 65554) !== 0)) {
+                {
+                {
+                this.state = 271;
+                this.lexerRuleSpec();
+                }
+                }
+                this.state = 276;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public rules(): RulesContext {
+        let localContext = new RulesContext(this._ctx, this.state);
+        this.enterRule(localContext, 32, ANTLRv4Parser.RULE_rules);
+        let _la: number;
+        try {
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 280;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 7405590) !== 0)) {
+                {
+                {
+                this.state = 277;
+                this.ruleSpec();
+                }
+                }
+                this.state = 282;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
     public ruleSpec(): RuleSpecContext {
-        let _localctx: RuleSpecContext = new RuleSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 34, ANTLRv4Parser.RULE_ruleSpec);
+        let localContext = new RuleSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 34, ANTLRv4Parser.RULE_ruleSpec);
         try {
             this.state = 285;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 20, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 283;
-                        this.parserRuleSpec();
-                    }
-                    break;
-
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 284;
-                        this.lexerRuleSpec();
-                    }
-                    break;
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 20, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 283;
+                this.parserRuleSpec();
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 284;
+                this.lexerRuleSpec();
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1064,188 +1018,110 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public parserRuleSpec(): ParserRuleSpecContext {
-        let _localctx: ParserRuleSpecContext = new ParserRuleSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 36, ANTLRv4Parser.RULE_parserRuleSpec);
+        let localContext = new ParserRuleSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 36, ANTLRv4Parser.RULE_parserRuleSpec);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 290;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.DOC_COMMENT) {
-                    {
-                        {
-                            this.state = 287;
-                            this.match(ANTLRv4Parser.DOC_COMMENT);
-                        }
-                    }
-                    this.state = 292;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
+            this.state = 290;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 4) {
+                {
+                {
+                this.state = 287;
+                this.match(ANTLRv4Parser.DOC_COMMENT);
                 }
-                this.state = 294;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.FRAGMENT) | (1 << ANTLRv4Parser.PROTECTED) | (1 << ANTLRv4Parser.PUBLIC) | (1 << ANTLRv4Parser.PRIVATE))) !== 0)) {
-                    {
-                        this.state = 293;
-                        this.ruleModifiers();
-                    }
                 }
-
-                this.state = 296;
-                this.match(ANTLRv4Parser.RULE_REF);
-                this.state = 298;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.BEGIN_ARGUMENT) {
-                    {
-                        this.state = 297;
-                        this.argActionBlock();
-                    }
-                }
-
-                this.state = 301;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.RETURNS) {
-                    {
-                        this.state = 300;
-                        this.ruleReturns();
-                    }
-                }
-
-                this.state = 304;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.THROWS) {
-                    {
-                        this.state = 303;
-                        this.throwsSpec();
-                    }
-                }
-
-                this.state = 307;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.LOCALS) {
-                    {
-                        this.state = 306;
-                        this.localsSpec();
-                    }
-                }
-
-                this.state = 312;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.OPTIONS || _la === ANTLRv4Parser.AT) {
-                    {
-                        {
-                            this.state = 309;
-                            this.rulePrequel();
-                        }
-                    }
-                    this.state = 314;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
-                }
-                this.state = 315;
-                this.match(ANTLRv4Parser.COLON);
-                this.state = 316;
-                this.ruleBlock();
-                this.state = 317;
-                this.match(ANTLRv4Parser.SEMI);
-                this.state = 318;
-                this.exceptionGroup();
+                this.state = 292;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
             }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
+            this.state = 294;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if ((((_la) & ~0x1F) === 0 && ((1 << _la) & 7405568) !== 0)) {
+                {
+                this.state = 293;
+                this.ruleModifiers();
+                }
             }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
-    public exceptionGroup(): ExceptionGroupContext {
-        let _localctx: ExceptionGroupContext = new ExceptionGroupContext(this._ctx, this.state);
-        this.enterRule(_localctx, 38, ANTLRv4Parser.RULE_exceptionGroup);
-        let _la: number;
-        try {
-            this.enterOuterAlt(_localctx, 1);
-            {
-                this.state = 323;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.CATCH) {
-                    {
-                        {
-                            this.state = 320;
-                            this.exceptionHandler();
-                        }
-                    }
-                    this.state = 325;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
-                }
-                this.state = 327;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.FINALLY) {
-                    {
-                        this.state = 326;
-                        this.finallyClause();
-                    }
-                }
 
-            }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
-            }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
-    public exceptionHandler(): ExceptionHandlerContext {
-        let _localctx: ExceptionHandlerContext = new ExceptionHandlerContext(this._ctx, this.state);
-        this.enterRule(_localctx, 40, ANTLRv4Parser.RULE_exceptionHandler);
-        try {
-            this.enterOuterAlt(_localctx, 1);
-            {
-                this.state = 329;
-                this.match(ANTLRv4Parser.CATCH);
-                this.state = 330;
+            this.state = 296;
+            this.match(ANTLRv4Parser.RULE_REF);
+            this.state = 298;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 10) {
+                {
+                this.state = 297;
                 this.argActionBlock();
-                this.state = 331;
-                this.actionBlock();
+                }
+            }
+
+            this.state = 301;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 23) {
+                {
+                this.state = 300;
+                this.ruleReturns();
+                }
+            }
+
+            this.state = 304;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 25) {
+                {
+                this.state = 303;
+                this.throwsSpec();
+                }
+            }
+
+            this.state = 307;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 24) {
+                {
+                this.state = 306;
+                this.localsSpec();
+                }
+            }
+
+            this.state = 312;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 12 || _la === 49) {
+                {
+                {
+                this.state = 309;
+                this.rulePrequel();
+                }
+                }
+                this.state = 314;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 315;
+            this.match(ANTLRv4Parser.COLON);
+            this.state = 316;
+            this.ruleBlock();
+            this.state = 317;
+            this.match(ANTLRv4Parser.SEMI);
+            this.state = 318;
+            this.exceptionGroup();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1253,26 +1129,46 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
-    public finallyClause(): FinallyClauseContext {
-        let _localctx: FinallyClauseContext = new FinallyClauseContext(this._ctx, this.state);
-        this.enterRule(_localctx, 42, ANTLRv4Parser.RULE_finallyClause);
+    public exceptionGroup(): ExceptionGroupContext {
+        let localContext = new ExceptionGroupContext(this._ctx, this.state);
+        this.enterRule(localContext, 38, ANTLRv4Parser.RULE_exceptionGroup);
+        let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 333;
-                this.match(ANTLRv4Parser.FINALLY);
-                this.state = 334;
-                this.actionBlock();
+            this.state = 323;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 26) {
+                {
+                {
+                this.state = 320;
+                this.exceptionHandler();
+                }
+                }
+                this.state = 325;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 327;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 27) {
+                {
+                this.state = 326;
+                this.finallyClause();
+                }
+            }
+
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1280,39 +1176,92 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
+    public exceptionHandler(): ExceptionHandlerContext {
+        let localContext = new ExceptionHandlerContext(this._ctx, this.state);
+        this.enterRule(localContext, 40, ANTLRv4Parser.RULE_exceptionHandler);
+        try {
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 329;
+            this.match(ANTLRv4Parser.CATCH);
+            this.state = 330;
+            this.argActionBlock();
+            this.state = 331;
+            this.actionBlock();
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public finallyClause(): FinallyClauseContext {
+        let localContext = new FinallyClauseContext(this._ctx, this.state);
+        this.enterRule(localContext, 42, ANTLRv4Parser.RULE_finallyClause);
+        try {
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 333;
+            this.match(ANTLRv4Parser.FINALLY);
+            this.state = 334;
+            this.actionBlock();
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
     public rulePrequel(): RulePrequelContext {
-        let _localctx: RulePrequelContext = new RulePrequelContext(this._ctx, this.state);
-        this.enterRule(_localctx, 44, ANTLRv4Parser.RULE_rulePrequel);
+        let localContext = new RulePrequelContext(this._ctx, this.state);
+        this.enterRule(localContext, 44, ANTLRv4Parser.RULE_rulePrequel);
         try {
             this.state = 338;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.OPTIONS:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 336;
-                        this.optionsSpec();
-                    }
-                    break;
-                case ANTLRv4Parser.AT:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 337;
-                        this.ruleAction();
-                    }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.OPTIONS:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 336;
+                this.optionsSpec();
+                }
+                break;
+            case ANTLRv4Parser.AT:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 337;
+                this.ruleAction();
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1320,26 +1269,25 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ruleReturns(): RuleReturnsContext {
-        let _localctx: RuleReturnsContext = new RuleReturnsContext(this._ctx, this.state);
-        this.enterRule(_localctx, 46, ANTLRv4Parser.RULE_ruleReturns);
+        let localContext = new RuleReturnsContext(this._ctx, this.state);
+        this.enterRule(localContext, 46, ANTLRv4Parser.RULE_ruleReturns);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 340;
-                this.match(ANTLRv4Parser.RETURNS);
-                this.state = 341;
-                this.argActionBlock();
+            this.state = 340;
+            this.match(ANTLRv4Parser.RETURNS);
+            this.state = 341;
+            this.argActionBlock();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1347,43 +1295,42 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public throwsSpec(): ThrowsSpecContext {
-        let _localctx: ThrowsSpecContext = new ThrowsSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 48, ANTLRv4Parser.RULE_throwsSpec);
+        let localContext = new ThrowsSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 48, ANTLRv4Parser.RULE_throwsSpec);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 343;
-                this.match(ANTLRv4Parser.THROWS);
-                this.state = 344;
+            this.state = 343;
+            this.match(ANTLRv4Parser.THROWS);
+            this.state = 344;
+            this.identifier();
+            this.state = 349;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 31) {
+                {
+                {
+                this.state = 345;
+                this.match(ANTLRv4Parser.COMMA);
+                this.state = 346;
                 this.identifier();
-                this.state = 349;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.COMMA) {
-                    {
-                        {
-                            this.state = 345;
-                            this.match(ANTLRv4Parser.COMMA);
-                            this.state = 346;
-                            this.identifier();
-                        }
-                    }
-                    this.state = 351;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
+                }
+                this.state = 351;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1391,26 +1338,25 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public localsSpec(): LocalsSpecContext {
-        let _localctx: LocalsSpecContext = new LocalsSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 50, ANTLRv4Parser.RULE_localsSpec);
+        let localContext = new LocalsSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 50, ANTLRv4Parser.RULE_localsSpec);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 352;
-                this.match(ANTLRv4Parser.LOCALS);
-                this.state = 353;
-                this.argActionBlock();
+            this.state = 352;
+            this.match(ANTLRv4Parser.LOCALS);
+            this.state = 353;
+            this.argActionBlock();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1418,28 +1364,27 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ruleAction(): RuleActionContext {
-        let _localctx: RuleActionContext = new RuleActionContext(this._ctx, this.state);
-        this.enterRule(_localctx, 52, ANTLRv4Parser.RULE_ruleAction);
+        let localContext = new RuleActionContext(this._ctx, this.state);
+        this.enterRule(localContext, 52, ANTLRv4Parser.RULE_ruleAction);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 355;
-                this.match(ANTLRv4Parser.AT);
-                this.state = 356;
-                this.identifier();
-                this.state = 357;
-                this.actionBlock();
+            this.state = 355;
+            this.match(ANTLRv4Parser.AT);
+            this.state = 356;
+            this.identifier();
+            this.state = 357;
+            this.actionBlock();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1447,37 +1392,36 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ruleModifiers(): RuleModifiersContext {
-        let _localctx: RuleModifiersContext = new RuleModifiersContext(this._ctx, this.state);
-        this.enterRule(_localctx, 54, ANTLRv4Parser.RULE_ruleModifiers);
+        let localContext = new RuleModifiersContext(this._ctx, this.state);
+        this.enterRule(localContext, 54, ANTLRv4Parser.RULE_ruleModifiers);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 360;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                do {
-                    {
-                        {
-                            this.state = 359;
-                            this.ruleModifier();
-                        }
-                    }
-                    this.state = 362;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
-                } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.FRAGMENT) | (1 << ANTLRv4Parser.PROTECTED) | (1 << ANTLRv4Parser.PUBLIC) | (1 << ANTLRv4Parser.PRIVATE))) !== 0));
+            this.state = 360;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            do {
+                {
+                {
+                this.state = 359;
+                this.ruleModifier();
+                }
+                }
+                this.state = 362;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 7405568) !== 0));
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1485,35 +1429,31 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ruleModifier(): RuleModifierContext {
-        let _localctx: RuleModifierContext = new RuleModifierContext(this._ctx, this.state);
-        this.enterRule(_localctx, 56, ANTLRv4Parser.RULE_ruleModifier);
+        let localContext = new RuleModifierContext(this._ctx, this.state);
+        this.enterRule(localContext, 56, ANTLRv4Parser.RULE_ruleModifier);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 364;
-                _la = this._input.LA(1);
-                if (!((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.FRAGMENT) | (1 << ANTLRv4Parser.PROTECTED) | (1 << ANTLRv4Parser.PUBLIC) | (1 << ANTLRv4Parser.PRIVATE))) !== 0))) {
-                    this._errHandler.recoverInline(this);
-                } else {
-                    if (this._input.LA(1) === Token.EOF) {
-                        this.matchedEOF = true;
-                    }
-
-                    this._errHandler.reportMatch(this);
-                    this.consume();
-                }
+            this.state = 364;
+            _la = this.tokenStream.LA(1);
+            if(!((((_la) & ~0x1F) === 0 && ((1 << _la) & 7405568) !== 0))) {
+            this.errorHandler.recoverInline(this);
+            }
+            else {
+                this.errorHandler.reportMatch(this);
+                this.consume();
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1521,24 +1461,23 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ruleBlock(): RuleBlockContext {
-        let _localctx: RuleBlockContext = new RuleBlockContext(this._ctx, this.state);
-        this.enterRule(_localctx, 58, ANTLRv4Parser.RULE_ruleBlock);
+        let localContext = new RuleBlockContext(this._ctx, this.state);
+        this.enterRule(localContext, 58, ANTLRv4Parser.RULE_ruleBlock);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 366;
-                this.ruleAltList();
+            this.state = 366;
+            this.ruleAltList();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1546,41 +1485,40 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ruleAltList(): RuleAltListContext {
-        let _localctx: RuleAltListContext = new RuleAltListContext(this._ctx, this.state);
-        this.enterRule(_localctx, 60, ANTLRv4Parser.RULE_ruleAltList);
+        let localContext = new RuleAltListContext(this._ctx, this.state);
+        this.enterRule(localContext, 60, ANTLRv4Parser.RULE_ruleAltList);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 368;
+            this.state = 368;
+            this.labeledAlt();
+            this.state = 373;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 45) {
+                {
+                {
+                this.state = 369;
+                this.match(ANTLRv4Parser.OR);
+                this.state = 370;
                 this.labeledAlt();
-                this.state = 373;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.OR) {
-                    {
-                        {
-                            this.state = 369;
-                            this.match(ANTLRv4Parser.OR);
-                            this.state = 370;
-                            this.labeledAlt();
-                        }
-                    }
-                    this.state = 375;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
+                }
+                this.state = 375;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1588,37 +1526,36 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public labeledAlt(): LabeledAltContext {
-        let _localctx: LabeledAltContext = new LabeledAltContext(this._ctx, this.state);
-        this.enterRule(_localctx, 62, ANTLRv4Parser.RULE_labeledAlt);
+        let localContext = new LabeledAltContext(this._ctx, this.state);
+        this.enterRule(localContext, 62, ANTLRv4Parser.RULE_labeledAlt);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 376;
-                this.alternative();
-                this.state = 379;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.POUND) {
-                    {
-                        this.state = 377;
-                        this.match(ANTLRv4Parser.POUND);
-                        this.state = 378;
-                        this.identifier();
-                    }
+            this.state = 376;
+            this.alternative();
+            this.state = 379;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 50) {
+                {
+                this.state = 377;
+                this.match(ANTLRv4Parser.POUND);
+                this.state = 378;
+                this.identifier();
                 }
+            }
 
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1626,55 +1563,54 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerRuleSpec(): LexerRuleSpecContext {
-        let _localctx: LexerRuleSpecContext = new LexerRuleSpecContext(this._ctx, this.state);
-        this.enterRule(_localctx, 64, ANTLRv4Parser.RULE_lexerRuleSpec);
+        let localContext = new LexerRuleSpecContext(this._ctx, this.state);
+        this.enterRule(localContext, 64, ANTLRv4Parser.RULE_lexerRuleSpec);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 384;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.DOC_COMMENT) {
-                    {
-                        {
-                            this.state = 381;
-                            this.match(ANTLRv4Parser.DOC_COMMENT);
-                        }
-                    }
-                    this.state = 386;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
+            this.state = 384;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 4) {
+                {
+                {
+                this.state = 381;
+                this.match(ANTLRv4Parser.DOC_COMMENT);
                 }
-                this.state = 388;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.FRAGMENT) {
-                    {
-                        this.state = 387;
-                        this.match(ANTLRv4Parser.FRAGMENT);
-                    }
                 }
+                this.state = 386;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 388;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 16) {
+                {
+                this.state = 387;
+                this.match(ANTLRv4Parser.FRAGMENT);
+                }
+            }
 
-                this.state = 390;
-                this.match(ANTLRv4Parser.TOKEN_REF);
-                this.state = 391;
-                this.match(ANTLRv4Parser.COLON);
-                this.state = 392;
-                this.lexerRuleBlock();
-                this.state = 393;
-                this.match(ANTLRv4Parser.SEMI);
+            this.state = 390;
+            this.match(ANTLRv4Parser.TOKEN_REF);
+            this.state = 391;
+            this.match(ANTLRv4Parser.COLON);
+            this.state = 392;
+            this.lexerRuleBlock();
+            this.state = 393;
+            this.match(ANTLRv4Parser.SEMI);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1682,24 +1618,23 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerRuleBlock(): LexerRuleBlockContext {
-        let _localctx: LexerRuleBlockContext = new LexerRuleBlockContext(this._ctx, this.state);
-        this.enterRule(_localctx, 66, ANTLRv4Parser.RULE_lexerRuleBlock);
+        let localContext = new LexerRuleBlockContext(this._ctx, this.state);
+        this.enterRule(localContext, 66, ANTLRv4Parser.RULE_lexerRuleBlock);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 395;
-                this.lexerAltList();
+            this.state = 395;
+            this.lexerAltList();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1707,41 +1642,40 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerAltList(): LexerAltListContext {
-        let _localctx: LexerAltListContext = new LexerAltListContext(this._ctx, this.state);
-        this.enterRule(_localctx, 68, ANTLRv4Parser.RULE_lexerAltList);
+        let localContext = new LexerAltListContext(this._ctx, this.state);
+        this.enterRule(localContext, 68, ANTLRv4Parser.RULE_lexerAltList);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 397;
+            this.state = 397;
+            this.lexerAlt();
+            this.state = 402;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 45) {
+                {
+                {
+                this.state = 398;
+                this.match(ANTLRv4Parser.OR);
+                this.state = 399;
                 this.lexerAlt();
-                this.state = 402;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.OR) {
-                    {
-                        {
-                            this.state = 398;
-                            this.match(ANTLRv4Parser.OR);
-                            this.state = 399;
-                            this.lexerAlt();
-                        }
-                    }
-                    this.state = 404;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
+                }
+                this.state = 404;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1749,58 +1683,57 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerAlt(): LexerAltContext {
-        let _localctx: LexerAltContext = new LexerAltContext(this._ctx, this.state);
-        this.enterRule(_localctx, 70, ANTLRv4Parser.RULE_lexerAlt);
+        let localContext = new LexerAltContext(this._ctx, this.state);
+        this.enterRule(localContext, 70, ANTLRv4Parser.RULE_lexerAlt);
         let _la: number;
         try {
             this.state = 410;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.TOKEN_REF:
-                case ANTLRv4Parser.RULE_REF:
-                case ANTLRv4Parser.LEXER_CHAR_SET:
-                case ANTLRv4Parser.STRING_LITERAL:
-                case ANTLRv4Parser.BEGIN_ACTION:
-                case ANTLRv4Parser.LPAREN:
-                case ANTLRv4Parser.DOT:
-                case ANTLRv4Parser.NOT:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.RULE_REF:
+            case ANTLRv4Parser.LEXER_CHAR_SET:
+            case ANTLRv4Parser.STRING_LITERAL:
+            case ANTLRv4Parser.BEGIN_ACTION:
+            case ANTLRv4Parser.LPAREN:
+            case ANTLRv4Parser.DOT:
+            case ANTLRv4Parser.NOT:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 405;
+                this.lexerElements();
+                this.state = 407;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 37) {
                     {
-                        this.state = 405;
-                        this.lexerElements();
-                        this.state = 407;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.RARROW) {
-                            {
-                                this.state = 406;
-                                this.lexerCommands();
-                            }
-                        }
+                    this.state = 406;
+                    this.lexerCommands();
+                    }
+                }
 
-                    }
-                    break;
-                case ANTLRv4Parser.SEMI:
-                case ANTLRv4Parser.RPAREN:
-                case ANTLRv4Parser.OR:
-                    this.enterOuterAlt(_localctx, 2);
-                    // tslint:disable-next-line:no-empty
-                    {
-                    }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
+                }
+                break;
+            case ANTLRv4Parser.SEMI:
+            case ANTLRv4Parser.RPAREN:
+            case ANTLRv4Parser.OR:
+                this.enterOuterAlt(localContext, 2);
+                // tslint:disable-next-line:no-empty
+                {
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1808,37 +1741,36 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerElements(): LexerElementsContext {
-        let _localctx: LexerElementsContext = new LexerElementsContext(this._ctx, this.state);
-        this.enterRule(_localctx, 72, ANTLRv4Parser.RULE_lexerElements);
+        let localContext = new LexerElementsContext(this._ctx, this.state);
+        this.enterRule(localContext, 72, ANTLRv4Parser.RULE_lexerElements);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 413;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                do {
-                    {
-                        {
-                            this.state = 412;
-                            this.lexerElement();
-                        }
-                    }
-                    this.state = 415;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
-                } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.TOKEN_REF) | (1 << ANTLRv4Parser.RULE_REF) | (1 << ANTLRv4Parser.LEXER_CHAR_SET) | (1 << ANTLRv4Parser.STRING_LITERAL) | (1 << ANTLRv4Parser.BEGIN_ACTION))) !== 0) || ((((_la - 33)) & ~0x1F) === 0 && ((1 << (_la - 33)) & ((1 << (ANTLRv4Parser.LPAREN - 33)) | (1 << (ANTLRv4Parser.DOT - 33)) | (1 << (ANTLRv4Parser.NOT - 33)))) !== 0));
+            this.state = 413;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            do {
+                {
+                {
+                this.state = 412;
+                this.lexerElement();
+                }
+                }
+                this.state = 415;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2318) !== 0) || ((((_la - 33)) & ~0x1F) === 0 && ((1 << (_la - 33)) & 294913) !== 0));
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1846,95 +1778,91 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerElement(): LexerElementContext {
-        let _localctx: LexerElementContext = new LexerElementContext(this._ctx, this.state);
-        this.enterRule(_localctx, 74, ANTLRv4Parser.RULE_lexerElement);
+        let localContext = new LexerElementContext(this._ctx, this.state);
+        this.enterRule(localContext, 74, ANTLRv4Parser.RULE_lexerElement);
         let _la: number;
         try {
             this.state = 433;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 45, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 45, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 417;
+                this.labeledLexerElement();
+                this.state = 419;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & 11) !== 0)) {
                     {
-                        this.state = 417;
-                        this.labeledLexerElement();
-                        this.state = 419;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & ((1 << (ANTLRv4Parser.QUESTION - 41)) | (1 << (ANTLRv4Parser.STAR - 41)) | (1 << (ANTLRv4Parser.PLUS - 41)))) !== 0)) {
-                            {
-                                this.state = 418;
-                                this.ebnfSuffix();
-                            }
-                        }
-
+                    this.state = 418;
+                    this.ebnfSuffix();
                     }
-                    break;
+                }
 
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 421;
+                this.lexerAtom();
+                this.state = 423;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & 11) !== 0)) {
                     {
-                        this.state = 421;
-                        this.lexerAtom();
-                        this.state = 423;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & ((1 << (ANTLRv4Parser.QUESTION - 41)) | (1 << (ANTLRv4Parser.STAR - 41)) | (1 << (ANTLRv4Parser.PLUS - 41)))) !== 0)) {
-                            {
-                                this.state = 422;
-                                this.ebnfSuffix();
-                            }
-                        }
-
+                    this.state = 422;
+                    this.ebnfSuffix();
                     }
-                    break;
+                }
 
-                case 3:
-                    this.enterOuterAlt(_localctx, 3);
+                }
+                break;
+            case 3:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 425;
+                this.lexerBlock();
+                this.state = 427;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & 11) !== 0)) {
                     {
-                        this.state = 425;
-                        this.lexerBlock();
-                        this.state = 427;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & ((1 << (ANTLRv4Parser.QUESTION - 41)) | (1 << (ANTLRv4Parser.STAR - 41)) | (1 << (ANTLRv4Parser.PLUS - 41)))) !== 0)) {
-                            {
-                                this.state = 426;
-                                this.ebnfSuffix();
-                            }
-                        }
-
+                    this.state = 426;
+                    this.ebnfSuffix();
                     }
-                    break;
+                }
 
-                case 4:
-                    this.enterOuterAlt(_localctx, 4);
+                }
+                break;
+            case 4:
+                this.enterOuterAlt(localContext, 4);
+                {
+                this.state = 429;
+                this.actionBlock();
+                this.state = 431;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 41) {
                     {
-                        this.state = 429;
-                        this.actionBlock();
-                        this.state = 431;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.QUESTION) {
-                            {
-                                this.state = 430;
-                                this.match(ANTLRv4Parser.QUESTION);
-                            }
-                        }
-
+                    this.state = 430;
+                    this.match(ANTLRv4Parser.QUESTION);
                     }
-                    break;
+                }
+
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -1942,59 +1870,55 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public labeledLexerElement(): LabeledLexerElementContext {
-        let _localctx: LabeledLexerElementContext = new LabeledLexerElementContext(this._ctx, this.state);
-        this.enterRule(_localctx, 76, ANTLRv4Parser.RULE_labeledLexerElement);
+        let localContext = new LabeledLexerElementContext(this._ctx, this.state);
+        this.enterRule(localContext, 76, ANTLRv4Parser.RULE_labeledLexerElement);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 435;
-                this.identifier();
-                this.state = 436;
-                _la = this._input.LA(1);
-                if (!(_la === ANTLRv4Parser.ASSIGN || _la === ANTLRv4Parser.PLUS_ASSIGN)) {
-                    this._errHandler.recoverInline(this);
-                } else {
-                    if (this._input.LA(1) === Token.EOF) {
-                        this.matchedEOF = true;
-                    }
-
-                    this._errHandler.reportMatch(this);
-                    this.consume();
+            this.state = 435;
+            this.identifier();
+            this.state = 436;
+            _la = this.tokenStream.LA(1);
+            if(!(_la === 40 || _la === 43)) {
+            this.errorHandler.recoverInline(this);
+            }
+            else {
+                this.errorHandler.reportMatch(this);
+                this.consume();
+            }
+            this.state = 439;
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.LEXER_CHAR_SET:
+            case ANTLRv4Parser.STRING_LITERAL:
+            case ANTLRv4Parser.DOT:
+            case ANTLRv4Parser.NOT:
+                {
+                this.state = 437;
+                this.lexerAtom();
                 }
-                this.state = 439;
-                this._errHandler.sync(this);
-                switch (this._input.LA(1)) {
-                    case ANTLRv4Parser.TOKEN_REF:
-                    case ANTLRv4Parser.LEXER_CHAR_SET:
-                    case ANTLRv4Parser.STRING_LITERAL:
-                    case ANTLRv4Parser.DOT:
-                    case ANTLRv4Parser.NOT:
-                        {
-                            this.state = 437;
-                            this.lexerAtom();
-                        }
-                        break;
-                    case ANTLRv4Parser.LPAREN:
-                        {
-                            this.state = 438;
-                            this.block();
-                        }
-                        break;
-                    default:
-                        throw new NoViableAltException(this);
+                break;
+            case ANTLRv4Parser.LPAREN:
+                {
+                this.state = 438;
+                this.block();
                 }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2002,28 +1926,27 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerBlock(): LexerBlockContext {
-        let _localctx: LexerBlockContext = new LexerBlockContext(this._ctx, this.state);
-        this.enterRule(_localctx, 78, ANTLRv4Parser.RULE_lexerBlock);
+        let localContext = new LexerBlockContext(this._ctx, this.state);
+        this.enterRule(localContext, 78, ANTLRv4Parser.RULE_lexerBlock);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 441;
-                this.match(ANTLRv4Parser.LPAREN);
-                this.state = 442;
-                this.lexerAltList();
-                this.state = 443;
-                this.match(ANTLRv4Parser.RPAREN);
+            this.state = 441;
+            this.match(ANTLRv4Parser.LPAREN);
+            this.state = 442;
+            this.lexerAltList();
+            this.state = 443;
+            this.match(ANTLRv4Parser.RPAREN);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2031,43 +1954,42 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerCommands(): LexerCommandsContext {
-        let _localctx: LexerCommandsContext = new LexerCommandsContext(this._ctx, this.state);
-        this.enterRule(_localctx, 80, ANTLRv4Parser.RULE_lexerCommands);
+        let localContext = new LexerCommandsContext(this._ctx, this.state);
+        this.enterRule(localContext, 80, ANTLRv4Parser.RULE_lexerCommands);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 445;
-                this.match(ANTLRv4Parser.RARROW);
-                this.state = 446;
+            this.state = 445;
+            this.match(ANTLRv4Parser.RARROW);
+            this.state = 446;
+            this.lexerCommand();
+            this.state = 451;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 31) {
+                {
+                {
+                this.state = 447;
+                this.match(ANTLRv4Parser.COMMA);
+                this.state = 448;
                 this.lexerCommand();
-                this.state = 451;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.COMMA) {
-                    {
-                        {
-                            this.state = 447;
-                            this.match(ANTLRv4Parser.COMMA);
-                            this.state = 448;
-                            this.lexerCommand();
-                        }
-                    }
-                    this.state = 453;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
+                }
+                this.state = 453;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2075,44 +1997,42 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerCommand(): LexerCommandContext {
-        let _localctx: LexerCommandContext = new LexerCommandContext(this._ctx, this.state);
-        this.enterRule(_localctx, 82, ANTLRv4Parser.RULE_lexerCommand);
+        let localContext = new LexerCommandContext(this._ctx, this.state);
+        this.enterRule(localContext, 82, ANTLRv4Parser.RULE_lexerCommand);
         try {
             this.state = 460;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 48, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 454;
-                        this.lexerCommandName();
-                        this.state = 455;
-                        this.match(ANTLRv4Parser.LPAREN);
-                        this.state = 456;
-                        this.lexerCommandExpr();
-                        this.state = 457;
-                        this.match(ANTLRv4Parser.RPAREN);
-                    }
-                    break;
-
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 459;
-                        this.lexerCommandName();
-                    }
-                    break;
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 48, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 454;
+                this.lexerCommandName();
+                this.state = 455;
+                this.match(ANTLRv4Parser.LPAREN);
+                this.state = 456;
+                this.lexerCommandExpr();
+                this.state = 457;
+                this.match(ANTLRv4Parser.RPAREN);
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 459;
+                this.lexerCommandName();
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2120,40 +2040,39 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerCommandName(): LexerCommandNameContext {
-        let _localctx: LexerCommandNameContext = new LexerCommandNameContext(this._ctx, this.state);
-        this.enterRule(_localctx, 84, ANTLRv4Parser.RULE_lexerCommandName);
+        let localContext = new LexerCommandNameContext(this._ctx, this.state);
+        this.enterRule(localContext, 84, ANTLRv4Parser.RULE_lexerCommandName);
         try {
             this.state = 464;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.TOKEN_REF:
-                case ANTLRv4Parser.RULE_REF:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 462;
-                        this.identifier();
-                    }
-                    break;
-                case ANTLRv4Parser.MODE:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 463;
-                        this.match(ANTLRv4Parser.MODE);
-                    }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.RULE_REF:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 462;
+                this.identifier();
+                }
+                break;
+            case ANTLRv4Parser.MODE:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 463;
+                this.match(ANTLRv4Parser.MODE);
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2161,40 +2080,39 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerCommandExpr(): LexerCommandExprContext {
-        let _localctx: LexerCommandExprContext = new LexerCommandExprContext(this._ctx, this.state);
-        this.enterRule(_localctx, 86, ANTLRv4Parser.RULE_lexerCommandExpr);
+        let localContext = new LexerCommandExprContext(this._ctx, this.state);
+        this.enterRule(localContext, 86, ANTLRv4Parser.RULE_lexerCommandExpr);
         try {
             this.state = 468;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.TOKEN_REF:
-                case ANTLRv4Parser.RULE_REF:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 466;
-                        this.identifier();
-                    }
-                    break;
-                case ANTLRv4Parser.INT:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 467;
-                        this.match(ANTLRv4Parser.INT);
-                    }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.RULE_REF:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 466;
+                this.identifier();
+                }
+                break;
+            case ANTLRv4Parser.INT:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 467;
+                this.match(ANTLRv4Parser.INT);
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2202,41 +2120,40 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public altList(): AltListContext {
-        let _localctx: AltListContext = new AltListContext(this._ctx, this.state);
-        this.enterRule(_localctx, 88, ANTLRv4Parser.RULE_altList);
+        let localContext = new AltListContext(this._ctx, this.state);
+        this.enterRule(localContext, 88, ANTLRv4Parser.RULE_altList);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 470;
+            this.state = 470;
+            this.alternative();
+            this.state = 475;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 45) {
+                {
+                {
+                this.state = 471;
+                this.match(ANTLRv4Parser.OR);
+                this.state = 472;
                 this.alternative();
-                this.state = 475;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.OR) {
-                    {
-                        {
-                            this.state = 471;
-                            this.match(ANTLRv4Parser.OR);
-                            this.state = 472;
-                            this.alternative();
-                        }
-                    }
-                    this.state = 477;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
+                }
+                this.state = 477;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2244,71 +2161,190 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public alternative(): AlternativeContext {
-        let _localctx: AlternativeContext = new AlternativeContext(this._ctx, this.state);
-        this.enterRule(_localctx, 90, ANTLRv4Parser.RULE_alternative);
+        let localContext = new AlternativeContext(this._ctx, this.state);
+        this.enterRule(localContext, 90, ANTLRv4Parser.RULE_alternative);
         let _la: number;
         try {
             this.state = 487;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.RULE_REF:
+            case ANTLRv4Parser.STRING_LITERAL:
+            case ANTLRv4Parser.BEGIN_ACTION:
+            case ANTLRv4Parser.LPAREN:
+            case ANTLRv4Parser.LT:
+            case ANTLRv4Parser.DOT:
+            case ANTLRv4Parser.NOT:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 479;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 38) {
+                    {
+                    this.state = 478;
+                    this.elementOptions();
+                    }
+                }
+
+                this.state = 482;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                do {
+                    {
+                    {
+                    this.state = 481;
+                    this.element();
+                    }
+                    }
+                    this.state = 484;
+                    this.errorHandler.sync(this);
+                    _la = this.tokenStream.LA(1);
+                } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & 2310) !== 0) || ((((_la - 33)) & ~0x1F) === 0 && ((1 << (_la - 33)) & 294913) !== 0));
+                }
+                break;
+            case ANTLRv4Parser.SEMI:
+            case ANTLRv4Parser.RPAREN:
+            case ANTLRv4Parser.OR:
+            case ANTLRv4Parser.POUND:
+                this.enterOuterAlt(localContext, 2);
+                // tslint:disable-next-line:no-empty
+                {
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public element(): ElementContext {
+        let localContext = new ElementContext(this._ctx, this.state);
+        this.enterRule(localContext, 92, ANTLRv4Parser.RULE_element);
+        let _la: number;
+        try {
+            this.state = 504;
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 58, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 489;
+                this.labeledElement();
+                this.state = 492;
+                this.errorHandler.sync(this);
+                switch (this.tokenStream.LA(1)) {
+                case ANTLRv4Parser.QUESTION:
+                case ANTLRv4Parser.STAR:
+                case ANTLRv4Parser.PLUS:
+                    {
+                    this.state = 490;
+                    this.ebnfSuffix();
+                    }
+                    break;
                 case ANTLRv4Parser.TOKEN_REF:
                 case ANTLRv4Parser.RULE_REF:
                 case ANTLRv4Parser.STRING_LITERAL:
                 case ANTLRv4Parser.BEGIN_ACTION:
-                case ANTLRv4Parser.LPAREN:
-                case ANTLRv4Parser.LT:
-                case ANTLRv4Parser.DOT:
-                case ANTLRv4Parser.NOT:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 479;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.LT) {
-                            {
-                                this.state = 478;
-                                this.elementOptions();
-                            }
-                        }
-
-                        this.state = 482;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        do {
-                            {
-                                {
-                                    this.state = 481;
-                                    this.element();
-                                }
-                            }
-                            this.state = 484;
-                            this._errHandler.sync(this);
-                            _la = this._input.LA(1);
-                        } while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << ANTLRv4Parser.TOKEN_REF) | (1 << ANTLRv4Parser.RULE_REF) | (1 << ANTLRv4Parser.STRING_LITERAL) | (1 << ANTLRv4Parser.BEGIN_ACTION))) !== 0) || ((((_la - 33)) & ~0x1F) === 0 && ((1 << (_la - 33)) & ((1 << (ANTLRv4Parser.LPAREN - 33)) | (1 << (ANTLRv4Parser.DOT - 33)) | (1 << (ANTLRv4Parser.NOT - 33)))) !== 0));
-                    }
-                    break;
                 case ANTLRv4Parser.SEMI:
+                case ANTLRv4Parser.LPAREN:
                 case ANTLRv4Parser.RPAREN:
                 case ANTLRv4Parser.OR:
+                case ANTLRv4Parser.DOT:
                 case ANTLRv4Parser.POUND:
-                    this.enterOuterAlt(_localctx, 2);
+                case ANTLRv4Parser.NOT:
                     // tslint:disable-next-line:no-empty
                     {
                     }
                     break;
                 default:
-                    throw new NoViableAltException(this);
+                    throw new antlr.NoViableAltException(this);
+                }
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 494;
+                this.atom();
+                this.state = 497;
+                this.errorHandler.sync(this);
+                switch (this.tokenStream.LA(1)) {
+                case ANTLRv4Parser.QUESTION:
+                case ANTLRv4Parser.STAR:
+                case ANTLRv4Parser.PLUS:
+                    {
+                    this.state = 495;
+                    this.ebnfSuffix();
+                    }
+                    break;
+                case ANTLRv4Parser.TOKEN_REF:
+                case ANTLRv4Parser.RULE_REF:
+                case ANTLRv4Parser.STRING_LITERAL:
+                case ANTLRv4Parser.BEGIN_ACTION:
+                case ANTLRv4Parser.SEMI:
+                case ANTLRv4Parser.LPAREN:
+                case ANTLRv4Parser.RPAREN:
+                case ANTLRv4Parser.OR:
+                case ANTLRv4Parser.DOT:
+                case ANTLRv4Parser.POUND:
+                case ANTLRv4Parser.NOT:
+                    // tslint:disable-next-line:no-empty
+                    {
+                    }
+                    break;
+                default:
+                    throw new antlr.NoViableAltException(this);
+                }
+                }
+                break;
+            case 3:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 499;
+                this.ebnf();
+                }
+                break;
+            case 4:
+                this.enterOuterAlt(localContext, 4);
+                {
+                this.state = 500;
+                this.actionBlock();
+                this.state = 502;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 41) {
+                    {
+                    this.state = 501;
+                    this.match(ANTLRv4Parser.QUESTION);
+                    }
+                }
+
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2316,219 +2352,90 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
-    public element(): ElementContext {
-        let _localctx: ElementContext = new ElementContext(this._ctx, this.state);
-        this.enterRule(_localctx, 92, ANTLRv4Parser.RULE_element);
-        let _la: number;
-        try {
-            this.state = 504;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 58, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 489;
-                        this.labeledElement();
-                        this.state = 492;
-                        this._errHandler.sync(this);
-                        switch (this._input.LA(1)) {
-                            case ANTLRv4Parser.QUESTION:
-                            case ANTLRv4Parser.STAR:
-                            case ANTLRv4Parser.PLUS:
-                                {
-                                    this.state = 490;
-                                    this.ebnfSuffix();
-                                }
-                                break;
-                            case ANTLRv4Parser.TOKEN_REF:
-                            case ANTLRv4Parser.RULE_REF:
-                            case ANTLRv4Parser.STRING_LITERAL:
-                            case ANTLRv4Parser.BEGIN_ACTION:
-                            case ANTLRv4Parser.SEMI:
-                            case ANTLRv4Parser.LPAREN:
-                            case ANTLRv4Parser.RPAREN:
-                            case ANTLRv4Parser.OR:
-                            case ANTLRv4Parser.DOT:
-                            case ANTLRv4Parser.POUND:
-                            case ANTLRv4Parser.NOT:
-                                // tslint:disable-next-line:no-empty
-                                {
-                                }
-                                break;
-                            default:
-                                throw new NoViableAltException(this);
-                        }
-                    }
-                    break;
-
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 494;
-                        this.atom();
-                        this.state = 497;
-                        this._errHandler.sync(this);
-                        switch (this._input.LA(1)) {
-                            case ANTLRv4Parser.QUESTION:
-                            case ANTLRv4Parser.STAR:
-                            case ANTLRv4Parser.PLUS:
-                                {
-                                    this.state = 495;
-                                    this.ebnfSuffix();
-                                }
-                                break;
-                            case ANTLRv4Parser.TOKEN_REF:
-                            case ANTLRv4Parser.RULE_REF:
-                            case ANTLRv4Parser.STRING_LITERAL:
-                            case ANTLRv4Parser.BEGIN_ACTION:
-                            case ANTLRv4Parser.SEMI:
-                            case ANTLRv4Parser.LPAREN:
-                            case ANTLRv4Parser.RPAREN:
-                            case ANTLRv4Parser.OR:
-                            case ANTLRv4Parser.DOT:
-                            case ANTLRv4Parser.POUND:
-                            case ANTLRv4Parser.NOT:
-                                // tslint:disable-next-line:no-empty
-                                {
-                                }
-                                break;
-                            default:
-                                throw new NoViableAltException(this);
-                        }
-                    }
-                    break;
-
-                case 3:
-                    this.enterOuterAlt(_localctx, 3);
-                    {
-                        this.state = 499;
-                        this.ebnf();
-                    }
-                    break;
-
-                case 4:
-                    this.enterOuterAlt(_localctx, 4);
-                    {
-                        this.state = 500;
-                        this.actionBlock();
-                        this.state = 502;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.QUESTION) {
-                            {
-                                this.state = 501;
-                                this.match(ANTLRv4Parser.QUESTION);
-                            }
-                        }
-
-                    }
-                    break;
-            }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
-            }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
     public labeledElement(): LabeledElementContext {
-        let _localctx: LabeledElementContext = new LabeledElementContext(this._ctx, this.state);
-        this.enterRule(_localctx, 94, ANTLRv4Parser.RULE_labeledElement);
+        let localContext = new LabeledElementContext(this._ctx, this.state);
+        this.enterRule(localContext, 94, ANTLRv4Parser.RULE_labeledElement);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 506;
-                this.identifier();
-                this.state = 507;
-                _la = this._input.LA(1);
-                if (!(_la === ANTLRv4Parser.ASSIGN || _la === ANTLRv4Parser.PLUS_ASSIGN)) {
-                    this._errHandler.recoverInline(this);
-                } else {
-                    if (this._input.LA(1) === Token.EOF) {
-                        this.matchedEOF = true;
-                    }
-
-                    this._errHandler.reportMatch(this);
-                    this.consume();
-                }
-                this.state = 510;
-                this._errHandler.sync(this);
-                switch (this._input.LA(1)) {
-                    case ANTLRv4Parser.TOKEN_REF:
-                    case ANTLRv4Parser.RULE_REF:
-                    case ANTLRv4Parser.STRING_LITERAL:
-                    case ANTLRv4Parser.DOT:
-                    case ANTLRv4Parser.NOT:
-                        {
-                            this.state = 508;
-                            this.atom();
-                        }
-                        break;
-                    case ANTLRv4Parser.LPAREN:
-                        {
-                            this.state = 509;
-                            this.block();
-                        }
-                        break;
-                    default:
-                        throw new NoViableAltException(this);
-                }
+            this.state = 506;
+            this.identifier();
+            this.state = 507;
+            _la = this.tokenStream.LA(1);
+            if(!(_la === 40 || _la === 43)) {
+            this.errorHandler.recoverInline(this);
             }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
+            else {
+                this.errorHandler.reportMatch(this);
+                this.consume();
             }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
-    public ebnf(): EbnfContext {
-        let _localctx: EbnfContext = new EbnfContext(this._ctx, this.state);
-        this.enterRule(_localctx, 96, ANTLRv4Parser.RULE_ebnf);
-        let _la: number;
-        try {
-            this.enterOuterAlt(_localctx, 1);
-            {
-                this.state = 512;
+            this.state = 510;
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+            case ANTLRv4Parser.RULE_REF:
+            case ANTLRv4Parser.STRING_LITERAL:
+            case ANTLRv4Parser.DOT:
+            case ANTLRv4Parser.NOT:
+                {
+                this.state = 508;
+                this.atom();
+                }
+                break;
+            case ANTLRv4Parser.LPAREN:
+                {
+                this.state = 509;
                 this.block();
-                this.state = 514;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & ((1 << (ANTLRv4Parser.QUESTION - 41)) | (1 << (ANTLRv4Parser.STAR - 41)) | (1 << (ANTLRv4Parser.PLUS - 41)))) !== 0)) {
-                    {
-                        this.state = 513;
-                        this.blockSuffix();
-                    }
                 }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
+            }
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public ebnf(): EbnfContext {
+        let localContext = new EbnfContext(this._ctx, this.state);
+        this.enterRule(localContext, 96, ANTLRv4Parser.RULE_ebnf);
+        let _la: number;
+        try {
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 512;
+            this.block();
+            this.state = 514;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (((((_la - 41)) & ~0x1F) === 0 && ((1 << (_la - 41)) & 11) !== 0)) {
+                {
+                this.state = 513;
+                this.blockSuffix();
+                }
+            }
 
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2536,24 +2443,23 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public blockSuffix(): BlockSuffixContext {
-        let _localctx: BlockSuffixContext = new BlockSuffixContext(this._ctx, this.state);
-        this.enterRule(_localctx, 98, ANTLRv4Parser.RULE_blockSuffix);
+        let localContext = new BlockSuffixContext(this._ctx, this.state);
+        this.enterRule(localContext, 98, ANTLRv4Parser.RULE_blockSuffix);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 516;
-                this.ebnfSuffix();
+            this.state = 516;
+            this.ebnfSuffix();
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2561,77 +2467,76 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ebnfSuffix(): EbnfSuffixContext {
-        let _localctx: EbnfSuffixContext = new EbnfSuffixContext(this._ctx, this.state);
-        this.enterRule(_localctx, 100, ANTLRv4Parser.RULE_ebnfSuffix);
+        let localContext = new EbnfSuffixContext(this._ctx, this.state);
+        this.enterRule(localContext, 100, ANTLRv4Parser.RULE_ebnfSuffix);
         let _la: number;
         try {
             this.state = 530;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.QUESTION:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.QUESTION:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 518;
+                this.match(ANTLRv4Parser.QUESTION);
+                this.state = 520;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 41) {
                     {
-                        this.state = 518;
-                        this.match(ANTLRv4Parser.QUESTION);
-                        this.state = 520;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.QUESTION) {
-                            {
-                                this.state = 519;
-                                this.match(ANTLRv4Parser.QUESTION);
-                            }
-                        }
-
+                    this.state = 519;
+                    this.match(ANTLRv4Parser.QUESTION);
                     }
-                    break;
-                case ANTLRv4Parser.STAR:
-                    this.enterOuterAlt(_localctx, 2);
+                }
+
+                }
+                break;
+            case ANTLRv4Parser.STAR:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 522;
+                this.match(ANTLRv4Parser.STAR);
+                this.state = 524;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 41) {
                     {
-                        this.state = 522;
-                        this.match(ANTLRv4Parser.STAR);
-                        this.state = 524;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.QUESTION) {
-                            {
-                                this.state = 523;
-                                this.match(ANTLRv4Parser.QUESTION);
-                            }
-                        }
-
+                    this.state = 523;
+                    this.match(ANTLRv4Parser.QUESTION);
                     }
-                    break;
-                case ANTLRv4Parser.PLUS:
-                    this.enterOuterAlt(_localctx, 3);
+                }
+
+                }
+                break;
+            case ANTLRv4Parser.PLUS:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 526;
+                this.match(ANTLRv4Parser.PLUS);
+                this.state = 528;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 41) {
                     {
-                        this.state = 526;
-                        this.match(ANTLRv4Parser.PLUS);
-                        this.state = 528;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.QUESTION) {
-                            {
-                                this.state = 527;
-                                this.match(ANTLRv4Parser.QUESTION);
-                            }
-                        }
-
+                    this.state = 527;
+                    this.match(ANTLRv4Parser.QUESTION);
                     }
-                    break;
-                default:
-                    throw new NoViableAltException(this);
+                }
+
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2639,73 +2544,68 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public lexerAtom(): LexerAtomContext {
-        let _localctx: LexerAtomContext = new LexerAtomContext(this._ctx, this.state);
-        this.enterRule(_localctx, 102, ANTLRv4Parser.RULE_lexerAtom);
+        let localContext = new LexerAtomContext(this._ctx, this.state);
+        this.enterRule(localContext, 102, ANTLRv4Parser.RULE_lexerAtom);
         let _la: number;
         try {
             this.state = 540;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 66, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 66, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 532;
+                this.characterRange();
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 533;
+                this.terminalRule();
+                }
+                break;
+            case 3:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 534;
+                this.notSet();
+                }
+                break;
+            case 4:
+                this.enterOuterAlt(localContext, 4);
+                {
+                this.state = 535;
+                this.match(ANTLRv4Parser.LEXER_CHAR_SET);
+                }
+                break;
+            case 5:
+                this.enterOuterAlt(localContext, 5);
+                {
+                this.state = 536;
+                this.match(ANTLRv4Parser.DOT);
+                this.state = 538;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 38) {
                     {
-                        this.state = 532;
-                        this.characterRange();
+                    this.state = 537;
+                    this.elementOptions();
                     }
-                    break;
+                }
 
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 533;
-                        this.terminalRule();
-                    }
-                    break;
-
-                case 3:
-                    this.enterOuterAlt(_localctx, 3);
-                    {
-                        this.state = 534;
-                        this.notSet();
-                    }
-                    break;
-
-                case 4:
-                    this.enterOuterAlt(_localctx, 4);
-                    {
-                        this.state = 535;
-                        this.match(ANTLRv4Parser.LEXER_CHAR_SET);
-                    }
-                    break;
-
-                case 5:
-                    this.enterOuterAlt(_localctx, 5);
-                    {
-                        this.state = 536;
-                        this.match(ANTLRv4Parser.DOT);
-                        this.state = 538;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.LT) {
-                            {
-                                this.state = 537;
-                                this.elementOptions();
-                            }
-                        }
-
-                    }
-                    break;
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2713,73 +2613,68 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public atom(): AtomContext {
-        let _localctx: AtomContext = new AtomContext(this._ctx, this.state);
-        this.enterRule(_localctx, 104, ANTLRv4Parser.RULE_atom);
+        let localContext = new AtomContext(this._ctx, this.state);
+        this.enterRule(localContext, 104, ANTLRv4Parser.RULE_atom);
         let _la: number;
         try {
             this.state = 550;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 68, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 68, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 542;
+                this.characterRange();
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 543;
+                this.terminalRule();
+                }
+                break;
+            case 3:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 544;
+                this.ruleref();
+                }
+                break;
+            case 4:
+                this.enterOuterAlt(localContext, 4);
+                {
+                this.state = 545;
+                this.notSet();
+                }
+                break;
+            case 5:
+                this.enterOuterAlt(localContext, 5);
+                {
+                this.state = 546;
+                this.match(ANTLRv4Parser.DOT);
+                this.state = 548;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 38) {
                     {
-                        this.state = 542;
-                        this.characterRange();
+                    this.state = 547;
+                    this.elementOptions();
                     }
-                    break;
+                }
 
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 543;
-                        this.terminalRule();
-                    }
-                    break;
-
-                case 3:
-                    this.enterOuterAlt(_localctx, 3);
-                    {
-                        this.state = 544;
-                        this.ruleref();
-                    }
-                    break;
-
-                case 4:
-                    this.enterOuterAlt(_localctx, 4);
-                    {
-                        this.state = 545;
-                        this.notSet();
-                    }
-                    break;
-
-                case 5:
-                    this.enterOuterAlt(_localctx, 5);
-                    {
-                        this.state = 546;
-                        this.match(ANTLRv4Parser.DOT);
-                        this.state = 548;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.LT) {
-                            {
-                                this.state = 547;
-                                this.elementOptions();
-                            }
-                        }
-
-                    }
-                    break;
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2787,42 +2682,40 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public notSet(): NotSetContext {
-        let _localctx: NotSetContext = new NotSetContext(this._ctx, this.state);
-        this.enterRule(_localctx, 106, ANTLRv4Parser.RULE_notSet);
+        let localContext = new NotSetContext(this._ctx, this.state);
+        this.enterRule(localContext, 106, ANTLRv4Parser.RULE_notSet);
         try {
             this.state = 556;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 69, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 552;
-                        this.match(ANTLRv4Parser.NOT);
-                        this.state = 553;
-                        this.setElement();
-                    }
-                    break;
-
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 554;
-                        this.match(ANTLRv4Parser.NOT);
-                        this.state = 555;
-                        this.blockSet();
-                    }
-                    break;
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 69, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 552;
+                this.match(ANTLRv4Parser.NOT);
+                this.state = 553;
+                this.setElement();
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 554;
+                this.match(ANTLRv4Parser.NOT);
+                this.state = 555;
+                this.blockSet();
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2830,45 +2723,44 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public blockSet(): BlockSetContext {
-        let _localctx: BlockSetContext = new BlockSetContext(this._ctx, this.state);
-        this.enterRule(_localctx, 108, ANTLRv4Parser.RULE_blockSet);
+        let localContext = new BlockSetContext(this._ctx, this.state);
+        this.enterRule(localContext, 108, ANTLRv4Parser.RULE_blockSet);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 558;
-                this.match(ANTLRv4Parser.LPAREN);
-                this.state = 559;
+            this.state = 558;
+            this.match(ANTLRv4Parser.LPAREN);
+            this.state = 559;
+            this.setElement();
+            this.state = 564;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 45) {
+                {
+                {
+                this.state = 560;
+                this.match(ANTLRv4Parser.OR);
+                this.state = 561;
                 this.setElement();
-                this.state = 564;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.OR) {
-                    {
-                        {
-                            this.state = 560;
-                            this.match(ANTLRv4Parser.OR);
-                            this.state = 561;
-                            this.setElement();
-                        }
-                    }
-                    this.state = 566;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
                 }
-                this.state = 567;
-                this.match(ANTLRv4Parser.RPAREN);
+                }
+                this.state = 566;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 567;
+            this.match(ANTLRv4Parser.RPAREN);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2876,75 +2768,71 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public setElement(): SetElementContext {
-        let _localctx: SetElementContext = new SetElementContext(this._ctx, this.state);
-        this.enterRule(_localctx, 110, ANTLRv4Parser.RULE_setElement);
+        let localContext = new SetElementContext(this._ctx, this.state);
+        this.enterRule(localContext, 110, ANTLRv4Parser.RULE_setElement);
         let _la: number;
         try {
             this.state = 579;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 73, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 73, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 569;
+                this.match(ANTLRv4Parser.TOKEN_REF);
+                this.state = 571;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 38) {
                     {
-                        this.state = 569;
-                        this.match(ANTLRv4Parser.TOKEN_REF);
-                        this.state = 571;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.LT) {
-                            {
-                                this.state = 570;
-                                this.elementOptions();
-                            }
-                        }
-
+                    this.state = 570;
+                    this.elementOptions();
                     }
-                    break;
+                }
 
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 573;
+                this.match(ANTLRv4Parser.STRING_LITERAL);
+                this.state = 575;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 38) {
                     {
-                        this.state = 573;
-                        this.match(ANTLRv4Parser.STRING_LITERAL);
-                        this.state = 575;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.LT) {
-                            {
-                                this.state = 574;
-                                this.elementOptions();
-                            }
-                        }
-
+                    this.state = 574;
+                    this.elementOptions();
                     }
-                    break;
+                }
 
-                case 3:
-                    this.enterOuterAlt(_localctx, 3);
-                    {
-                        this.state = 577;
-                        this.characterRange();
-                    }
-                    break;
-
-                case 4:
-                    this.enterOuterAlt(_localctx, 4);
-                    {
-                        this.state = 578;
-                        this.match(ANTLRv4Parser.LEXER_CHAR_SET);
-                    }
-                    break;
+                }
+                break;
+            case 3:
+                this.enterOuterAlt(localContext, 3);
+                {
+                this.state = 577;
+                this.characterRange();
+                }
+                break;
+            case 4:
+                this.enterOuterAlt(localContext, 4);
+                {
+                this.state = 578;
+                this.match(ANTLRv4Parser.LEXER_CHAR_SET);
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -2952,63 +2840,62 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public block(): BlockContext {
-        let _localctx: BlockContext = new BlockContext(this._ctx, this.state);
-        this.enterRule(_localctx, 112, ANTLRv4Parser.RULE_block);
+        let localContext = new BlockContext(this._ctx, this.state);
+        this.enterRule(localContext, 112, ANTLRv4Parser.RULE_block);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 581;
-                this.match(ANTLRv4Parser.LPAREN);
-                this.state = 592;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.OPTIONS || _la === ANTLRv4Parser.COLON || _la === ANTLRv4Parser.AT) {
+            this.state = 581;
+            this.match(ANTLRv4Parser.LPAREN);
+            this.state = 592;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 12 || _la === 29 || _la === 49) {
+                {
+                this.state = 583;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 12) {
                     {
-                        this.state = 583;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.OPTIONS) {
-                            {
-                                this.state = 582;
-                                this.optionsSpec();
-                            }
-                        }
-
-                        this.state = 588;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        while (_la === ANTLRv4Parser.AT) {
-                            {
-                                {
-                                    this.state = 585;
-                                    this.ruleAction();
-                                }
-                            }
-                            this.state = 590;
-                            this._errHandler.sync(this);
-                            _la = this._input.LA(1);
-                        }
-                        this.state = 591;
-                        this.match(ANTLRv4Parser.COLON);
+                    this.state = 582;
+                    this.optionsSpec();
                     }
                 }
 
-                this.state = 594;
-                this.altList();
-                this.state = 595;
-                this.match(ANTLRv4Parser.RPAREN);
+                this.state = 588;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                while (_la === 49) {
+                    {
+                    {
+                    this.state = 585;
+                    this.ruleAction();
+                    }
+                    }
+                    this.state = 590;
+                    this.errorHandler.sync(this);
+                    _la = this.tokenStream.LA(1);
+                }
+                this.state = 591;
+                this.match(ANTLRv4Parser.COLON);
+                }
+            }
+
+            this.state = 594;
+            this.altList();
+            this.state = 595;
+            this.match(ANTLRv4Parser.RPAREN);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -3016,45 +2903,44 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public ruleref(): RulerefContext {
-        let _localctx: RulerefContext = new RulerefContext(this._ctx, this.state);
-        this.enterRule(_localctx, 114, ANTLRv4Parser.RULE_ruleref);
+        let localContext = new RulerefContext(this._ctx, this.state);
+        this.enterRule(localContext, 114, ANTLRv4Parser.RULE_ruleref);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 597;
-                this.match(ANTLRv4Parser.RULE_REF);
-                this.state = 599;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.BEGIN_ARGUMENT) {
-                    {
-                        this.state = 598;
-                        this.argActionBlock();
-                    }
+            this.state = 597;
+            this.match(ANTLRv4Parser.RULE_REF);
+            this.state = 599;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 10) {
+                {
+                this.state = 598;
+                this.argActionBlock();
                 }
+            }
 
-                this.state = 602;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                if (_la === ANTLRv4Parser.LT) {
-                    {
-                        this.state = 601;
-                        this.elementOptions();
-                    }
+            this.state = 602;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            if (_la === 38) {
+                {
+                this.state = 601;
+                this.elementOptions();
                 }
+            }
 
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -3062,28 +2948,27 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public characterRange(): CharacterRangeContext {
-        let _localctx: CharacterRangeContext = new CharacterRangeContext(this._ctx, this.state);
-        this.enterRule(_localctx, 116, ANTLRv4Parser.RULE_characterRange);
+        let localContext = new CharacterRangeContext(this._ctx, this.state);
+        this.enterRule(localContext, 116, ANTLRv4Parser.RULE_characterRange);
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 604;
-                this.match(ANTLRv4Parser.STRING_LITERAL);
-                this.state = 605;
-                this.match(ANTLRv4Parser.RANGE);
-                this.state = 606;
-                this.match(ANTLRv4Parser.STRING_LITERAL);
+            this.state = 604;
+            this.match(ANTLRv4Parser.STRING_LITERAL);
+            this.state = 605;
+            this.match(ANTLRv4Parser.RANGE);
+            this.state = 606;
+            this.match(ANTLRv4Parser.STRING_LITERAL);
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -3091,106 +2976,162 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
     public terminalRule(): TerminalRuleContext {
-        let _localctx: TerminalRuleContext = new TerminalRuleContext(this._ctx, this.state);
-        this.enterRule(_localctx, 118, ANTLRv4Parser.RULE_terminalRule);
+        let localContext = new TerminalRuleContext(this._ctx, this.state);
+        this.enterRule(localContext, 118, ANTLRv4Parser.RULE_terminalRule);
         let _la: number;
         try {
             this.state = 616;
-            this._errHandler.sync(this);
-            switch (this._input.LA(1)) {
-                case ANTLRv4Parser.TOKEN_REF:
-                    this.enterOuterAlt(_localctx, 1);
+            this.errorHandler.sync(this);
+            switch (this.tokenStream.LA(1)) {
+            case ANTLRv4Parser.TOKEN_REF:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 608;
+                this.match(ANTLRv4Parser.TOKEN_REF);
+                this.state = 610;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 38) {
                     {
-                        this.state = 608;
-                        this.match(ANTLRv4Parser.TOKEN_REF);
-                        this.state = 610;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.LT) {
-                            {
-                                this.state = 609;
-                                this.elementOptions();
-                            }
-                        }
+                    this.state = 609;
+                    this.elementOptions();
+                    }
+                }
 
+                }
+                break;
+            case ANTLRv4Parser.STRING_LITERAL:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 612;
+                this.match(ANTLRv4Parser.STRING_LITERAL);
+                this.state = 614;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+                if (_la === 38) {
+                    {
+                    this.state = 613;
+                    this.elementOptions();
+                    }
+                }
+
+                }
+                break;
+            default:
+                throw new antlr.NoViableAltException(this);
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public elementOptions(): ElementOptionsContext {
+        let localContext = new ElementOptionsContext(this._ctx, this.state);
+        this.enterRule(localContext, 120, ANTLRv4Parser.RULE_elementOptions);
+        let _la: number;
+        try {
+            this.enterOuterAlt(localContext, 1);
+            {
+            this.state = 618;
+            this.match(ANTLRv4Parser.LT);
+            this.state = 619;
+            this.elementOption();
+            this.state = 624;
+            this.errorHandler.sync(this);
+            _la = this.tokenStream.LA(1);
+            while (_la === 31) {
+                {
+                {
+                this.state = 620;
+                this.match(ANTLRv4Parser.COMMA);
+                this.state = 621;
+                this.elementOption();
+                }
+                }
+                this.state = 626;
+                this.errorHandler.sync(this);
+                _la = this.tokenStream.LA(1);
+            }
+            this.state = 627;
+            this.match(ANTLRv4Parser.GT);
+            }
+        }
+        catch (re) {
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
+            } else {
+                throw re;
+            }
+        }
+        finally {
+            this.exitRule();
+        }
+        return localContext;
+    }
+    public elementOption(): ElementOptionContext {
+        let localContext = new ElementOptionContext(this._ctx, this.state);
+        this.enterRule(localContext, 122, ANTLRv4Parser.RULE_elementOption);
+        try {
+            this.state = 636;
+            this.errorHandler.sync(this);
+            switch (this.interpreter.adaptivePredict(this.tokenStream, 84, this._ctx) ) {
+            case 1:
+                this.enterOuterAlt(localContext, 1);
+                {
+                this.state = 629;
+                this.identifier();
+                }
+                break;
+            case 2:
+                this.enterOuterAlt(localContext, 2);
+                {
+                this.state = 630;
+                this.identifier();
+                this.state = 631;
+                this.match(ANTLRv4Parser.ASSIGN);
+                this.state = 634;
+                this.errorHandler.sync(this);
+                switch (this.tokenStream.LA(1)) {
+                case ANTLRv4Parser.TOKEN_REF:
+                case ANTLRv4Parser.RULE_REF:
+                    {
+                    this.state = 632;
+                    this.identifier();
                     }
                     break;
                 case ANTLRv4Parser.STRING_LITERAL:
-                    this.enterOuterAlt(_localctx, 2);
                     {
-                        this.state = 612;
-                        this.match(ANTLRv4Parser.STRING_LITERAL);
-                        this.state = 614;
-                        this._errHandler.sync(this);
-                        _la = this._input.LA(1);
-                        if (_la === ANTLRv4Parser.LT) {
-                            {
-                                this.state = 613;
-                                this.elementOptions();
-                            }
-                        }
-
+                    this.state = 633;
+                    this.match(ANTLRv4Parser.STRING_LITERAL);
                     }
                     break;
                 default:
-                    throw new NoViableAltException(this);
-            }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
-            }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
-    public elementOptions(): ElementOptionsContext {
-        let _localctx: ElementOptionsContext = new ElementOptionsContext(this._ctx, this.state);
-        this.enterRule(_localctx, 120, ANTLRv4Parser.RULE_elementOptions);
-        let _la: number;
-        try {
-            this.enterOuterAlt(_localctx, 1);
-            {
-                this.state = 618;
-                this.match(ANTLRv4Parser.LT);
-                this.state = 619;
-                this.elementOption();
-                this.state = 624;
-                this._errHandler.sync(this);
-                _la = this._input.LA(1);
-                while (_la === ANTLRv4Parser.COMMA) {
-                    {
-                        {
-                            this.state = 620;
-                            this.match(ANTLRv4Parser.COMMA);
-                            this.state = 621;
-                            this.elementOption();
-                        }
-                    }
-                    this.state = 626;
-                    this._errHandler.sync(this);
-                    _la = this._input.LA(1);
+                    throw new antlr.NoViableAltException(this);
                 }
-                this.state = 627;
-                this.match(ANTLRv4Parser.GT);
+                }
+                break;
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -3198,95 +3139,31 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
-    // @RuleVersion(0)
-    public elementOption(): ElementOptionContext {
-        let _localctx: ElementOptionContext = new ElementOptionContext(this._ctx, this.state);
-        this.enterRule(_localctx, 122, ANTLRv4Parser.RULE_elementOption);
-        try {
-            this.state = 636;
-            this._errHandler.sync(this);
-            switch (this.interpreter.adaptivePredict(this._input, 84, this._ctx)) {
-                case 1:
-                    this.enterOuterAlt(_localctx, 1);
-                    {
-                        this.state = 629;
-                        this.identifier();
-                    }
-                    break;
-
-                case 2:
-                    this.enterOuterAlt(_localctx, 2);
-                    {
-                        this.state = 630;
-                        this.identifier();
-                        this.state = 631;
-                        this.match(ANTLRv4Parser.ASSIGN);
-                        this.state = 634;
-                        this._errHandler.sync(this);
-                        switch (this._input.LA(1)) {
-                            case ANTLRv4Parser.TOKEN_REF:
-                            case ANTLRv4Parser.RULE_REF:
-                                {
-                                    this.state = 632;
-                                    this.identifier();
-                                }
-                                break;
-                            case ANTLRv4Parser.STRING_LITERAL:
-                                {
-                                    this.state = 633;
-                                    this.match(ANTLRv4Parser.STRING_LITERAL);
-                                }
-                                break;
-                            default:
-                                throw new NoViableAltException(this);
-                        }
-                    }
-                    break;
-            }
-        }
-        catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
-            } else {
-                throw re;
-            }
-        }
-        finally {
-            this.exitRule();
-        }
-        return _localctx;
-    }
-    // @RuleVersion(0)
     public identifier(): IdentifierContext {
-        let _localctx: IdentifierContext = new IdentifierContext(this._ctx, this.state);
-        this.enterRule(_localctx, 124, ANTLRv4Parser.RULE_identifier);
+        let localContext = new IdentifierContext(this._ctx, this.state);
+        this.enterRule(localContext, 124, ANTLRv4Parser.RULE_identifier);
         let _la: number;
         try {
-            this.enterOuterAlt(_localctx, 1);
+            this.enterOuterAlt(localContext, 1);
             {
-                this.state = 638;
-                _la = this._input.LA(1);
-                if (!(_la === ANTLRv4Parser.TOKEN_REF || _la === ANTLRv4Parser.RULE_REF)) {
-                    this._errHandler.recoverInline(this);
-                } else {
-                    if (this._input.LA(1) === Token.EOF) {
-                        this.matchedEOF = true;
-                    }
-
-                    this._errHandler.reportMatch(this);
-                    this.consume();
-                }
+            this.state = 638;
+            _la = this.tokenStream.LA(1);
+            if(!(_la === 1 || _la === 2)) {
+            this.errorHandler.recoverInline(this);
+            }
+            else {
+                this.errorHandler.reportMatch(this);
+                this.consume();
+            }
             }
         }
         catch (re) {
-            if (re instanceof RecognitionException) {
-                _localctx.exception = re;
-                this._errHandler.reportError(this, re);
-                this._errHandler.recover(this, re);
+            if (re instanceof antlr.RecognitionException) {
+                localContext.exception = re;
+                this.errorHandler.reportError(this, re);
+                this.errorHandler.recover(this, re);
             } else {
                 throw re;
             }
@@ -3294,404 +3171,327 @@ export class ANTLRv4Parser extends Parser {
         finally {
             this.exitRule();
         }
-        return _localctx;
+        return localContext;
     }
 
-    private static readonly _serializedATNSegments: number = 2;
-    private static readonly _serializedATNSegment0: string =
-        "\x03\uC91D\uCABA\u058D\uAFBA\u4F53\u0607\uEA8B\uC241\x03>\u0283\x04\x02" +
-        "\t\x02\x04\x03\t\x03\x04\x04\t\x04\x04\x05\t\x05\x04\x06\t\x06\x04\x07" +
-        "\t\x07\x04\b\t\b\x04\t\t\t\x04\n\t\n\x04\v\t\v\x04\f\t\f\x04\r\t\r\x04" +
-        "\x0E\t\x0E\x04\x0F\t\x0F\x04\x10\t\x10\x04\x11\t\x11\x04\x12\t\x12\x04" +
-        "\x13\t\x13\x04\x14\t\x14\x04\x15\t\x15\x04\x16\t\x16\x04\x17\t\x17\x04" +
-        "\x18\t\x18\x04\x19\t\x19\x04\x1A\t\x1A\x04\x1B\t\x1B\x04\x1C\t\x1C\x04" +
-        "\x1D\t\x1D\x04\x1E\t\x1E\x04\x1F\t\x1F\x04 \t \x04!\t!\x04\"\t\"\x04#" +
-        "\t#\x04$\t$\x04%\t%\x04&\t&\x04\'\t\'\x04(\t(\x04)\t)\x04*\t*\x04+\t+" +
-        "\x04,\t,\x04-\t-\x04.\t.\x04/\t/\x040\t0\x041\t1\x042\t2\x043\t3\x044" +
-        "\t4\x045\t5\x046\t6\x047\t7\x048\t8\x049\t9\x04:\t:\x04;\t;\x04<\t<\x04" +
-        "=\t=\x04>\t>\x04?\t?\x04@\t@\x03\x02\x07\x02\x82\n\x02\f\x02\x0E\x02\x85" +
-        "\v\x02\x03\x02\x03\x02\x03\x02\x03\x02\x07\x02\x8B\n\x02\f\x02\x0E\x02" +
-        "\x8E\v\x02\x03\x02\x03\x02\x07\x02\x92\n\x02\f\x02\x0E\x02\x95\v\x02\x03" +
-        "\x02\x03\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x05\x03\x9E\n\x03" +
-        "\x03\x04\x03\x04\x03\x04\x03\x04\x03\x04\x05\x04\xA5\n\x04\x03\x05\x03" +
-        "\x05\x03\x05\x03\x05\x03\x05\x07\x05\xAC\n\x05\f\x05\x0E\x05\xAF\v\x05" +
-        "\x03\x05\x03\x05\x03\x06\x03\x06\x03\x06\x03\x06\x03\x07\x03\x07\x03\x07" +
-        "\x07\x07\xBA\n\x07\f\x07\x0E\x07\xBD\v\x07\x03\x07\x03\x07\x03\x07\x05" +
-        "\x07\xC2\n\x07\x03\b\x03\b\x03\b\x03\b\x07\b\xC8\n\b\f\b\x0E\b\xCB\v\b" +
-        "\x03\b\x03\b\x03\t\x03\t\x03\t\x03\t\x03\t\x05\t\xD4\n\t\x03\n\x03\n\x03" +
-        "\n\x05\n\xD9\n\n\x03\n\x03\n\x03\v\x03\v\x03\v\x05\v\xE0\n\v\x03\v\x03" +
-        "\v\x03\f\x03\f\x03\f\x07\f\xE7\n\f\f\f\x0E\f\xEA\v\f\x03\f\x05\f\xED\n" +
-        "\f\x03\r\x03\r\x03\r\x03\r\x05\r\xF3\n\r\x03\r\x03\r\x03\r\x03\x0E\x03" +
-        "\x0E\x03\x0E\x05\x0E\xFB\n\x0E\x03\x0F\x03\x0F\x07\x0F\xFF\n\x0F\f\x0F" +
-        "\x0E\x0F\u0102\v\x0F\x03\x0F\x03\x0F\x03\x10\x03\x10\x07\x10\u0108\n\x10" +
-        "\f\x10\x0E\x10\u010B\v\x10\x03\x10\x03\x10\x03\x11\x03\x11\x03\x11\x03" +
-        "\x11\x07\x11\u0113\n\x11\f\x11\x0E\x11\u0116\v\x11\x03\x12\x07\x12\u0119" +
-        "\n\x12\f\x12\x0E\x12\u011C\v\x12\x03\x13\x03\x13\x05\x13\u0120\n\x13\x03" +
-        "\x14\x07\x14\u0123\n\x14\f\x14\x0E\x14\u0126\v\x14\x03\x14\x05\x14\u0129" +
-        "\n\x14\x03\x14\x03\x14\x05\x14\u012D\n\x14\x03\x14\x05\x14\u0130\n\x14" +
-        "\x03\x14\x05\x14\u0133\n\x14\x03\x14\x05\x14\u0136\n\x14\x03\x14\x07\x14" +
-        "\u0139\n\x14\f\x14\x0E\x14\u013C\v\x14\x03\x14\x03\x14\x03\x14\x03\x14" +
-        "\x03\x14\x03\x15\x07\x15\u0144\n\x15\f\x15\x0E\x15\u0147\v\x15\x03\x15" +
-        "\x05\x15\u014A\n\x15\x03\x16\x03\x16\x03\x16\x03\x16\x03\x17\x03\x17\x03" +
-        "\x17\x03\x18\x03\x18\x05\x18\u0155\n\x18\x03\x19\x03\x19\x03\x19\x03\x1A" +
-        "\x03\x1A\x03\x1A\x03\x1A\x07\x1A\u015E\n\x1A\f\x1A\x0E\x1A\u0161\v\x1A" +
-        "\x03\x1B\x03\x1B\x03\x1B\x03\x1C\x03\x1C\x03\x1C\x03\x1C\x03\x1D\x06\x1D" +
-        "\u016B\n\x1D\r\x1D\x0E\x1D\u016C\x03\x1E\x03\x1E\x03\x1F\x03\x1F\x03 " +
-        "\x03 \x03 \x07 \u0176\n \f \x0E \u0179\v \x03!\x03!\x03!\x05!\u017E\n" +
-        "!\x03\"\x07\"\u0181\n\"\f\"\x0E\"\u0184\v\"\x03\"\x05\"\u0187\n\"\x03" +
-        "\"\x03\"\x03\"\x03\"\x03\"\x03#\x03#\x03$\x03$\x03$\x07$\u0193\n$\f$\x0E" +
-        "$\u0196\v$\x03%\x03%\x05%\u019A\n%\x03%\x05%\u019D\n%\x03&\x06&\u01A0" +
-        "\n&\r&\x0E&\u01A1\x03\'\x03\'\x05\'\u01A6\n\'\x03\'\x03\'\x05\'\u01AA" +
-        "\n\'\x03\'\x03\'\x05\'\u01AE\n\'\x03\'\x03\'\x05\'\u01B2\n\'\x05\'\u01B4" +
-        "\n\'\x03(\x03(\x03(\x03(\x05(\u01BA\n(\x03)\x03)\x03)\x03)\x03*\x03*\x03" +
-        "*\x03*\x07*\u01C4\n*\f*\x0E*\u01C7\v*\x03+\x03+\x03+\x03+\x03+\x03+\x05" +
-        "+\u01CF\n+\x03,\x03,\x05,\u01D3\n,\x03-\x03-\x05-\u01D7\n-\x03.\x03.\x03" +
-        ".\x07.\u01DC\n.\f.\x0E.\u01DF\v.\x03/\x05/\u01E2\n/\x03/\x06/\u01E5\n" +
-        "/\r/\x0E/\u01E6\x03/\x05/\u01EA\n/\x030\x030\x030\x050\u01EF\n0\x030\x03" +
-        "0\x030\x050\u01F4\n0\x030\x030\x030\x050\u01F9\n0\x050\u01FB\n0\x031\x03" +
-        "1\x031\x031\x051\u0201\n1\x032\x032\x052\u0205\n2\x033\x033\x034\x034" +
-        "\x054\u020B\n4\x034\x034\x054\u020F\n4\x034\x034\x054\u0213\n4\x054\u0215" +
-        "\n4\x035\x035\x035\x035\x035\x035\x055\u021D\n5\x055\u021F\n5\x036\x03" +
-        "6\x036\x036\x036\x036\x056\u0227\n6\x056\u0229\n6\x037\x037\x037\x037" +
-        "\x057\u022F\n7\x038\x038\x038\x038\x078\u0235\n8\f8\x0E8\u0238\v8\x03" +
-        "8\x038\x039\x039\x059\u023E\n9\x039\x039\x059\u0242\n9\x039\x039\x059" +
-        "\u0246\n9\x03:\x03:\x05:\u024A\n:\x03:\x07:\u024D\n:\f:\x0E:\u0250\v:" +
-        "\x03:\x05:\u0253\n:\x03:\x03:\x03:\x03;\x03;\x05;\u025A\n;\x03;\x05;\u025D" +
-        "\n;\x03<\x03<\x03<\x03<\x03=\x03=\x05=\u0265\n=\x03=\x03=\x05=\u0269\n" +
-        "=\x05=\u026B\n=\x03>\x03>\x03>\x03>\x07>\u0271\n>\f>\x0E>\u0274\v>\x03" +
-        ">\x03>\x03?\x03?\x03?\x03?\x03?\x05?\u027D\n?\x05?\u027F\n?\x03@\x03@" +
-        "\x03@\x02\x02\x02A\x02\x02\x04\x02\x06\x02\b\x02\n\x02\f\x02\x0E\x02\x10" +
-        "\x02\x12\x02\x14\x02\x16\x02\x18\x02\x1A\x02\x1C\x02\x1E\x02 \x02\"\x02" +
-        "$\x02&\x02(\x02*\x02,\x02.\x020\x022\x024\x026\x028\x02:\x02<\x02>\x02" +
-        "@\x02B\x02D\x02F\x02H\x02J\x02L\x02N\x02P\x02R\x02T\x02V\x02X\x02Z\x02" +
-        "\\\x02^\x02`\x02b\x02d\x02f\x02h\x02j\x02l\x02n\x02p\x02r\x02t\x02v\x02" +
-        "x\x02z\x02|\x02~\x02\x02\x05\x04\x02\x12\x12\x16\x18\x04\x02**--\x03\x02" +
-        "\x03\x04\x02\u02AC\x02\x83\x03\x02\x02\x02\x04\x9D\x03\x02\x02\x02\x06" +
-        "\xA4\x03\x02\x02\x02\b\xA6\x03\x02\x02\x02\n\xB2\x03\x02\x02\x02\f\xC1" +
-        "\x03\x02\x02\x02\x0E\xC3\x03\x02\x02\x02\x10\xD3\x03\x02\x02\x02\x12\xD5" +
-        "\x03\x02\x02\x02\x14\xDC\x03\x02\x02\x02\x16\xE3\x03\x02\x02\x02\x18\xEE" +
-        "\x03\x02\x02\x02\x1A\xFA\x03\x02\x02\x02\x1C\xFC\x03\x02\x02\x02\x1E\u0105" +
-        "\x03\x02\x02\x02 \u010E\x03\x02\x02\x02\"\u011A\x03\x02\x02\x02$\u011F" +
-        "\x03\x02\x02\x02&\u0124\x03\x02\x02\x02(\u0145\x03\x02\x02\x02*\u014B" +
-        "\x03\x02\x02\x02,\u014F\x03\x02\x02\x02.\u0154\x03\x02\x02\x020\u0156" +
-        "\x03\x02\x02\x022\u0159\x03\x02\x02\x024\u0162\x03\x02\x02\x026\u0165" +
-        "\x03\x02\x02\x028\u016A\x03\x02\x02\x02:\u016E\x03\x02\x02\x02<\u0170" +
-        "\x03\x02\x02\x02>\u0172\x03\x02\x02\x02@\u017A\x03\x02\x02\x02B\u0182" +
-        "\x03\x02\x02\x02D\u018D\x03\x02\x02\x02F\u018F\x03\x02\x02\x02H\u019C" +
-        "\x03\x02\x02\x02J\u019F\x03\x02\x02\x02L\u01B3\x03\x02\x02\x02N\u01B5" +
-        "\x03\x02\x02\x02P\u01BB\x03\x02\x02\x02R\u01BF\x03\x02\x02\x02T\u01CE" +
-        "\x03\x02\x02\x02V\u01D2\x03\x02\x02\x02X\u01D6\x03\x02\x02\x02Z\u01D8" +
-        "\x03\x02\x02\x02\\\u01E9\x03\x02\x02\x02^\u01FA\x03\x02\x02\x02`\u01FC" +
-        "\x03\x02\x02\x02b\u0202\x03\x02\x02\x02d\u0206\x03\x02\x02\x02f\u0214" +
-        "\x03\x02\x02\x02h\u021E\x03\x02\x02\x02j\u0228\x03\x02\x02\x02l\u022E" +
-        "\x03\x02\x02\x02n\u0230\x03\x02\x02\x02p\u0245\x03\x02\x02\x02r\u0247" +
-        "\x03\x02\x02\x02t\u0257\x03\x02\x02\x02v\u025E\x03\x02\x02\x02x\u026A" +
-        "\x03\x02\x02\x02z\u026C\x03\x02\x02\x02|\u027E\x03\x02\x02\x02~\u0280" +
-        "\x03\x02\x02\x02\x80\x82\x07\x06\x02\x02\x81\x80\x03\x02\x02\x02\x82\x85" +
-        "\x03\x02\x02\x02\x83\x81\x03\x02\x02\x02\x83\x84\x03\x02\x02\x02\x84\x86" +
-        "\x03\x02\x02\x02\x85\x83\x03\x02\x02\x02\x86\x87\x05\x04\x03\x02\x87\x88" +
-        "\x05~@\x02\x88\x8C\x07\"\x02\x02\x89\x8B\x05\x06\x04\x02\x8A\x89\x03\x02" +
-        "\x02\x02\x8B\x8E\x03\x02\x02\x02\x8C\x8A\x03\x02\x02\x02\x8C\x8D\x03\x02" +
-        "\x02\x02\x8D\x8F\x03\x02\x02\x02\x8E\x8C\x03\x02\x02\x02\x8F\x93\x05\"" +
-        "\x12\x02\x90\x92\x05 \x11\x02\x91\x90\x03\x02\x02\x02\x92\x95\x03\x02" +
-        "\x02\x02\x93\x91\x03\x02\x02\x02\x93\x94\x03\x02\x02\x02\x94\x96\x03\x02" +
-        "\x02\x02\x95\x93\x03\x02\x02\x02\x96\x97\x07\x02\x02\x03\x97\x03\x03\x02" +
-        "\x02\x02\x98\x99\x07\x13\x02\x02\x99\x9E\x07\x15\x02\x02\x9A\x9B\x07\x14" +
-        "\x02\x02\x9B\x9E\x07\x15\x02\x02\x9C\x9E\x07\x15\x02\x02\x9D\x98\x03\x02" +
-        "\x02\x02\x9D\x9A\x03\x02\x02\x02\x9D\x9C\x03\x02\x02\x02\x9E\x05\x03\x02" +
-        "\x02\x02\x9F\xA5\x05\b\x05\x02\xA0\xA5\x05\x0E\b\x02\xA1\xA5\x05\x12\n" +
-        "\x02\xA2\xA5\x05\x14\v\x02\xA3\xA5\x05\x18\r\x02\xA4\x9F\x03\x02\x02\x02" +
-        "\xA4\xA0\x03\x02\x02\x02\xA4\xA1\x03\x02\x02\x02\xA4\xA2\x03\x02\x02\x02" +
-        "\xA4\xA3\x03\x02\x02\x02\xA5\x07\x03\x02\x02\x02\xA6\xA7\x07\x0E\x02\x02" +
-        "\xA7\xAD\x07%\x02\x02\xA8\xA9\x05\n\x06\x02\xA9\xAA\x07\"\x02\x02\xAA" +
-        "\xAC\x03\x02\x02\x02\xAB\xA8\x03\x02\x02\x02\xAC\xAF\x03\x02\x02\x02\xAD" +
-        "\xAB\x03\x02\x02\x02\xAD\xAE\x03\x02\x02\x02\xAE\xB0\x03\x02\x02\x02\xAF" +
-        "\xAD\x03\x02\x02\x02\xB0\xB1\x07&\x02\x02\xB1\t\x03\x02\x02\x02\xB2\xB3" +
-        "\x05~@\x02\xB3\xB4\x07*\x02\x02\xB4\xB5\x05\f\x07\x02\xB5\v\x03\x02\x02" +
-        "\x02\xB6\xBB\x05~@\x02\xB7\xB8\x072\x02\x02\xB8\xBA\x05~@\x02\xB9\xB7" +
-        "\x03\x02\x02\x02\xBA\xBD\x03\x02\x02\x02\xBB\xB9\x03\x02\x02\x02\xBB\xBC" +
-        "\x03\x02\x02\x02\xBC\xC2\x03\x02\x02\x02\xBD\xBB\x03\x02\x02\x02\xBE\xC2" +
-        "\x07\n\x02\x02\xBF\xC2\x05\x1C\x0F\x02\xC0\xC2\x07\t\x02\x02\xC1\xB6\x03" +
-        "\x02\x02\x02\xC1\xBE\x03\x02\x02\x02\xC1\xBF\x03\x02\x02\x02\xC1\xC0\x03" +
-        "\x02\x02\x02\xC2\r\x03\x02\x02\x02\xC3\xC4\x07\x11\x02\x02\xC4\xC9\x05" +
-        "\x10\t\x02\xC5\xC6\x07!\x02\x02\xC6\xC8\x05\x10\t\x02\xC7\xC5\x03\x02" +
-        "\x02\x02\xC8\xCB\x03\x02\x02\x02\xC9\xC7\x03\x02\x02\x02\xC9\xCA\x03\x02" +
-        "\x02\x02\xCA\xCC\x03\x02\x02\x02\xCB\xC9\x03\x02\x02\x02\xCC\xCD\x07\"" +
-        "\x02\x02\xCD\x0F\x03\x02\x02\x02\xCE\xCF\x05~@\x02\xCF\xD0\x07*\x02\x02" +
-        "\xD0\xD1\x05~@\x02\xD1\xD4\x03\x02\x02\x02\xD2\xD4\x05~@\x02\xD3\xCE\x03" +
-        "\x02\x02\x02\xD3\xD2\x03\x02\x02\x02\xD4\x11\x03\x02\x02\x02\xD5\xD6\x07" +
-        "\x0F\x02\x02\xD6\xD8\x07%\x02\x02\xD7\xD9\x05\x16\f\x02\xD8\xD7\x03\x02" +
-        "\x02\x02\xD8\xD9\x03\x02\x02\x02\xD9\xDA\x03\x02\x02\x02\xDA\xDB\x07&" +
-        "\x02\x02\xDB\x13\x03\x02\x02\x02\xDC\xDD\x07\x10\x02\x02\xDD\xDF\x07%" +
-        "\x02\x02\xDE\xE0\x05\x16\f\x02\xDF\xDE\x03\x02\x02\x02\xDF\xE0\x03\x02" +
-        "\x02\x02\xE0\xE1\x03\x02\x02\x02\xE1\xE2\x07&\x02\x02\xE2\x15\x03\x02" +
-        "\x02\x02\xE3\xE8\x05~@\x02\xE4\xE5\x07!\x02\x02\xE5\xE7\x05~@\x02\xE6" +
-        "\xE4\x03\x02\x02\x02\xE7\xEA\x03\x02\x02\x02\xE8\xE6\x03\x02\x02\x02\xE8" +
-        "\xE9\x03\x02\x02\x02\xE9\xEC\x03\x02\x02\x02\xEA\xE8\x03\x02\x02\x02\xEB" +
-        "\xED\x07!\x02\x02\xEC\xEB\x03\x02\x02\x02\xEC\xED\x03\x02\x02\x02\xED" +
-        "\x17\x03\x02\x02\x02\xEE\xF2\x073\x02\x02\xEF\xF0\x05\x1A\x0E\x02\xF0" +
-        "\xF1\x07 \x02\x02\xF1\xF3\x03\x02\x02\x02\xF2\xEF\x03\x02\x02\x02\xF2" +
-        "\xF3\x03\x02\x02\x02\xF3\xF4\x03\x02\x02\x02\xF4\xF5\x05~@\x02\xF5\xF6" +
-        "\x05\x1C\x0F\x02\xF6\x19\x03\x02\x02\x02\xF7\xFB\x05~@\x02\xF8\xFB\x07" +
-        "\x13\x02\x02\xF9\xFB\x07\x14\x02\x02\xFA\xF7\x03\x02\x02\x02\xFA\xF8\x03" +
-        "\x02\x02\x02\xFA\xF9\x03\x02\x02\x02\xFB\x1B\x03\x02\x02\x02\xFC\u0100" +
-        "\x07\r\x02\x02\xFD\xFF\x07=\x02\x02\xFE\xFD\x03\x02\x02\x02\xFF\u0102" +
-        "\x03\x02\x02\x02\u0100\xFE\x03\x02\x02\x02\u0100\u0101\x03\x02\x02\x02" +
-        "\u0101\u0103\x03\x02\x02\x02\u0102\u0100\x03\x02\x02\x02\u0103\u0104\x07" +
-        ";\x02\x02\u0104\x1D\x03\x02\x02\x02\u0105\u0109\x07\f\x02\x02\u0106\u0108" +
-        "\x07:\x02\x02\u0107\u0106\x03\x02\x02\x02\u0108\u010B\x03\x02\x02\x02" +
-        "\u0109\u0107\x03\x02\x02\x02\u0109\u010A\x03\x02\x02\x02\u010A\u010C\x03" +
-        "\x02\x02\x02\u010B\u0109\x03\x02\x02\x02\u010C\u010D\x078\x02\x02\u010D" +
-        "\x1F\x03\x02\x02\x02\u010E\u010F\x07\x1E\x02\x02\u010F\u0110\x05~@\x02" +
-        "\u0110\u0114\x07\"\x02\x02\u0111\u0113\x05B\"\x02\u0112\u0111\x03\x02" +
-        "\x02\x02\u0113\u0116\x03\x02\x02\x02\u0114\u0112\x03\x02\x02\x02\u0114" +
-        "\u0115\x03\x02\x02\x02\u0115!\x03\x02\x02\x02\u0116\u0114\x03\x02\x02" +
-        "\x02\u0117\u0119\x05$\x13\x02\u0118\u0117\x03\x02\x02\x02\u0119\u011C" +
-        "\x03\x02\x02\x02\u011A\u0118\x03\x02\x02\x02\u011A\u011B\x03\x02\x02\x02" +
-        "\u011B#\x03\x02\x02\x02\u011C\u011A\x03\x02\x02\x02\u011D\u0120\x05&\x14" +
-        "\x02\u011E\u0120\x05B\"\x02\u011F\u011D\x03\x02\x02\x02\u011F\u011E\x03" +
-        "\x02\x02\x02\u0120%\x03\x02\x02\x02\u0121\u0123\x07\x06\x02\x02\u0122" +
-        "\u0121\x03\x02\x02\x02\u0123\u0126\x03\x02\x02\x02\u0124\u0122\x03\x02" +
-        "\x02\x02\u0124\u0125\x03\x02\x02\x02\u0125\u0128\x03\x02\x02\x02\u0126" +
-        "\u0124\x03\x02\x02\x02\u0127\u0129\x058\x1D\x02\u0128\u0127\x03\x02\x02" +
-        "\x02\u0128\u0129\x03\x02\x02\x02\u0129\u012A\x03\x02\x02\x02\u012A\u012C" +
-        "\x07\x04\x02\x02\u012B\u012D\x05\x1E\x10\x02\u012C\u012B\x03\x02\x02\x02" +
-        "\u012C\u012D\x03\x02\x02\x02\u012D\u012F\x03\x02\x02\x02\u012E\u0130\x05" +
-        "0\x19\x02\u012F\u012E\x03\x02\x02\x02\u012F\u0130\x03\x02\x02\x02\u0130" +
-        "\u0132\x03\x02\x02\x02\u0131\u0133\x052\x1A\x02\u0132\u0131\x03\x02\x02" +
-        "\x02\u0132\u0133\x03\x02\x02\x02\u0133\u0135\x03\x02\x02\x02\u0134\u0136" +
-        "\x054\x1B\x02\u0135\u0134\x03\x02\x02\x02\u0135\u0136\x03\x02\x02\x02" +
-        "\u0136\u013A\x03\x02\x02\x02\u0137\u0139\x05.\x18\x02\u0138\u0137\x03" +
-        "\x02\x02\x02\u0139\u013C\x03\x02\x02\x02\u013A\u0138\x03\x02\x02\x02\u013A" +
-        "\u013B\x03\x02\x02\x02\u013B\u013D\x03\x02\x02\x02\u013C\u013A\x03\x02" +
-        "\x02\x02\u013D\u013E\x07\x1F\x02\x02\u013E\u013F\x05<\x1F\x02\u013F\u0140" +
-        "\x07\"\x02\x02\u0140\u0141\x05(\x15\x02\u0141\'\x03\x02\x02\x02\u0142" +
-        "\u0144\x05*\x16\x02\u0143\u0142\x03\x02\x02\x02\u0144\u0147\x03\x02\x02" +
-        "\x02\u0145\u0143\x03\x02\x02\x02\u0145\u0146\x03\x02\x02\x02\u0146\u0149" +
-        "\x03\x02\x02\x02\u0147\u0145\x03\x02\x02\x02\u0148\u014A\x05,\x17\x02" +
-        "\u0149\u0148\x03\x02\x02\x02\u0149\u014A\x03\x02\x02\x02\u014A)\x03\x02" +
-        "\x02\x02\u014B\u014C\x07\x1C\x02\x02\u014C\u014D\x05\x1E\x10\x02\u014D" +
-        "\u014E\x05\x1C\x0F\x02\u014E+\x03\x02\x02\x02\u014F\u0150\x07\x1D\x02" +
-        "\x02\u0150\u0151\x05\x1C\x0F\x02\u0151-\x03\x02\x02\x02\u0152\u0155\x05" +
-        "\b\x05\x02\u0153\u0155\x056\x1C\x02\u0154\u0152\x03\x02\x02\x02\u0154" +
-        "\u0153\x03\x02\x02\x02\u0155/\x03\x02\x02\x02\u0156\u0157\x07\x19\x02" +
-        "\x02\u0157\u0158\x05\x1E\x10\x02\u01581\x03\x02\x02\x02\u0159\u015A\x07" +
-        "\x1B\x02\x02\u015A\u015F\x05~@\x02\u015B\u015C\x07!\x02\x02\u015C\u015E" +
-        "\x05~@\x02\u015D\u015B\x03\x02\x02\x02\u015E\u0161\x03\x02\x02\x02\u015F" +
-        "\u015D\x03\x02\x02\x02\u015F\u0160\x03\x02\x02\x02\u01603\x03\x02\x02" +
-        "\x02\u0161\u015F\x03\x02\x02\x02\u0162\u0163\x07\x1A\x02\x02\u0163\u0164" +
-        "\x05\x1E\x10\x02\u01645\x03\x02\x02\x02\u0165\u0166\x073\x02\x02\u0166" +
-        "\u0167\x05~@\x02\u0167\u0168\x05\x1C\x0F\x02\u01687\x03\x02\x02\x02\u0169" +
-        "\u016B\x05:\x1E\x02\u016A\u0169\x03\x02\x02\x02\u016B\u016C\x03\x02\x02" +
-        "\x02\u016C\u016A\x03\x02\x02\x02\u016C\u016D\x03\x02\x02\x02\u016D9\x03" +
-        "\x02\x02\x02\u016E\u016F\t\x02\x02\x02\u016F;\x03\x02\x02\x02\u0170\u0171" +
-        "\x05> \x02\u0171=\x03\x02\x02\x02\u0172\u0177\x05@!\x02\u0173\u0174\x07" +
-        "/\x02\x02\u0174\u0176\x05@!\x02\u0175\u0173\x03\x02\x02\x02\u0176\u0179" +
-        "\x03\x02\x02\x02\u0177\u0175\x03\x02\x02\x02\u0177\u0178\x03\x02\x02\x02" +
-        "\u0178?\x03\x02\x02\x02\u0179\u0177\x03\x02\x02\x02\u017A\u017D\x05\\" +
-        "/\x02\u017B\u017C\x074\x02\x02\u017C\u017E\x05~@\x02\u017D\u017B\x03\x02" +
-        "\x02\x02\u017D\u017E\x03\x02\x02\x02\u017EA\x03\x02\x02\x02\u017F\u0181" +
-        "\x07\x06\x02\x02\u0180\u017F\x03\x02\x02\x02\u0181\u0184\x03\x02\x02\x02" +
-        "\u0182\u0180\x03\x02\x02\x02\u0182\u0183\x03\x02\x02\x02\u0183\u0186\x03" +
-        "\x02\x02\x02\u0184\u0182\x03\x02\x02\x02\u0185\u0187\x07\x12\x02\x02\u0186" +
-        "\u0185\x03\x02\x02\x02\u0186\u0187\x03\x02\x02\x02\u0187\u0188\x03\x02" +
-        "\x02\x02\u0188\u0189\x07\x03\x02\x02\u0189\u018A\x07\x1F\x02\x02\u018A" +
-        "\u018B\x05D#\x02\u018B\u018C\x07\"\x02\x02\u018CC\x03\x02\x02\x02\u018D" +
-        "\u018E\x05F$\x02\u018EE\x03\x02\x02\x02\u018F\u0194\x05H%\x02\u0190\u0191" +
-        "\x07/\x02\x02\u0191\u0193\x05H%\x02\u0192\u0190\x03\x02\x02\x02\u0193" +
-        "\u0196\x03\x02\x02\x02\u0194\u0192\x03\x02\x02\x02\u0194\u0195\x03\x02" +
-        "\x02\x02\u0195G\x03\x02\x02\x02\u0196\u0194\x03\x02\x02\x02\u0197\u0199" +
-        "\x05J&\x02\u0198\u019A\x05R*\x02\u0199\u0198\x03\x02\x02\x02\u0199\u019A" +
-        "\x03\x02\x02\x02\u019A\u019D\x03\x02\x02\x02\u019B\u019D\x03\x02\x02\x02" +
-        "\u019C\u0197\x03\x02\x02\x02\u019C\u019B\x03\x02\x02\x02\u019DI\x03\x02" +
-        "\x02\x02\u019E\u01A0\x05L\'\x02\u019F\u019E\x03\x02\x02\x02\u01A0\u01A1" +
-        "\x03\x02\x02\x02\u01A1\u019F\x03\x02\x02\x02\u01A1\u01A2\x03\x02\x02\x02" +
-        "\u01A2K\x03\x02\x02\x02\u01A3\u01A5\x05N(\x02\u01A4\u01A6\x05f4\x02\u01A5" +
-        "\u01A4\x03\x02\x02\x02\u01A5\u01A6\x03\x02\x02\x02\u01A6\u01B4\x03\x02" +
-        "\x02\x02\u01A7\u01A9\x05h5\x02\u01A8\u01AA\x05f4\x02\u01A9\u01A8\x03\x02" +
-        "\x02\x02\u01A9\u01AA\x03\x02\x02\x02\u01AA\u01B4\x03\x02\x02\x02\u01AB" +
-        "\u01AD\x05P)\x02\u01AC\u01AE\x05f4\x02\u01AD\u01AC\x03\x02\x02\x02\u01AD" +
-        "\u01AE\x03\x02\x02\x02\u01AE\u01B4\x03\x02\x02\x02\u01AF\u01B1\x05\x1C" +
-        "\x0F\x02\u01B0\u01B2\x07+\x02\x02\u01B1\u01B0\x03\x02\x02\x02\u01B1\u01B2" +
-        "\x03\x02\x02\x02\u01B2\u01B4\x03\x02\x02\x02\u01B3\u01A3\x03\x02\x02\x02" +
-        "\u01B3\u01A7\x03\x02\x02\x02\u01B3\u01AB\x03\x02\x02\x02\u01B3\u01AF\x03" +
-        "\x02\x02\x02\u01B4M\x03\x02\x02\x02\u01B5\u01B6\x05~@\x02\u01B6\u01B9" +
-        "\t\x03\x02\x02\u01B7\u01BA\x05h5\x02\u01B8\u01BA\x05r:\x02\u01B9\u01B7" +
-        "\x03\x02\x02\x02\u01B9\u01B8\x03\x02\x02\x02\u01BAO\x03\x02\x02\x02\u01BB" +
-        "\u01BC\x07#\x02\x02\u01BC\u01BD\x05F$\x02\u01BD\u01BE\x07$\x02\x02\u01BE" +
-        "Q\x03\x02\x02\x02\u01BF\u01C0\x07\'\x02\x02\u01C0\u01C5\x05T+\x02\u01C1" +
-        "\u01C2\x07!\x02\x02\u01C2\u01C4\x05T+\x02\u01C3\u01C1\x03\x02\x02\x02" +
-        "\u01C4\u01C7\x03\x02\x02\x02\u01C5\u01C3\x03\x02\x02\x02\u01C5\u01C6\x03" +
-        "\x02\x02\x02\u01C6S\x03\x02\x02\x02\u01C7\u01C5\x03\x02\x02\x02\u01C8" +
-        "\u01C9\x05V,\x02\u01C9\u01CA\x07#\x02\x02\u01CA\u01CB\x05X-\x02\u01CB" +
-        "\u01CC\x07$\x02\x02\u01CC\u01CF\x03\x02\x02\x02\u01CD\u01CF\x05V,\x02" +
-        "\u01CE\u01C8\x03\x02\x02\x02\u01CE\u01CD\x03\x02\x02\x02\u01CFU\x03\x02" +
-        "\x02\x02\u01D0\u01D3\x05~@\x02\u01D1\u01D3\x07\x1E\x02\x02\u01D2\u01D0" +
-        "\x03\x02\x02\x02\u01D2\u01D1\x03\x02\x02\x02\u01D3W\x03\x02\x02\x02\u01D4" +
-        "\u01D7\x05~@\x02\u01D5\u01D7\x07\t\x02\x02\u01D6\u01D4\x03\x02\x02\x02" +
-        "\u01D6\u01D5\x03\x02\x02\x02\u01D7Y\x03\x02\x02\x02\u01D8\u01DD\x05\\" +
-        "/\x02\u01D9\u01DA\x07/\x02\x02\u01DA\u01DC\x05\\/\x02\u01DB\u01D9\x03" +
-        "\x02\x02\x02\u01DC\u01DF\x03\x02\x02\x02\u01DD\u01DB\x03\x02\x02\x02\u01DD" +
-        "\u01DE\x03\x02\x02\x02\u01DE[\x03\x02\x02\x02\u01DF\u01DD\x03\x02\x02" +
-        "\x02\u01E0\u01E2\x05z>\x02\u01E1\u01E0\x03\x02\x02\x02\u01E1\u01E2\x03" +
-        "\x02\x02\x02\u01E2\u01E4\x03\x02\x02\x02\u01E3\u01E5\x05^0\x02\u01E4\u01E3" +
-        "\x03\x02\x02\x02\u01E5\u01E6\x03\x02\x02\x02\u01E6\u01E4\x03\x02\x02\x02" +
-        "\u01E6\u01E7\x03\x02\x02\x02\u01E7\u01EA\x03\x02\x02\x02\u01E8\u01EA\x03" +
-        "\x02\x02\x02\u01E9\u01E1\x03\x02\x02\x02\u01E9\u01E8\x03\x02\x02\x02\u01EA" +
-        "]\x03\x02\x02\x02\u01EB\u01EE\x05`1\x02\u01EC\u01EF\x05f4\x02\u01ED\u01EF" +
-        "\x03\x02\x02\x02\u01EE\u01EC\x03\x02\x02\x02\u01EE\u01ED\x03\x02\x02\x02" +
-        "\u01EF\u01FB\x03\x02\x02\x02\u01F0\u01F3\x05j6\x02\u01F1\u01F4\x05f4\x02" +
-        "\u01F2\u01F4\x03\x02\x02\x02\u01F3\u01F1\x03\x02\x02\x02\u01F3\u01F2\x03" +
-        "\x02\x02\x02\u01F4\u01FB\x03\x02\x02\x02\u01F5\u01FB\x05b2\x02\u01F6\u01F8" +
-        "\x05\x1C\x0F\x02\u01F7\u01F9\x07+\x02\x02\u01F8\u01F7\x03\x02\x02\x02" +
-        "\u01F8\u01F9\x03\x02\x02\x02\u01F9\u01FB\x03\x02\x02\x02\u01FA\u01EB\x03" +
-        "\x02\x02\x02\u01FA\u01F0\x03\x02\x02\x02\u01FA\u01F5\x03\x02\x02\x02\u01FA" +
-        "\u01F6\x03\x02\x02\x02\u01FB_\x03\x02\x02\x02\u01FC\u01FD\x05~@\x02\u01FD" +
-        "\u0200\t\x03\x02\x02\u01FE\u0201\x05j6\x02\u01FF\u0201\x05r:\x02\u0200" +
-        "\u01FE\x03\x02\x02\x02\u0200\u01FF\x03\x02\x02\x02\u0201a\x03\x02\x02" +
-        "\x02\u0202\u0204\x05r:\x02\u0203\u0205\x05d3\x02\u0204\u0203\x03\x02\x02" +
-        "\x02\u0204\u0205\x03\x02\x02\x02\u0205c\x03\x02\x02\x02\u0206\u0207\x05" +
-        "f4\x02\u0207e\x03\x02\x02\x02\u0208\u020A\x07+\x02\x02\u0209\u020B\x07" +
-        "+\x02\x02\u020A\u0209\x03\x02\x02\x02\u020A\u020B\x03\x02\x02\x02\u020B" +
-        "\u0215\x03\x02\x02\x02\u020C\u020E\x07,\x02\x02\u020D\u020F\x07+\x02\x02" +
-        "\u020E\u020D\x03\x02\x02\x02\u020E\u020F\x03\x02\x02\x02\u020F\u0215\x03" +
-        "\x02\x02\x02\u0210\u0212\x07.\x02\x02\u0211\u0213\x07+\x02\x02\u0212\u0211" +
-        "\x03\x02\x02\x02\u0212\u0213\x03\x02\x02\x02\u0213\u0215\x03\x02\x02\x02" +
-        "\u0214\u0208\x03\x02\x02\x02\u0214\u020C\x03\x02\x02\x02\u0214\u0210\x03" +
-        "\x02\x02\x02\u0215g\x03\x02\x02\x02\u0216\u021F\x05v<\x02\u0217\u021F" +
-        "\x05x=\x02\u0218\u021F\x05l7\x02\u0219\u021F\x07\x05\x02\x02\u021A\u021C" +
-        "\x072\x02\x02\u021B\u021D\x05z>\x02\u021C\u021B\x03\x02\x02\x02\u021C" +
-        "\u021D\x03\x02\x02\x02\u021D\u021F\x03\x02\x02\x02\u021E\u0216\x03\x02" +
-        "\x02\x02\u021E\u0217\x03\x02\x02\x02\u021E\u0218\x03\x02\x02\x02\u021E" +
-        "\u0219\x03\x02\x02\x02\u021E\u021A\x03\x02\x02\x02\u021Fi\x03\x02\x02" +
-        "\x02\u0220\u0229\x05v<\x02\u0221\u0229\x05x=\x02\u0222\u0229\x05t;\x02" +
-        "\u0223\u0229\x05l7\x02\u0224\u0226\x072\x02\x02\u0225\u0227\x05z>\x02" +
-        "\u0226\u0225\x03\x02\x02\x02\u0226\u0227\x03\x02\x02\x02\u0227\u0229\x03" +
-        "\x02\x02\x02\u0228\u0220\x03\x02\x02\x02\u0228\u0221\x03\x02\x02\x02\u0228" +
-        "\u0222\x03\x02\x02\x02\u0228\u0223\x03\x02\x02\x02\u0228";
-    private static readonly _serializedATNSegment1: string =
-        "\u0224\x03\x02\x02\x02\u0229k\x03\x02\x02\x02\u022A\u022B\x075\x02\x02" +
-        "\u022B\u022F\x05p9\x02\u022C\u022D\x075\x02\x02\u022D\u022F\x05n8\x02" +
-        "\u022E\u022A\x03\x02\x02\x02\u022E\u022C\x03\x02\x02\x02\u022Fm\x03\x02" +
-        "\x02\x02\u0230\u0231\x07#\x02\x02\u0231\u0236\x05p9\x02\u0232\u0233\x07" +
-        "/\x02\x02\u0233\u0235\x05p9\x02\u0234\u0232\x03\x02\x02\x02\u0235\u0238" +
-        "\x03\x02\x02\x02\u0236\u0234\x03\x02\x02\x02\u0236\u0237\x03\x02\x02\x02" +
-        "\u0237\u0239\x03\x02\x02\x02\u0238\u0236\x03\x02\x02\x02\u0239\u023A\x07" +
-        "$\x02\x02\u023Ao\x03\x02\x02\x02\u023B\u023D\x07\x03\x02\x02\u023C\u023E" +
-        "\x05z>\x02\u023D\u023C\x03\x02\x02\x02\u023D\u023E\x03\x02\x02\x02\u023E" +
-        "\u0246\x03\x02\x02\x02\u023F\u0241\x07\n\x02\x02\u0240\u0242\x05z>\x02" +
-        "\u0241\u0240\x03\x02\x02\x02\u0241\u0242\x03\x02\x02\x02\u0242\u0246\x03" +
-        "\x02\x02\x02\u0243\u0246\x05v<\x02\u0244\u0246\x07\x05\x02\x02\u0245\u023B" +
-        "\x03\x02\x02\x02\u0245\u023F\x03\x02\x02\x02\u0245\u0243\x03\x02\x02\x02" +
-        "\u0245\u0244\x03\x02\x02\x02\u0246q\x03\x02\x02\x02\u0247\u0252\x07#\x02" +
-        "\x02\u0248\u024A\x05\b\x05\x02\u0249\u0248\x03\x02\x02\x02\u0249\u024A" +
-        "\x03\x02\x02\x02\u024A\u024E\x03\x02\x02\x02\u024B\u024D\x056\x1C\x02" +
-        "\u024C\u024B\x03\x02\x02\x02\u024D\u0250\x03\x02\x02\x02\u024E\u024C\x03" +
-        "\x02\x02\x02\u024E\u024F\x03\x02\x02\x02\u024F\u0251\x03\x02\x02\x02\u0250" +
-        "\u024E\x03\x02\x02\x02\u0251\u0253\x07\x1F\x02\x02\u0252\u0249\x03\x02" +
-        "\x02\x02\u0252\u0253\x03\x02\x02\x02\u0253\u0254\x03\x02\x02\x02\u0254" +
-        "\u0255\x05Z.\x02\u0255\u0256\x07$\x02\x02\u0256s\x03\x02\x02\x02\u0257" +
-        "\u0259\x07\x04\x02\x02\u0258\u025A\x05\x1E\x10\x02\u0259\u0258\x03\x02" +
-        "\x02\x02\u0259\u025A\x03\x02\x02\x02\u025A\u025C\x03\x02\x02\x02\u025B" +
-        "\u025D\x05z>\x02\u025C\u025B\x03\x02\x02\x02\u025C\u025D\x03\x02\x02\x02" +
-        "\u025Du\x03\x02\x02\x02\u025E\u025F\x07\n\x02\x02\u025F\u0260\x071\x02" +
-        "\x02\u0260\u0261\x07\n\x02\x02\u0261w\x03\x02\x02\x02\u0262\u0264\x07" +
-        "\x03\x02\x02\u0263\u0265\x05z>\x02\u0264\u0263\x03\x02\x02\x02\u0264\u0265" +
-        "\x03\x02\x02\x02\u0265\u026B\x03\x02\x02\x02\u0266\u0268\x07\n\x02\x02" +
-        "\u0267\u0269\x05z>\x02\u0268\u0267\x03\x02\x02\x02\u0268\u0269\x03\x02" +
-        "\x02\x02\u0269\u026B\x03\x02\x02\x02\u026A\u0262\x03\x02\x02\x02\u026A" +
-        "\u0266\x03\x02\x02\x02\u026By\x03\x02\x02\x02\u026C\u026D\x07(\x02\x02" +
-        "\u026D\u0272\x05|?\x02\u026E\u026F\x07!\x02\x02\u026F\u0271\x05|?\x02" +
-        "\u0270\u026E\x03\x02\x02\x02\u0271\u0274\x03\x02\x02\x02\u0272\u0270\x03" +
-        "\x02\x02\x02\u0272\u0273\x03\x02\x02\x02\u0273\u0275\x03\x02\x02\x02\u0274" +
-        "\u0272\x03\x02\x02\x02\u0275\u0276\x07)\x02\x02\u0276{\x03\x02\x02\x02" +
-        "\u0277\u027F\x05~@\x02\u0278\u0279\x05~@\x02\u0279\u027C\x07*\x02\x02" +
-        "\u027A\u027D\x05~@\x02\u027B\u027D\x07\n\x02\x02\u027C\u027A\x03\x02\x02" +
-        "\x02\u027C\u027B\x03\x02\x02\x02\u027D\u027F\x03\x02\x02\x02\u027E\u0277" +
-        "\x03\x02\x02\x02\u027E\u0278\x03\x02\x02\x02\u027F}\x03\x02\x02\x02\u0280" +
-        "\u0281\t\x04\x02\x02\u0281\x7F\x03\x02\x02\x02W\x83\x8C\x93\x9D\xA4\xAD" +
-        "\xBB\xC1\xC9\xD3\xD8\xDF\xE8\xEC\xF2\xFA\u0100\u0109\u0114\u011A\u011F" +
-        "\u0124\u0128\u012C\u012F\u0132\u0135\u013A\u0145\u0149\u0154\u015F\u016C" +
-        "\u0177\u017D\u0182\u0186\u0194\u0199\u019C\u01A1\u01A5\u01A9\u01AD\u01B1" +
-        "\u01B3\u01B9\u01C5\u01CE\u01D2\u01D6\u01DD\u01E1\u01E6\u01E9\u01EE\u01F3" +
-        "\u01F8\u01FA\u0200\u0204\u020A\u020E\u0212\u0214\u021C\u021E\u0226\u0228" +
-        "\u022E\u0236\u023D\u0241\u0245\u0249\u024E\u0252\u0259\u025C\u0264\u0268" +
-        "\u026A\u0272\u027C\u027E";
-    public static readonly _serializedATN: string = Utils.join(
-        [
-            ANTLRv4Parser._serializedATNSegment0,
-            ANTLRv4Parser._serializedATNSegment1,
-        ],
-        "",
-    );
-    public static __ATN: ATN;
-    public static get _ATN(): ATN {
+    public static readonly _serializedATN: number[] = [
+        4,1,60,641,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
+        2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
+        7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
+        2,27,7,27,2,28,7,28,2,29,7,29,2,30,7,30,2,31,7,31,2,32,7,32,2,33,
+        7,33,2,34,7,34,2,35,7,35,2,36,7,36,2,37,7,37,2,38,7,38,2,39,7,39,
+        2,40,7,40,2,41,7,41,2,42,7,42,2,43,7,43,2,44,7,44,2,45,7,45,2,46,
+        7,46,2,47,7,47,2,48,7,48,2,49,7,49,2,50,7,50,2,51,7,51,2,52,7,52,
+        2,53,7,53,2,54,7,54,2,55,7,55,2,56,7,56,2,57,7,57,2,58,7,58,2,59,
+        7,59,2,60,7,60,2,61,7,61,2,62,7,62,1,0,5,0,128,8,0,10,0,12,0,131,
+        9,0,1,0,1,0,1,0,1,0,5,0,137,8,0,10,0,12,0,140,9,0,1,0,1,0,5,0,144,
+        8,0,10,0,12,0,147,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,3,1,156,8,1,1,
+        2,1,2,1,2,1,2,1,2,3,2,163,8,2,1,3,1,3,1,3,1,3,1,3,5,3,170,8,3,10,
+        3,12,3,173,9,3,1,3,1,3,1,4,1,4,1,4,1,4,1,5,1,5,1,5,5,5,184,8,5,10,
+        5,12,5,187,9,5,1,5,1,5,1,5,3,5,192,8,5,1,6,1,6,1,6,1,6,5,6,198,8,
+        6,10,6,12,6,201,9,6,1,6,1,6,1,7,1,7,1,7,1,7,1,7,3,7,210,8,7,1,8,
+        1,8,1,8,3,8,215,8,8,1,8,1,8,1,9,1,9,1,9,3,9,222,8,9,1,9,1,9,1,10,
+        1,10,1,10,5,10,229,8,10,10,10,12,10,232,9,10,1,10,3,10,235,8,10,
+        1,11,1,11,1,11,1,11,3,11,241,8,11,1,11,1,11,1,11,1,12,1,12,1,12,
+        3,12,249,8,12,1,13,1,13,5,13,253,8,13,10,13,12,13,256,9,13,1,13,
+        1,13,1,14,1,14,5,14,262,8,14,10,14,12,14,265,9,14,1,14,1,14,1,15,
+        1,15,1,15,1,15,5,15,273,8,15,10,15,12,15,276,9,15,1,16,5,16,279,
+        8,16,10,16,12,16,282,9,16,1,17,1,17,3,17,286,8,17,1,18,5,18,289,
+        8,18,10,18,12,18,292,9,18,1,18,3,18,295,8,18,1,18,1,18,3,18,299,
+        8,18,1,18,3,18,302,8,18,1,18,3,18,305,8,18,1,18,3,18,308,8,18,1,
+        18,5,18,311,8,18,10,18,12,18,314,9,18,1,18,1,18,1,18,1,18,1,18,1,
+        19,5,19,322,8,19,10,19,12,19,325,9,19,1,19,3,19,328,8,19,1,20,1,
+        20,1,20,1,20,1,21,1,21,1,21,1,22,1,22,3,22,339,8,22,1,23,1,23,1,
+        23,1,24,1,24,1,24,1,24,5,24,348,8,24,10,24,12,24,351,9,24,1,25,1,
+        25,1,25,1,26,1,26,1,26,1,26,1,27,4,27,361,8,27,11,27,12,27,362,1,
+        28,1,28,1,29,1,29,1,30,1,30,1,30,5,30,372,8,30,10,30,12,30,375,9,
+        30,1,31,1,31,1,31,3,31,380,8,31,1,32,5,32,383,8,32,10,32,12,32,386,
+        9,32,1,32,3,32,389,8,32,1,32,1,32,1,32,1,32,1,32,1,33,1,33,1,34,
+        1,34,1,34,5,34,401,8,34,10,34,12,34,404,9,34,1,35,1,35,3,35,408,
+        8,35,1,35,3,35,411,8,35,1,36,4,36,414,8,36,11,36,12,36,415,1,37,
+        1,37,3,37,420,8,37,1,37,1,37,3,37,424,8,37,1,37,1,37,3,37,428,8,
+        37,1,37,1,37,3,37,432,8,37,3,37,434,8,37,1,38,1,38,1,38,1,38,3,38,
+        440,8,38,1,39,1,39,1,39,1,39,1,40,1,40,1,40,1,40,5,40,450,8,40,10,
+        40,12,40,453,9,40,1,41,1,41,1,41,1,41,1,41,1,41,3,41,461,8,41,1,
+        42,1,42,3,42,465,8,42,1,43,1,43,3,43,469,8,43,1,44,1,44,1,44,5,44,
+        474,8,44,10,44,12,44,477,9,44,1,45,3,45,480,8,45,1,45,4,45,483,8,
+        45,11,45,12,45,484,1,45,3,45,488,8,45,1,46,1,46,1,46,3,46,493,8,
+        46,1,46,1,46,1,46,3,46,498,8,46,1,46,1,46,1,46,3,46,503,8,46,3,46,
+        505,8,46,1,47,1,47,1,47,1,47,3,47,511,8,47,1,48,1,48,3,48,515,8,
+        48,1,49,1,49,1,50,1,50,3,50,521,8,50,1,50,1,50,3,50,525,8,50,1,50,
+        1,50,3,50,529,8,50,3,50,531,8,50,1,51,1,51,1,51,1,51,1,51,1,51,3,
+        51,539,8,51,3,51,541,8,51,1,52,1,52,1,52,1,52,1,52,1,52,3,52,549,
+        8,52,3,52,551,8,52,1,53,1,53,1,53,1,53,3,53,557,8,53,1,54,1,54,1,
+        54,1,54,5,54,563,8,54,10,54,12,54,566,9,54,1,54,1,54,1,55,1,55,3,
+        55,572,8,55,1,55,1,55,3,55,576,8,55,1,55,1,55,3,55,580,8,55,1,56,
+        1,56,3,56,584,8,56,1,56,5,56,587,8,56,10,56,12,56,590,9,56,1,56,
+        3,56,593,8,56,1,56,1,56,1,56,1,57,1,57,3,57,600,8,57,1,57,3,57,603,
+        8,57,1,58,1,58,1,58,1,58,1,59,1,59,3,59,611,8,59,1,59,1,59,3,59,
+        615,8,59,3,59,617,8,59,1,60,1,60,1,60,1,60,5,60,623,8,60,10,60,12,
+        60,626,9,60,1,60,1,60,1,61,1,61,1,61,1,61,1,61,3,61,635,8,61,3,61,
+        637,8,61,1,62,1,62,1,62,0,0,63,0,2,4,6,8,10,12,14,16,18,20,22,24,
+        26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,
+        70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,
+        110,112,114,116,118,120,122,124,0,3,2,0,16,16,20,22,2,0,40,40,43,
+        43,1,0,1,2,682,0,129,1,0,0,0,2,155,1,0,0,0,4,162,1,0,0,0,6,164,1,
+        0,0,0,8,176,1,0,0,0,10,191,1,0,0,0,12,193,1,0,0,0,14,209,1,0,0,0,
+        16,211,1,0,0,0,18,218,1,0,0,0,20,225,1,0,0,0,22,236,1,0,0,0,24,248,
+        1,0,0,0,26,250,1,0,0,0,28,259,1,0,0,0,30,268,1,0,0,0,32,280,1,0,
+        0,0,34,285,1,0,0,0,36,290,1,0,0,0,38,323,1,0,0,0,40,329,1,0,0,0,
+        42,333,1,0,0,0,44,338,1,0,0,0,46,340,1,0,0,0,48,343,1,0,0,0,50,352,
+        1,0,0,0,52,355,1,0,0,0,54,360,1,0,0,0,56,364,1,0,0,0,58,366,1,0,
+        0,0,60,368,1,0,0,0,62,376,1,0,0,0,64,384,1,0,0,0,66,395,1,0,0,0,
+        68,397,1,0,0,0,70,410,1,0,0,0,72,413,1,0,0,0,74,433,1,0,0,0,76,435,
+        1,0,0,0,78,441,1,0,0,0,80,445,1,0,0,0,82,460,1,0,0,0,84,464,1,0,
+        0,0,86,468,1,0,0,0,88,470,1,0,0,0,90,487,1,0,0,0,92,504,1,0,0,0,
+        94,506,1,0,0,0,96,512,1,0,0,0,98,516,1,0,0,0,100,530,1,0,0,0,102,
+        540,1,0,0,0,104,550,1,0,0,0,106,556,1,0,0,0,108,558,1,0,0,0,110,
+        579,1,0,0,0,112,581,1,0,0,0,114,597,1,0,0,0,116,604,1,0,0,0,118,
+        616,1,0,0,0,120,618,1,0,0,0,122,636,1,0,0,0,124,638,1,0,0,0,126,
+        128,5,4,0,0,127,126,1,0,0,0,128,131,1,0,0,0,129,127,1,0,0,0,129,
+        130,1,0,0,0,130,132,1,0,0,0,131,129,1,0,0,0,132,133,3,2,1,0,133,
+        134,3,124,62,0,134,138,5,32,0,0,135,137,3,4,2,0,136,135,1,0,0,0,
+        137,140,1,0,0,0,138,136,1,0,0,0,138,139,1,0,0,0,139,141,1,0,0,0,
+        140,138,1,0,0,0,141,145,3,32,16,0,142,144,3,30,15,0,143,142,1,0,
+        0,0,144,147,1,0,0,0,145,143,1,0,0,0,145,146,1,0,0,0,146,148,1,0,
+        0,0,147,145,1,0,0,0,148,149,5,0,0,1,149,1,1,0,0,0,150,151,5,17,0,
+        0,151,156,5,19,0,0,152,153,5,18,0,0,153,156,5,19,0,0,154,156,5,19,
+        0,0,155,150,1,0,0,0,155,152,1,0,0,0,155,154,1,0,0,0,156,3,1,0,0,
+        0,157,163,3,6,3,0,158,163,3,12,6,0,159,163,3,16,8,0,160,163,3,18,
+        9,0,161,163,3,22,11,0,162,157,1,0,0,0,162,158,1,0,0,0,162,159,1,
+        0,0,0,162,160,1,0,0,0,162,161,1,0,0,0,163,5,1,0,0,0,164,165,5,12,
+        0,0,165,171,5,35,0,0,166,167,3,8,4,0,167,168,5,32,0,0,168,170,1,
+        0,0,0,169,166,1,0,0,0,170,173,1,0,0,0,171,169,1,0,0,0,171,172,1,
+        0,0,0,172,174,1,0,0,0,173,171,1,0,0,0,174,175,5,36,0,0,175,7,1,0,
+        0,0,176,177,3,124,62,0,177,178,5,40,0,0,178,179,3,10,5,0,179,9,1,
+        0,0,0,180,185,3,124,62,0,181,182,5,48,0,0,182,184,3,124,62,0,183,
+        181,1,0,0,0,184,187,1,0,0,0,185,183,1,0,0,0,185,186,1,0,0,0,186,
+        192,1,0,0,0,187,185,1,0,0,0,188,192,5,8,0,0,189,192,3,26,13,0,190,
+        192,5,7,0,0,191,180,1,0,0,0,191,188,1,0,0,0,191,189,1,0,0,0,191,
+        190,1,0,0,0,192,11,1,0,0,0,193,194,5,15,0,0,194,199,3,14,7,0,195,
+        196,5,31,0,0,196,198,3,14,7,0,197,195,1,0,0,0,198,201,1,0,0,0,199,
+        197,1,0,0,0,199,200,1,0,0,0,200,202,1,0,0,0,201,199,1,0,0,0,202,
+        203,5,32,0,0,203,13,1,0,0,0,204,205,3,124,62,0,205,206,5,40,0,0,
+        206,207,3,124,62,0,207,210,1,0,0,0,208,210,3,124,62,0,209,204,1,
+        0,0,0,209,208,1,0,0,0,210,15,1,0,0,0,211,212,5,13,0,0,212,214,5,
+        35,0,0,213,215,3,20,10,0,214,213,1,0,0,0,214,215,1,0,0,0,215,216,
+        1,0,0,0,216,217,5,36,0,0,217,17,1,0,0,0,218,219,5,14,0,0,219,221,
+        5,35,0,0,220,222,3,20,10,0,221,220,1,0,0,0,221,222,1,0,0,0,222,223,
+        1,0,0,0,223,224,5,36,0,0,224,19,1,0,0,0,225,230,3,124,62,0,226,227,
+        5,31,0,0,227,229,3,124,62,0,228,226,1,0,0,0,229,232,1,0,0,0,230,
+        228,1,0,0,0,230,231,1,0,0,0,231,234,1,0,0,0,232,230,1,0,0,0,233,
+        235,5,31,0,0,234,233,1,0,0,0,234,235,1,0,0,0,235,21,1,0,0,0,236,
+        240,5,49,0,0,237,238,3,24,12,0,238,239,5,30,0,0,239,241,1,0,0,0,
+        240,237,1,0,0,0,240,241,1,0,0,0,241,242,1,0,0,0,242,243,3,124,62,
+        0,243,244,3,26,13,0,244,23,1,0,0,0,245,249,3,124,62,0,246,249,5,
+        17,0,0,247,249,5,18,0,0,248,245,1,0,0,0,248,246,1,0,0,0,248,247,
+        1,0,0,0,249,25,1,0,0,0,250,254,5,11,0,0,251,253,5,59,0,0,252,251,
+        1,0,0,0,253,256,1,0,0,0,254,252,1,0,0,0,254,255,1,0,0,0,255,257,
+        1,0,0,0,256,254,1,0,0,0,257,258,5,57,0,0,258,27,1,0,0,0,259,263,
+        5,10,0,0,260,262,5,56,0,0,261,260,1,0,0,0,262,265,1,0,0,0,263,261,
+        1,0,0,0,263,264,1,0,0,0,264,266,1,0,0,0,265,263,1,0,0,0,266,267,
+        5,54,0,0,267,29,1,0,0,0,268,269,5,28,0,0,269,270,3,124,62,0,270,
+        274,5,32,0,0,271,273,3,64,32,0,272,271,1,0,0,0,273,276,1,0,0,0,274,
+        272,1,0,0,0,274,275,1,0,0,0,275,31,1,0,0,0,276,274,1,0,0,0,277,279,
+        3,34,17,0,278,277,1,0,0,0,279,282,1,0,0,0,280,278,1,0,0,0,280,281,
+        1,0,0,0,281,33,1,0,0,0,282,280,1,0,0,0,283,286,3,36,18,0,284,286,
+        3,64,32,0,285,283,1,0,0,0,285,284,1,0,0,0,286,35,1,0,0,0,287,289,
+        5,4,0,0,288,287,1,0,0,0,289,292,1,0,0,0,290,288,1,0,0,0,290,291,
+        1,0,0,0,291,294,1,0,0,0,292,290,1,0,0,0,293,295,3,54,27,0,294,293,
+        1,0,0,0,294,295,1,0,0,0,295,296,1,0,0,0,296,298,5,2,0,0,297,299,
+        3,28,14,0,298,297,1,0,0,0,298,299,1,0,0,0,299,301,1,0,0,0,300,302,
+        3,46,23,0,301,300,1,0,0,0,301,302,1,0,0,0,302,304,1,0,0,0,303,305,
+        3,48,24,0,304,303,1,0,0,0,304,305,1,0,0,0,305,307,1,0,0,0,306,308,
+        3,50,25,0,307,306,1,0,0,0,307,308,1,0,0,0,308,312,1,0,0,0,309,311,
+        3,44,22,0,310,309,1,0,0,0,311,314,1,0,0,0,312,310,1,0,0,0,312,313,
+        1,0,0,0,313,315,1,0,0,0,314,312,1,0,0,0,315,316,5,29,0,0,316,317,
+        3,58,29,0,317,318,5,32,0,0,318,319,3,38,19,0,319,37,1,0,0,0,320,
+        322,3,40,20,0,321,320,1,0,0,0,322,325,1,0,0,0,323,321,1,0,0,0,323,
+        324,1,0,0,0,324,327,1,0,0,0,325,323,1,0,0,0,326,328,3,42,21,0,327,
+        326,1,0,0,0,327,328,1,0,0,0,328,39,1,0,0,0,329,330,5,26,0,0,330,
+        331,3,28,14,0,331,332,3,26,13,0,332,41,1,0,0,0,333,334,5,27,0,0,
+        334,335,3,26,13,0,335,43,1,0,0,0,336,339,3,6,3,0,337,339,3,52,26,
+        0,338,336,1,0,0,0,338,337,1,0,0,0,339,45,1,0,0,0,340,341,5,23,0,
+        0,341,342,3,28,14,0,342,47,1,0,0,0,343,344,5,25,0,0,344,349,3,124,
+        62,0,345,346,5,31,0,0,346,348,3,124,62,0,347,345,1,0,0,0,348,351,
+        1,0,0,0,349,347,1,0,0,0,349,350,1,0,0,0,350,49,1,0,0,0,351,349,1,
+        0,0,0,352,353,5,24,0,0,353,354,3,28,14,0,354,51,1,0,0,0,355,356,
+        5,49,0,0,356,357,3,124,62,0,357,358,3,26,13,0,358,53,1,0,0,0,359,
+        361,3,56,28,0,360,359,1,0,0,0,361,362,1,0,0,0,362,360,1,0,0,0,362,
+        363,1,0,0,0,363,55,1,0,0,0,364,365,7,0,0,0,365,57,1,0,0,0,366,367,
+        3,60,30,0,367,59,1,0,0,0,368,373,3,62,31,0,369,370,5,45,0,0,370,
+        372,3,62,31,0,371,369,1,0,0,0,372,375,1,0,0,0,373,371,1,0,0,0,373,
+        374,1,0,0,0,374,61,1,0,0,0,375,373,1,0,0,0,376,379,3,90,45,0,377,
+        378,5,50,0,0,378,380,3,124,62,0,379,377,1,0,0,0,379,380,1,0,0,0,
+        380,63,1,0,0,0,381,383,5,4,0,0,382,381,1,0,0,0,383,386,1,0,0,0,384,
+        382,1,0,0,0,384,385,1,0,0,0,385,388,1,0,0,0,386,384,1,0,0,0,387,
+        389,5,16,0,0,388,387,1,0,0,0,388,389,1,0,0,0,389,390,1,0,0,0,390,
+        391,5,1,0,0,391,392,5,29,0,0,392,393,3,66,33,0,393,394,5,32,0,0,
+        394,65,1,0,0,0,395,396,3,68,34,0,396,67,1,0,0,0,397,402,3,70,35,
+        0,398,399,5,45,0,0,399,401,3,70,35,0,400,398,1,0,0,0,401,404,1,0,
+        0,0,402,400,1,0,0,0,402,403,1,0,0,0,403,69,1,0,0,0,404,402,1,0,0,
+        0,405,407,3,72,36,0,406,408,3,80,40,0,407,406,1,0,0,0,407,408,1,
+        0,0,0,408,411,1,0,0,0,409,411,1,0,0,0,410,405,1,0,0,0,410,409,1,
+        0,0,0,411,71,1,0,0,0,412,414,3,74,37,0,413,412,1,0,0,0,414,415,1,
+        0,0,0,415,413,1,0,0,0,415,416,1,0,0,0,416,73,1,0,0,0,417,419,3,76,
+        38,0,418,420,3,100,50,0,419,418,1,0,0,0,419,420,1,0,0,0,420,434,
+        1,0,0,0,421,423,3,102,51,0,422,424,3,100,50,0,423,422,1,0,0,0,423,
+        424,1,0,0,0,424,434,1,0,0,0,425,427,3,78,39,0,426,428,3,100,50,0,
+        427,426,1,0,0,0,427,428,1,0,0,0,428,434,1,0,0,0,429,431,3,26,13,
+        0,430,432,5,41,0,0,431,430,1,0,0,0,431,432,1,0,0,0,432,434,1,0,0,
+        0,433,417,1,0,0,0,433,421,1,0,0,0,433,425,1,0,0,0,433,429,1,0,0,
+        0,434,75,1,0,0,0,435,436,3,124,62,0,436,439,7,1,0,0,437,440,3,102,
+        51,0,438,440,3,112,56,0,439,437,1,0,0,0,439,438,1,0,0,0,440,77,1,
+        0,0,0,441,442,5,33,0,0,442,443,3,68,34,0,443,444,5,34,0,0,444,79,
+        1,0,0,0,445,446,5,37,0,0,446,451,3,82,41,0,447,448,5,31,0,0,448,
+        450,3,82,41,0,449,447,1,0,0,0,450,453,1,0,0,0,451,449,1,0,0,0,451,
+        452,1,0,0,0,452,81,1,0,0,0,453,451,1,0,0,0,454,455,3,84,42,0,455,
+        456,5,33,0,0,456,457,3,86,43,0,457,458,5,34,0,0,458,461,1,0,0,0,
+        459,461,3,84,42,0,460,454,1,0,0,0,460,459,1,0,0,0,461,83,1,0,0,0,
+        462,465,3,124,62,0,463,465,5,28,0,0,464,462,1,0,0,0,464,463,1,0,
+        0,0,465,85,1,0,0,0,466,469,3,124,62,0,467,469,5,7,0,0,468,466,1,
+        0,0,0,468,467,1,0,0,0,469,87,1,0,0,0,470,475,3,90,45,0,471,472,5,
+        45,0,0,472,474,3,90,45,0,473,471,1,0,0,0,474,477,1,0,0,0,475,473,
+        1,0,0,0,475,476,1,0,0,0,476,89,1,0,0,0,477,475,1,0,0,0,478,480,3,
+        120,60,0,479,478,1,0,0,0,479,480,1,0,0,0,480,482,1,0,0,0,481,483,
+        3,92,46,0,482,481,1,0,0,0,483,484,1,0,0,0,484,482,1,0,0,0,484,485,
+        1,0,0,0,485,488,1,0,0,0,486,488,1,0,0,0,487,479,1,0,0,0,487,486,
+        1,0,0,0,488,91,1,0,0,0,489,492,3,94,47,0,490,493,3,100,50,0,491,
+        493,1,0,0,0,492,490,1,0,0,0,492,491,1,0,0,0,493,505,1,0,0,0,494,
+        497,3,104,52,0,495,498,3,100,50,0,496,498,1,0,0,0,497,495,1,0,0,
+        0,497,496,1,0,0,0,498,505,1,0,0,0,499,505,3,96,48,0,500,502,3,26,
+        13,0,501,503,5,41,0,0,502,501,1,0,0,0,502,503,1,0,0,0,503,505,1,
+        0,0,0,504,489,1,0,0,0,504,494,1,0,0,0,504,499,1,0,0,0,504,500,1,
+        0,0,0,505,93,1,0,0,0,506,507,3,124,62,0,507,510,7,1,0,0,508,511,
+        3,104,52,0,509,511,3,112,56,0,510,508,1,0,0,0,510,509,1,0,0,0,511,
+        95,1,0,0,0,512,514,3,112,56,0,513,515,3,98,49,0,514,513,1,0,0,0,
+        514,515,1,0,0,0,515,97,1,0,0,0,516,517,3,100,50,0,517,99,1,0,0,0,
+        518,520,5,41,0,0,519,521,5,41,0,0,520,519,1,0,0,0,520,521,1,0,0,
+        0,521,531,1,0,0,0,522,524,5,42,0,0,523,525,5,41,0,0,524,523,1,0,
+        0,0,524,525,1,0,0,0,525,531,1,0,0,0,526,528,5,44,0,0,527,529,5,41,
+        0,0,528,527,1,0,0,0,528,529,1,0,0,0,529,531,1,0,0,0,530,518,1,0,
+        0,0,530,522,1,0,0,0,530,526,1,0,0,0,531,101,1,0,0,0,532,541,3,116,
+        58,0,533,541,3,118,59,0,534,541,3,106,53,0,535,541,5,3,0,0,536,538,
+        5,48,0,0,537,539,3,120,60,0,538,537,1,0,0,0,538,539,1,0,0,0,539,
+        541,1,0,0,0,540,532,1,0,0,0,540,533,1,0,0,0,540,534,1,0,0,0,540,
+        535,1,0,0,0,540,536,1,0,0,0,541,103,1,0,0,0,542,551,3,116,58,0,543,
+        551,3,118,59,0,544,551,3,114,57,0,545,551,3,106,53,0,546,548,5,48,
+        0,0,547,549,3,120,60,0,548,547,1,0,0,0,548,549,1,0,0,0,549,551,1,
+        0,0,0,550,542,1,0,0,0,550,543,1,0,0,0,550,544,1,0,0,0,550,545,1,
+        0,0,0,550,546,1,0,0,0,551,105,1,0,0,0,552,553,5,51,0,0,553,557,3,
+        110,55,0,554,555,5,51,0,0,555,557,3,108,54,0,556,552,1,0,0,0,556,
+        554,1,0,0,0,557,107,1,0,0,0,558,559,5,33,0,0,559,564,3,110,55,0,
+        560,561,5,45,0,0,561,563,3,110,55,0,562,560,1,0,0,0,563,566,1,0,
+        0,0,564,562,1,0,0,0,564,565,1,0,0,0,565,567,1,0,0,0,566,564,1,0,
+        0,0,567,568,5,34,0,0,568,109,1,0,0,0,569,571,5,1,0,0,570,572,3,120,
+        60,0,571,570,1,0,0,0,571,572,1,0,0,0,572,580,1,0,0,0,573,575,5,8,
+        0,0,574,576,3,120,60,0,575,574,1,0,0,0,575,576,1,0,0,0,576,580,1,
+        0,0,0,577,580,3,116,58,0,578,580,5,3,0,0,579,569,1,0,0,0,579,573,
+        1,0,0,0,579,577,1,0,0,0,579,578,1,0,0,0,580,111,1,0,0,0,581,592,
+        5,33,0,0,582,584,3,6,3,0,583,582,1,0,0,0,583,584,1,0,0,0,584,588,
+        1,0,0,0,585,587,3,52,26,0,586,585,1,0,0,0,587,590,1,0,0,0,588,586,
+        1,0,0,0,588,589,1,0,0,0,589,591,1,0,0,0,590,588,1,0,0,0,591,593,
+        5,29,0,0,592,583,1,0,0,0,592,593,1,0,0,0,593,594,1,0,0,0,594,595,
+        3,88,44,0,595,596,5,34,0,0,596,113,1,0,0,0,597,599,5,2,0,0,598,600,
+        3,28,14,0,599,598,1,0,0,0,599,600,1,0,0,0,600,602,1,0,0,0,601,603,
+        3,120,60,0,602,601,1,0,0,0,602,603,1,0,0,0,603,115,1,0,0,0,604,605,
+        5,8,0,0,605,606,5,47,0,0,606,607,5,8,0,0,607,117,1,0,0,0,608,610,
+        5,1,0,0,609,611,3,120,60,0,610,609,1,0,0,0,610,611,1,0,0,0,611,617,
+        1,0,0,0,612,614,5,8,0,0,613,615,3,120,60,0,614,613,1,0,0,0,614,615,
+        1,0,0,0,615,617,1,0,0,0,616,608,1,0,0,0,616,612,1,0,0,0,617,119,
+        1,0,0,0,618,619,5,38,0,0,619,624,3,122,61,0,620,621,5,31,0,0,621,
+        623,3,122,61,0,622,620,1,0,0,0,623,626,1,0,0,0,624,622,1,0,0,0,624,
+        625,1,0,0,0,625,627,1,0,0,0,626,624,1,0,0,0,627,628,5,39,0,0,628,
+        121,1,0,0,0,629,637,3,124,62,0,630,631,3,124,62,0,631,634,5,40,0,
+        0,632,635,3,124,62,0,633,635,5,8,0,0,634,632,1,0,0,0,634,633,1,0,
+        0,0,635,637,1,0,0,0,636,629,1,0,0,0,636,630,1,0,0,0,637,123,1,0,
+        0,0,638,639,7,2,0,0,639,125,1,0,0,0,85,129,138,145,155,162,171,185,
+        191,199,209,214,221,230,234,240,248,254,263,274,280,285,290,294,
+        298,301,304,307,312,323,327,338,349,362,373,379,384,388,402,407,
+        410,415,419,423,427,431,433,439,451,460,464,468,475,479,484,487,
+        492,497,502,504,510,514,520,524,528,530,538,540,548,550,556,564,
+        571,575,579,583,588,592,599,602,610,614,616,624,634,636
+    ];
+
+    private static __ATN: antlr.ATN;
+    public static get _ATN(): antlr.ATN {
         if (!ANTLRv4Parser.__ATN) {
-            ANTLRv4Parser.__ATN = new ATNDeserializer().deserialize(Utils.toCharArray(ANTLRv4Parser._serializedATN));
+            ANTLRv4Parser.__ATN = new antlr.ATNDeserializer().deserialize(ANTLRv4Parser._serializedATN);
         }
 
         return ANTLRv4Parser.__ATN;
     }
 
+
+    private static readonly vocabulary = new antlr.Vocabulary(ANTLRv4Parser.literalNames, ANTLRv4Parser.symbolicNames, []);
+
+    public override get vocabulary(): antlr.Vocabulary {
+        return ANTLRv4Parser.vocabulary;
+    }
+
+    private static readonly decisionsToDFA = ANTLRv4Parser._ATN.decisionToState.map( (ds: antlr.DecisionState, index: number) => new antlr.DFA(ds, index) );
 }
 
-export class GrammarSpecContext extends ParserRuleContext {
-    public grammarType(): GrammarTypeContext {
-        return this.getRuleContext(0, GrammarTypeContext);
-    }
-    public identifier(): IdentifierContext {
-        return this.getRuleContext(0, IdentifierContext);
-    }
-    public SEMI(): TerminalNode { return this.getToken(ANTLRv4Parser.SEMI, 0); }
-    public rules(): RulesContext {
-        return this.getRuleContext(0, RulesContext);
-    }
-    public EOF(): TerminalNode { return this.getToken(ANTLRv4Parser.EOF, 0); }
-    public DOC_COMMENT(): TerminalNode[];
-    public DOC_COMMENT(i: number): TerminalNode;
-    public DOC_COMMENT(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.DOC_COMMENT);
-        } else {
-            return this.getToken(ANTLRv4Parser.DOC_COMMENT, i);
-        }
-    }
-    public prequelConstruct(): PrequelConstructContext[];
-    public prequelConstruct(i: number): PrequelConstructContext;
-    public prequelConstruct(i?: number): PrequelConstructContext | PrequelConstructContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(PrequelConstructContext);
-        } else {
-            return this.getRuleContext(i, PrequelConstructContext);
-        }
-    }
-    public modeSpec(): ModeSpecContext[];
-    public modeSpec(i: number): ModeSpecContext;
-    public modeSpec(i?: number): ModeSpecContext | ModeSpecContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(ModeSpecContext);
-        } else {
-            return this.getRuleContext(i, ModeSpecContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class GrammarSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_grammarSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterGrammarSpec) {
-            listener.enterGrammarSpec(this);
+    public grammarType(): GrammarTypeContext {
+        return this.getRuleContext(0, GrammarTypeContext)!;
+    }
+    public identifier(): IdentifierContext {
+        return this.getRuleContext(0, IdentifierContext)!;
+    }
+    public SEMI(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.SEMI, 0);
+    }
+    public rules(): RulesContext {
+        return this.getRuleContext(0, RulesContext)!;
+    }
+    public EOF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.EOF, 0);
+    }
+    public DOC_COMMENT(): antlr.TerminalNode[];
+    public DOC_COMMENT(i: number): antlr.TerminalNode | null;
+    public DOC_COMMENT(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.DOC_COMMENT);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.DOC_COMMENT, i);
+    	}
+    }
+    public prequelConstruct(): PrequelConstructContext[];
+    public prequelConstruct(i: number): PrequelConstructContext | null;
+    public prequelConstruct(i?: number): PrequelConstructContext[] | PrequelConstructContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(PrequelConstructContext);
+        }
+
+        return this.getRuleContext(i, PrequelConstructContext);
+    }
+    public modeSpec(): ModeSpecContext[];
+    public modeSpec(i: number): ModeSpecContext | null;
+    public modeSpec(i?: number): ModeSpecContext[] | ModeSpecContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(ModeSpecContext);
+        }
+
+        return this.getRuleContext(i, ModeSpecContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_grammarSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterGrammarSpec) {
+             listener.enterGrammarSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitGrammarSpec) {
-            listener.exitGrammarSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitGrammarSpec) {
+             listener.exitGrammarSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitGrammarSpec) {
             return visitor.visitGrammarSpec(this);
@@ -3702,28 +3502,32 @@ export class GrammarSpecContext extends ParserRuleContext {
 }
 
 
-export class GrammarTypeContext extends ParserRuleContext {
-    public LEXER(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.LEXER, 0); }
-    public GRAMMAR(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.GRAMMAR, 0); }
-    public PARSER(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PARSER, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class GrammarTypeContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_grammarType; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterGrammarType) {
-            listener.enterGrammarType(this);
+    public LEXER(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LEXER, 0);
+    }
+    public GRAMMAR(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.GRAMMAR, 0);
+    }
+    public PARSER(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PARSER, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_grammarType;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterGrammarType) {
+             listener.enterGrammarType(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitGrammarType) {
-            listener.exitGrammarType(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitGrammarType) {
+             listener.exitGrammarType(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitGrammarType) {
             return visitor.visitGrammarType(this);
@@ -3734,40 +3538,38 @@ export class GrammarTypeContext extends ParserRuleContext {
 }
 
 
-export class PrequelConstructContext extends ParserRuleContext {
-    public optionsSpec(): OptionsSpecContext | undefined {
-        return this.tryGetRuleContext(0, OptionsSpecContext);
-    }
-    public delegateGrammars(): DelegateGrammarsContext | undefined {
-        return this.tryGetRuleContext(0, DelegateGrammarsContext);
-    }
-    public tokensSpec(): TokensSpecContext | undefined {
-        return this.tryGetRuleContext(0, TokensSpecContext);
-    }
-    public channelsSpec(): ChannelsSpecContext | undefined {
-        return this.tryGetRuleContext(0, ChannelsSpecContext);
-    }
-    public namedAction(): NamedActionContext | undefined {
-        return this.tryGetRuleContext(0, NamedActionContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class PrequelConstructContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_prequelConstruct; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterPrequelConstruct) {
-            listener.enterPrequelConstruct(this);
+    public optionsSpec(): OptionsSpecContext | null {
+        return this.getRuleContext(0, OptionsSpecContext);
+    }
+    public delegateGrammars(): DelegateGrammarsContext | null {
+        return this.getRuleContext(0, DelegateGrammarsContext);
+    }
+    public tokensSpec(): TokensSpecContext | null {
+        return this.getRuleContext(0, TokensSpecContext);
+    }
+    public channelsSpec(): ChannelsSpecContext | null {
+        return this.getRuleContext(0, ChannelsSpecContext);
+    }
+    public namedAction(): NamedActionContext | null {
+        return this.getRuleContext(0, NamedActionContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_prequelConstruct;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterPrequelConstruct) {
+             listener.enterPrequelConstruct(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitPrequelConstruct) {
-            listener.exitPrequelConstruct(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitPrequelConstruct) {
+             listener.exitPrequelConstruct(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitPrequelConstruct) {
             return visitor.visitPrequelConstruct(this);
@@ -3778,46 +3580,50 @@ export class PrequelConstructContext extends ParserRuleContext {
 }
 
 
-export class OptionsSpecContext extends ParserRuleContext {
-    public OPTIONS(): TerminalNode { return this.getToken(ANTLRv4Parser.OPTIONS, 0); }
-    public LBRACE(): TerminalNode { return this.getToken(ANTLRv4Parser.LBRACE, 0); }
-    public RBRACE(): TerminalNode { return this.getToken(ANTLRv4Parser.RBRACE, 0); }
-    public option(): OptionContext[];
-    public option(i: number): OptionContext;
-    public option(i?: number): OptionContext | OptionContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(OptionContext);
-        } else {
-            return this.getRuleContext(i, OptionContext);
-        }
-    }
-    public SEMI(): TerminalNode[];
-    public SEMI(i: number): TerminalNode;
-    public SEMI(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.SEMI);
-        } else {
-            return this.getToken(ANTLRv4Parser.SEMI, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class OptionsSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_optionsSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterOptionsSpec) {
-            listener.enterOptionsSpec(this);
+    public OPTIONS(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.OPTIONS, 0);
+    }
+    public LBRACE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LBRACE, 0);
+    }
+    public RBRACE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RBRACE, 0);
+    }
+    public option(): OptionContext[];
+    public option(i: number): OptionContext | null;
+    public option(i?: number): OptionContext[] | OptionContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(OptionContext);
+        }
+
+        return this.getRuleContext(i, OptionContext);
+    }
+    public SEMI(): antlr.TerminalNode[];
+    public SEMI(i: number): antlr.TerminalNode | null;
+    public SEMI(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.SEMI);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.SEMI, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_optionsSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterOptionsSpec) {
+             listener.enterOptionsSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitOptionsSpec) {
-            listener.exitOptionsSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitOptionsSpec) {
+             listener.exitOptionsSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitOptionsSpec) {
             return visitor.visitOptionsSpec(this);
@@ -3828,32 +3634,32 @@ export class OptionsSpecContext extends ParserRuleContext {
 }
 
 
-export class OptionContext extends ParserRuleContext {
-    public identifier(): IdentifierContext {
-        return this.getRuleContext(0, IdentifierContext);
-    }
-    public ASSIGN(): TerminalNode { return this.getToken(ANTLRv4Parser.ASSIGN, 0); }
-    public optionValue(): OptionValueContext {
-        return this.getRuleContext(0, OptionValueContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class OptionContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_option; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterOption) {
-            listener.enterOption(this);
+    public identifier(): IdentifierContext {
+        return this.getRuleContext(0, IdentifierContext)!;
+    }
+    public ASSIGN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.ASSIGN, 0);
+    }
+    public optionValue(): OptionValueContext {
+        return this.getRuleContext(0, OptionValueContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_option;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterOption) {
+             listener.enterOption(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitOption) {
-            listener.exitOption(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitOption) {
+             listener.exitOption(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitOption) {
             return visitor.visitOption(this);
@@ -3864,48 +3670,50 @@ export class OptionContext extends ParserRuleContext {
 }
 
 
-export class OptionValueContext extends ParserRuleContext {
-    public identifier(): IdentifierContext[];
-    public identifier(i: number): IdentifierContext;
-    public identifier(i?: number): IdentifierContext | IdentifierContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(IdentifierContext);
-        } else {
-            return this.getRuleContext(i, IdentifierContext);
-        }
-    }
-    public DOT(): TerminalNode[];
-    public DOT(i: number): TerminalNode;
-    public DOT(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.DOT);
-        } else {
-            return this.getToken(ANTLRv4Parser.DOT, i);
-        }
-    }
-    public STRING_LITERAL(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.STRING_LITERAL, 0); }
-    public actionBlock(): ActionBlockContext | undefined {
-        return this.tryGetRuleContext(0, ActionBlockContext);
-    }
-    public INT(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.INT, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class OptionValueContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_optionValue; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterOptionValue) {
-            listener.enterOptionValue(this);
+    public identifier(): IdentifierContext[];
+    public identifier(i: number): IdentifierContext | null;
+    public identifier(i?: number): IdentifierContext[] | IdentifierContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(IdentifierContext);
+        }
+
+        return this.getRuleContext(i, IdentifierContext);
+    }
+    public DOT(): antlr.TerminalNode[];
+    public DOT(i: number): antlr.TerminalNode | null;
+    public DOT(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.DOT);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.DOT, i);
+    	}
+    }
+    public STRING_LITERAL(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.STRING_LITERAL, 0);
+    }
+    public actionBlock(): ActionBlockContext | null {
+        return this.getRuleContext(0, ActionBlockContext);
+    }
+    public INT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.INT, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_optionValue;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterOptionValue) {
+             listener.enterOptionValue(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitOptionValue) {
-            listener.exitOptionValue(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitOptionValue) {
+             listener.exitOptionValue(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitOptionValue) {
             return visitor.visitOptionValue(this);
@@ -3916,45 +3724,47 @@ export class OptionValueContext extends ParserRuleContext {
 }
 
 
-export class DelegateGrammarsContext extends ParserRuleContext {
-    public IMPORT(): TerminalNode { return this.getToken(ANTLRv4Parser.IMPORT, 0); }
-    public delegateGrammar(): DelegateGrammarContext[];
-    public delegateGrammar(i: number): DelegateGrammarContext;
-    public delegateGrammar(i?: number): DelegateGrammarContext | DelegateGrammarContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(DelegateGrammarContext);
-        } else {
-            return this.getRuleContext(i, DelegateGrammarContext);
-        }
-    }
-    public SEMI(): TerminalNode { return this.getToken(ANTLRv4Parser.SEMI, 0); }
-    public COMMA(): TerminalNode[];
-    public COMMA(i: number): TerminalNode;
-    public COMMA(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.COMMA);
-        } else {
-            return this.getToken(ANTLRv4Parser.COMMA, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class DelegateGrammarsContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_delegateGrammars; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterDelegateGrammars) {
-            listener.enterDelegateGrammars(this);
+    public IMPORT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.IMPORT, 0);
+    }
+    public delegateGrammar(): DelegateGrammarContext[];
+    public delegateGrammar(i: number): DelegateGrammarContext | null;
+    public delegateGrammar(i?: number): DelegateGrammarContext[] | DelegateGrammarContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(DelegateGrammarContext);
+        }
+
+        return this.getRuleContext(i, DelegateGrammarContext);
+    }
+    public SEMI(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.SEMI, 0);
+    }
+    public COMMA(): antlr.TerminalNode[];
+    public COMMA(i: number): antlr.TerminalNode | null;
+    public COMMA(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.COMMA);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.COMMA, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_delegateGrammars;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterDelegateGrammars) {
+             listener.enterDelegateGrammars(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitDelegateGrammars) {
-            listener.exitDelegateGrammars(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitDelegateGrammars) {
+             listener.exitDelegateGrammars(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitDelegateGrammars) {
             return visitor.visitDelegateGrammars(this);
@@ -3965,35 +3775,35 @@ export class DelegateGrammarsContext extends ParserRuleContext {
 }
 
 
-export class DelegateGrammarContext extends ParserRuleContext {
-    public identifier(): IdentifierContext[];
-    public identifier(i: number): IdentifierContext;
-    public identifier(i?: number): IdentifierContext | IdentifierContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(IdentifierContext);
-        } else {
-            return this.getRuleContext(i, IdentifierContext);
-        }
-    }
-    public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.ASSIGN, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class DelegateGrammarContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_delegateGrammar; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterDelegateGrammar) {
-            listener.enterDelegateGrammar(this);
+    public identifier(): IdentifierContext[];
+    public identifier(i: number): IdentifierContext | null;
+    public identifier(i?: number): IdentifierContext[] | IdentifierContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(IdentifierContext);
+        }
+
+        return this.getRuleContext(i, IdentifierContext);
+    }
+    public ASSIGN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.ASSIGN, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_delegateGrammar;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterDelegateGrammar) {
+             listener.enterDelegateGrammar(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitDelegateGrammar) {
-            listener.exitDelegateGrammar(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitDelegateGrammar) {
+             listener.exitDelegateGrammar(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitDelegateGrammar) {
             return visitor.visitDelegateGrammar(this);
@@ -4004,31 +3814,35 @@ export class DelegateGrammarContext extends ParserRuleContext {
 }
 
 
-export class TokensSpecContext extends ParserRuleContext {
-    public TOKENS(): TerminalNode { return this.getToken(ANTLRv4Parser.TOKENS, 0); }
-    public LBRACE(): TerminalNode { return this.getToken(ANTLRv4Parser.LBRACE, 0); }
-    public RBRACE(): TerminalNode { return this.getToken(ANTLRv4Parser.RBRACE, 0); }
-    public idList(): IdListContext | undefined {
-        return this.tryGetRuleContext(0, IdListContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class TokensSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_tokensSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterTokensSpec) {
-            listener.enterTokensSpec(this);
+    public TOKENS(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.TOKENS, 0);
+    }
+    public LBRACE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LBRACE, 0);
+    }
+    public RBRACE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RBRACE, 0);
+    }
+    public idList(): IdListContext | null {
+        return this.getRuleContext(0, IdListContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_tokensSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterTokensSpec) {
+             listener.enterTokensSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitTokensSpec) {
-            listener.exitTokensSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitTokensSpec) {
+             listener.exitTokensSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitTokensSpec) {
             return visitor.visitTokensSpec(this);
@@ -4039,31 +3853,35 @@ export class TokensSpecContext extends ParserRuleContext {
 }
 
 
-export class ChannelsSpecContext extends ParserRuleContext {
-    public CHANNELS(): TerminalNode { return this.getToken(ANTLRv4Parser.CHANNELS, 0); }
-    public LBRACE(): TerminalNode { return this.getToken(ANTLRv4Parser.LBRACE, 0); }
-    public RBRACE(): TerminalNode { return this.getToken(ANTLRv4Parser.RBRACE, 0); }
-    public idList(): IdListContext | undefined {
-        return this.tryGetRuleContext(0, IdListContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ChannelsSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_channelsSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterChannelsSpec) {
-            listener.enterChannelsSpec(this);
+    public CHANNELS(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.CHANNELS, 0);
+    }
+    public LBRACE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LBRACE, 0);
+    }
+    public RBRACE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RBRACE, 0);
+    }
+    public idList(): IdListContext | null {
+        return this.getRuleContext(0, IdListContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_channelsSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterChannelsSpec) {
+             listener.enterChannelsSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitChannelsSpec) {
-            listener.exitChannelsSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitChannelsSpec) {
+             listener.exitChannelsSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitChannelsSpec) {
             return visitor.visitChannelsSpec(this);
@@ -4074,43 +3892,41 @@ export class ChannelsSpecContext extends ParserRuleContext {
 }
 
 
-export class IdListContext extends ParserRuleContext {
-    public identifier(): IdentifierContext[];
-    public identifier(i: number): IdentifierContext;
-    public identifier(i?: number): IdentifierContext | IdentifierContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(IdentifierContext);
-        } else {
-            return this.getRuleContext(i, IdentifierContext);
-        }
-    }
-    public COMMA(): TerminalNode[];
-    public COMMA(i: number): TerminalNode;
-    public COMMA(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.COMMA);
-        } else {
-            return this.getToken(ANTLRv4Parser.COMMA, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class IdListContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_idList; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterIdList) {
-            listener.enterIdList(this);
+    public identifier(): IdentifierContext[];
+    public identifier(i: number): IdentifierContext | null;
+    public identifier(i?: number): IdentifierContext[] | IdentifierContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(IdentifierContext);
+        }
+
+        return this.getRuleContext(i, IdentifierContext);
+    }
+    public COMMA(): antlr.TerminalNode[];
+    public COMMA(i: number): antlr.TerminalNode | null;
+    public COMMA(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.COMMA);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.COMMA, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_idList;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterIdList) {
+             listener.enterIdList(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitIdList) {
-            listener.exitIdList(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitIdList) {
+             listener.exitIdList(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitIdList) {
             return visitor.visitIdList(this);
@@ -4121,36 +3937,38 @@ export class IdListContext extends ParserRuleContext {
 }
 
 
-export class NamedActionContext extends ParserRuleContext {
-    public AT(): TerminalNode { return this.getToken(ANTLRv4Parser.AT, 0); }
-    public identifier(): IdentifierContext {
-        return this.getRuleContext(0, IdentifierContext);
-    }
-    public actionBlock(): ActionBlockContext {
-        return this.getRuleContext(0, ActionBlockContext);
-    }
-    public actionScopeName(): ActionScopeNameContext | undefined {
-        return this.tryGetRuleContext(0, ActionScopeNameContext);
-    }
-    public COLONCOLON(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.COLONCOLON, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class NamedActionContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_namedAction; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterNamedAction) {
-            listener.enterNamedAction(this);
+    public AT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.AT, 0);
+    }
+    public identifier(): IdentifierContext {
+        return this.getRuleContext(0, IdentifierContext)!;
+    }
+    public actionBlock(): ActionBlockContext {
+        return this.getRuleContext(0, ActionBlockContext)!;
+    }
+    public actionScopeName(): ActionScopeNameContext | null {
+        return this.getRuleContext(0, ActionScopeNameContext);
+    }
+    public COLONCOLON(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.COLONCOLON, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_namedAction;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterNamedAction) {
+             listener.enterNamedAction(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitNamedAction) {
-            listener.exitNamedAction(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitNamedAction) {
+             listener.exitNamedAction(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitNamedAction) {
             return visitor.visitNamedAction(this);
@@ -4161,30 +3979,32 @@ export class NamedActionContext extends ParserRuleContext {
 }
 
 
-export class ActionScopeNameContext extends ParserRuleContext {
-    public identifier(): IdentifierContext | undefined {
-        return this.tryGetRuleContext(0, IdentifierContext);
-    }
-    public LEXER(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.LEXER, 0); }
-    public PARSER(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PARSER, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ActionScopeNameContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_actionScopeName; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterActionScopeName) {
-            listener.enterActionScopeName(this);
+    public identifier(): IdentifierContext | null {
+        return this.getRuleContext(0, IdentifierContext);
+    }
+    public LEXER(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LEXER, 0);
+    }
+    public PARSER(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PARSER, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_actionScopeName;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterActionScopeName) {
+             listener.enterActionScopeName(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitActionScopeName) {
-            listener.exitActionScopeName(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitActionScopeName) {
+             listener.exitActionScopeName(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitActionScopeName) {
             return visitor.visitActionScopeName(this);
@@ -4195,36 +4015,38 @@ export class ActionScopeNameContext extends ParserRuleContext {
 }
 
 
-export class ActionBlockContext extends ParserRuleContext {
-    public BEGIN_ACTION(): TerminalNode { return this.getToken(ANTLRv4Parser.BEGIN_ACTION, 0); }
-    public END_ACTION(): TerminalNode { return this.getToken(ANTLRv4Parser.END_ACTION, 0); }
-    public ACTION_CONTENT(): TerminalNode[];
-    public ACTION_CONTENT(i: number): TerminalNode;
-    public ACTION_CONTENT(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.ACTION_CONTENT);
-        } else {
-            return this.getToken(ANTLRv4Parser.ACTION_CONTENT, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ActionBlockContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_actionBlock; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterActionBlock) {
-            listener.enterActionBlock(this);
+    public BEGIN_ACTION(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.BEGIN_ACTION, 0);
+    }
+    public END_ACTION(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.END_ACTION, 0);
+    }
+    public ACTION_CONTENT(): antlr.TerminalNode[];
+    public ACTION_CONTENT(i: number): antlr.TerminalNode | null;
+    public ACTION_CONTENT(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.ACTION_CONTENT);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.ACTION_CONTENT, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_actionBlock;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterActionBlock) {
+             listener.enterActionBlock(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitActionBlock) {
-            listener.exitActionBlock(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitActionBlock) {
+             listener.exitActionBlock(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitActionBlock) {
             return visitor.visitActionBlock(this);
@@ -4235,36 +4057,38 @@ export class ActionBlockContext extends ParserRuleContext {
 }
 
 
-export class ArgActionBlockContext extends ParserRuleContext {
-    public BEGIN_ARGUMENT(): TerminalNode { return this.getToken(ANTLRv4Parser.BEGIN_ARGUMENT, 0); }
-    public END_ARGUMENT(): TerminalNode { return this.getToken(ANTLRv4Parser.END_ARGUMENT, 0); }
-    public ARGUMENT_CONTENT(): TerminalNode[];
-    public ARGUMENT_CONTENT(i: number): TerminalNode;
-    public ARGUMENT_CONTENT(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.ARGUMENT_CONTENT);
-        } else {
-            return this.getToken(ANTLRv4Parser.ARGUMENT_CONTENT, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ArgActionBlockContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_argActionBlock; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterArgActionBlock) {
-            listener.enterArgActionBlock(this);
+    public BEGIN_ARGUMENT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.BEGIN_ARGUMENT, 0);
+    }
+    public END_ARGUMENT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.END_ARGUMENT, 0);
+    }
+    public ARGUMENT_CONTENT(): antlr.TerminalNode[];
+    public ARGUMENT_CONTENT(i: number): antlr.TerminalNode | null;
+    public ARGUMENT_CONTENT(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.ARGUMENT_CONTENT);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.ARGUMENT_CONTENT, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_argActionBlock;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterArgActionBlock) {
+             listener.enterArgActionBlock(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitArgActionBlock) {
-            listener.exitArgActionBlock(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitArgActionBlock) {
+             listener.exitArgActionBlock(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitArgActionBlock) {
             return visitor.visitArgActionBlock(this);
@@ -4275,39 +4099,41 @@ export class ArgActionBlockContext extends ParserRuleContext {
 }
 
 
-export class ModeSpecContext extends ParserRuleContext {
-    public MODE(): TerminalNode { return this.getToken(ANTLRv4Parser.MODE, 0); }
-    public identifier(): IdentifierContext {
-        return this.getRuleContext(0, IdentifierContext);
-    }
-    public SEMI(): TerminalNode { return this.getToken(ANTLRv4Parser.SEMI, 0); }
-    public lexerRuleSpec(): LexerRuleSpecContext[];
-    public lexerRuleSpec(i: number): LexerRuleSpecContext;
-    public lexerRuleSpec(i?: number): LexerRuleSpecContext | LexerRuleSpecContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(LexerRuleSpecContext);
-        } else {
-            return this.getRuleContext(i, LexerRuleSpecContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ModeSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_modeSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterModeSpec) {
-            listener.enterModeSpec(this);
+    public MODE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.MODE, 0);
+    }
+    public identifier(): IdentifierContext {
+        return this.getRuleContext(0, IdentifierContext)!;
+    }
+    public SEMI(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.SEMI, 0);
+    }
+    public lexerRuleSpec(): LexerRuleSpecContext[];
+    public lexerRuleSpec(i: number): LexerRuleSpecContext | null;
+    public lexerRuleSpec(i?: number): LexerRuleSpecContext[] | LexerRuleSpecContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(LexerRuleSpecContext);
+        }
+
+        return this.getRuleContext(i, LexerRuleSpecContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_modeSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterModeSpec) {
+             listener.enterModeSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitModeSpec) {
-            listener.exitModeSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitModeSpec) {
+             listener.exitModeSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitModeSpec) {
             return visitor.visitModeSpec(this);
@@ -4318,34 +4144,32 @@ export class ModeSpecContext extends ParserRuleContext {
 }
 
 
-export class RulesContext extends ParserRuleContext {
-    public ruleSpec(): RuleSpecContext[];
-    public ruleSpec(i: number): RuleSpecContext;
-    public ruleSpec(i?: number): RuleSpecContext | RuleSpecContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(RuleSpecContext);
-        } else {
-            return this.getRuleContext(i, RuleSpecContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RulesContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_rules; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRules) {
-            listener.enterRules(this);
+    public ruleSpec(): RuleSpecContext[];
+    public ruleSpec(i: number): RuleSpecContext | null;
+    public ruleSpec(i?: number): RuleSpecContext[] | RuleSpecContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(RuleSpecContext);
+        }
+
+        return this.getRuleContext(i, RuleSpecContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_rules;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRules) {
+             listener.enterRules(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRules) {
-            listener.exitRules(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRules) {
+             listener.exitRules(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRules) {
             return visitor.visitRules(this);
@@ -4356,31 +4180,29 @@ export class RulesContext extends ParserRuleContext {
 }
 
 
-export class RuleSpecContext extends ParserRuleContext {
-    public parserRuleSpec(): ParserRuleSpecContext | undefined {
-        return this.tryGetRuleContext(0, ParserRuleSpecContext);
-    }
-    public lexerRuleSpec(): LexerRuleSpecContext | undefined {
-        return this.tryGetRuleContext(0, LexerRuleSpecContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RuleSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleSpec) {
-            listener.enterRuleSpec(this);
+    public parserRuleSpec(): ParserRuleSpecContext | null {
+        return this.getRuleContext(0, ParserRuleSpecContext);
+    }
+    public lexerRuleSpec(): LexerRuleSpecContext | null {
+        return this.getRuleContext(0, LexerRuleSpecContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleSpec) {
+             listener.enterRuleSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleSpec) {
-            listener.exitRuleSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleSpec) {
+             listener.exitRuleSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleSpec) {
             return visitor.visitRuleSpec(this);
@@ -4391,67 +4213,71 @@ export class RuleSpecContext extends ParserRuleContext {
 }
 
 
-export class ParserRuleSpecContext extends ParserRuleContext {
-    public RULE_REF(): TerminalNode { return this.getToken(ANTLRv4Parser.RULE_REF, 0); }
-    public COLON(): TerminalNode { return this.getToken(ANTLRv4Parser.COLON, 0); }
-    public ruleBlock(): RuleBlockContext {
-        return this.getRuleContext(0, RuleBlockContext);
-    }
-    public SEMI(): TerminalNode { return this.getToken(ANTLRv4Parser.SEMI, 0); }
-    public exceptionGroup(): ExceptionGroupContext {
-        return this.getRuleContext(0, ExceptionGroupContext);
-    }
-    public DOC_COMMENT(): TerminalNode[];
-    public DOC_COMMENT(i: number): TerminalNode;
-    public DOC_COMMENT(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.DOC_COMMENT);
-        } else {
-            return this.getToken(ANTLRv4Parser.DOC_COMMENT, i);
-        }
-    }
-    public ruleModifiers(): RuleModifiersContext | undefined {
-        return this.tryGetRuleContext(0, RuleModifiersContext);
-    }
-    public argActionBlock(): ArgActionBlockContext | undefined {
-        return this.tryGetRuleContext(0, ArgActionBlockContext);
-    }
-    public ruleReturns(): RuleReturnsContext | undefined {
-        return this.tryGetRuleContext(0, RuleReturnsContext);
-    }
-    public throwsSpec(): ThrowsSpecContext | undefined {
-        return this.tryGetRuleContext(0, ThrowsSpecContext);
-    }
-    public localsSpec(): LocalsSpecContext | undefined {
-        return this.tryGetRuleContext(0, LocalsSpecContext);
-    }
-    public rulePrequel(): RulePrequelContext[];
-    public rulePrequel(i: number): RulePrequelContext;
-    public rulePrequel(i?: number): RulePrequelContext | RulePrequelContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(RulePrequelContext);
-        } else {
-            return this.getRuleContext(i, RulePrequelContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ParserRuleSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_parserRuleSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterParserRuleSpec) {
-            listener.enterParserRuleSpec(this);
+    public RULE_REF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RULE_REF, 0);
+    }
+    public COLON(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.COLON, 0);
+    }
+    public ruleBlock(): RuleBlockContext {
+        return this.getRuleContext(0, RuleBlockContext)!;
+    }
+    public SEMI(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.SEMI, 0);
+    }
+    public exceptionGroup(): ExceptionGroupContext {
+        return this.getRuleContext(0, ExceptionGroupContext)!;
+    }
+    public DOC_COMMENT(): antlr.TerminalNode[];
+    public DOC_COMMENT(i: number): antlr.TerminalNode | null;
+    public DOC_COMMENT(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.DOC_COMMENT);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.DOC_COMMENT, i);
+    	}
+    }
+    public ruleModifiers(): RuleModifiersContext | null {
+        return this.getRuleContext(0, RuleModifiersContext);
+    }
+    public argActionBlock(): ArgActionBlockContext | null {
+        return this.getRuleContext(0, ArgActionBlockContext);
+    }
+    public ruleReturns(): RuleReturnsContext | null {
+        return this.getRuleContext(0, RuleReturnsContext);
+    }
+    public throwsSpec(): ThrowsSpecContext | null {
+        return this.getRuleContext(0, ThrowsSpecContext);
+    }
+    public localsSpec(): LocalsSpecContext | null {
+        return this.getRuleContext(0, LocalsSpecContext);
+    }
+    public rulePrequel(): RulePrequelContext[];
+    public rulePrequel(i: number): RulePrequelContext | null;
+    public rulePrequel(i?: number): RulePrequelContext[] | RulePrequelContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(RulePrequelContext);
+        }
+
+        return this.getRuleContext(i, RulePrequelContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_parserRuleSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterParserRuleSpec) {
+             listener.enterParserRuleSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitParserRuleSpec) {
-            listener.exitParserRuleSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitParserRuleSpec) {
+             listener.exitParserRuleSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitParserRuleSpec) {
             return visitor.visitParserRuleSpec(this);
@@ -4462,37 +4288,35 @@ export class ParserRuleSpecContext extends ParserRuleContext {
 }
 
 
-export class ExceptionGroupContext extends ParserRuleContext {
-    public exceptionHandler(): ExceptionHandlerContext[];
-    public exceptionHandler(i: number): ExceptionHandlerContext;
-    public exceptionHandler(i?: number): ExceptionHandlerContext | ExceptionHandlerContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(ExceptionHandlerContext);
-        } else {
-            return this.getRuleContext(i, ExceptionHandlerContext);
-        }
-    }
-    public finallyClause(): FinallyClauseContext | undefined {
-        return this.tryGetRuleContext(0, FinallyClauseContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ExceptionGroupContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_exceptionGroup; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterExceptionGroup) {
-            listener.enterExceptionGroup(this);
+    public exceptionHandler(): ExceptionHandlerContext[];
+    public exceptionHandler(i: number): ExceptionHandlerContext | null;
+    public exceptionHandler(i?: number): ExceptionHandlerContext[] | ExceptionHandlerContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(ExceptionHandlerContext);
+        }
+
+        return this.getRuleContext(i, ExceptionHandlerContext);
+    }
+    public finallyClause(): FinallyClauseContext | null {
+        return this.getRuleContext(0, FinallyClauseContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_exceptionGroup;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterExceptionGroup) {
+             listener.enterExceptionGroup(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitExceptionGroup) {
-            listener.exitExceptionGroup(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitExceptionGroup) {
+             listener.exitExceptionGroup(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitExceptionGroup) {
             return visitor.visitExceptionGroup(this);
@@ -4503,32 +4327,32 @@ export class ExceptionGroupContext extends ParserRuleContext {
 }
 
 
-export class ExceptionHandlerContext extends ParserRuleContext {
-    public CATCH(): TerminalNode { return this.getToken(ANTLRv4Parser.CATCH, 0); }
-    public argActionBlock(): ArgActionBlockContext {
-        return this.getRuleContext(0, ArgActionBlockContext);
-    }
-    public actionBlock(): ActionBlockContext {
-        return this.getRuleContext(0, ActionBlockContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ExceptionHandlerContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_exceptionHandler; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterExceptionHandler) {
-            listener.enterExceptionHandler(this);
+    public CATCH(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.CATCH, 0);
+    }
+    public argActionBlock(): ArgActionBlockContext {
+        return this.getRuleContext(0, ArgActionBlockContext)!;
+    }
+    public actionBlock(): ActionBlockContext {
+        return this.getRuleContext(0, ActionBlockContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_exceptionHandler;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterExceptionHandler) {
+             listener.enterExceptionHandler(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitExceptionHandler) {
-            listener.exitExceptionHandler(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitExceptionHandler) {
+             listener.exitExceptionHandler(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitExceptionHandler) {
             return visitor.visitExceptionHandler(this);
@@ -4539,29 +4363,29 @@ export class ExceptionHandlerContext extends ParserRuleContext {
 }
 
 
-export class FinallyClauseContext extends ParserRuleContext {
-    public FINALLY(): TerminalNode { return this.getToken(ANTLRv4Parser.FINALLY, 0); }
-    public actionBlock(): ActionBlockContext {
-        return this.getRuleContext(0, ActionBlockContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class FinallyClauseContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_finallyClause; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterFinallyClause) {
-            listener.enterFinallyClause(this);
+    public FINALLY(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.FINALLY, 0);
+    }
+    public actionBlock(): ActionBlockContext {
+        return this.getRuleContext(0, ActionBlockContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_finallyClause;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterFinallyClause) {
+             listener.enterFinallyClause(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitFinallyClause) {
-            listener.exitFinallyClause(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitFinallyClause) {
+             listener.exitFinallyClause(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitFinallyClause) {
             return visitor.visitFinallyClause(this);
@@ -4572,31 +4396,29 @@ export class FinallyClauseContext extends ParserRuleContext {
 }
 
 
-export class RulePrequelContext extends ParserRuleContext {
-    public optionsSpec(): OptionsSpecContext | undefined {
-        return this.tryGetRuleContext(0, OptionsSpecContext);
-    }
-    public ruleAction(): RuleActionContext | undefined {
-        return this.tryGetRuleContext(0, RuleActionContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RulePrequelContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_rulePrequel; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRulePrequel) {
-            listener.enterRulePrequel(this);
+    public optionsSpec(): OptionsSpecContext | null {
+        return this.getRuleContext(0, OptionsSpecContext);
+    }
+    public ruleAction(): RuleActionContext | null {
+        return this.getRuleContext(0, RuleActionContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_rulePrequel;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRulePrequel) {
+             listener.enterRulePrequel(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRulePrequel) {
-            listener.exitRulePrequel(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRulePrequel) {
+             listener.exitRulePrequel(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRulePrequel) {
             return visitor.visitRulePrequel(this);
@@ -4607,29 +4429,29 @@ export class RulePrequelContext extends ParserRuleContext {
 }
 
 
-export class RuleReturnsContext extends ParserRuleContext {
-    public RETURNS(): TerminalNode { return this.getToken(ANTLRv4Parser.RETURNS, 0); }
-    public argActionBlock(): ArgActionBlockContext {
-        return this.getRuleContext(0, ArgActionBlockContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RuleReturnsContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleReturns; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleReturns) {
-            listener.enterRuleReturns(this);
+    public RETURNS(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RETURNS, 0);
+    }
+    public argActionBlock(): ArgActionBlockContext {
+        return this.getRuleContext(0, ArgActionBlockContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleReturns;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleReturns) {
+             listener.enterRuleReturns(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleReturns) {
-            listener.exitRuleReturns(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleReturns) {
+             listener.exitRuleReturns(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleReturns) {
             return visitor.visitRuleReturns(this);
@@ -4640,44 +4462,44 @@ export class RuleReturnsContext extends ParserRuleContext {
 }
 
 
-export class ThrowsSpecContext extends ParserRuleContext {
-    public THROWS(): TerminalNode { return this.getToken(ANTLRv4Parser.THROWS, 0); }
-    public identifier(): IdentifierContext[];
-    public identifier(i: number): IdentifierContext;
-    public identifier(i?: number): IdentifierContext | IdentifierContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(IdentifierContext);
-        } else {
-            return this.getRuleContext(i, IdentifierContext);
-        }
-    }
-    public COMMA(): TerminalNode[];
-    public COMMA(i: number): TerminalNode;
-    public COMMA(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.COMMA);
-        } else {
-            return this.getToken(ANTLRv4Parser.COMMA, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ThrowsSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_throwsSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterThrowsSpec) {
-            listener.enterThrowsSpec(this);
+    public THROWS(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.THROWS, 0);
+    }
+    public identifier(): IdentifierContext[];
+    public identifier(i: number): IdentifierContext | null;
+    public identifier(i?: number): IdentifierContext[] | IdentifierContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(IdentifierContext);
+        }
+
+        return this.getRuleContext(i, IdentifierContext);
+    }
+    public COMMA(): antlr.TerminalNode[];
+    public COMMA(i: number): antlr.TerminalNode | null;
+    public COMMA(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.COMMA);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.COMMA, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_throwsSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterThrowsSpec) {
+             listener.enterThrowsSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitThrowsSpec) {
-            listener.exitThrowsSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitThrowsSpec) {
+             listener.exitThrowsSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitThrowsSpec) {
             return visitor.visitThrowsSpec(this);
@@ -4688,29 +4510,29 @@ export class ThrowsSpecContext extends ParserRuleContext {
 }
 
 
-export class LocalsSpecContext extends ParserRuleContext {
-    public LOCALS(): TerminalNode { return this.getToken(ANTLRv4Parser.LOCALS, 0); }
-    public argActionBlock(): ArgActionBlockContext {
-        return this.getRuleContext(0, ArgActionBlockContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LocalsSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_localsSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLocalsSpec) {
-            listener.enterLocalsSpec(this);
+    public LOCALS(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LOCALS, 0);
+    }
+    public argActionBlock(): ArgActionBlockContext {
+        return this.getRuleContext(0, ArgActionBlockContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_localsSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLocalsSpec) {
+             listener.enterLocalsSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLocalsSpec) {
-            listener.exitLocalsSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLocalsSpec) {
+             listener.exitLocalsSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLocalsSpec) {
             return visitor.visitLocalsSpec(this);
@@ -4721,32 +4543,32 @@ export class LocalsSpecContext extends ParserRuleContext {
 }
 
 
-export class RuleActionContext extends ParserRuleContext {
-    public AT(): TerminalNode { return this.getToken(ANTLRv4Parser.AT, 0); }
-    public identifier(): IdentifierContext {
-        return this.getRuleContext(0, IdentifierContext);
-    }
-    public actionBlock(): ActionBlockContext {
-        return this.getRuleContext(0, ActionBlockContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RuleActionContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleAction; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleAction) {
-            listener.enterRuleAction(this);
+    public AT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.AT, 0);
+    }
+    public identifier(): IdentifierContext {
+        return this.getRuleContext(0, IdentifierContext)!;
+    }
+    public actionBlock(): ActionBlockContext {
+        return this.getRuleContext(0, ActionBlockContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleAction;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleAction) {
+             listener.enterRuleAction(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleAction) {
-            listener.exitRuleAction(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleAction) {
+             listener.exitRuleAction(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleAction) {
             return visitor.visitRuleAction(this);
@@ -4757,34 +4579,32 @@ export class RuleActionContext extends ParserRuleContext {
 }
 
 
-export class RuleModifiersContext extends ParserRuleContext {
-    public ruleModifier(): RuleModifierContext[];
-    public ruleModifier(i: number): RuleModifierContext;
-    public ruleModifier(i?: number): RuleModifierContext | RuleModifierContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(RuleModifierContext);
-        } else {
-            return this.getRuleContext(i, RuleModifierContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RuleModifiersContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleModifiers; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleModifiers) {
-            listener.enterRuleModifiers(this);
+    public ruleModifier(): RuleModifierContext[];
+    public ruleModifier(i: number): RuleModifierContext | null;
+    public ruleModifier(i?: number): RuleModifierContext[] | RuleModifierContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(RuleModifierContext);
+        }
+
+        return this.getRuleContext(i, RuleModifierContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleModifiers;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleModifiers) {
+             listener.enterRuleModifiers(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleModifiers) {
-            listener.exitRuleModifiers(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleModifiers) {
+             listener.exitRuleModifiers(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleModifiers) {
             return visitor.visitRuleModifiers(this);
@@ -4795,29 +4615,35 @@ export class RuleModifiersContext extends ParserRuleContext {
 }
 
 
-export class RuleModifierContext extends ParserRuleContext {
-    public PUBLIC(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PUBLIC, 0); }
-    public PRIVATE(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PRIVATE, 0); }
-    public PROTECTED(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PROTECTED, 0); }
-    public FRAGMENT(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.FRAGMENT, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RuleModifierContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleModifier; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleModifier) {
-            listener.enterRuleModifier(this);
+    public PUBLIC(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PUBLIC, 0);
+    }
+    public PRIVATE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PRIVATE, 0);
+    }
+    public PROTECTED(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PROTECTED, 0);
+    }
+    public FRAGMENT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.FRAGMENT, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleModifier;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleModifier) {
+             listener.enterRuleModifier(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleModifier) {
-            listener.exitRuleModifier(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleModifier) {
+             listener.exitRuleModifier(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleModifier) {
             return visitor.visitRuleModifier(this);
@@ -4828,28 +4654,26 @@ export class RuleModifierContext extends ParserRuleContext {
 }
 
 
-export class RuleBlockContext extends ParserRuleContext {
-    public ruleAltList(): RuleAltListContext {
-        return this.getRuleContext(0, RuleAltListContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RuleBlockContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleBlock; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleBlock) {
-            listener.enterRuleBlock(this);
+    public ruleAltList(): RuleAltListContext {
+        return this.getRuleContext(0, RuleAltListContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleBlock;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleBlock) {
+             listener.enterRuleBlock(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleBlock) {
-            listener.exitRuleBlock(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleBlock) {
+             listener.exitRuleBlock(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleBlock) {
             return visitor.visitRuleBlock(this);
@@ -4860,43 +4684,41 @@ export class RuleBlockContext extends ParserRuleContext {
 }
 
 
-export class RuleAltListContext extends ParserRuleContext {
-    public labeledAlt(): LabeledAltContext[];
-    public labeledAlt(i: number): LabeledAltContext;
-    public labeledAlt(i?: number): LabeledAltContext | LabeledAltContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(LabeledAltContext);
-        } else {
-            return this.getRuleContext(i, LabeledAltContext);
-        }
-    }
-    public OR(): TerminalNode[];
-    public OR(i: number): TerminalNode;
-    public OR(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.OR);
-        } else {
-            return this.getToken(ANTLRv4Parser.OR, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RuleAltListContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleAltList; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleAltList) {
-            listener.enterRuleAltList(this);
+    public labeledAlt(): LabeledAltContext[];
+    public labeledAlt(i: number): LabeledAltContext | null;
+    public labeledAlt(i?: number): LabeledAltContext[] | LabeledAltContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(LabeledAltContext);
+        }
+
+        return this.getRuleContext(i, LabeledAltContext);
+    }
+    public OR(): antlr.TerminalNode[];
+    public OR(i: number): antlr.TerminalNode | null;
+    public OR(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.OR);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.OR, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleAltList;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleAltList) {
+             listener.enterRuleAltList(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleAltList) {
-            listener.exitRuleAltList(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleAltList) {
+             listener.exitRuleAltList(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleAltList) {
             return visitor.visitRuleAltList(this);
@@ -4907,32 +4729,32 @@ export class RuleAltListContext extends ParserRuleContext {
 }
 
 
-export class LabeledAltContext extends ParserRuleContext {
-    public alternative(): AlternativeContext {
-        return this.getRuleContext(0, AlternativeContext);
-    }
-    public POUND(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.POUND, 0); }
-    public identifier(): IdentifierContext | undefined {
-        return this.tryGetRuleContext(0, IdentifierContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LabeledAltContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_labeledAlt; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLabeledAlt) {
-            listener.enterLabeledAlt(this);
+    public alternative(): AlternativeContext {
+        return this.getRuleContext(0, AlternativeContext)!;
+    }
+    public POUND(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.POUND, 0);
+    }
+    public identifier(): IdentifierContext | null {
+        return this.getRuleContext(0, IdentifierContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_labeledAlt;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLabeledAlt) {
+             listener.enterLabeledAlt(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLabeledAlt) {
-            listener.exitLabeledAlt(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLabeledAlt) {
+             listener.exitLabeledAlt(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLabeledAlt) {
             return visitor.visitLabeledAlt(this);
@@ -4943,41 +4765,47 @@ export class LabeledAltContext extends ParserRuleContext {
 }
 
 
-export class LexerRuleSpecContext extends ParserRuleContext {
-    public TOKEN_REF(): TerminalNode { return this.getToken(ANTLRv4Parser.TOKEN_REF, 0); }
-    public COLON(): TerminalNode { return this.getToken(ANTLRv4Parser.COLON, 0); }
-    public lexerRuleBlock(): LexerRuleBlockContext {
-        return this.getRuleContext(0, LexerRuleBlockContext);
-    }
-    public SEMI(): TerminalNode { return this.getToken(ANTLRv4Parser.SEMI, 0); }
-    public DOC_COMMENT(): TerminalNode[];
-    public DOC_COMMENT(i: number): TerminalNode;
-    public DOC_COMMENT(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.DOC_COMMENT);
-        } else {
-            return this.getToken(ANTLRv4Parser.DOC_COMMENT, i);
-        }
-    }
-    public FRAGMENT(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.FRAGMENT, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerRuleSpecContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerRuleSpec; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerRuleSpec) {
-            listener.enterLexerRuleSpec(this);
+    public TOKEN_REF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.TOKEN_REF, 0);
+    }
+    public COLON(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.COLON, 0);
+    }
+    public lexerRuleBlock(): LexerRuleBlockContext {
+        return this.getRuleContext(0, LexerRuleBlockContext)!;
+    }
+    public SEMI(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.SEMI, 0);
+    }
+    public DOC_COMMENT(): antlr.TerminalNode[];
+    public DOC_COMMENT(i: number): antlr.TerminalNode | null;
+    public DOC_COMMENT(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.DOC_COMMENT);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.DOC_COMMENT, i);
+    	}
+    }
+    public FRAGMENT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.FRAGMENT, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerRuleSpec;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerRuleSpec) {
+             listener.enterLexerRuleSpec(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerRuleSpec) {
-            listener.exitLexerRuleSpec(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerRuleSpec) {
+             listener.exitLexerRuleSpec(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerRuleSpec) {
             return visitor.visitLexerRuleSpec(this);
@@ -4988,28 +4816,26 @@ export class LexerRuleSpecContext extends ParserRuleContext {
 }
 
 
-export class LexerRuleBlockContext extends ParserRuleContext {
-    public lexerAltList(): LexerAltListContext {
-        return this.getRuleContext(0, LexerAltListContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerRuleBlockContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerRuleBlock; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerRuleBlock) {
-            listener.enterLexerRuleBlock(this);
+    public lexerAltList(): LexerAltListContext {
+        return this.getRuleContext(0, LexerAltListContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerRuleBlock;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerRuleBlock) {
+             listener.enterLexerRuleBlock(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerRuleBlock) {
-            listener.exitLexerRuleBlock(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerRuleBlock) {
+             listener.exitLexerRuleBlock(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerRuleBlock) {
             return visitor.visitLexerRuleBlock(this);
@@ -5020,43 +4846,41 @@ export class LexerRuleBlockContext extends ParserRuleContext {
 }
 
 
-export class LexerAltListContext extends ParserRuleContext {
-    public lexerAlt(): LexerAltContext[];
-    public lexerAlt(i: number): LexerAltContext;
-    public lexerAlt(i?: number): LexerAltContext | LexerAltContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(LexerAltContext);
-        } else {
-            return this.getRuleContext(i, LexerAltContext);
-        }
-    }
-    public OR(): TerminalNode[];
-    public OR(i: number): TerminalNode;
-    public OR(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.OR);
-        } else {
-            return this.getToken(ANTLRv4Parser.OR, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerAltListContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerAltList; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerAltList) {
-            listener.enterLexerAltList(this);
+    public lexerAlt(): LexerAltContext[];
+    public lexerAlt(i: number): LexerAltContext | null;
+    public lexerAlt(i?: number): LexerAltContext[] | LexerAltContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(LexerAltContext);
+        }
+
+        return this.getRuleContext(i, LexerAltContext);
+    }
+    public OR(): antlr.TerminalNode[];
+    public OR(i: number): antlr.TerminalNode | null;
+    public OR(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.OR);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.OR, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerAltList;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerAltList) {
+             listener.enterLexerAltList(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerAltList) {
-            listener.exitLexerAltList(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerAltList) {
+             listener.exitLexerAltList(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerAltList) {
             return visitor.visitLexerAltList(this);
@@ -5067,31 +4891,29 @@ export class LexerAltListContext extends ParserRuleContext {
 }
 
 
-export class LexerAltContext extends ParserRuleContext {
-    public lexerElements(): LexerElementsContext | undefined {
-        return this.tryGetRuleContext(0, LexerElementsContext);
-    }
-    public lexerCommands(): LexerCommandsContext | undefined {
-        return this.tryGetRuleContext(0, LexerCommandsContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerAltContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerAlt; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerAlt) {
-            listener.enterLexerAlt(this);
+    public lexerElements(): LexerElementsContext | null {
+        return this.getRuleContext(0, LexerElementsContext);
+    }
+    public lexerCommands(): LexerCommandsContext | null {
+        return this.getRuleContext(0, LexerCommandsContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerAlt;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerAlt) {
+             listener.enterLexerAlt(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerAlt) {
-            listener.exitLexerAlt(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerAlt) {
+             listener.exitLexerAlt(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerAlt) {
             return visitor.visitLexerAlt(this);
@@ -5102,34 +4924,32 @@ export class LexerAltContext extends ParserRuleContext {
 }
 
 
-export class LexerElementsContext extends ParserRuleContext {
-    public lexerElement(): LexerElementContext[];
-    public lexerElement(i: number): LexerElementContext;
-    public lexerElement(i?: number): LexerElementContext | LexerElementContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(LexerElementContext);
-        } else {
-            return this.getRuleContext(i, LexerElementContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerElementsContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerElements; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerElements) {
-            listener.enterLexerElements(this);
+    public lexerElement(): LexerElementContext[];
+    public lexerElement(i: number): LexerElementContext | null;
+    public lexerElement(i?: number): LexerElementContext[] | LexerElementContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(LexerElementContext);
+        }
+
+        return this.getRuleContext(i, LexerElementContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerElements;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerElements) {
+             listener.enterLexerElements(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerElements) {
-            listener.exitLexerElements(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerElements) {
+             listener.exitLexerElements(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerElements) {
             return visitor.visitLexerElements(this);
@@ -5140,41 +4960,41 @@ export class LexerElementsContext extends ParserRuleContext {
 }
 
 
-export class LexerElementContext extends ParserRuleContext {
-    public labeledLexerElement(): LabeledLexerElementContext | undefined {
-        return this.tryGetRuleContext(0, LabeledLexerElementContext);
-    }
-    public ebnfSuffix(): EbnfSuffixContext | undefined {
-        return this.tryGetRuleContext(0, EbnfSuffixContext);
-    }
-    public lexerAtom(): LexerAtomContext | undefined {
-        return this.tryGetRuleContext(0, LexerAtomContext);
-    }
-    public lexerBlock(): LexerBlockContext | undefined {
-        return this.tryGetRuleContext(0, LexerBlockContext);
-    }
-    public actionBlock(): ActionBlockContext | undefined {
-        return this.tryGetRuleContext(0, ActionBlockContext);
-    }
-    public QUESTION(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.QUESTION, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerElementContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerElement; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerElement) {
-            listener.enterLexerElement(this);
+    public labeledLexerElement(): LabeledLexerElementContext | null {
+        return this.getRuleContext(0, LabeledLexerElementContext);
+    }
+    public ebnfSuffix(): EbnfSuffixContext | null {
+        return this.getRuleContext(0, EbnfSuffixContext);
+    }
+    public lexerAtom(): LexerAtomContext | null {
+        return this.getRuleContext(0, LexerAtomContext);
+    }
+    public lexerBlock(): LexerBlockContext | null {
+        return this.getRuleContext(0, LexerBlockContext);
+    }
+    public actionBlock(): ActionBlockContext | null {
+        return this.getRuleContext(0, ActionBlockContext);
+    }
+    public QUESTION(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.QUESTION, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerElement;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerElement) {
+             listener.enterLexerElement(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerElement) {
-            listener.exitLexerElement(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerElement) {
+             listener.exitLexerElement(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerElement) {
             return visitor.visitLexerElement(this);
@@ -5185,36 +5005,38 @@ export class LexerElementContext extends ParserRuleContext {
 }
 
 
-export class LabeledLexerElementContext extends ParserRuleContext {
-    public identifier(): IdentifierContext {
-        return this.getRuleContext(0, IdentifierContext);
-    }
-    public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.ASSIGN, 0); }
-    public PLUS_ASSIGN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PLUS_ASSIGN, 0); }
-    public lexerAtom(): LexerAtomContext | undefined {
-        return this.tryGetRuleContext(0, LexerAtomContext);
-    }
-    public block(): BlockContext | undefined {
-        return this.tryGetRuleContext(0, BlockContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LabeledLexerElementContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_labeledLexerElement; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLabeledLexerElement) {
-            listener.enterLabeledLexerElement(this);
+    public identifier(): IdentifierContext {
+        return this.getRuleContext(0, IdentifierContext)!;
+    }
+    public ASSIGN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.ASSIGN, 0);
+    }
+    public PLUS_ASSIGN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PLUS_ASSIGN, 0);
+    }
+    public lexerAtom(): LexerAtomContext | null {
+        return this.getRuleContext(0, LexerAtomContext);
+    }
+    public block(): BlockContext | null {
+        return this.getRuleContext(0, BlockContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_labeledLexerElement;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLabeledLexerElement) {
+             listener.enterLabeledLexerElement(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLabeledLexerElement) {
-            listener.exitLabeledLexerElement(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLabeledLexerElement) {
+             listener.exitLabeledLexerElement(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLabeledLexerElement) {
             return visitor.visitLabeledLexerElement(this);
@@ -5225,30 +5047,32 @@ export class LabeledLexerElementContext extends ParserRuleContext {
 }
 
 
-export class LexerBlockContext extends ParserRuleContext {
-    public LPAREN(): TerminalNode { return this.getToken(ANTLRv4Parser.LPAREN, 0); }
-    public lexerAltList(): LexerAltListContext {
-        return this.getRuleContext(0, LexerAltListContext);
-    }
-    public RPAREN(): TerminalNode { return this.getToken(ANTLRv4Parser.RPAREN, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerBlockContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerBlock; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerBlock) {
-            listener.enterLexerBlock(this);
+    public LPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LPAREN, 0);
+    }
+    public lexerAltList(): LexerAltListContext {
+        return this.getRuleContext(0, LexerAltListContext)!;
+    }
+    public RPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RPAREN, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerBlock;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerBlock) {
+             listener.enterLexerBlock(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerBlock) {
-            listener.exitLexerBlock(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerBlock) {
+             listener.exitLexerBlock(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerBlock) {
             return visitor.visitLexerBlock(this);
@@ -5259,44 +5083,44 @@ export class LexerBlockContext extends ParserRuleContext {
 }
 
 
-export class LexerCommandsContext extends ParserRuleContext {
-    public RARROW(): TerminalNode { return this.getToken(ANTLRv4Parser.RARROW, 0); }
-    public lexerCommand(): LexerCommandContext[];
-    public lexerCommand(i: number): LexerCommandContext;
-    public lexerCommand(i?: number): LexerCommandContext | LexerCommandContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(LexerCommandContext);
-        } else {
-            return this.getRuleContext(i, LexerCommandContext);
-        }
-    }
-    public COMMA(): TerminalNode[];
-    public COMMA(i: number): TerminalNode;
-    public COMMA(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.COMMA);
-        } else {
-            return this.getToken(ANTLRv4Parser.COMMA, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerCommandsContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerCommands; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerCommands) {
-            listener.enterLexerCommands(this);
+    public RARROW(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RARROW, 0);
+    }
+    public lexerCommand(): LexerCommandContext[];
+    public lexerCommand(i: number): LexerCommandContext | null;
+    public lexerCommand(i?: number): LexerCommandContext[] | LexerCommandContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(LexerCommandContext);
+        }
+
+        return this.getRuleContext(i, LexerCommandContext);
+    }
+    public COMMA(): antlr.TerminalNode[];
+    public COMMA(i: number): antlr.TerminalNode | null;
+    public COMMA(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.COMMA);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.COMMA, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerCommands;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerCommands) {
+             listener.enterLexerCommands(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerCommands) {
-            listener.exitLexerCommands(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerCommands) {
+             listener.exitLexerCommands(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerCommands) {
             return visitor.visitLexerCommands(this);
@@ -5307,33 +5131,35 @@ export class LexerCommandsContext extends ParserRuleContext {
 }
 
 
-export class LexerCommandContext extends ParserRuleContext {
-    public lexerCommandName(): LexerCommandNameContext {
-        return this.getRuleContext(0, LexerCommandNameContext);
-    }
-    public LPAREN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.LPAREN, 0); }
-    public lexerCommandExpr(): LexerCommandExprContext | undefined {
-        return this.tryGetRuleContext(0, LexerCommandExprContext);
-    }
-    public RPAREN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.RPAREN, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerCommandContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerCommand; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerCommand) {
-            listener.enterLexerCommand(this);
+    public lexerCommandName(): LexerCommandNameContext {
+        return this.getRuleContext(0, LexerCommandNameContext)!;
+    }
+    public LPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LPAREN, 0);
+    }
+    public lexerCommandExpr(): LexerCommandExprContext | null {
+        return this.getRuleContext(0, LexerCommandExprContext);
+    }
+    public RPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RPAREN, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerCommand;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerCommand) {
+             listener.enterLexerCommand(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerCommand) {
-            listener.exitLexerCommand(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerCommand) {
+             listener.exitLexerCommand(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerCommand) {
             return visitor.visitLexerCommand(this);
@@ -5344,29 +5170,29 @@ export class LexerCommandContext extends ParserRuleContext {
 }
 
 
-export class LexerCommandNameContext extends ParserRuleContext {
-    public identifier(): IdentifierContext | undefined {
-        return this.tryGetRuleContext(0, IdentifierContext);
-    }
-    public MODE(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.MODE, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerCommandNameContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerCommandName; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerCommandName) {
-            listener.enterLexerCommandName(this);
+    public identifier(): IdentifierContext | null {
+        return this.getRuleContext(0, IdentifierContext);
+    }
+    public MODE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.MODE, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerCommandName;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerCommandName) {
+             listener.enterLexerCommandName(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerCommandName) {
-            listener.exitLexerCommandName(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerCommandName) {
+             listener.exitLexerCommandName(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerCommandName) {
             return visitor.visitLexerCommandName(this);
@@ -5377,29 +5203,29 @@ export class LexerCommandNameContext extends ParserRuleContext {
 }
 
 
-export class LexerCommandExprContext extends ParserRuleContext {
-    public identifier(): IdentifierContext | undefined {
-        return this.tryGetRuleContext(0, IdentifierContext);
-    }
-    public INT(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.INT, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerCommandExprContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerCommandExpr; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerCommandExpr) {
-            listener.enterLexerCommandExpr(this);
+    public identifier(): IdentifierContext | null {
+        return this.getRuleContext(0, IdentifierContext);
+    }
+    public INT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.INT, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerCommandExpr;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerCommandExpr) {
+             listener.enterLexerCommandExpr(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerCommandExpr) {
-            listener.exitLexerCommandExpr(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerCommandExpr) {
+             listener.exitLexerCommandExpr(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerCommandExpr) {
             return visitor.visitLexerCommandExpr(this);
@@ -5410,43 +5236,41 @@ export class LexerCommandExprContext extends ParserRuleContext {
 }
 
 
-export class AltListContext extends ParserRuleContext {
-    public alternative(): AlternativeContext[];
-    public alternative(i: number): AlternativeContext;
-    public alternative(i?: number): AlternativeContext | AlternativeContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(AlternativeContext);
-        } else {
-            return this.getRuleContext(i, AlternativeContext);
-        }
-    }
-    public OR(): TerminalNode[];
-    public OR(i: number): TerminalNode;
-    public OR(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.OR);
-        } else {
-            return this.getToken(ANTLRv4Parser.OR, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class AltListContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_altList; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterAltList) {
-            listener.enterAltList(this);
+    public alternative(): AlternativeContext[];
+    public alternative(i: number): AlternativeContext | null;
+    public alternative(i?: number): AlternativeContext[] | AlternativeContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(AlternativeContext);
+        }
+
+        return this.getRuleContext(i, AlternativeContext);
+    }
+    public OR(): antlr.TerminalNode[];
+    public OR(i: number): antlr.TerminalNode | null;
+    public OR(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.OR);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.OR, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_altList;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterAltList) {
+             listener.enterAltList(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitAltList) {
-            listener.exitAltList(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitAltList) {
+             listener.exitAltList(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitAltList) {
             return visitor.visitAltList(this);
@@ -5457,37 +5281,35 @@ export class AltListContext extends ParserRuleContext {
 }
 
 
-export class AlternativeContext extends ParserRuleContext {
-    public elementOptions(): ElementOptionsContext | undefined {
-        return this.tryGetRuleContext(0, ElementOptionsContext);
-    }
-    public element(): ElementContext[];
-    public element(i: number): ElementContext;
-    public element(i?: number): ElementContext | ElementContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(ElementContext);
-        } else {
-            return this.getRuleContext(i, ElementContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class AlternativeContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_alternative; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterAlternative) {
-            listener.enterAlternative(this);
+    public elementOptions(): ElementOptionsContext | null {
+        return this.getRuleContext(0, ElementOptionsContext);
+    }
+    public element(): ElementContext[];
+    public element(i: number): ElementContext | null;
+    public element(i?: number): ElementContext[] | ElementContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(ElementContext);
+        }
+
+        return this.getRuleContext(i, ElementContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_alternative;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterAlternative) {
+             listener.enterAlternative(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitAlternative) {
-            listener.exitAlternative(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitAlternative) {
+             listener.exitAlternative(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitAlternative) {
             return visitor.visitAlternative(this);
@@ -5498,41 +5320,41 @@ export class AlternativeContext extends ParserRuleContext {
 }
 
 
-export class ElementContext extends ParserRuleContext {
-    public labeledElement(): LabeledElementContext | undefined {
-        return this.tryGetRuleContext(0, LabeledElementContext);
-    }
-    public ebnfSuffix(): EbnfSuffixContext | undefined {
-        return this.tryGetRuleContext(0, EbnfSuffixContext);
-    }
-    public atom(): AtomContext | undefined {
-        return this.tryGetRuleContext(0, AtomContext);
-    }
-    public ebnf(): EbnfContext | undefined {
-        return this.tryGetRuleContext(0, EbnfContext);
-    }
-    public actionBlock(): ActionBlockContext | undefined {
-        return this.tryGetRuleContext(0, ActionBlockContext);
-    }
-    public QUESTION(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.QUESTION, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ElementContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_element; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterElement) {
-            listener.enterElement(this);
+    public labeledElement(): LabeledElementContext | null {
+        return this.getRuleContext(0, LabeledElementContext);
+    }
+    public ebnfSuffix(): EbnfSuffixContext | null {
+        return this.getRuleContext(0, EbnfSuffixContext);
+    }
+    public atom(): AtomContext | null {
+        return this.getRuleContext(0, AtomContext);
+    }
+    public ebnf(): EbnfContext | null {
+        return this.getRuleContext(0, EbnfContext);
+    }
+    public actionBlock(): ActionBlockContext | null {
+        return this.getRuleContext(0, ActionBlockContext);
+    }
+    public QUESTION(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.QUESTION, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_element;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterElement) {
+             listener.enterElement(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitElement) {
-            listener.exitElement(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitElement) {
+             listener.exitElement(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitElement) {
             return visitor.visitElement(this);
@@ -5543,36 +5365,38 @@ export class ElementContext extends ParserRuleContext {
 }
 
 
-export class LabeledElementContext extends ParserRuleContext {
-    public identifier(): IdentifierContext {
-        return this.getRuleContext(0, IdentifierContext);
-    }
-    public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.ASSIGN, 0); }
-    public PLUS_ASSIGN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PLUS_ASSIGN, 0); }
-    public atom(): AtomContext | undefined {
-        return this.tryGetRuleContext(0, AtomContext);
-    }
-    public block(): BlockContext | undefined {
-        return this.tryGetRuleContext(0, BlockContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LabeledElementContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_labeledElement; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLabeledElement) {
-            listener.enterLabeledElement(this);
+    public identifier(): IdentifierContext {
+        return this.getRuleContext(0, IdentifierContext)!;
+    }
+    public ASSIGN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.ASSIGN, 0);
+    }
+    public PLUS_ASSIGN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PLUS_ASSIGN, 0);
+    }
+    public atom(): AtomContext | null {
+        return this.getRuleContext(0, AtomContext);
+    }
+    public block(): BlockContext | null {
+        return this.getRuleContext(0, BlockContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_labeledElement;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLabeledElement) {
+             listener.enterLabeledElement(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLabeledElement) {
-            listener.exitLabeledElement(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLabeledElement) {
+             listener.exitLabeledElement(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLabeledElement) {
             return visitor.visitLabeledElement(this);
@@ -5583,31 +5407,29 @@ export class LabeledElementContext extends ParserRuleContext {
 }
 
 
-export class EbnfContext extends ParserRuleContext {
-    public block(): BlockContext {
-        return this.getRuleContext(0, BlockContext);
-    }
-    public blockSuffix(): BlockSuffixContext | undefined {
-        return this.tryGetRuleContext(0, BlockSuffixContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class EbnfContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ebnf; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterEbnf) {
-            listener.enterEbnf(this);
+    public block(): BlockContext {
+        return this.getRuleContext(0, BlockContext)!;
+    }
+    public blockSuffix(): BlockSuffixContext | null {
+        return this.getRuleContext(0, BlockSuffixContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ebnf;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterEbnf) {
+             listener.enterEbnf(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitEbnf) {
-            listener.exitEbnf(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitEbnf) {
+             listener.exitEbnf(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitEbnf) {
             return visitor.visitEbnf(this);
@@ -5618,28 +5440,26 @@ export class EbnfContext extends ParserRuleContext {
 }
 
 
-export class BlockSuffixContext extends ParserRuleContext {
-    public ebnfSuffix(): EbnfSuffixContext {
-        return this.getRuleContext(0, EbnfSuffixContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class BlockSuffixContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_blockSuffix; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterBlockSuffix) {
-            listener.enterBlockSuffix(this);
+    public ebnfSuffix(): EbnfSuffixContext {
+        return this.getRuleContext(0, EbnfSuffixContext)!;
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_blockSuffix;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterBlockSuffix) {
+             listener.enterBlockSuffix(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitBlockSuffix) {
-            listener.exitBlockSuffix(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitBlockSuffix) {
+             listener.exitBlockSuffix(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitBlockSuffix) {
             return visitor.visitBlockSuffix(this);
@@ -5650,36 +5470,38 @@ export class BlockSuffixContext extends ParserRuleContext {
 }
 
 
-export class EbnfSuffixContext extends ParserRuleContext {
-    public QUESTION(): TerminalNode[];
-    public QUESTION(i: number): TerminalNode;
-    public QUESTION(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.QUESTION);
-        } else {
-            return this.getToken(ANTLRv4Parser.QUESTION, i);
-        }
-    }
-    public STAR(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.STAR, 0); }
-    public PLUS(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.PLUS, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class EbnfSuffixContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ebnfSuffix; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterEbnfSuffix) {
-            listener.enterEbnfSuffix(this);
+    public QUESTION(): antlr.TerminalNode[];
+    public QUESTION(i: number): antlr.TerminalNode | null;
+    public QUESTION(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.QUESTION);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.QUESTION, i);
+    	}
+    }
+    public STAR(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.STAR, 0);
+    }
+    public PLUS(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.PLUS, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ebnfSuffix;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterEbnfSuffix) {
+             listener.enterEbnfSuffix(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitEbnfSuffix) {
-            listener.exitEbnfSuffix(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitEbnfSuffix) {
+             listener.exitEbnfSuffix(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitEbnfSuffix) {
             return visitor.visitEbnfSuffix(this);
@@ -5690,39 +5512,41 @@ export class EbnfSuffixContext extends ParserRuleContext {
 }
 
 
-export class LexerAtomContext extends ParserRuleContext {
-    public characterRange(): CharacterRangeContext | undefined {
-        return this.tryGetRuleContext(0, CharacterRangeContext);
-    }
-    public terminalRule(): TerminalRuleContext | undefined {
-        return this.tryGetRuleContext(0, TerminalRuleContext);
-    }
-    public notSet(): NotSetContext | undefined {
-        return this.tryGetRuleContext(0, NotSetContext);
-    }
-    public LEXER_CHAR_SET(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.LEXER_CHAR_SET, 0); }
-    public DOT(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.DOT, 0); }
-    public elementOptions(): ElementOptionsContext | undefined {
-        return this.tryGetRuleContext(0, ElementOptionsContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class LexerAtomContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_lexerAtom; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterLexerAtom) {
-            listener.enterLexerAtom(this);
+    public characterRange(): CharacterRangeContext | null {
+        return this.getRuleContext(0, CharacterRangeContext);
+    }
+    public terminalRule(): TerminalRuleContext | null {
+        return this.getRuleContext(0, TerminalRuleContext);
+    }
+    public notSet(): NotSetContext | null {
+        return this.getRuleContext(0, NotSetContext);
+    }
+    public LEXER_CHAR_SET(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LEXER_CHAR_SET, 0);
+    }
+    public DOT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.DOT, 0);
+    }
+    public elementOptions(): ElementOptionsContext | null {
+        return this.getRuleContext(0, ElementOptionsContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_lexerAtom;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterLexerAtom) {
+             listener.enterLexerAtom(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitLexerAtom) {
-            listener.exitLexerAtom(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitLexerAtom) {
+             listener.exitLexerAtom(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitLexerAtom) {
             return visitor.visitLexerAtom(this);
@@ -5733,41 +5557,41 @@ export class LexerAtomContext extends ParserRuleContext {
 }
 
 
-export class AtomContext extends ParserRuleContext {
-    public characterRange(): CharacterRangeContext | undefined {
-        return this.tryGetRuleContext(0, CharacterRangeContext);
-    }
-    public terminalRule(): TerminalRuleContext | undefined {
-        return this.tryGetRuleContext(0, TerminalRuleContext);
-    }
-    public ruleref(): RulerefContext | undefined {
-        return this.tryGetRuleContext(0, RulerefContext);
-    }
-    public notSet(): NotSetContext | undefined {
-        return this.tryGetRuleContext(0, NotSetContext);
-    }
-    public DOT(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.DOT, 0); }
-    public elementOptions(): ElementOptionsContext | undefined {
-        return this.tryGetRuleContext(0, ElementOptionsContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class AtomContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_atom; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterAtom) {
-            listener.enterAtom(this);
+    public characterRange(): CharacterRangeContext | null {
+        return this.getRuleContext(0, CharacterRangeContext);
+    }
+    public terminalRule(): TerminalRuleContext | null {
+        return this.getRuleContext(0, TerminalRuleContext);
+    }
+    public ruleref(): RulerefContext | null {
+        return this.getRuleContext(0, RulerefContext);
+    }
+    public notSet(): NotSetContext | null {
+        return this.getRuleContext(0, NotSetContext);
+    }
+    public DOT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.DOT, 0);
+    }
+    public elementOptions(): ElementOptionsContext | null {
+        return this.getRuleContext(0, ElementOptionsContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_atom;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterAtom) {
+             listener.enterAtom(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitAtom) {
-            listener.exitAtom(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitAtom) {
+             listener.exitAtom(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitAtom) {
             return visitor.visitAtom(this);
@@ -5778,32 +5602,32 @@ export class AtomContext extends ParserRuleContext {
 }
 
 
-export class NotSetContext extends ParserRuleContext {
-    public NOT(): TerminalNode { return this.getToken(ANTLRv4Parser.NOT, 0); }
-    public setElement(): SetElementContext | undefined {
-        return this.tryGetRuleContext(0, SetElementContext);
-    }
-    public blockSet(): BlockSetContext | undefined {
-        return this.tryGetRuleContext(0, BlockSetContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class NotSetContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_notSet; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterNotSet) {
-            listener.enterNotSet(this);
+    public NOT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.NOT, 0);
+    }
+    public setElement(): SetElementContext | null {
+        return this.getRuleContext(0, SetElementContext);
+    }
+    public blockSet(): BlockSetContext | null {
+        return this.getRuleContext(0, BlockSetContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_notSet;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterNotSet) {
+             listener.enterNotSet(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitNotSet) {
-            listener.exitNotSet(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitNotSet) {
+             listener.exitNotSet(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitNotSet) {
             return visitor.visitNotSet(this);
@@ -5814,45 +5638,47 @@ export class NotSetContext extends ParserRuleContext {
 }
 
 
-export class BlockSetContext extends ParserRuleContext {
-    public LPAREN(): TerminalNode { return this.getToken(ANTLRv4Parser.LPAREN, 0); }
-    public setElement(): SetElementContext[];
-    public setElement(i: number): SetElementContext;
-    public setElement(i?: number): SetElementContext | SetElementContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(SetElementContext);
-        } else {
-            return this.getRuleContext(i, SetElementContext);
-        }
-    }
-    public RPAREN(): TerminalNode { return this.getToken(ANTLRv4Parser.RPAREN, 0); }
-    public OR(): TerminalNode[];
-    public OR(i: number): TerminalNode;
-    public OR(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.OR);
-        } else {
-            return this.getToken(ANTLRv4Parser.OR, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class BlockSetContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_blockSet; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterBlockSet) {
-            listener.enterBlockSet(this);
+    public LPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LPAREN, 0);
+    }
+    public setElement(): SetElementContext[];
+    public setElement(i: number): SetElementContext | null;
+    public setElement(i?: number): SetElementContext[] | SetElementContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(SetElementContext);
+        }
+
+        return this.getRuleContext(i, SetElementContext);
+    }
+    public RPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RPAREN, 0);
+    }
+    public OR(): antlr.TerminalNode[];
+    public OR(i: number): antlr.TerminalNode | null;
+    public OR(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.OR);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.OR, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_blockSet;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterBlockSet) {
+             listener.enterBlockSet(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitBlockSet) {
-            listener.exitBlockSet(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitBlockSet) {
+             listener.exitBlockSet(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitBlockSet) {
             return visitor.visitBlockSet(this);
@@ -5863,34 +5689,38 @@ export class BlockSetContext extends ParserRuleContext {
 }
 
 
-export class SetElementContext extends ParserRuleContext {
-    public TOKEN_REF(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.TOKEN_REF, 0); }
-    public elementOptions(): ElementOptionsContext | undefined {
-        return this.tryGetRuleContext(0, ElementOptionsContext);
-    }
-    public STRING_LITERAL(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.STRING_LITERAL, 0); }
-    public characterRange(): CharacterRangeContext | undefined {
-        return this.tryGetRuleContext(0, CharacterRangeContext);
-    }
-    public LEXER_CHAR_SET(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.LEXER_CHAR_SET, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class SetElementContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_setElement; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterSetElement) {
-            listener.enterSetElement(this);
+    public TOKEN_REF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.TOKEN_REF, 0);
+    }
+    public elementOptions(): ElementOptionsContext | null {
+        return this.getRuleContext(0, ElementOptionsContext);
+    }
+    public STRING_LITERAL(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.STRING_LITERAL, 0);
+    }
+    public characterRange(): CharacterRangeContext | null {
+        return this.getRuleContext(0, CharacterRangeContext);
+    }
+    public LEXER_CHAR_SET(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LEXER_CHAR_SET, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_setElement;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterSetElement) {
+             listener.enterSetElement(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitSetElement) {
-            listener.exitSetElement(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitSetElement) {
+             listener.exitSetElement(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitSetElement) {
             return visitor.visitSetElement(this);
@@ -5901,43 +5731,47 @@ export class SetElementContext extends ParserRuleContext {
 }
 
 
-export class BlockContext extends ParserRuleContext {
-    public LPAREN(): TerminalNode { return this.getToken(ANTLRv4Parser.LPAREN, 0); }
-    public altList(): AltListContext {
-        return this.getRuleContext(0, AltListContext);
-    }
-    public RPAREN(): TerminalNode { return this.getToken(ANTLRv4Parser.RPAREN, 0); }
-    public COLON(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.COLON, 0); }
-    public optionsSpec(): OptionsSpecContext | undefined {
-        return this.tryGetRuleContext(0, OptionsSpecContext);
-    }
-    public ruleAction(): RuleActionContext[];
-    public ruleAction(i: number): RuleActionContext;
-    public ruleAction(i?: number): RuleActionContext | RuleActionContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(RuleActionContext);
-        } else {
-            return this.getRuleContext(i, RuleActionContext);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class BlockContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_block; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterBlock) {
-            listener.enterBlock(this);
+    public LPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LPAREN, 0);
+    }
+    public altList(): AltListContext {
+        return this.getRuleContext(0, AltListContext)!;
+    }
+    public RPAREN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RPAREN, 0);
+    }
+    public COLON(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.COLON, 0);
+    }
+    public optionsSpec(): OptionsSpecContext | null {
+        return this.getRuleContext(0, OptionsSpecContext);
+    }
+    public ruleAction(): RuleActionContext[];
+    public ruleAction(i: number): RuleActionContext | null;
+    public ruleAction(i?: number): RuleActionContext[] | RuleActionContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(RuleActionContext);
+        }
+
+        return this.getRuleContext(i, RuleActionContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_block;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterBlock) {
+             listener.enterBlock(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitBlock) {
-            listener.exitBlock(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitBlock) {
+             listener.exitBlock(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitBlock) {
             return visitor.visitBlock(this);
@@ -5948,32 +5782,32 @@ export class BlockContext extends ParserRuleContext {
 }
 
 
-export class RulerefContext extends ParserRuleContext {
-    public RULE_REF(): TerminalNode { return this.getToken(ANTLRv4Parser.RULE_REF, 0); }
-    public argActionBlock(): ArgActionBlockContext | undefined {
-        return this.tryGetRuleContext(0, ArgActionBlockContext);
-    }
-    public elementOptions(): ElementOptionsContext | undefined {
-        return this.tryGetRuleContext(0, ElementOptionsContext);
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class RulerefContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_ruleref; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterRuleref) {
-            listener.enterRuleref(this);
+    public RULE_REF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RULE_REF, 0);
+    }
+    public argActionBlock(): ArgActionBlockContext | null {
+        return this.getRuleContext(0, ArgActionBlockContext);
+    }
+    public elementOptions(): ElementOptionsContext | null {
+        return this.getRuleContext(0, ElementOptionsContext);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_ruleref;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterRuleref) {
+             listener.enterRuleref(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitRuleref) {
-            listener.exitRuleref(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitRuleref) {
+             listener.exitRuleref(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitRuleref) {
             return visitor.visitRuleref(this);
@@ -5984,35 +5818,35 @@ export class RulerefContext extends ParserRuleContext {
 }
 
 
-export class CharacterRangeContext extends ParserRuleContext {
-    public STRING_LITERAL(): TerminalNode[];
-    public STRING_LITERAL(i: number): TerminalNode;
-    public STRING_LITERAL(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.STRING_LITERAL);
-        } else {
-            return this.getToken(ANTLRv4Parser.STRING_LITERAL, i);
-        }
-    }
-    public RANGE(): TerminalNode { return this.getToken(ANTLRv4Parser.RANGE, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class CharacterRangeContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_characterRange; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterCharacterRange) {
-            listener.enterCharacterRange(this);
+    public STRING_LITERAL(): antlr.TerminalNode[];
+    public STRING_LITERAL(i: number): antlr.TerminalNode | null;
+    public STRING_LITERAL(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.STRING_LITERAL);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.STRING_LITERAL, i);
+    	}
+    }
+    public RANGE(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RANGE, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_characterRange;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterCharacterRange) {
+             listener.enterCharacterRange(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitCharacterRange) {
-            listener.exitCharacterRange(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitCharacterRange) {
+             listener.exitCharacterRange(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitCharacterRange) {
             return visitor.visitCharacterRange(this);
@@ -6023,30 +5857,32 @@ export class CharacterRangeContext extends ParserRuleContext {
 }
 
 
-export class TerminalRuleContext extends ParserRuleContext {
-    public TOKEN_REF(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.TOKEN_REF, 0); }
-    public elementOptions(): ElementOptionsContext | undefined {
-        return this.tryGetRuleContext(0, ElementOptionsContext);
-    }
-    public STRING_LITERAL(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.STRING_LITERAL, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class TerminalRuleContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_terminalRule; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterTerminalRule) {
-            listener.enterTerminalRule(this);
+    public TOKEN_REF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.TOKEN_REF, 0);
+    }
+    public elementOptions(): ElementOptionsContext | null {
+        return this.getRuleContext(0, ElementOptionsContext);
+    }
+    public STRING_LITERAL(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.STRING_LITERAL, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_terminalRule;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterTerminalRule) {
+             listener.enterTerminalRule(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitTerminalRule) {
-            listener.exitTerminalRule(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitTerminalRule) {
+             listener.exitTerminalRule(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitTerminalRule) {
             return visitor.visitTerminalRule(this);
@@ -6057,45 +5893,47 @@ export class TerminalRuleContext extends ParserRuleContext {
 }
 
 
-export class ElementOptionsContext extends ParserRuleContext {
-    public LT(): TerminalNode { return this.getToken(ANTLRv4Parser.LT, 0); }
-    public elementOption(): ElementOptionContext[];
-    public elementOption(i: number): ElementOptionContext;
-    public elementOption(i?: number): ElementOptionContext | ElementOptionContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(ElementOptionContext);
-        } else {
-            return this.getRuleContext(i, ElementOptionContext);
-        }
-    }
-    public GT(): TerminalNode { return this.getToken(ANTLRv4Parser.GT, 0); }
-    public COMMA(): TerminalNode[];
-    public COMMA(i: number): TerminalNode;
-    public COMMA(i?: number): TerminalNode | TerminalNode[] {
-        if (i === undefined) {
-            return this.getTokens(ANTLRv4Parser.COMMA);
-        } else {
-            return this.getToken(ANTLRv4Parser.COMMA, i);
-        }
-    }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ElementOptionsContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_elementOptions; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterElementOptions) {
-            listener.enterElementOptions(this);
+    public LT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.LT, 0);
+    }
+    public elementOption(): ElementOptionContext[];
+    public elementOption(i: number): ElementOptionContext | null;
+    public elementOption(i?: number): ElementOptionContext[] | ElementOptionContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(ElementOptionContext);
+        }
+
+        return this.getRuleContext(i, ElementOptionContext);
+    }
+    public GT(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.GT, 0);
+    }
+    public COMMA(): antlr.TerminalNode[];
+    public COMMA(i: number): antlr.TerminalNode | null;
+    public COMMA(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {
+    	if (i === undefined) {
+    		return this.getTokens(ANTLRv4Parser.COMMA);
+    	} else {
+    		return this.getToken(ANTLRv4Parser.COMMA, i);
+    	}
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_elementOptions;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterElementOptions) {
+             listener.enterElementOptions(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitElementOptions) {
-            listener.exitElementOptions(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitElementOptions) {
+             listener.exitElementOptions(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitElementOptions) {
             return visitor.visitElementOptions(this);
@@ -6106,36 +5944,38 @@ export class ElementOptionsContext extends ParserRuleContext {
 }
 
 
-export class ElementOptionContext extends ParserRuleContext {
-    public identifier(): IdentifierContext[];
-    public identifier(i: number): IdentifierContext;
-    public identifier(i?: number): IdentifierContext | IdentifierContext[] {
-        if (i === undefined) {
-            return this.getRuleContexts(IdentifierContext);
-        } else {
-            return this.getRuleContext(i, IdentifierContext);
-        }
-    }
-    public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.ASSIGN, 0); }
-    public STRING_LITERAL(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.STRING_LITERAL, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class ElementOptionContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_elementOption; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterElementOption) {
-            listener.enterElementOption(this);
+    public identifier(): IdentifierContext[];
+    public identifier(i: number): IdentifierContext | null;
+    public identifier(i?: number): IdentifierContext[] | IdentifierContext | null {
+        if (i === undefined) {
+            return this.getRuleContexts(IdentifierContext);
+        }
+
+        return this.getRuleContext(i, IdentifierContext);
+    }
+    public ASSIGN(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.ASSIGN, 0);
+    }
+    public STRING_LITERAL(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.STRING_LITERAL, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_elementOption;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterElementOption) {
+             listener.enterElementOption(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitElementOption) {
-            listener.exitElementOption(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitElementOption) {
+             listener.exitElementOption(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitElementOption) {
             return visitor.visitElementOption(this);
@@ -6146,27 +5986,29 @@ export class ElementOptionContext extends ParserRuleContext {
 }
 
 
-export class IdentifierContext extends ParserRuleContext {
-    public RULE_REF(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.RULE_REF, 0); }
-    public TOKEN_REF(): TerminalNode | undefined { return this.tryGetToken(ANTLRv4Parser.TOKEN_REF, 0); }
-    constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+export class IdentifierContext extends antlr.ParserRuleContext {
+    public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {
         super(parent, invokingState);
     }
-    // @Override
-    public override get ruleIndex(): number { return ANTLRv4Parser.RULE_identifier; }
-    // @Override
-    public override enterRule(listener: ANTLRv4ParserListener): void {
-        if (listener.enterIdentifier) {
-            listener.enterIdentifier(this);
+    public RULE_REF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.RULE_REF, 0);
+    }
+    public TOKEN_REF(): antlr.TerminalNode | null {
+        return this.getToken(ANTLRv4Parser.TOKEN_REF, 0);
+    }
+    public override get ruleIndex(): number {
+        return ANTLRv4Parser.RULE_identifier;
+    }
+    public enterRule(listener: ANTLRv4ParserListener): void {
+        if(listener.enterIdentifier) {
+             listener.enterIdentifier(this);
         }
     }
-    // @Override
-    public override exitRule(listener: ANTLRv4ParserListener): void {
-        if (listener.exitIdentifier) {
-            listener.exitIdentifier(this);
+    public exitRule(listener: ANTLRv4ParserListener): void {
+        if(listener.exitIdentifier) {
+             listener.exitIdentifier(this);
         }
     }
-    // @Override
     public override accept<Result>(visitor: ANTLRv4ParserVisitor<Result>): Result {
         if (visitor.visitIdentifier) {
             return visitor.visitIdentifier(this);

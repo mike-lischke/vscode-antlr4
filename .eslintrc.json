@@ -13,7 +13,8 @@
         "plugin:jsdoc/recommended"
     ],
     "ignorePatterns": [
-        "**/generated/*"
+        "**/generated/*",
+        "jest.config.ts"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -653,9 +654,9 @@
                 ]
             }
         ],
+        "@typescript-eslint/no-unsafe-enum-comparison": "off",
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "off",
-        "jsdoc/newline-after-description": "error",
         "jsdoc/require-param-type": "off",
         "jsdoc/require-returns-type": "off",
         "jsdoc/tag-lines": [

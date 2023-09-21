@@ -7,9 +7,9 @@ import { basename, extname } from "path";
 
 import { TextEditor, Uri, Webview } from "vscode";
 
-import { SymbolKind } from "../../backend/types";
-import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider";
-import { FrontendUtils } from "../FrontendUtils";
+import { SymbolKind } from "../../backend/types.js";
+import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider.js";
+import { FrontendUtils } from "../FrontendUtils.js";
 
 export class RailroadDiagramProvider extends WebviewProvider {
 

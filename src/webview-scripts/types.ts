@@ -5,9 +5,10 @@
 
 // Types for use in webview modules.
 
-import { ATNStateType, TransitionType } from "antlr4ts/atn";
-import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import { Uri } from "vscode";
+
+import { TransitionType } from "antlr4ng";
+import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 
 export interface IWebviewMessage {
     [key: string]: unknown;
@@ -109,7 +110,7 @@ export interface IATNNode {
     name: string;
 
     // We use the INVALID_TYPE in this field to denote a rule node.
-    type: ATNStateType;
+    type: number;
 }
 
 export interface IATNLink {

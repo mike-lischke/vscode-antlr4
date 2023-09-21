@@ -3,19 +3,22 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { AntlrFacade } from "../../src/backend/facade";
-import { SymbolKind } from "../../src/backend/types";
+import { AntlrFacade } from "../../src/backend/facade.js";
+import { SymbolKind } from "../../src/backend/types.js";
 
 describe("Test for Bugs", () => {
-    const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
-    jest.setTimeout(30000);
+    let backend: AntlrFacade;
+
+    beforeAll(() => {
+        backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
+    });
 
     it("Lexer token in a set-element context", () => {
-        const info = backend.symbolInfoAtPosition("test/backend/test-data/TParser.g4", 30, 93, true);
+        const info = backend.symbolInfoAtPosition("tests/backend/test-data/TParser.g4", 30, 93, true);
         expect(info).toBeDefined();
         if (info) {
             expect(info.name).toEqual("Semicolon");
-            expect(info.source).toEqual("test/backend/test-data/TLexer.g4");
+            expect(info.source).toEqual("tests/backend/test-data/TLexer.g4");
             expect(info.kind).toEqual(SymbolKind.LexerRule);
             expect(info.definition).toBeDefined();
             if (info.definition) {
@@ -26,7 +29,7 @@ describe("Test for Bugs", () => {
                 expect(info.definition.range.end.row).toEqual(59);
             }
         }
-        backend.releaseGrammar("test/backend/test-data/TParser.g4");
+        backend.releaseGrammar("tests/backend/test-data/TParser.g4");
         const selfDiags = backend.getSelfDiagnostics();
         expect(selfDiags.contextCount).toEqual(0);
     });

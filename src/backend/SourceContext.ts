@@ -12,37 +12,33 @@ import * as fs from "fs";
 import * as vm from "vm";
 
 import {
-    CharStreams, CommonTokenStream, BailErrorStrategy, DefaultErrorStrategy, Token, RuleContext, ParserRuleContext,
-    Vocabulary,
-} from "antlr4ts";
-import {
-    PredictionMode, ATNState, RuleTransition, TransitionType, ATNStateType, RuleStartState, ActionTransition,
-    PredicateTransition, PrecedencePredicateTransition,
-} from "antlr4ts/atn";
-import { ParseCancellationException, IntervalSet, Interval } from "antlr4ts/misc";
-import { ParseTreeWalker, TerminalNode, ParseTree } from "antlr4ts/tree";
+    ATNState, ATNStateType, ActionTransition, BailErrorStrategy, CharStreams, CommonTokenStream, DefaultErrorStrategy,
+    Interval, IntervalSet, ParseCancellationException, ParseTree, ParseTreeWalker, ParserRuleContext,
+    PrecedencePredicateTransition, PredicateTransition, PredictionMode, RuleContext, RuleStartState, RuleTransition,
+    TerminalNode, Token, TransitionType, Vocabulary,
+} from "antlr4ng";
 
 import { CodeCompletionCore, BaseSymbol, LiteralSymbol } from "antlr4-c3";
 
 import {
     ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, OptionsSpecContext, ModeSpecContext,
-} from "../parser/ANTLRv4Parser";
-import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer";
+} from "../parser/ANTLRv4Parser.js";
+import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
 
 import {
     ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IGenerationOptions,
     ISentenceGenerationOptions, IFormattingOptions, IDefinition, IContextDetails, PredicateFunction,
     CodeActionType, SymbolKind, GrammarType,
-} from "./types";
+} from "./types.js";
 
-import { ContextErrorListener } from "./ContextErrorListener";
-import { ContextLexerErrorListener } from "./ContextLexerErrorListener";
+import { ContextErrorListener } from "./ContextErrorListener.js";
+import { ContextLexerErrorListener } from "./ContextLexerErrorListener.js";
 
-import { DetailsListener } from "./DetailsListener";
-import { SemanticListener } from "./SemanticListener";
-import { RuleVisitor } from "./RuleVisitor";
-import { InterpreterDataReader, IInterpreterData } from "./InterpreterDataReader";
-import { ErrorParser } from "./ErrorParser";
+import { DetailsListener } from "./DetailsListener.js";
+import { SemanticListener } from "./SemanticListener.js";
+import { RuleVisitor } from "./RuleVisitor.js";
+import { InterpreterDataReader, IInterpreterData } from "./InterpreterDataReader.js";
+import { ErrorParser } from "./ErrorParser.js";
 
 import {
     ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
@@ -50,17 +46,17 @@ import {
     LexerModeSymbol, TokenChannelSymbol, OperatorSymbol, ArgumentsSymbol, ExceptionActionSymbol,
     FinallyActionSymbol, LexerActionSymbol, LexerPredicateSymbol, ParserActionSymbol, ParserPredicateSymbol,
     LexerCommandSymbol, TerminalSymbol, GlobalNamedActionSymbol, LocalNamedActionSymbol,
-} from "./ContextSymbolTable";
+} from "./ContextSymbolTable.js";
 
-import { SentenceGenerator } from "./SentenceGenerator";
-import { GrammarFormatter } from "./Formatter";
+import { SentenceGenerator } from "./SentenceGenerator.js";
+import { GrammarFormatter } from "./Formatter.js";
 import {
     GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
-} from "./GrammarInterpreters";
-import { printableUnicodePoints } from "./Unicode";
-import { BackendUtils } from "./BackendUtils";
+} from "./GrammarInterpreters.js";
+import { printableUnicodePoints } from "./Unicode.js";
+import { BackendUtils } from "./BackendUtils.js";
 
-import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types";
+import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types.js";
 
 // One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
 export class SourceContext {
@@ -115,8 +111,9 @@ export class SourceContext {
     private semanticAnalysisDone = false; // Includes determining reference counts.
 
     // Grammar parsing infrastructure.
+    private lexer: ANTLRv4Lexer;
     private tokenStream: CommonTokenStream;
-    private parser: ANTLRv4Parser | undefined;
+    private parser: ANTLRv4Parser;
     private errorListener: ContextErrorListener = new ContextErrorListener(this.diagnostics);
     private lexerErrorListener: ContextLexerErrorListener = new ContextLexerErrorListener(this.diagnostics);
 
@@ -145,6 +142,19 @@ export class SourceContext {
         }).catch(() => {
             // ignore
         });
+
+        this.lexer = new ANTLRv4Lexer(CharStreams.fromString(""));
+
+        // There won't be lexer errors actually. They are silently bubbled up and will cause parser errors.
+        this.lexer.removeErrorListeners();
+        this.lexer.addErrorListener(this.lexerErrorListener);
+
+        this.tokenStream = new CommonTokenStream(this.lexer);
+
+        this.parser = new ANTLRv4Parser(this.tokenStream);
+        this.parser.buildParseTrees = true;
+        this.parser.removeErrorListeners();
+        this.parser.addErrorListener(this.errorListener);
     }
 
     public get isInterpreterDataLoaded(): boolean {
@@ -198,35 +208,35 @@ export class SourceContext {
         };
 
         if (ctx instanceof ParserRuleContext) {
-            const range = <Interval>{ a: ctx.start.startIndex, b: ctx.stop!.stopIndex };
+            const range = new Interval(ctx.start!.start, ctx.stop!.stop);
 
-            result.range.start.column = ctx.start.charPositionInLine;
-            result.range.start.row = ctx.start.line;
-            result.range.end.column = ctx.stop!.charPositionInLine;
+            result.range.start.column = ctx.start!.column;
+            result.range.start.row = ctx.start!.line;
+            result.range.end.column = ctx.stop!.column;
             result.range.end.row = ctx.stop!.line;
 
             // For mode definitions we only need the init line, not all the lexer rules following it.
             if (ctx.ruleIndex === ANTLRv4Parser.RULE_modeSpec) {
                 const modeSpec = ctx as ModeSpecContext;
-                range.b = modeSpec.SEMI().symbol.stopIndex;
-                result.range.end.column = modeSpec.SEMI().symbol.charPositionInLine;
-                result.range.end.row = modeSpec.SEMI().symbol.line;
+                range.stop = modeSpec.SEMI()!.symbol.stop;
+                result.range.end.column = modeSpec.SEMI()!.symbol.column;
+                result.range.end.row = modeSpec.SEMI()!.symbol.line;
             } else if (ctx.ruleIndex === ANTLRv4Parser.RULE_grammarSpec) {
                 // Similar for entire grammars. We only need the introducer line here.
-                const grammarSpec: GrammarSpecContext = <GrammarSpecContext>ctx;
-                range.b = grammarSpec.SEMI().symbol.stopIndex;
-                result.range.end.column = grammarSpec.SEMI().symbol.charPositionInLine;
-                result.range.end.row = grammarSpec.SEMI().symbol.line;
+                const grammarSpec = ctx as GrammarSpecContext;
+                range.stop = grammarSpec.SEMI()!.symbol.stop;
+                result.range.end.column = grammarSpec.SEMI()!.symbol.column;
+                result.range.end.row = grammarSpec.SEMI()!.symbol.line;
 
-                range.a = grammarSpec.grammarType().start.startIndex;
-                result.range.start.column = grammarSpec.grammarType().start.charPositionInLine;
-                result.range.start.row = grammarSpec.grammarType().start.line;
+                range.start = grammarSpec.grammarType().start!.start;
+                result.range.start.column = grammarSpec.grammarType().start!.column;
+                result.range.start.row = grammarSpec.grammarType().start!.line;
             }
 
-            if (ctx.start.tokenSource?.inputStream) {
-                const stream = ctx.start.tokenSource.inputStream;
+            const inputStream = ctx.start?.getTokenSource()?.inputStream;
+            if (inputStream) {
                 try {
-                    result.text = stream.getText(range);
+                    result.text = inputStream.getText(range);
                 } catch (e) {
                     // The method getText uses an unreliable JS String API which can throw on larger texts.
                     // In this case we cannot return the text of the given context.
@@ -235,11 +245,11 @@ export class SourceContext {
                 }
             }
         } else if (ctx instanceof TerminalNode) {
-            result.text = ctx.text;
+            result.text = ctx.getText();
 
-            result.range.start.column = ctx.symbol.charPositionInLine;
+            result.range.start.column = ctx.symbol.column;
             result.range.start.row = ctx.symbol.line;
-            result.range.end.column = ctx.symbol.charPositionInLine + result.text.length;
+            result.range.end.column = ctx.symbol.column + result.text.length;
             result.range.end.row = ctx.symbol.line;
         }
 
@@ -250,15 +260,18 @@ export class SourceContext {
         const quoteChar = result.text[0];
         if ((quoteChar === '"' || quoteChar === "`" || quoteChar === "'")
             && quoteChar === result.text[result.text.length - 1]) {
-            result.text = result.text.substr(1, result.text.length - 2);
+            result.text = result.text.substring(1, result.text.length - 1);
         }
 
         return result;
     }
 
     public symbolAtPosition(column: number, row: number, limitToChildren: boolean): ISymbolInfo | undefined {
+        if (!this.tree) {
+            return undefined;
+        }
 
-        const terminal = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
+        const terminal = BackendUtils.parseTreeFromPosition(this.tree, column, row);
         if (!terminal || !(terminal instanceof TerminalNode)) {
             return undefined;
         }
@@ -266,7 +279,7 @@ export class SourceContext {
         // If limitToChildren is set we only want to show info for symbols in specific contexts.
         // These are contexts which are used as subrules in rule definitions.
         if (!limitToChildren) {
-            return this.getSymbolInfo(terminal.text);
+            return this.getSymbolInfo(terminal.getText());
         }
 
         let parent = (terminal.parent as RuleContext);
@@ -333,7 +346,11 @@ export class SourceContext {
      * @returns The symbol at the given position (if there's any).
      */
     public enclosingSymbolAtPosition(column: number, row: number, ruleScope: boolean): ISymbolInfo | undefined {
-        let context = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
+        if (!this.tree) {
+            return undefined;
+        }
+
+        let context = BackendUtils.parseTreeFromPosition(this.tree, column, row);
         if (!context) {
             return undefined;
         }
@@ -463,7 +480,7 @@ export class SourceContext {
             ANTLRv4Lexer.UNTERMINATED_ACTION,
             ANTLRv4Lexer.ACTION_CONTENT,
             ANTLRv4Lexer.UNTERMINATED_CHAR_SET,
-            ANTLRv4Lexer.EOF,
+            Token.EOF,
             -2, // TODO: Erroneously inserted. Needs fix in antlr4-c3.
         ]);
 
@@ -489,7 +506,7 @@ export class SourceContext {
                 continue;
             }
             const length = token.text ? token.text.length : 0;
-            if ((token.charPositionInLine + length) >= column) {
+            if ((token.column + length) >= column) {
                 break;
             }
         }
@@ -584,10 +601,10 @@ export class SourceContext {
                 }
 
                 default: {
-                    const value = this.parser!.vocabulary.getDisplayName(type);
+                    const value = this.parser?.vocabulary.getDisplayName(type) ?? "";
                     result.push({
                         kind: SymbolKind.Keyword,
-                        name: value[0] === "'" ? value.substr(1, value.length - 2) : value, // Remove quotes.
+                        name: value[0] === "'" ? value.substring(1, value.length - 1) : value, // Remove quotes.
                         source: this.fileName,
                     });
 
@@ -757,28 +774,17 @@ export class SourceContext {
      * @param source The new content of the editor.
      */
     public setText(source: string): void {
-        const input = CharStreams.fromString(source);
-        const lexer = new ANTLRv4Lexer(input);
-
-        // There won't be lexer errors actually. They are silently bubbled up and will cause parser errors.
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(this.lexerErrorListener);
-        this.tokenStream = new CommonTokenStream(lexer);
-
-        // Keep the old parser around until the next parse run. Code completion could kick in before that.
-        // this.parser = undefined;
+        this.lexer.inputStream = CharStreams.fromString(source);
     }
 
     public parse(): string[] {
         // Rewind the input stream for a new parse run.
-        // Might be unnecessary when we just created that via setText.
-        this.tokenStream.seek(0);
-        this.parser = new ANTLRv4Parser(this.tokenStream);
-        this.parser.removeErrorListeners();
-        this.parser.addErrorListener(this.errorListener);
+        this.lexer.reset();
+        this.tokenStream.setTokenSource(this.lexer);
 
+        this.parser.reset();
         this.parser.errorHandler = new BailErrorStrategy();
-        this.parser.interpreter.setPredictionMode(PredictionMode.SLL);
+        this.parser.interpreter.predictionMode = PredictionMode.SLL;
 
         this.tree = undefined;
 
@@ -800,17 +806,18 @@ export class SourceContext {
             this.tree = this.parser.grammarSpec();
         } catch (e) {
             if (e instanceof ParseCancellationException) {
-                this.tokenStream.seek(0);
+                this.lexer.reset();
+                this.tokenStream.setTokenSource(this.lexer);
                 this.parser.reset();
                 this.parser.errorHandler = new DefaultErrorStrategy();
-                this.parser.interpreter.setPredictionMode(PredictionMode.LL);
+                this.parser.interpreter.predictionMode = PredictionMode.LL;
                 this.tree = this.parser.grammarSpec();
             } else {
                 throw e;
             }
         }
 
-        if (this.tree && this.tree.childCount > 0) {
+        if (this.tree && this.tree.getChildCount() > 0) {
             try {
                 const typeContext = this.tree.grammarType();
                 if (typeContext.LEXER()) {
@@ -983,12 +990,16 @@ export class SourceContext {
      * @returns A rule name and its index if found.
      */
     public ruleFromPosition(column: number, row: number): [string | undefined, number | undefined] {
-        const tree = BackendUtils.parseTreeFromPosition(this.tree!, column, row);
+        if (!this.tree) {
+            return [undefined, undefined];
+        }
+
+        const tree = BackendUtils.parseTreeFromPosition(this.tree, column, row);
         if (!tree) {
             return [undefined, undefined];
         }
 
-        let context: RuleContext | undefined = (tree as RuleContext);
+        let context: RuleContext | null = (tree as RuleContext);
         while (context && context.ruleIndex !== ANTLRv4Parser.RULE_parserRuleSpec
             && context.ruleIndex !== ANTLRv4Parser.RULE_lexerRuleSpec) {
             context = context.parent;
@@ -996,7 +1007,7 @@ export class SourceContext {
 
         if (context) {
             if (context.ruleIndex === ANTLRv4Parser.RULE_parserRuleSpec) {
-                const ruleName = (context as ParserRuleSpecContext).RULE_REF().text;
+                const ruleName = (context as ParserRuleSpecContext).RULE_REF()!.getText();
                 let ruleIndex;
                 if (this.grammarParserData) {
                     ruleIndex = this.grammarParserRuleMap.get(ruleName);
@@ -1005,7 +1016,7 @@ export class SourceContext {
                 return [ruleName, ruleIndex];
             }
 
-            const name = (context as LexerRuleSpecContext).TOKEN_REF().text;
+            const name = (context as LexerRuleSpecContext).TOKEN_REF()!.getText();
             let index;
             if (this.grammarLexerData) {
                 index = this.grammarLexerRuleMap.get(name);
@@ -1042,11 +1053,8 @@ export class SourceContext {
         if (options.alternativeJar) {
             parameters.push(options.alternativeJar);
         } else {
-            if (options.language?.toLowerCase() === "typescript") {
-                parameters.push(path.join(this.extensionDir, "antlr/antlr4-typescript-4.9.0-SNAPSHOT-complete.jar"));
-            } else {
-                parameters.push(path.join(this.extensionDir, "antlr/antlr-4.9.2-complete.jar"));
-            }
+            parameters.push(path.join(this.extensionDir,
+                "node_modules/antlr4ng/cli/antlr4-4.13.2-SNAPSHOT-complete.jar"));
         }
 
         if (options.language) {
@@ -1147,7 +1155,7 @@ export class SourceContext {
         const ensureATNNode = (id: number, state: ATNState): number => {
             let index = stateToIndex.get(id);
             if (index === undefined) {
-                const transitions = state.getTransitions();
+                const transitions = state.transitions;
 
                 index = nodes.length;
                 stateToIndex.set(id, index);
@@ -1178,7 +1186,7 @@ export class SourceContext {
             const state = pipeline.shift()!;
 
             const sourceIndex = ensureATNNode(state.stateNumber, state);
-            for (const transition of state.getTransitions()) {
+            for (const transition of state.transitions) {
                 // Rule stop states usually point to the follow state in the calling rule, but can also
                 // point to a state in itself if the rule is left recursive. In any case we don't need to follow
                 // transitions going out from a stop state.
@@ -1304,7 +1312,7 @@ export class SourceContext {
                             });
                         } else {
                             for (const label of transition.label.toArray()) {
-                                labels.push({ content: vocabulary.getDisplayName(label) });
+                                labels.push({ content: vocabulary.getDisplayName(label) ?? "" });
                             }
                         }
                     } else {
@@ -1485,8 +1493,8 @@ export class SourceContext {
             tokenStream.fill();
 
             for (const token of tokenStream.getTokens()) {
-                const name = lexer.vocabulary.getSymbolicName(token.type);
-                result.push(name!);
+                const name = lexer.vocabulary.getSymbolicName(token.type) ?? "<unnamed>";
+                result.push(name);
             }
         }
 
@@ -1533,7 +1541,7 @@ export class SourceContext {
 
         const parser = new GrammarParserInterpreter(eventSink, predicateFunction, this, this.grammarParserData,
             tokenStream);
-        parser.buildParseTree = true;
+        parser.buildParseTrees = true;
         parser.removeErrorListeners();
         parser.addErrorListener(new InterpreterParserErrorListener(eventSink));
 
@@ -1687,15 +1695,15 @@ export class SourceContext {
     }
 
     private runSemanticAnalysisIfNeeded() {
-        if (!this.semanticAnalysisDone) {
+        if (!this.semanticAnalysisDone && this.tree) {
             this.semanticAnalysisDone = true;
             //this.diagnostics.length = 0; Don't, we would lose our syntax errors from last parse run.
             this.rrdScripts = new Map<string, string>();
             const semanticListener = new SemanticListener(this.diagnostics, this.symbolTable);
-            ParseTreeWalker.DEFAULT.walk(semanticListener, this.tree!);
+            ParseTreeWalker.DEFAULT.walk(semanticListener, this.tree);
 
             const visitor = new RuleVisitor(this.rrdScripts);
-            visitor.visit(this.tree!);
+            visitor.visit(this.tree);
         }
     }
 
@@ -1730,20 +1738,17 @@ export class SourceContext {
             return "\\u" + "0".repeat(4 - value.length) + value;
         };
 
-        for (const interval of set.intervals) {
-            let entry = characterRepresentation(interval.a);
-            if (interval.a !== interval.b) {
-                entry += " - " + characterRepresentation(interval.b);
+        for (const interval of set) {
+            let entry = characterRepresentation(interval.start);
+            if (interval.start !== interval.stop) {
+                entry += " - " + characterRepresentation(interval.stop);
             }
             result.push(entry);
         }
 
         return result;
     }
-
-    static {
-        void printableUnicodePoints({}).then((intervalSet) => {
-            this.printableChars = intervalSet;
-        });
-    }
 }
+
+// @ts-expect-error, because printableChars is (for good reasons) private.
+SourceContext.printableChars = await printableUnicodePoints({});

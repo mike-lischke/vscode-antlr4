@@ -19,20 +19,24 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Run selected Jest test",
-            "runtimeExecutable": "npm",
+            "name": "Run current Jest test",
+            "runtimeExecutable": "node",
             "runtimeArgs": [
-                "run",
-                "test"
-            ],
-            "args": [
-                "--",
-                "-i",
-                "${file}",
-                "-t",
-                "--no-coverage"
+                "--experimental-vm-modules",
+                "${workspaceRoot}/node_modules/.bin/jest",
+                "${fileBasenameNoExtension}.ts",
+                "--no-coverage",
+                "--runInBand"
             ],
             "console": "integratedTerminal",
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ],
+            "smartStep": true,
+            "trace": false
         },
     ]
 }
