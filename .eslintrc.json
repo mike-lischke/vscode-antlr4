@@ -655,6 +655,7 @@
             }
         ],
         "@typescript-eslint/no-unsafe-enum-comparison": "off",
+        "@typescript-eslint/no-base-to-string": "off",
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "off",
         "jsdoc/require-param-type": "off",

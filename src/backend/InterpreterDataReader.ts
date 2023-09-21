@@ -22,8 +22,8 @@ export class InterpreterDataReader {
         const channels: string[] = [];
         const modes: string[] = [];
 
-        const literalNames = [];
-        const symbolicNames = [];
+        const literalNames: Array<string | null> = [];
+        const symbolicNames: Array<string | null> = [];
         const source = fs.readFileSync(fileName, "utf8");
         const lines = source.split("\n");
         let index = 0;
@@ -37,7 +37,7 @@ export class InterpreterDataReader {
             if (line.length === 0) {
                 break;
             }
-            literalNames.push(line === "null" ? "" : line);
+            literalNames.push(line === "null" ? null : line);
         } while (true);
 
         line = lines[index++];
@@ -50,7 +50,7 @@ export class InterpreterDataReader {
             if (line.length === 0) {
                 break;
             }
-            symbolicNames.push(line === "null" ? "" : line);
+            symbolicNames.push(line === "null" ? null : line);
         } while (true);
 
         line = lines[index++];

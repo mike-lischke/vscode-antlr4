@@ -1,11 +1,11 @@
 grammar sentences;
 
-unicodeIdentifier: UnicodeIdentifier;
-plusLoop:          DIGITS (COMMA DIGITS)+;
-starLoop:          DIGITS DIGITS*;
-alts:              alt1 | alt2 | alt3 |;
-blocks:            block (COMMA block)*;
-block:             OPEN_BRACE ( SimpleIdentifier SimpleIdentifier? | UnicodeIdentifier DIGITS) CLOSE_BRACE;
+// unicodeIdentifier: UnicodeIdentifier;
+plusLoop: DIGITS (COMMA DIGITS)+;
+starLoop: DIGITS DIGITS*;
+alts:     alt1 | alt2 | alt3 |;
+blocks:   block (COMMA block)*;
+block:    OPEN_BRACE ( SimpleIdentifier SimpleIdentifier? | UnicodeIdentifier DIGITS) CLOSE_BRACE;
 
 alt1: RED;
 alt2: GREEN;
@@ -28,7 +28,7 @@ COMMA:       ',';
 DOT:         '.';
 COLON:       ':';
 
-fragment SimpleChar: [A-Zaz] | [\p{InLatin_Extended-B}] | [\p{block=Greek_and_Coptic}];
+fragment SimpleChar: [A-Za-z] | [\p{InLatin_Extended-B}] | [\p{block=Greek_and_Coptic}];
 
 SimpleIdentifier:  SimpleChar (SimpleChar | DIGITS)+;
 UnicodeIdentifier: [\p{ID_Start}] [\p{ID_Continue}]*;

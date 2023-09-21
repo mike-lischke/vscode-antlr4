@@ -7,7 +7,7 @@ import * as fs from "fs";
 
 import { AntlrFacade } from "../../src/backend/facade.js";
 
-xdescribe("Debugger", () => {
+describe("Debugger", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
     it("Run interpreter", async () => {
@@ -15,6 +15,7 @@ xdescribe("Debugger", () => {
             outputDir: "generated-debugger",
             language: "Java",
         });
+
         try {
             const code = fs.readFileSync("tests/backend/test-data/code.cpp", { encoding: "utf8" });
             const d = backend.createDebugger("tests/backend/test-data/CPP14.g4", "", "generated");

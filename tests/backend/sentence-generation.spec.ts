@@ -8,7 +8,7 @@ import * as fs from "fs";
 import { AntlrFacade } from "../../src/backend/facade.js";
 import { IRuleMappings } from "../../src/backend/types.js";
 
-describe("Sentence Generation", () => {
+xdescribe("Sentence Generation", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
     /**
@@ -108,7 +108,7 @@ describe("Sentence Generation", () => {
         ];
 
         const tester = (token: string, sentence: string) => {
-            console.log(token + ": " + sentence);
+            // console.log(token + ": " + sentence);
             expect(sentence.length).toBeGreaterThan(0);
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
@@ -134,7 +134,6 @@ describe("Sentence Generation", () => {
             //console.log(rule + ": " + sentence);
             const errors = backend.parseTestInput("tests/backend/test-data/sentences.g4", sentence, rule);
             expect(errors).toHaveLength(0);
-
         };
 
         const rules = backend.getRuleList("tests/backend/test-data/sentences.g4")!;

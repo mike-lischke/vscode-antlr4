@@ -1537,7 +1537,14 @@ export class SourceContext {
 
         lexer.addErrorListener(new InterpreterLexerErrorListener(eventSink));
         const tokenStream = new CommonTokenStream(lexer);
+
+        /*
         tokenStream.fill();
+        const tokens = tokenStream.getTokens();
+        tokens.forEach((token) => {
+            console.log(token.toString());
+        });
+        // */
 
         const parser = new GrammarParserInterpreter(eventSink, predicateFunction, this, this.grammarParserData,
             tokenStream);
