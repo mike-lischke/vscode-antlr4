@@ -10,6 +10,10 @@ import { AntlrFacade } from "../../src/backend/facade.js";
 describe("Code Generation", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
+    beforeAll(() => {
+        return AntlrFacade.initialize();
+    });
+
     afterEach(() => {
         backend.releaseGrammar("tests/backend/test-data/TParser.g4");
         backend.releaseGrammar("tests/backend/test-data/TLexer.g4");

@@ -78,6 +78,16 @@ export class SentenceGenerator {
         }
     }
 
+    public static async initialize(): Promise<void> {
+        SentenceGenerator.printableUnicode = await printableUnicodePoints({
+            excludeCJK: true,
+            excludeRTL: true,
+            limitToBMP: false,
+            includeLineTerminators: true,
+        });
+
+    }
+
     /**
      * Generates a single sentence for the given rule.
      *
@@ -587,11 +597,3 @@ export class SentenceGenerator {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 }
-
-// @ts-expect-error, because printableUnicode is (for good reasons) private.
-SentenceGenerator.printableUnicode = await printableUnicodePoints({
-    excludeCJK: true,
-    excludeRTL: true,
-    limitToBMP: false,
-    includeLineTerminators: true,
-});

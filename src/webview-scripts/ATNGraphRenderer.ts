@@ -3,14 +3,15 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import { Uri } from "vscode";
+
+import { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum } from "d3";
+import { ATNStateType } from "antlr4ng";
 
 import {
     IATNGraphData, IATNNode, IATNGraphLayoutNode, IATNLink, IATNGraphLayoutLink, IATNGraphRendererData, IVSCode,
     IATNGraphUpdateMessageData, IATNStateSaveMessage,
-} from "./types";
-import { ATNStateType } from "antlr4ng";
+} from "./types.js";
 
 const stateType = [
     {  // Pretend that this state type is a rule. It's normally the INVALID state type.

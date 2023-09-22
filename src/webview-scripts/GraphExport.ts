@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { IVSCode } from "./types";
+import { IVSCode } from "./types.js";
 
 declare const acquireVsCodeApi: () => IVSCode;
 

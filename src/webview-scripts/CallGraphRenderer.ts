@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { ICallGraphEntry } from "./types";
+import { ICallGraphEntry } from "./types.js";
 
 interface ICallGraphRenderNode extends ICallGraphEntry {
     class: string;

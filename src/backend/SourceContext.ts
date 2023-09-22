@@ -157,6 +157,10 @@ export class SourceContext {
         this.parser.addErrorListener(this.errorListener);
     }
 
+    public static async initialize(): Promise<void> {
+        SourceContext.printableChars = await printableUnicodePoints({});
+    }
+
     public get isInterpreterDataLoaded(): boolean {
         return this.grammarLexerData !== undefined || this.grammarParserData !== undefined;
     }
@@ -1756,6 +1760,3 @@ export class SourceContext {
         return result;
     }
 }
-
-// @ts-expect-error, because printableChars is (for good reasons) private.
-SourceContext.printableChars = await printableUnicodePoints({});

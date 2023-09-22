@@ -23,12 +23,20 @@ import {
     ISentenceGenerationOptions, IFormattingOptions, IContextDetails,
 } from "./types.js";
 import { IATNGraphData } from "../webview-scripts/types.js";
+import { SentenceGenerator } from "./SentenceGenerator.js";
 
 export class AntlrFacade {
     // Mapping file names to SourceContext instances.
     private sourceContexts: Map<string, IContextEntry> = new Map<string, IContextEntry>();
 
     public constructor(private importDir: string, private extensionDir: string) {
+    }
+
+    public static async initialize(): Promise<void> {
+        await Promise.all([
+            SourceContext.initialize(),
+            SentenceGenerator.initialize(),
+        ]);
     }
 
     /**

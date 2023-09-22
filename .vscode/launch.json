@@ -11,10 +11,11 @@
             ],
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceRoot}/out/src/**/*.js"
+                "${workspaceFolder}/out/main.cjs"
             ],
-            "preLaunchTask": "tsc",
-            "trace": false
+            "preLaunchTask": "esbuild",
+            "trace": false,
+            "smartStep": true,
         },
         {
             "type": "node",

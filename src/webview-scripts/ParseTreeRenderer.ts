@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { IParseTreeNode } from "./types";
+import { IParseTreeNode } from "./types.js";
 
 export interface IRendererData {
     parseTreeData: IParseTreeNode;

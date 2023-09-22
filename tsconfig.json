@@ -3,7 +3,7 @@
         "module": "NodeNext",
         "moduleResolution": "Node16",
         "target": "ES2022",
-        "outDir": "out",
+        "noEmit": true,
         "removeComments": true,
         "noImplicitAny": true,
         "noImplicitOverride": true,
@@ -12,10 +12,9 @@
         "isolatedModules": false,
         "allowSyntheticDefaultImports": true,
         "allowUmdGlobalAccess": true, // For D3.js
-        "experimentalDecorators": true,
         "strictNullChecks": true,
         "alwaysStrict": true,
-        "rootDir": "./"
+        "rootDir": "./",
     },
     "references": [
         { // Webview scripts need a different module type (esm), so they are handled as a separate (sub) project.

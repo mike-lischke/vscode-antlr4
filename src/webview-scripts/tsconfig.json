@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "declaration": true,
-        "module": "ES2022",
+        "module": "Node16",
         "target": "ES2022",
-        "moduleResolution": "node",
+        "moduleResolution": "node16",
         "outDir": "../../out",
         "removeComments": true,
         "noImplicitAny": true,

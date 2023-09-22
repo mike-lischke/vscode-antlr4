@@ -57,7 +57,7 @@ At runtime, these constants can be found on the Diagram class.
             return x;
         };
         return iter.map(func).reduce(function (a, b) {
-            return a + b
+            return a + b;
         }, 0);
     }
 
@@ -137,7 +137,7 @@ At runtime, these constants can be found on the Diagram class.
         }
         str += '</' + this.tagName + '>\n';
         return str;
-    }
+    };
 
     function Path(x, y) {
         if (!(this instanceof Path)) return new Path(x, y);
@@ -148,27 +148,27 @@ At runtime, these constants can be found on the Diagram class.
     Path.prototype.m = function (x, y) {
         this.attrs.d += 'm' + x + ' ' + y;
         return this;
-    }
+    };
     Path.prototype.h = function (val) {
         this.attrs.d += 'h' + val;
         return this;
-    }
+    };
     Path.prototype.right = function (val) {
         return this.h(Math.max(0, val));
-    }
+    };
     Path.prototype.left = function (val) {
         return this.h(-Math.max(0, val));
-    }
+    };
     Path.prototype.v = function (val) {
         this.attrs.d += 'v' + val;
         return this;
-    }
+    };
     Path.prototype.down = function (val) {
         return this.v(Math.max(0, val));
-    }
+    };
     Path.prototype.up = function (val) {
         return this.v(-Math.max(0, val));
-    }
+    };
     Path.prototype.arc = function (sweep) {
         var x = Diagram.ARC_RADIUS;
         var y = Diagram.ARC_RADIUS;
@@ -185,13 +185,13 @@ At runtime, these constants can be found on the Diagram class.
         }
         this.attrs.d += "a" + Diagram.ARC_RADIUS + " " + Diagram.ARC_RADIUS + " 0 0 " + cw + ' ' + x + ' ' + y;
         return this;
-    }
+    };
     Path.prototype.format = function () {
         // All paths in this library start/end horizontally.
         // The extra .5 ensures a minor overlap, so there's no seams in bad rasterizers.
         this.attrs.d += 'h.5';
         return this;
-    }
+    };
 
     function Diagram(items) {
         if (!(this instanceof Diagram)) return new Diagram([].slice.call(arguments));
@@ -247,7 +247,7 @@ At runtime, these constants can be found on the Diagram class.
         g.addTo(this);
         this.formatted = true;
         return this;
-    }
+    };
     Diagram.prototype.addTo = function (parent) {
         if (!parent) {
             var scriptTag = document.getElementsByTagName('script');
@@ -255,19 +255,19 @@ At runtime, these constants can be found on the Diagram class.
             parent = scriptTag.parentNode;
         }
         return this.$super.addTo.call(this, parent);
-    }
+    };
     Diagram.prototype.toSVG = function () {
         if (!this.formatted) {
             this.format();
         }
         return this.$super.toSVG.call(this);
-    }
+    };
     Diagram.prototype.toString = function () {
         if (!this.formatted) {
             this.format();
         }
         return this.$super.toString.call(this);
-    }
+    };
 
     function ComplexDiagram() {
         var diagram = new Diagram([].slice.call(arguments));
@@ -299,8 +299,8 @@ At runtime, these constants can be found on the Diagram class.
             if (this.items[this.items.length - 1].needsSpace) this.width -= 10;
         }
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "sequence"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "sequence";
         }
     }
     subclassOf(Sequence, FakeSVG);
@@ -326,7 +326,7 @@ At runtime, these constants can be found on the Diagram class.
             }
         }
         return this;
-    }
+    };
 
     function Stack(items) {
         if (!(this instanceof Stack)) return new Stack([].slice.call(arguments));
@@ -360,8 +360,8 @@ At runtime, these constants can be found on the Diagram class.
             }
         }
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "stack"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "stack";
         }
     }
     subclassOf(Stack, FakeSVG);
@@ -402,7 +402,7 @@ At runtime, these constants can be found on the Diagram class.
         Path(x, y).h(gaps[1]).addTo(this);
 
         return this;
-    }
+    };
 
     function OptionalSequence(items) {
         if (!(this instanceof OptionalSequence)) return new OptionalSequence([].slice.call(arguments));
@@ -419,7 +419,7 @@ At runtime, these constants can be found on the Diagram class.
         this.width = 0;
         this.up = 0;
         this.height = sum(this.items, function (x) {
-            return x.height
+            return x.height;
         });
         this.down = this.items[0].down;
         var heightSoFar = 0;
@@ -438,8 +438,8 @@ At runtime, these constants can be found on the Diagram class.
             }
         }
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "optseq"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "optseq";
         }
     }
     subclassOf(OptionalSequence, FakeSVG);
@@ -448,7 +448,7 @@ At runtime, these constants can be found on the Diagram class.
         var gaps = determineGaps(width, this.width);
         Path(x, y).right(gaps[0]).addTo(this);
         Path(x + gaps[0] + this.width, y + this.height).right(gaps[1]).addTo(this);
-        x += gaps[0]
+        x += gaps[0];
         var upperLineY = y - this.up;
         var last = this.items.length - 1;
         for (var i = 0; i < this.items.length; i++) {
@@ -541,7 +541,7 @@ At runtime, these constants can be found on the Diagram class.
         var last = items.length - 1;
         this.items = items.map(wrapString);
         this.width = Math.max.apply(null, this.items.map(function (el) {
-            return el.width
+            return el.width;
         })) + Diagram.ARC_RADIUS * 4;
         this.height = this.items[normal].height;
         this.up = this.items[first].up;
@@ -558,8 +558,8 @@ At runtime, these constants can be found on the Diagram class.
         }
         this.down -= this.items[normal].height; // already counted in Choice.height
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "choice"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "choice";
         }
     }
     subclassOf(Choice, FakeSVG);
@@ -615,7 +615,7 @@ At runtime, these constants can be found on the Diagram class.
         }
 
         return this;
-    }
+    };
 
     function MultipleChoice(normal, type, items) {
         if (!(this instanceof MultipleChoice)) return new MultipleChoice(normal, type, [].slice.call(arguments, 2));
@@ -635,7 +635,7 @@ At runtime, these constants can be found on the Diagram class.
         this.needsSpace = true;
         this.items = items.map(wrapString);
         this.innerWidth = max(this.items, function (x) {
-            return x.width
+            return x.width;
         });
         this.width = 30 + Diagram.ARC_RADIUS + this.innerWidth + Diagram.ARC_RADIUS + 20;
         this.up = this.items[0].up;
@@ -653,8 +653,8 @@ At runtime, these constants can be found on the Diagram class.
         }
         this.down -= this.items[normal].height; // already counted in this.height
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "multiplechoice"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "multiplechoice";
         }
     }
     subclassOf(MultipleChoice, FakeSVG);
@@ -698,7 +698,7 @@ At runtime, these constants can be found on the Diagram class.
                 .down(distanceFromY - Diagram.ARC_RADIUS)
                 .arc('ws')
                 .addTo(this);
-            item.format(x + 30 + Diagram.ARC_RADIUS, y + distanceFromY, this.innerWidth).addTo(this)
+            item.format(x + 30 + Diagram.ARC_RADIUS, y + distanceFromY, this.innerWidth).addTo(this);
             Path(x + 30 + Diagram.ARC_RADIUS + this.innerWidth, y + distanceFromY + item.height)
                 .arc('se')
                 .up(distanceFromY - Diagram.ARC_RADIUS + item.height - normal.height)
@@ -709,25 +709,25 @@ At runtime, these constants can be found on the Diagram class.
         }
         var text = FakeSVG('g', {
             "class": "diagram-text"
-        }).addTo(this)
-        FakeSVG('title', {}, (this.type == "any" ? "take one or more branches, once each, in any order" : "take all branches, once each, in any order")).addTo(text)
+        }).addTo(this);
+        FakeSVG('title', {}, (this.type == "any" ? "take one or more branches, once each, in any order" : "take all branches, once each, in any order")).addTo(text);
         FakeSVG('path', {
             "d": "M " + (x + 30) + " " + (y - 10) + " h -26 a 4 4 0 0 0 -4 4 v 12 a 4 4 0 0 0 4 4 h 26 z",
             "class": "diagram-text"
-        }).addTo(text)
+        }).addTo(text);
         FakeSVG('text', {
             "x": x + 15,
             "y": y + 4,
             "class": "diagram-text"
-        }, (this.type == "any" ? "1+" : "all")).addTo(text)
+        }, (this.type == "any" ? "1+" : "all")).addTo(text);
         FakeSVG('path', {
             "d": "M " + (x + this.width - 20) + " " + (y - 10) + " h 16 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -16 z",
             "class": "diagram-text"
-        }).addTo(text)
+        }).addTo(text);
         FakeSVG('path', {
             "d": "M " + (x + this.width - 13) + " " + (y - 2) + " a 4 4 0 1 0 6 -1 m 2.75 -1 h -4 v 4 m 0 -3 h 2",
             "style": "stroke-width: 1.75"
-        }).addTo(text)
+        }).addTo(text);
         return this;
     };
 
@@ -751,8 +751,8 @@ At runtime, these constants can be found on the Diagram class.
         this.up = this.item.up;
         this.down = Math.max(Diagram.ARC_RADIUS * 2, this.item.down + Diagram.VERTICAL_SEPARATION + this.rep.up + this.rep.height + this.rep.down);
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "oneormore"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "oneormore";
         }
     }
     subclassOf(OneOrMore, FakeSVG);
@@ -776,7 +776,7 @@ At runtime, these constants can be found on the Diagram class.
         Path(x + this.width - Diagram.ARC_RADIUS, y + distanceFromY + this.rep.height).arc('se').up(distanceFromY - Diagram.ARC_RADIUS * 2 + this.rep.height - this.item.height).arc('en').addTo(this);
 
         return this;
-    }
+    };
 
     function ZeroOrMore(item, rep, skip) {
         return Optional(OneOrMore(item, rep), skip);
@@ -791,8 +791,8 @@ At runtime, these constants can be found on the Diagram class.
         this.down = 10;
         this.type = type || "simple";
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "start"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "start";
         }
     }
     subclassOf(Start, FakeSVG);
@@ -803,7 +803,7 @@ At runtime, these constants can be found on the Diagram class.
             this.attrs.d = 'M ' + x + ' ' + (y - 10) + ' v 20 m 10 -20 v 20 m -10 -10 h 20.5';
         }
         return this;
-    }
+    };
 
     function End(type) {
         if (!(this instanceof End)) return new End();
@@ -814,8 +814,8 @@ At runtime, these constants can be found on the Diagram class.
         this.down = 10;
         this.type = type || "simple";
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "end"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "end";
         }
     }
     subclassOf(End, FakeSVG);
@@ -826,7 +826,7 @@ At runtime, these constants can be found on the Diagram class.
             this.attrs.d = 'M ' + x + ' ' + y + ' h 20 m -10 -10 v 20 m 10 -20 v 20';
         }
         return this;
-    }
+    };
 
     function Terminal(text, href) {
         if (!(this instanceof Terminal)) return new Terminal(text, href);
@@ -840,8 +840,8 @@ At runtime, these constants can be found on the Diagram class.
         this.up = 11;
         this.down = 11;
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "terminal"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "terminal";
         }
     }
     subclassOf(Terminal, FakeSVG);
@@ -872,7 +872,7 @@ At runtime, these constants can be found on the Diagram class.
         else
             text.addTo(this);
         return this;
-    }
+    };
 
     function NonTerminal(text, href) {
         if (!(this instanceof NonTerminal)) return new NonTerminal(text, href);
@@ -886,8 +886,8 @@ At runtime, these constants can be found on the Diagram class.
         this.up = 11;
         this.down = 11;
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "nonterminal"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "nonterminal";
         }
     }
     subclassOf(NonTerminal, FakeSVG);
@@ -918,7 +918,7 @@ At runtime, these constants can be found on the Diagram class.
         else
             text.addTo(this);
         return this;
-    }
+    };
 
     function Comment(text, href) {
         if (!(this instanceof Comment)) return new Comment(text, href);
@@ -930,8 +930,8 @@ At runtime, these constants can be found on the Diagram class.
         this.up = 11;
         this.down = 11;
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "comment"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "comment";
         }
     }
     subclassOf(Comment, FakeSVG);
@@ -955,7 +955,7 @@ At runtime, these constants can be found on the Diagram class.
         else
             text.addTo(this);
         return this;
-    }
+    };
 
     function Skip() {
         if (!(this instanceof Skip)) return new Skip();
@@ -965,15 +965,15 @@ At runtime, these constants can be found on the Diagram class.
         this.up = 0;
         this.down = 0;
         if (Diagram.DEBUG) {
-            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down
-            this.attrs['data-type'] = "skip"
+            this.attrs['data-updown'] = this.up + " " + this.height + " " + this.down;
+            this.attrs['data-type'] = "skip";
         }
     }
     subclassOf(Skip, FakeSVG);
     Skip.prototype.format = function (x, y, width) {
         Path(x, y).right(width).addTo(this);
         return this;
-    }
+    };
 
     var root;
     if (typeof define === 'function' && define.amd) {
@@ -1000,11 +1000,11 @@ At runtime, these constants can be found on the Diagram class.
             root[e] = temp[i];
         });
 }).call(this, {
-    VERTICAL_SEPARATION: 24,
-    ARC_RADIUS: 10,
+    VERTICAL_SEPARATION: 18,
+    ARC_RADIUS: 8,
     DIAGRAM_CLASS: 'railroad-diagram',
     STROKE_ODD_PIXEL_LENGTH: true,
-    INTERNAL_ALIGNMENT: 'center',
+    INTERNAL_ALIGNMENT: 'left',
     TERMINAL_ARC_RADIUS: 0,
-    NON_TERMINAL_ARC_RADIUS: 8
+    NON_TERMINAL_ARC_RADIUS: 6
 });

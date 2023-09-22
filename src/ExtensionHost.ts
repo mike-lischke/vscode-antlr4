@@ -147,10 +147,6 @@ export class ExtensionHost {
         }
     }
 
-    public shutDown(): void {
-        //ATNGraphProvider.saveStates();
-    }
-
     private addSubscriptions(context: ExtensionContext): void {
         context.subscriptions.push(languages.registerHoverProvider(ExtensionHost.antlrSelector,
             new AntlrHoverProvider(this.backend)));
