@@ -17,7 +17,7 @@ describe("ATN Tests", () => {
         const files = await backend.generate("grammars/ANTLRv4Parser.g4", {
             outputDir: "generated-atn",
             language: "TypeScript",
-            alternativeJar: path.join(process.cwd(), "node_modules/antlr4ng/cli/antlr4-4.13.2-SNAPSHOT-complete.jar"),
+            alternativeJar: path.join(process.cwd(), "node_modules/antlr4ng-cli/antlr4-4.13.2-SNAPSHOT-complete.jar"),
         });
 
         files.forEach((file) => {

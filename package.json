@@ -549,7 +549,7 @@
         "package": "vsce package",
         "vscode:prepublish": "tsc -b",
         "local-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --no-coverage",
+        "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --no-coverage",
         "generate": "antlr4ng -Dlanguage=TypeScript -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\""
     },
@@ -557,8 +557,8 @@
         "@unicode/unicode-11.0.0": "1.5.2",
         "@vscode/debugadapter": "1.63.0",
         "@vscode/debugprotocol": "1.63.0",
-        "antlr4-c3": "3.2.4",
-        "antlr4ng": "1.1.1",
+        "antlr4-c3": "3.2.5",
+        "antlr4ng": "1.1.3",
         "await-notify": "1.0.1",
         "d3": "7.8.5",
         "fs-extra": "11.1.1"
@@ -574,7 +574,7 @@
         "@typescript-eslint/eslint-plugin": "6.7.2",
         "@typescript-eslint/eslint-plugin-tslint": "6.7.2",
         "@typescript-eslint/parser": "6.7.2",
-        "antlr4ng-cli": "1.0.1",
+        "antlr4ng-cli": "1.0.2",
         "eslint": "8.49.0",
         "eslint-plugin-import": "2.28.1",
         "eslint-plugin-jsdoc": "46.8.1",
