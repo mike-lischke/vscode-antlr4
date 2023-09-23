@@ -143,3 +143,23 @@ export interface ICallGraphEntry {
     name: string;
     references: string[];
 }
+
+/* eslint-disable @typescript-eslint/naming-convention */
+
+// Temporary definitions for the ATN state types, because the current definition in antlr4ng requires an import of that
+// package which is not possible in the webview module.
+export const enum ATNStateType {
+    INVALID_TYPE = 0,
+    BASIC = 1,
+    RULE_START = 2,
+    BLOCK_START = 3,
+    PLUS_BLOCK_START = 4,
+    STAR_BLOCK_START = 5,
+    TOKEN_START = 6,
+    RULE_STOP = 7,
+    BLOCK_END = 8,
+    STAR_LOOP_BACK = 9,
+    STAR_LOOP_ENTRY = 10,
+    PLUS_LOOP_BACK = 11,
+    LOOP_END = 12,
+}

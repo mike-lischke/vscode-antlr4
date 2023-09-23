@@ -275,9 +275,7 @@ export class ATNGraphProvider extends WebviewProvider {
 
                     break;
                 }
-
             }
-
         };
 
         let graphData: IATNGraphData | undefined;

@@ -6,11 +6,10 @@
 import { Uri } from "vscode";
 
 import { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum } from "d3";
-import { ATNStateType } from "antlr4ng";
 
 import {
     IATNGraphData, IATNNode, IATNGraphLayoutNode, IATNLink, IATNGraphLayoutLink, IATNGraphRendererData, IVSCode,
-    IATNGraphUpdateMessageData, IATNStateSaveMessage,
+    IATNGraphUpdateMessageData, IATNStateSaveMessage, ATNStateType,
 } from "./types.js";
 
 const stateType = [
