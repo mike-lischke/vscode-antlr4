@@ -16,7 +16,7 @@ export class AntlrFormattingProvider implements DocumentRangeFormattingEditProvi
         _token: CancellationToken): ProviderResult<TextEdit[]> {
 
         let start = document.offsetAt(range.start);
-        let end = document.offsetAt(range.end) - 1; // Make the end inclusive.
+        let end = document.offsetAt(range.end);
 
         const formatOptions = workspace.getConfiguration("antlr4.format");
         let text = "";

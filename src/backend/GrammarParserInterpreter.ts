@@ -3,27 +3,23 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-// I want to keep all related classes (most of them really small) in a single place.
-/* eslint-disable max-classes-per-file */
-
-/* eslint-disable no-underscore-dangle */
-
+import { BaseSymbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 import {
-    LexerInterpreter, ParserInterpreter, TokenStream, ParserRuleContext, RecognitionException,
-    BaseErrorListener, Recognizer, Token, Lexer, RuleContext, CharStream, ATNState, RuleStartState, Transition,
-    ATNSimulator, TerminalNode, LexerATNSimulator, ParserATNSimulator, ATNStateType, TransitionType,
+    ATNState, ATNStateType, Lexer, ParserInterpreter, ParserRuleContext, RecognitionException, RuleContext,
+    RuleStartState, TerminalNode, TokenStream, Transition, TransitionType,
 } from "antlr4ng";
 
-import { BaseSymbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
+import { TerminalRuleContext } from "../parser/ANTLRv4Parser.js";
+import {
+    ParserPredicateSymbol, ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, ParserActionSymbol,
+    LexerActionSymbol, LexerPredicateSymbol,
+} from "./ContextSymbolTable.js";
 
 import { IInterpreterData } from "./InterpreterDataReader.js";
-import {
-    ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, LexerPredicateSymbol,
-    ParserPredicateSymbol, LexerActionSymbol, ParserActionSymbol,
-} from "./ContextSymbolTable.js";
 import { SourceContext } from "./SourceContext.js";
 import { PredicateFunction } from "./types.js";
-import { TerminalRuleContext } from "../parser/ANTLRv4Parser.js";
+
+/* eslint-disable no-underscore-dangle */
 
 export enum RunMode {
     Normal,
@@ -37,50 +33,6 @@ export interface IInternalStackFrame {
     source?: string;
     current: BaseSymbol[];
     next: BaseSymbol[];
-}
-
-export class GrammarLexerInterpreter extends LexerInterpreter {
-    private predicates: LexerPredicateSymbol[];
-
-    public constructor(
-        private runPredicate: PredicateFunction | undefined,
-        private mainContext: SourceContext,
-        grammarFileName: string,
-        lexerData: IInterpreterData,
-        input: CharStream) {
-
-        super(grammarFileName, lexerData.vocabulary, lexerData.ruleNames, lexerData.channels, lexerData.modes,
-            lexerData.atn, input);
-
-        this.mainContext.symbolTable.getNestedSymbolsOfType(LexerPredicateSymbol).then((symbols) => {
-            this.predicates = symbols;
-        }).catch(() => {
-            this.predicates = [];
-        });
-    }
-
-    public override sempred(_localctx: RuleContext | null, ruleIndex: number, predIndex: number): boolean {
-        if (this.runPredicate) {
-            if (predIndex < this.predicates.length) {
-                let predicate = this.predicates[predIndex].context!.getText();
-                if (predicate.length > 2) {
-                    predicate = predicate.substring(1, predicate.length - 1); // Remove outer curly braces.
-                    try {
-                        return this.runPredicate(predicate);
-                    } catch (e) {
-                        throw Error(`There was an error while evaluating predicate "${predicate}". ` +
-                            "Evaluation returned: " + String(e));
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public override action(_localctx: RuleContext | null, _ruleIndex: number, _actionIndex: number): void {
-        // not used yet
-    }
 }
 
 export class GrammarParserInterpreter extends ParserInterpreter {
@@ -523,29 +475,5 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         }
 
         return -1;
-    }
-}
-
-export class InterpreterLexerErrorListener extends BaseErrorListener<LexerATNSimulator> {
-    public constructor(private eventSink: (event: string | symbol, ...args: unknown[]) => void) {
-        super();
-    }
-
-    public override syntaxError<T extends Token>(recognizer: Recognizer<ATNSimulator>, offendingSymbol: T | undefined,
-        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | null): void {
-        this.eventSink("output", `Lexer error (${line}, ${charPositionInLine + 1}): ${msg}`,
-            recognizer.inputStream.getSourceName(), line, charPositionInLine, true);
-    }
-}
-
-export class InterpreterParserErrorListener extends BaseErrorListener<ParserATNSimulator> {
-    public constructor(private eventSink: (event: string | symbol, ...args: unknown[]) => void) {
-        super();
-    }
-
-    public override syntaxError<T extends Token>(recognizer: Recognizer<ATNSimulator>, offendingSymbol: T | undefined,
-        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | null): void {
-        this.eventSink("output", `Parser error (${line}, ${charPositionInLine + 1}): ${msg}`,
-            recognizer.inputStream.getSourceName(), line, charPositionInLine, true);
     }
 }

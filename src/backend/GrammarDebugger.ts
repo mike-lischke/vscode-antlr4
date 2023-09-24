@@ -3,6 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
+import * as vm from "vm";
+import * as fs from "fs";
 import { EventEmitter } from "events";
 
 import {
@@ -15,13 +17,12 @@ import { ILexerToken, ILexicalRange, IParseTreeNode, PredicateFunction } from ".
 
 import { RuleSymbol } from "./ContextSymbolTable.js";
 import { SourceContext } from "./SourceContext.js";
-import {
-    GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
-    RunMode,
-} from "./GrammarInterpreters.js";
 
-import * as vm from "vm";
-import * as fs from "fs";
+import { GrammarLexerInterpreter } from "./GrammarLexerInterpreter.js";
+
+import { GrammarParserInterpreter, RunMode } from "./GrammarParserInterpreter.js";
+import { InterpreterLexerErrorListener } from "./InterpreterLexerErrorListener.js";
+import { InterpreterParserErrorListener } from "./InterpreterParserErrorListener.js";
 
 export interface IGrammarBreakPoint {
     source: string;
@@ -91,7 +92,7 @@ export class GrammarDebugger extends EventEmitter {
             }
 
             const eventSink = (event: string | symbol, ...args: unknown[]): void => {
-                setImmediate((_) => { return this.emit(event, args); });
+                this.sendEvent(event as string, ...args);
             };
 
             if (this.lexerData) {
@@ -365,7 +366,7 @@ export class GrammarDebugger extends EventEmitter {
     }
 
     private sendEvent(event: string, ...args: unknown[]) {
-        setImmediate((_) => {
+        setImmediate(() => {
             this.emit(event, ...args);
         });
     }
@@ -387,14 +388,14 @@ export class GrammarDebugger extends EventEmitter {
             return {
                 type: "rule",
                 ruleIndex: tree.ruleIndex,
-                name: this.parser!.ruleNames[tree.ruleIndex],
+                name: this.parser?.ruleNames[tree.ruleIndex] ?? "<no name>",
                 start: this.convertToken(tree.start as CommonToken),
                 stop: this.convertToken(tree.stop as CommonToken),
                 id: this.computeHash(tree),
                 range: {
                     startIndex: sourceInterval.start,
                     stopIndex: sourceInterval.stop,
-                    length: sourceInterval.length(),
+                    length: sourceInterval.length,
                 },
                 children,
             };

@@ -50,15 +50,17 @@ import {
 
 import { SentenceGenerator } from "./SentenceGenerator.js";
 import { GrammarFormatter } from "./Formatter.js";
-import {
-    GrammarLexerInterpreter, InterpreterLexerErrorListener, GrammarParserInterpreter, InterpreterParserErrorListener,
-} from "./GrammarInterpreters.js";
+
+import { GrammarLexerInterpreter } from "./GrammarLexerInterpreter.js";
 import { printableUnicodePoints } from "./Unicode.js";
 import { BackendUtils } from "./BackendUtils.js";
 
 import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types.js";
+import { InterpreterLexerErrorListener } from "./InterpreterLexerErrorListener.js";
+import { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
+import { InterpreterParserErrorListener } from "./InterpreterParserErrorListener.js";
 
-// One source context per file. Source contexts can reference each other (e.g. for symbol lookups).
+/** One source context per file. Source contexts can reference each other (e.g. for symbol lookups). */
 export class SourceContext {
     private static globalSymbols = new ContextSymbolTable("Global Symbols", { allowDuplicateSymbols: false });
     private static symbolToKindMap: Map<new () => BaseSymbol, SymbolKind> = new Map([
@@ -485,7 +487,6 @@ export class SourceContext {
             ANTLRv4Lexer.ACTION_CONTENT,
             ANTLRv4Lexer.UNTERMINATED_CHAR_SET,
             Token.EOF,
-            -2, // TODO: Erroneously inserted. Needs fix in antlr4-c3.
         ]);
 
         core.preferredRules = new Set([
@@ -702,7 +703,8 @@ export class SourceContext {
                     const list = candidateRule.ruleList;
                     switch (list[list.length - 1]) {
                         case ANTLRv4Parser.RULE_option: {
-                            ["superClass", "tokenVocab", "TokenLabelType", "contextSuperClass", "exportMacro"]
+                            ["superClass", "language", "tokenVocab", "TokenLabelType", "contextSuperClass",
+                                "caseInsensitive", "exportMacro"]
                                 .forEach((symbol) => {
                                     result.push({
                                         kind: SymbolKind.Option,

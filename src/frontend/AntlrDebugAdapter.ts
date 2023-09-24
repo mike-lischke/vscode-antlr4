@@ -207,8 +207,8 @@ export class AntlrDebugSession extends DebugSession {
         // Need to wait here for the configuration to be done, which happens after break points are set.
         // This in turn is triggered by sending the InitializedEvent above.
         this.configurationDone.wait(1000).then(() => {
-            this.showTextualParseTree = args.printParseTree || false;
-            this.showGraphicalParseTree = args.visualParseTree || false;
+            this.showTextualParseTree = args.printParseTree ?? false;
+            this.showGraphicalParseTree = args.visualParseTree ?? false;
             this.testInput = args.input;
 
             try {
