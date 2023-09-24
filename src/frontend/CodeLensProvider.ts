@@ -3,19 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable max-classes-per-file */
-
 import {
     workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, EventEmitter, Event, ProviderResult,
 } from "vscode";
 import { AntlrFacade } from "../backend/facade.js";
-import { ISymbolInfo, SymbolKind } from "../backend/types.js";
-
-class SymbolCodeLens extends CodeLens {
-    public constructor(public symbol: ISymbolInfo, range: Range) {
-        super(range);
-    }
-}
+import { SymbolKind } from "../backend/types.js";
+import { SymbolCodeLens } from "./SymbolCodeLens.js";
 
 export class AntlrCodeLensProvider implements CodeLensProvider {
     private changeEvent = new EventEmitter<void>();

@@ -3,32 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable max-classes-per-file */
-
 import { Vocabulary } from "antlr4ng";
-import * as path from "path";
 
-import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
+import { TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
-
-export class LexerSymbolItem extends TreeItem {
-
-    public override iconPath = {
-        light: path.join(__dirname, "..", "..", "..", "misc", "token-light.svg"),
-        dark: path.join(__dirname, "..", "..", "..", "misc", "token-dark.svg"),
-    };
-
-    public override contextValue = "lexerSymbols";
-
-    public constructor(
-        public override readonly label: string,
-        public override readonly collapsibleState: TreeItemCollapsibleState,
-        command?: Command,
-    ) {
-        super(label, collapsibleState);
-        this.command = command;
-    }
-}
+import { LexerSymbolItem } from "./LexerSymbolItem.js";
 
 export class LexerSymbolsProvider extends AntlrTreeDataProvider<LexerSymbolItem> {
 

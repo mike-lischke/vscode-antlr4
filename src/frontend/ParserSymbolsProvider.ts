@@ -3,36 +3,13 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable max-classes-per-file */
-
-import * as path from "path";
-
-import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
+import { TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
+import { ParserSymbolItem } from "./ParserSymbolItem.js";
 
-export class ParserSymbol extends TreeItem {
+export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbolItem> {
 
-    public override iconPath = {
-        light: path.join(__dirname, "..", "..", "..", "misc", "rule-light.svg"),
-        dark: path.join(__dirname, "..", "..", "..", "misc", "rule-dark.svg"),
-    };
-
-    public override contextValue = "parserSymbols";
-
-    public constructor(
-        public override readonly label: string,
-        public override readonly collapsibleState: TreeItemCollapsibleState,
-        command?: Command,
-    ) {
-        super(label, collapsibleState);
-        this.command = command;
-    }
-
-}
-
-export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbol> {
-
-    public override getChildren(element?: ParserSymbol): ProviderResult<ParserSymbol[]> {
+    public override getChildren(element?: ParserSymbolItem): ProviderResult<ParserSymbolItem[]> {
         return new Promise((resolve) => {
             if (!element) {
                 let rules: string[] | undefined;
@@ -40,7 +17,7 @@ export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbol> {
                     rules = this.backend.getRuleList(this.currentFile);
                 }
 
-                const list: ParserSymbol[] = [];
+                const list: ParserSymbolItem[] = [];
                 if (rules) {
                     rules.forEach((rule, index) => {
                         const info = this.backend.infoForSymbol(this.currentFile!, rule);
@@ -52,7 +29,7 @@ export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbol> {
                             parameters.arguments = [info.definition.range];
                         }
 
-                        list.push(new ParserSymbol(caption, TreeItemCollapsibleState.None, parameters));
+                        list.push(new ParserSymbolItem(caption, TreeItemCollapsibleState.None, parameters));
                     });
                 }
 

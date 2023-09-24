@@ -3,33 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable max-classes-per-file */
-
-import * as path from "path";
-
-import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
+import { TreeItemCollapsibleState, ProviderResult } from "vscode";
 
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
-
-export class ChannelEntry extends TreeItem {
-
-    public override iconPath = {
-        light: path.join(__dirname, "..", "..", "..", "misc", "channel-light.svg"),
-        dark: path.join(__dirname, "..", "..", "..", "misc", "channel-dark.svg"),
-    };
-
-    public override contextValue = "channels";
-
-    public constructor(
-        public override readonly label: string,
-        public override readonly collapsibleState: TreeItemCollapsibleState,
-        command?: Command,
-    ) {
-        super(label, collapsibleState);
-        this.command = command;
-    }
-
-}
+import { ChannelEntry } from "./ChannelEntry.js";
 
 export class ChannelsProvider extends AntlrTreeDataProvider<ChannelEntry> {
 

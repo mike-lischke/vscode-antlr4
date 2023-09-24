@@ -2,31 +2,10 @@
  * Copyright (c) Mike Lischke. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-/* eslint-disable max-classes-per-file */
 
-import * as path from "path";
-
-import { TreeItem, TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
+import { TreeItem, TreeItemCollapsibleState, ProviderResult } from "vscode";
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
-
-export class ModeEntry extends TreeItem {
-
-    public override iconPath = {
-        light: path.join(__dirname, "..", "..", "..", "misc", "mode-light.svg"),
-        dark: path.join(__dirname, "..", "..", "..", "misc", "mode-dark.svg"),
-    };
-
-    public override contextValue = "lexerSymbols";
-
-    public constructor(
-        public override readonly label: string,
-        public override readonly collapsibleState: TreeItemCollapsibleState,
-        command?: Command,
-    ) {
-        super(label, collapsibleState);
-        this.command = command;
-    }
-}
+import { ModeEntry } from "./ModeEntry.js";
 
 export class ModesProvider extends AntlrTreeDataProvider<ModeEntry> {
 
