@@ -5,24 +5,26 @@
 
 import { basename, extname } from "path";
 
-import { TextEditor, Uri, Webview } from "vscode";
+import { TextEditor, Uri, Webview, workspace } from "vscode";
 
 import { SymbolKind } from "../../backend/types.js";
 import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider.js";
 import { FrontendUtils } from "../FrontendUtils.js";
 
 export class RailroadDiagramProvider extends WebviewProvider {
-
     public override generateContent(webview: Webview, uri: Uri, options: IWebviewShowOptions): string {
         const fileName = uri.fsPath;
         const baseName = basename(fileName, extname(fileName));
 
         const nonce = this.generateNonce();
-        const scripts = [
-            FrontendUtils.getMiscPath("railroad-diagrams.js", this.context, webview),
-        ];
+        const diagramScriptPath = FrontendUtils.getMiscPath("railroad-diagrams.js", this.context, webview);
+        const rrdIconPath = FrontendUtils.getMiscPath("rrd.svg", this.context, webview);
+        const diagramImports = `import { Start, Choice, ComplexDiagram, Diagram, Sequence, Stack, ` +
+            `Comment, Terminal, NonTerminal, Optional, ZeroOrMore, OneOrMore, Options } from "${diagramScriptPath}";\n`;
         const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
             webview);
+        const stripPattern = new RegExp(workspace.getConfiguration("antlr4.rrd").stripNamePart as string ?? "");
+        const wrapAfter = workspace.getConfiguration("antlr4.rrd").wrapAfter as number ?? 0;
 
         if (!this.currentRule || this.currentRuleIndex === undefined) {
             return `<!DOCTYPE html>
@@ -34,45 +36,89 @@ export class RailroadDiagramProvider extends WebviewProvider {
                 </html>`;
         }
 
+        const codiconsUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, "node_modules",
+            "@vscode/codicons", "dist", "codicon.css"));
+
         let diagram = `<!DOCTYPE html>
             <html>
             <head>
                 <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
                 ${this.generateContentSecurityPolicy(webview, nonce)}
+                <link rel="stylesheet" href="${codiconsUri.toString()}" />
                 ${this.getStyles(webview)}
-                <base href="${uri.toString(true)}">
+                <base href="${uri.toString(true)}" />
                 <script nonce="${nonce}">
                     let graphExport;
+
+                    function filterElements(filter) {
+                        const re = new RegExp(filter);
+                        const container = document.getElementById("container");
+                        const h3List = container.querySelectorAll("h3");
+                        h3List.forEach((element) => {
+                            const name = element.textContent;
+                            if (name && !name.match(re)) {
+                                element.style.display = "none";
+                                element.nextElementSibling.style.display = "none";
+                            } else {
+                                element.style.display = "block";
+                                element.nextElementSibling.style.display = "block";
+                            }
+                        });
+                    };
                 </script>
             </head>
 
-            <body>
-            ${this.getScripts(nonce, scripts)}`;
+            <body>`;
 
         if (options.fullList) {
             diagram += `
                 <div class="header">
-                    <span class="rrd-color"><span class="graph-initial">Ⓡ</span>rd&nbsp;&nbsp;</span>All rules
-                    <span class="action-box">
-                        Save to HTML<a onClick="graphExport.exportToHTML('rrd', '${baseName}');">
-                            <span class="rrd-save-image" />
+                    <div class="rrd-color"><img src="${rrdIconPath}" style="vertical-align: text-bottom"/></div>
+                    <div class="action-box">
+                        <a onClick="graphExport.exportToHTML('rrd', '${baseName}');"
+                            title="Save all diagrams to an HTML page">
+                            <span class="codicon codicon-preview" style="vertical-align: text-bottom"/>
                         </a>
-                    </span>
+                        <a onClick="graphExport.exportToSVGFiles('rrd');" title="Save all diagrams to individual files">
+                            <span class="codicon codicon-save-all" style="vertical-align: text-bottom"/>
+                        </a>
+                        <label>Filter: </label>
+                        <input
+                            type="text" id="filter" placeholder="Enter text"
+                            oninput="filterElements(this.value)"
+                            title="Show only elements whose names match the given regular expression"
+                        />
+                    </div>
                 </div>
                 <div id="container">`;
+
+            diagram += `<script nonce="${nonce}" type="module">${diagramImports}` +
+                `const parent = document.getElementById("container");
+                Options.AR = 10;
+                Options.VS = 16;\n`;
 
             const symbols = this.backend.listTopLevelSymbols(fileName, false);
             for (const symbol of symbols) {
                 if (symbol.kind === SymbolKind.LexerRule
                     || symbol.kind === SymbolKind.ParserRule
                     || symbol.kind === SymbolKind.FragmentLexerToken) {
-                    const script = this.backend.getRRDScript(fileName, symbol.name);
-                    diagram += `<h3 class="${symbol.name}-class">${symbol.name}</h3>
-                        <script nonce="${nonce}">${script}</script>`;
+                    const [code, wrapped] = this.backend.getRRDScript(fileName, symbol.name, stripPattern, wrapAfter);
+                    const name = symbol.name;
+
+                    diagram += `Options.INTERNAL_ALIGNMENT = ${wrapped ? "'left'" : "'center'"};
+                        const ${name} = document.createElement("h3"); ${name}.textContent = ` +
+                        `"${symbol.name}"; ${name}.id = "${name}"; parent.appendChild(${name});
+                        const ${name}SVG = ${code}.addTo(parent);
+                        ${name}SVG.setAttribute("id", "${name}");
+                        ${name}SVG.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                        ${name}SVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+                        `;
                 }
             }
-            diagram += "</div>";
+            diagram += "</script></div>";
         } else {
+            const [code, wrapped] = this.backend.getRRDScript(fileName, this.currentRule, stripPattern, wrapAfter);
+
             diagram += `
                 <div class="header">
                     <span class="rrd-color">
@@ -88,7 +134,16 @@ export class RailroadDiagramProvider extends WebviewProvider {
                     </span>
                 </div>
                 <div id="container">
-                    <script nonce="${nonce}" >${this.backend.getRRDScript(fileName, this.currentRule)}</script>
+                    <script nonce="${nonce}" type="module">
+                        ${diagramImports}
+                        const parent = document.getElementById("container");
+                        Options.INTERNAL_ALIGNMENT = ${wrapped ? "'left'" : "'center'"};
+                        Options.AR = 10;
+                        Options.VS = 16;
+                        const svg = ${code}.addTo(parent);
+                        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                        svg.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+                    </script>
                 </div>`;
         }
 

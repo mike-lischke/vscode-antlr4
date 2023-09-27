@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { basename, join } from "path";
+import { join } from "path";
 
 import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
 
@@ -11,7 +11,7 @@ import { AntlrFacade } from "../../backend/facade.js";
 import { FrontendUtils } from "../FrontendUtils.js";
 
 export interface IWebviewShowOptions {
-    [key: string]: boolean | number | string;
+    fullList?: boolean;
 
     title: string;
 }
@@ -38,6 +38,7 @@ export class WebviewProvider {
         if (this.webViewMap.has(uriString)) {
             const [existingPanel] = this.webViewMap.get(uriString)!;
             existingPanel.title = options.title;
+            this.webViewMap.set(uriString, [existingPanel, options]);
             if (!this.updateContent(uri)) {
                 existingPanel.webview.html = this.generateContent(existingPanel.webview, uri, options);
             }
@@ -63,48 +64,96 @@ export class WebviewProvider {
             }
 
             switch (message.command) {
-                case "alert": {
-                    if (typeof message.text === "string") {
-                        void window.showErrorMessage(message.text);
-                    } else {
-                        void window.showErrorMessage(String(message));
-                    }
-
-                    return;
-                }
-
-                case "saveSVG": {
+                case "saveSVG": { // Save a single file, with confirmation.
                     if (typeof message.svg === "string" && typeof message.name === "string") {
                         const css: string[] = [];
                         css.push(FrontendUtils.getMiscPath("light.css", this.context));
-                        const customStyles = workspace.getConfiguration("antlr4").customCSS as string | string[];
+
+                        const customStyles = workspace.getConfiguration("antlr4")
+                            .customCSS as string | string[] | undefined;
                         if (customStyles && Array.isArray(customStyles)) {
                             for (const style of customStyles) {
                                 css.push(style);
                             }
+                        } else if (customStyles) {
+                            css.push(customStyles);
                         }
 
-                        let svg = '<?xml version="1.0" standalone="no"?>\n';
-                        for (const stylesheet of css) {
-                            svg += `<?xml-stylesheet href="${basename(stylesheet)}" type="text/css"?>\n`;
-                        }
-
+                        let svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
                         svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
                             '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' + message.svg;
+
+                        let cssText = `<defs><style type="text/css"><![CDATA[\n`;
+                        for (const stylesheet of css) {
+                            const styles = FrontendUtils.readFile(stylesheet);
+                            cssText += this.extractRRDStyles(styles) + "\n";
+                        }
+                        cssText += ` ]]>\n</style></defs></svg>`;
+
+                        svg = svg.replace("</svg>", cssText);
 
                         try {
                             if (typeof message.type === "string") {
                                 const section = "antlr4." + message.type;
                                 const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
-                                const target = join(saveDir, message.name + "." + message.type);
-                                FrontendUtils.exportDataWithConfirmation(target,
-                                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                                    { "Scalable Vector Graphic": ["svg"] }, svg, css,
-                                );
+
+                                if (message.command === "saveSVG") {
+                                    const target = join(saveDir, message.name + "." + message.type);
+                                    FrontendUtils.exportDataWithConfirmation(target,
+                                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                                        { "Scalable Vector Graphic": ["svg"] }, svg, []);
+                                }
                             }
                         } catch (error) {
                             void window.showErrorMessage("Couldn't write SVG file: " + String(error));
                         }
+                    }
+
+                    break;
+                }
+
+                case "saveSVGDirect": { // Save a list of files, without confirmation.
+                    const css: string[] = [];
+                    css.push(FrontendUtils.getMiscPath("light.css", this.context));
+
+                    const customStyles = workspace.getConfiguration("antlr4")
+                        .customCSS as string | string[] | undefined;
+                    if (customStyles && Array.isArray(customStyles)) {
+                        for (const style of customStyles) {
+                            css.push(style);
+                        }
+                    } else if (customStyles) {
+                        css.push(customStyles);
+                    }
+
+                    let svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+                    svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
+                        '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n';
+
+                    let cssText = `<defs><style type="text/css"><![CDATA[\n`;
+                    for (const stylesheet of css) {
+                        const styles = FrontendUtils.readFile(stylesheet);
+                        cssText += this.extractRRDStyles(styles) + "\n";
+                    }
+                    cssText += ` ]]>\n</style></defs></svg>`;
+
+                    try {
+                        if (typeof message.type === "string") {
+                            const section = "antlr4." + message.type;
+                            const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+
+                            const data = message.data as { [key: string]: string; };
+                            for (const [key, value] of Object.entries(data)) {
+                                const target = join(saveDir, key + ".svg");
+
+                                const content = svg + value.replace("</svg>", cssText);
+                                FrontendUtils.exportData(target, content);
+                            }
+                        }
+
+                        void window.showInformationMessage("Diagrams successfully written.");
+                    } catch (error) {
+                        void window.showErrorMessage("Couldn't write SVG file: " + String(error));
                     }
 
                     break;
@@ -169,6 +218,7 @@ export class WebviewProvider {
         return `<meta http-equiv="Content-Security-Policy" content="default-src 'none';
             script-src 'nonce-${nonce}';
             script-src-attr 'unsafe-inline';
+            font-src ${webview.cspSource};
             style-src ${webview.cspSource} 'self' 'unsafe-inline';
             img-src ${webview.cspSource} 'self' "/>
         `;
@@ -197,6 +247,7 @@ export class WebviewProvider {
 
     protected getStyles(webView: Webview): string {
         const baseStyles = [
+            FrontendUtils.getMiscPath("common.css", this.context, webView),
             FrontendUtils.getMiscPath("light.css", this.context, webView),
             FrontendUtils.getMiscPath("dark.css", this.context, webView),
         ];
@@ -209,7 +260,7 @@ export class WebviewProvider {
         if (paths && Array.isArray(paths) && paths.length > 0) {
             return defaults + "\n" + paths.map((stylePath) => {
                 return `<link rel="stylesheet" href="${webView.asWebviewUri(Uri.parse(stylePath)).toString()}" ` +
-                    "type=\"text/css\" media=\"screen\">";
+                    "type=\"text/css\" media=\"screen\" />";
             }).join("\n");
         }
 
@@ -218,11 +269,28 @@ export class WebviewProvider {
 
     protected getScripts(nonce: string, scripts: string[]): string {
         return scripts.map((source) => {
-            return `<script type="text/javascript" src="${source}" nonce="${nonce}"></script>`;
+            return `<script type="module" src="${source}" nonce="${nonce}"></script>`;
         }).join("\n");
     }
 
     protected generateNonce(): string {
         return `${new Date().getTime()}${new Date().getMilliseconds()}`;
+    }
+
+    /**
+     * Helper method to extract and minify the style sheet content from a given text.
+     *
+     * @param text The text to extract the style sheet from.
+     *
+     * @returns The extracted style sheet.
+     */
+    private extractRRDStyles(text: string): string {
+        const first = text.indexOf("svg.railroad-diagram");
+        let last = text.lastIndexOf("svg.railroad-diagram");
+        last = text.lastIndexOf("}", last);
+
+        const result = text.substring(first, last + 1);
+
+        return result.replace(/\n/g, "").replace(/\s\s+/g, " ");
     }
 }

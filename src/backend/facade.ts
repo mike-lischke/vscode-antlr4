@@ -287,10 +287,10 @@ export class AntlrFacade {
         return context.getReferenceGraph();
     }
 
-    public getRRDScript(fileName: string, rule: string): string {
+    public getRRDScript(fileName: string, rule: string, strip: RegExp, wrapAfter: number): [string, boolean] {
         const context = this.getContext(fileName);
 
-        return context.getRRDScript(rule) || "";
+        return context.getRRDScript(rule, strip, wrapAfter);
     }
 
     public generate(fileName: string, options: IGenerationOptions): Promise<string[]> {

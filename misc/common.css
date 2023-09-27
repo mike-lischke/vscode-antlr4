@@ -1,0 +1,49 @@
+/*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+/* Theme independent CSS rules. */
+
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 45px;
+
+    z-index: 10;
+    background: color-mix(in srgb, var(--vscode-editorWidget-background) 70%, transparent);
+
+    font-size: 12pt;
+    display: flex;
+    flex-direction: row;
+
+    cursor: default;
+    user-select: none;
+    white-space: nowrap;
+
+    backdrop-filter: blur(10px);
+}
+
+#container {
+    padding-top: 45px;
+    overflow: scroll;
+    height: 100vh;
+}
+
+.graph-initial {
+    font-size: 30pt;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.rule-index {
+    font-size: 8pt;
+    padding-left: 6px;
+}

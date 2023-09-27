@@ -14,7 +14,7 @@ export type GraphType = "rrd" | "atn" | "call-graph";
 
 export class GraphExport {
     /**
-     * Triggers the SVG export for a graph.
+     * Triggers the SVG export for a single graph (the first one found).
      *
      * @param type The type of the graph.
      * @param name A name for that graph.
@@ -30,6 +30,32 @@ export class GraphExport {
         };
 
         vscode.postMessage(args);
+    }
+
+    /**
+     * Triggers the SVG export all graphs in the current document.
+     *
+     * @param type The type of the graph.
+     */
+    public exportToSVGFiles(type: GraphType): void {
+        // The graphs are organized in a list with 2 elements each: a heading and the graph itself (as siblings).
+        const container = document.querySelectorAll("#container")[0];
+        const h3List = container.querySelectorAll("h3");
+
+        const data: { [key: string]: string; } = {};
+        h3List.forEach((element) => {
+            const name = element.textContent;
+            if (name) {
+                const svg = element.nextElementSibling!;
+                data[name] = svg.outerHTML;
+            }
+        });
+
+        vscode.postMessage({
+            command: "saveSVGDirect",
+            type,
+            data,
+        });
     }
 
     /**

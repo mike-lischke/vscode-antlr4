@@ -9,24 +9,27 @@ describe("Advanced Symbol Information", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.
 
     it("RRD diagram", () => {
-        let diagram = backend.getRRDScript("tests/backend/test-data/TLexer.g4", "Any");
-        expect(diagram).toEqual("Diagram(Choice(0, Sequence(Terminal('Foo'), Terminal('Dot'), " +
-            "Optional(Terminal('Bar')), Terminal('DotDot'), Terminal('Baz'), Terminal('Bar')))).addTo()");
+        const dummy = new RegExp("");
+        let diagram = backend.getRRDScript("tests/backend/test-data/TLexer.g4", "Any", dummy, 0);
+        expect(diagram).toEqual(["new Diagram(new Choice(0, new Stack(new Sequence(new Terminal('Foo'), " +
+            "new Terminal('Dot'), new Optional(new Terminal('Bar')), new Terminal('DotDot'), new Terminal('Baz'), " +
+            "new Terminal('Bar')))))", false]);
 
-        diagram = backend.getRRDScript("tests/backend/test-data/TParser.g4", "idarray");
-        expect(diagram).toEqual("ComplexDiagram(Choice(0, Sequence(Terminal('OpenCurly'), " +
-            "NonTerminal('id'), ZeroOrMore(Choice(0, Sequence(Terminal('Comma'), NonTerminal('id')))), " +
-            "Terminal('CloseCurly')))).addTo()");
+        diagram = backend.getRRDScript("tests/backend/test-data/TParser.g4", "idarray", dummy, 0);
+        expect(diagram).toEqual(["new ComplexDiagram(new Choice(0, new Stack(new Sequence(new Terminal('OpenCurly'), " +
+            "new NonTerminal('id'), new ZeroOrMore(new Choice(0, new Stack(new Sequence(new Terminal('Comma'), " +
+            "new NonTerminal('id'))))), new Terminal('CloseCurly')))))", false]);
 
-        diagram = backend.getRRDScript("tests/backend/test-data/TParser.g4", "expr");
-        expect(diagram).toEqual("ComplexDiagram(Choice(0, Sequence(NonTerminal('expr'), " +
-            "Terminal('Star'), NonTerminal('expr'))," +
-            " Sequence(NonTerminal('expr'), Terminal('Plus'), NonTerminal('expr')), Sequence(Terminal('OpenPar')," +
-            " NonTerminal('expr'), Terminal('ClosePar')), Sequence(Comment('<assoc=right>'), NonTerminal('expr')" +
-            ", Terminal('QuestionMark'), NonTerminal('expr'), Terminal('Colon'), NonTerminal('expr')), " +
-            "Sequence(Comment('<assoc=right>'), NonTerminal('expr'), Terminal('Equal'), NonTerminal('expr'))," +
-            " Sequence(NonTerminal('id')), Sequence(NonTerminal('flowControl')), Sequence(Terminal('INT')), " +
-            "Sequence(Terminal('String')))).addTo()",
+        diagram = backend.getRRDScript("tests/backend/test-data/TParser.g4", "expr", dummy, 0);
+        expect(diagram).toEqual(["new ComplexDiagram(new Choice(0, new Stack(new Sequence(new NonTerminal('expr'), " +
+            "new Terminal('Star'), new NonTerminal('expr'))), new Stack(new Sequence(new NonTerminal('expr'), " +
+            "new Terminal('Plus'), new NonTerminal('expr'))), new Stack(new Sequence(new Terminal('OpenPar'), " +
+            "new NonTerminal('expr'), new Terminal('ClosePar'))), new Stack(new Sequence(new Comment" +
+            "('<assoc=right>'), new NonTerminal('expr'), new Terminal('QuestionMark'), new NonTerminal('expr'), " +
+            "new Terminal('Colon'), new NonTerminal('expr'))), new Stack(new Sequence(new Comment('<assoc=right>'), " +
+            "new NonTerminal('expr'), new Terminal('Equal'), new NonTerminal('expr'))), new Stack(new Sequence(" +
+            "new NonTerminal('id'))), new Stack(new Sequence(new NonTerminal('flowControl'))), new Stack(new " +
+            "Sequence(new Terminal('INT'))), new Stack(new Sequence(new Terminal('String')))))", false],
         );
     });
 

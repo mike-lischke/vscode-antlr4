@@ -1,14 +1,15 @@
 /*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+/*
  * This file contains all default CSS rules for the dark vscode them, used for various diagrams and graphs.
  * Use the "antlr4.customCSS" setting in vscode to specify your own file, if you like to override some rules.
  *
  * Usually most of the appearance is defined in light.css and here we only have some adjustments for
  * the dark theme.
  */
-
-body.vscode-dark svg {
-    background: rgba(255, 255, 255, 0.05);
-}
 
 /* ATN graphs. */
 

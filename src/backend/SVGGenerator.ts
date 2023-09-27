@@ -1,27 +1,11 @@
 /*
- * The MIT License (MIT)
- * http://opensource.org/licenses/MIT
- *
- * Copyright (c) 2014 Bart Kiers
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
-*/
-
-/*
- * Translated to TS and modified by Mike Lischke.
  * Copyright (c) Mike Lischke. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { TerminalNode } from "antlr4ng";
+// Parts written by Bart Kiers, licensed under the MIT license, (c) 2014.
+
+import { ParseTree, TerminalNode } from "antlr4ng";
 
 import { ANTLRv4ParserVisitor } from "../parser/ANTLRv4ParserVisitor.js";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
@@ -30,55 +14,97 @@ import {
     LexerElementsContext, LexerElementContext, LabeledLexerElementContext, AltListContext, AlternativeContext,
     ElementContext, LabeledElementContext, EbnfContext, EbnfSuffixContext, LexerAtomContext, AtomContext,
     NotSetContext, BlockSetContext, CharacterRangeContext, TerminalRuleContext, SetElementContext,
-
-    RuleBlockContext, LexerRuleBlockContext, ElementOptionsContext,
+    ElementOptionsContext,
 } from "../parser/ANTLRv4Parser.js";
 
-export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
+/**
+ * A class to generate JS code which can be used with the railroad-diagrams library to generate SVG diagrams.
+ */
+export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
 
-    public constructor(private scripts: Map<string, string>) {
-        super();
+    // A tracker of the element's character count which was last added.
+    // This is used to decide when to wrap a sequence into a new line.
+    #nestedCharLength: number;
+
+    // Keeps track whether there was a wrap in the last visit.
+    #isWrapped = false;
+
+    #requestedRuleName = "";
+    #stripPattern: RegExp;
+    #wrapAfter: number;
+    #done = false;
+
+    /**
+     * @returns True if the last visit caused a wrap.
+     */
+    public get isWrapped(): boolean {
+        return this.#isWrapped;
     }
 
-    public defaultResult(): string {
-        return "";
+    /**
+     * Generates the code for the given parse tree, for a given rule.
+     *
+     * @param tree The parse tree to generate code for.
+     * @param name The name of a rule to generate code for.
+     * @param strip A string to strip from the rule name before using it in the generated code.
+     * @param wrapAfter The number of characters after sequences are wrapped (if > 0).
+     *
+     * @returns The generated JavaScript code and a flag telling whether one of the rules had to be wrapped.
+     */
+    public generate(tree: ParseTree, name: string, strip: RegExp, wrapAfter: number): [string, boolean] {
+        this.#requestedRuleName = name;
+        this.#done = false;
+        this.#isWrapped = false;
+        this.#stripPattern = strip;
+        this.#wrapAfter = wrapAfter;
+
+        const code = this.visit(tree);
+
+        return [code, this.#isWrapped];
     }
 
     public override visitParserRuleSpec = (ctx: ParserRuleSpecContext): string => {
-        if (!ctx.getRuleContext(0, RuleBlockContext)) {
-            return "# Syntax Error #";
+        this.#nestedCharLength = 0;
+        const ruleName = ctx.RULE_REF()!.getText();
+        if (ruleName === this.#requestedRuleName) {
+            this.#done = true;
+
+            return `new ComplexDiagram(${this.visitRuleAltList(ctx.ruleBlock().ruleAltList())})`;
         }
 
-        const diagram = "ComplexDiagram(" + this.visitRuleAltList(ctx.ruleBlock().ruleAltList()) + ").addTo()";
-        this.scripts.set(ctx.RULE_REF()!.getText(), diagram);
-
-        return diagram;
+        return "";
     };
 
     public override visitRuleAltList = (ctx: RuleAltListContext): string => {
-        let script = "Choice(0";
+        let script = "new Choice(0";
+        let maxChildCharLength = 0;
+
         const alternatives = ctx.labeledAlt();
         for (const alternative of alternatives) {
             script += ", " + this.visitAlternative(alternative.alternative());
+            if (this.#nestedCharLength > maxChildCharLength) {
+                maxChildCharLength = this.#nestedCharLength;
+            }
         }
+
+        this.#nestedCharLength = maxChildCharLength;
 
         return script + ")";
     };
 
     public override visitLexerRuleSpec = (ctx: LexerRuleSpecContext): string => {
-        if (!ctx.getRuleContext(0, LexerRuleBlockContext)) {
-            return "# Syntax Error #";
+        const ruleName = ctx.TOKEN_REF()!.getText();
+        if (ruleName === this.#requestedRuleName) {
+            this.#done = true;
+
+            return "new Diagram(" + this.visitLexerAltList(ctx.lexerRuleBlock()!.lexerAltList()) + ")";
         }
 
-        const diagram = "Diagram(" + this.visitLexerAltList(ctx.lexerRuleBlock()!.lexerAltList()) + ").addTo()";
-
-        this.scripts.set(ctx.TOKEN_REF()!.getText(), diagram);
-
-        return diagram;
+        return "";
     };
 
     public override visitLexerAltList = (ctx: LexerAltListContext): string => {
-        let script = "Choice(0";
+        let script = "new Choice(0";
 
         for (const alternative of ctx.lexerAlt()) {
             script += ", " + this.visitLexerAlt(alternative);
@@ -98,14 +124,24 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
     public override visitLexerElements = (ctx: LexerElementsContext): string => {
         let script = "";
 
+        let currentLength = 0;
         for (const element of ctx.lexerElement()) {
             if (script.length > 0) {
-                script += ", ";
+                if (currentLength > 4) {
+                    script += "), new Sequence(";
+                    currentLength = 0;
+                } else {
+                    script += ", ";
+                }
             }
             script += this.visitLexerElement(element);
         }
 
-        return "Sequence(" + script + ")";
+        if (script.length === 0) {
+            script = "new Comment('<empty alt>', { cls: 'rrd-warning' })";
+        }
+
+        return "new Stack(new Sequence(" + script + "))";
     };
 
     public override visitLexerElement = (ctx: LexerElementContext): string => {
@@ -132,9 +168,9 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
                 return this.visitLexerAltList(ctx.lexerBlock()!.lexerAltList());
             }
         } else if (ctx.QUESTION()) {
-            return "Comment('" + ctx.actionBlock()!.getText() + "?')";
+            return "new Comment('" + ctx.actionBlock()!.getText() + "?', { cls: 'rrd-predicate' })";
         } else {
-            return "Comment('{ action code }')";
+            return "new Comment('{ action code }')";
         }
     };
 
@@ -149,10 +185,15 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
     };
 
     public override visitAltList = (ctx: AltListContext): string => {
-        let script = "Choice(0";
+        let script = "new Choice(0";
+        let maxChildCharLength = 0;
         for (const alternative of ctx.alternative()) {
             script += ", " + this.visitAlternative(alternative);
+            if (this.#nestedCharLength > maxChildCharLength) {
+                maxChildCharLength = this.#nestedCharLength;
+            }
         }
+        this.#nestedCharLength = maxChildCharLength;
 
         return script + ")";
     };
@@ -165,14 +206,37 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
             script += this.visitElementOptions(optionsContext);
         }
 
+        const wrapAfter = this.#wrapAfter || 1e6;
+
+        let currentCharLength = 0;
+        let maxChildCharLength = 0;
         for (const element of ctx.element()) {
-            if (script.length > 0) {
-                script += ", ";
+            const subScript = this.visitElement(element);
+            if (currentCharLength > maxChildCharLength) {
+                maxChildCharLength = currentCharLength;
             }
-            script += this.visitElement(element);
+            currentCharLength += this.#nestedCharLength;
+
+            if (script.length > 0) {
+                if (currentCharLength > wrapAfter) {
+                    this.#isWrapped = true;
+                    script += "), new Sequence(";
+                    currentCharLength = this.#nestedCharLength;
+                } else {
+                    script += ", ";
+                }
+            }
+
+            script += subScript;
         }
 
-        return "Sequence(" + script + ")";
+        this.#nestedCharLength = Math.max(maxChildCharLength, currentCharLength);
+
+        if (script.length === 0) {
+            script = "new Comment('<empty alt>', { cls: 'rrd-warning' })";
+        }
+
+        return "new Stack(new Sequence(" + script + "))";
     };
 
     public override visitElement = (ctx: ElementContext): string => {
@@ -194,14 +258,14 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
         } else if (ctx.ebnf()) {
             return this.visitEbnf(ctx.ebnf()!);
         } else if (ctx.QUESTION()) {
-            return "Comment('" + ctx.actionBlock()!.getText() + "?')";
+            return "new Comment('" + ctx.actionBlock()!.getText() + "?', { cls: 'rrd-predicate' })";
         } else {
-            return "Comment('{ action code }')";
+            return "new Comment('{ action code }')";
         }
     };
 
     public override visitElementOptions = (ctx: ElementOptionsContext): string => {
-        return "Comment('" + ctx.getText() + "')";
+        return "new Comment('" + ctx.getText() + "')";
     };
 
     public override visitLabeledElement = (ctx: LabeledElementContext): string => {
@@ -228,13 +292,16 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
     public override visitEbnfSuffix = (ctx: EbnfSuffixContext): string => {
         const text = ctx.getText();
 
+        let result = "new ";
         if (text === "?") {
-            return "Optional";
+            result += "Optional";
         } else if (text === "*") {
-            return "ZeroOrMore";
+            result += "ZeroOrMore";
         } else {
-            return "OneOrMore";
+            result += "OneOrMore";
         }
+
+        return result;
     };
 
     public override visitLexerAtom = (ctx: LexerAtomContext): string => {
@@ -252,11 +319,11 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
         if (options) {
             const text = this.visitElementOptions(options);
             if (text !== "") {
-                return "Sequence(Terminal('any char'), Comment(" + text + ")";
+                return "new Sequence(new Terminal('any char'), new Comment(" + text + "))";
             }
         }
 
-        return "Terminal('any char')";
+        return "new Terminal('any char')";
     };
 
     public override visitAtom = (ctx: AtomContext): string => {
@@ -274,23 +341,23 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
         if (options) {
             const text = this.visitElementOptions(options);
             if (text !== "") {
-                return "Sequence(NonTerminal('any token'), Comment(" + text + ")";
+                return "new Sequence(new NonTerminal('any token'), new Comment(" + text + "))";
             }
         }
 
-        return "NonTerminal('any token')";
+        return "new NonTerminal('any token')";
     };
 
     public override visitNotSet = (ctx: NotSetContext): string => {
         if (ctx.setElement() != null) {
-            return "Sequence(Comment('not'), " + this.visitSetElement(ctx.setElement()!) + ")";
+            return "new Sequence(new Comment('not'), " + this.visitSetElement(ctx.setElement()!) + ")";
         } else {
-            return "Sequence(Comment('not'), " + this.visitBlockSet(ctx.blockSet()!) + ")";
+            return "new Sequence(new Comment('not'), " + this.visitBlockSet(ctx.blockSet()!) + ")";
         }
     };
 
     public override visitBlockSet = (ctx: BlockSetContext): string => {
-        let script = "Choice(0";
+        let script = "new Choice(0";
         for (const element of ctx.setElement()) {
             script += ", " + this.visitSetElement(element);
         }
@@ -313,7 +380,8 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
     public override visitCharacterRange = (ctx: CharacterRangeContext): string => {
         // The second literal can be non-existing (e.g. if not properly quoted).
         if (ctx.STRING_LITERAL().length > 1) {
-            return this.escapeTerminal(ctx.STRING_LITERAL(0)!) + " .. " + this.escapeTerminal(ctx.STRING_LITERAL(1)!);
+            return "\"" + this.escapeTerminal(ctx.STRING_LITERAL(0)!) + " .. " +
+                this.escapeTerminal(ctx.STRING_LITERAL(1)!) + "\"";
         }
 
         return this.escapeTerminal(ctx.STRING_LITERAL(0)!) + " .. ?";
@@ -330,26 +398,41 @@ export class RuleVisitor extends ANTLRv4ParserVisitor<string> {
     public override visitTerminal = (node: TerminalNode): string => {
         switch (node.symbol.type) {
             case ANTLRv4Lexer.STRING_LITERAL:
-            case ANTLRv4Lexer.LEXER_CHAR_SET:
-                return "Terminal('" + this.escapeTerminal(node) + "')";
+            case ANTLRv4Lexer.LEXER_CHAR_SET: {
+                const content = this.escapeTerminal(node).replace(this.#stripPattern, "");
+                this.#nestedCharLength = content.length;
 
-            case ANTLRv4Lexer.TOKEN_REF:
-                return "Terminal('" + node.getText() + "')";
+                return `new Terminal('${content}')`;
+            }
 
-            default:
-                return "NonTerminal('" + node.getText() + "')";
+            case ANTLRv4Lexer.TOKEN_REF: {
+                const content = node.getText().replace(this.#stripPattern, "");
+                this.#nestedCharLength = content.length;
+
+                return `new Terminal('${content}')`;
+            }
+
+            default: {
+                const content = node.getText().replace(this.#stripPattern, "");
+                this.#nestedCharLength = content.length;
+
+                return `new NonTerminal('${content}')`;
+            }
         }
     };
 
-    private escapeTerminal(node: TerminalNode): string {
-        const text = node.getText();
-        const escaped = text.replace(/\\/g, "\\\\");
-
-        switch (node.symbol.type) {
-            case ANTLRv4Lexer.STRING_LITERAL:
-                return "\\'" + escaped.substring(1, escaped.length - 1).replace(/'/g, "\\'") + "\\'";
-            default:
-                return escaped.replace(/'/g, "\\'");
-        }
+    protected override shouldVisitNextChild(_node: ParseTree, _currentResult: string): boolean {
+        return !this.#done;
     }
+
+    private escapeTerminal(node: TerminalNode): string {
+        // Escape the backslashes.
+        let text = node.getText().replace(/\\/g, "\\\\");
+
+        // Escape the quotes.
+        text = text.replace(/'/g, "\\'");
+
+        return text;
+    }
+
 }

@@ -36,7 +36,7 @@ import { ContextLexerErrorListener } from "./ContextLexerErrorListener.js";
 
 import { DetailsListener } from "./DetailsListener.js";
 import { SemanticListener } from "./SemanticListener.js";
-import { RuleVisitor } from "./RuleVisitor.js";
+import { SVGGenerator } from "./SVGGenerator.js";
 import { InterpreterDataReader, IInterpreterData } from "./InterpreterDataReader.js";
 import { ErrorParser } from "./ErrorParser.js";
 
@@ -109,7 +109,6 @@ export class SourceContext {
 
     // Result related fields.
     //private diagnostics: DiagnosticEntry[] = [];
-    private rrdScripts: Map<string, string>;
     private semanticAnalysisDone = false; // Includes determining reference counts.
 
     // Grammar parsing infrastructure.
@@ -126,6 +125,8 @@ export class SourceContext {
     private grammarParserRuleMap = new Map<string, number>(); // A mapping from parser rule names to their index.
 
     private tree: GrammarSpecContext | undefined; // The root context from the last parse run.
+
+    private svgGenerator = new SVGGenerator();
 
     public constructor(public fileName: string, private extensionDir: string) {
         this.sourceId = path.basename(fileName, path.extname(fileName));
@@ -916,10 +917,22 @@ export class SourceContext {
         return result;
     }
 
-    public getRRDScript(ruleName: string): string | undefined {
+    /**
+     * @returns the JS code for an SVG construction script and a flag indicating if the code contains wrapped content.
+     *
+     * @param ruleName The name of the rule for which to return the code.
+     * @param strip A string representing a regular expression to strip parts of rule names in the diagram.
+     * @param wrapAfter The number of characters after sequences are wrapped (if > 0).
+     */
+    public getRRDScript(ruleName: string, strip: RegExp, wrapAfter: number): [string, boolean] {
         this.runSemanticAnalysisIfNeeded();
 
-        return this.rrdScripts.get(ruleName);
+        let result;
+        if (this.tree) {
+            result = this.svgGenerator.generate(this.tree, ruleName, strip, wrapAfter);
+        }
+
+        return result ?? ["", false];
     }
 
     /**
@@ -1711,12 +1724,9 @@ export class SourceContext {
         if (!this.semanticAnalysisDone && this.tree) {
             this.semanticAnalysisDone = true;
             //this.diagnostics.length = 0; Don't, we would lose our syntax errors from last parse run.
-            this.rrdScripts = new Map<string, string>();
+
             const semanticListener = new SemanticListener(this.diagnostics, this.symbolTable);
             ParseTreeWalker.DEFAULT.walk(semanticListener, this.tree);
-
-            const visitor = new RuleVisitor(this.rrdScripts);
-            visitor.visit(this.tree);
         }
     }
 

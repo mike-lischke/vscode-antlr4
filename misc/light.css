@@ -1,4 +1,9 @@
 /*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+/*
  * This file contains all default CSS rules for the light vscode them, used for various diagrams and graphs.
  * Use the "antlr4.customCSS" setting in vscode to specify your own file, if you like to override some rules.
  *
@@ -6,51 +11,6 @@
  * This style sheet is also used for exported svg files.
  */
 
-html {
-    height: 100%;
-}
-
-body {
-    padding-left: 20px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-svg {
-    background: rgba(0, 0, 0, 0.03);
-    flex: 1;
-}
-
-.header {
-    font-size: 12pt;
-    display: flex;
-    align-items: baseline;
-
-    z-index: 9999;
-    top: 0;
-    left: 0;
-    right: 0;
-
-    cursor: default;
-    user-select: none;
-    white-space: nowrap;
-}
-
-.graph-initial {
-    font-size: 30pt;
-    font-weight: 600;
-    vertical-align: middle;
-}
-
-.rule-index {
-    font-size: 8pt;
-    padding-left: 6px;
-}
-
-#container {
-    margin-top: 45px;
-}
 
 .action-box {
     font: 10pt monospace;
@@ -173,60 +133,58 @@ svg {
 
 /* Railroad diagrams */
 
+/* The connection lines. */
 svg.railroad-diagram path {
-    /* The connection lines. */
     stroke-width: 2;
     stroke: darkgray;
     fill: rgba(0, 0, 0, 0);
 }
 
+/* All text except comments. */
 svg.railroad-diagram text {
-    /* All text except comments. */
     font: bold 12px Hack, "Source Code Pro", monospace;
     text-anchor: middle;
     fill: #404040;
-    /* Use fill instead of color for svg text. */
 }
 
+/* Comment text */
 svg.railroad-diagram text.comment {
-    /* Comment text */
     font: italic 10px Hack, "Source Code Pro", monospace;
     fill: #404040;
+}
+
+/* The terminal boxes. */
+svg.railroad-diagram g.terminal rect {
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 1);
 }
 
 svg.railroad-diagram g.non-terminal rect {
     /* The non-terminal boxes. */
     stroke-width: 2;
     stroke: #404040;
-    fill: rgba(255, 255, 255, 1);
-}
-
-svg.railroad-diagram g.terminal rect {
-    /* The terminal boxes. */
-    stroke-width: 2;
-    stroke: #404040;
     fill: rgba(0, 0, 0, 0.1);
 }
 
+/* Multiple choice text, not working atm. */
 svg.railroad-diagram text.diagram-text {
-    /* Multiple choice text, not working atm. */
     font-size: 12px Hack, "Source Code Pro", monospace;
     fill: red;
 }
 
+/* Multiple choice text, not working atm. */
 svg.railroad-diagram path.diagram-text {
-    /* Multiple choice text, not working atm. */
     stroke-width: 1;
     stroke: red;
     fill: red;
     cursor: help;
 }
 
+/* Multiple choice text, not working atm. */
 svg.railroad-diagram g.diagram-text:hover path.diagram-text {
-    /* Multiple choice text, not working atm. */
     fill: #f00;
 }
-
 
 /* Call graphs */
 
@@ -399,6 +357,14 @@ g .token-range {
     fill: rgba(0, 77, 98, 1);
     stroke: none;
     font: 8pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
+}
+
+g .rrd-warning {
+    stroke: orange;
+}
+
+g .rrd-predicate {
+    stroke: rgba(23, 159, 255, 0.5);
 }
 
 /* Internal elements, only used in vscode */

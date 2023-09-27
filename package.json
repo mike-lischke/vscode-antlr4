@@ -100,6 +100,16 @@
                     "default": "",
                     "description": "Default export target folder for railroad diagrams"
                 },
+                "antlr4.rrd.stripNamePart": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Regular expression that is matched against rules names, to filter out parts of the name that should not be shown in the diagram"
+                },
+                "antlr4.rrd.wrapAfter": {
+                    "type": "number",
+                    "default": 0,
+                    "description": "If > 0, element sequences (the visual expression of a single alternative) are wrapped when the number of characters in all rendered elements exceeds this value. Since rendering also depends on other graphical details, total line lengths may still vary a bit."
+                },
                 "antlr4.atn.saveDir": {
                     "type": "string",
                     "default": "",
@@ -576,6 +586,7 @@
         "@typescript-eslint/eslint-plugin": "6.7.2",
         "@typescript-eslint/eslint-plugin-tslint": "6.7.2",
         "@typescript-eslint/parser": "6.7.2",
+        "@vscode/codicons": "^0.0.33",
         "antlr4ng-cli": "1.0.2",
         "esbuild": "^0.19.3",
         "eslint": "8.49.0",

@@ -96,6 +96,18 @@ export class FrontendUtils {
     }
 
     /**
+     * Reads the content of the file with the given name and returns it as a string.
+     * The file is expected to be in UTF-8 encoding.
+     *
+     * @param fileName The name of the file to read.
+     *
+     * @returns The content of the file as a string.
+     */
+    public static readFile = (fileName: string): string => {
+        return fs.readFileSync(fileName, "utf8");
+    };
+
+    /**
      * Copies all given files to the specified target folder if they don't already exist there
      * or are older than the source files.
      *
@@ -126,6 +138,21 @@ export class FrontendUtils {
                 void window.showErrorMessage(`Could not copy file '${file}'. ${String(error)}`);
             }
         }
+    }
+
+    /**
+     * Writes the given data to the given file. If the file already exists it is overwritten.
+     * If an error occurs a message is shown to the user.
+     *
+     * @param fileName A default file name the user can change, if wanted.
+     * @param data The data to write.
+     */
+    public static exportData(fileName: string, data: string): void {
+        fs.writeFile(fileName, data, (error) => {
+            if (error) {
+                void window.showErrorMessage("Could not write to file: " + fileName + ": " + error.message);
+            }
+        });
     }
 
     /**
