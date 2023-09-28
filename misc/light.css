@@ -12,14 +12,6 @@
  */
 
 
-.action-box {
-    font: 10pt monospace;
-    margin-left: 15px;
-    padding: 5px;
-    border: dotted 1px #606060;
-    cursor: default;
-}
-
 /* ATN graphs */
 
 .transition {
@@ -381,10 +373,6 @@ g .rrd-predicate {
     height: 24px;
     display: inline-block;
     cursor: pointer;
-}
-
-.rrd-color {
-    color: rgba(10, 188, 80, 1);
 }
 
 .rrd-save-image {

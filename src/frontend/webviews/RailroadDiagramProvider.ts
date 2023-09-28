@@ -73,22 +73,21 @@ export class RailroadDiagramProvider extends WebviewProvider {
         if (options.fullList) {
             diagram += `
                 <div class="header">
-                    <div class="rrd-color"><img src="${rrdIconPath}" style="vertical-align: text-bottom"/></div>
-                    <div class="action-box">
-                        <a onClick="graphExport.exportToHTML('rrd', '${baseName}');"
-                            title="Save all diagrams to an HTML page">
-                            <span class="codicon codicon-preview" style="vertical-align: text-bottom"/>
-                        </a>
-                        <a onClick="graphExport.exportToSVGFiles('rrd');" title="Save all diagrams to individual files">
-                            <span class="codicon codicon-save-all" style="vertical-align: text-bottom"/>
-                        </a>
-                        <label>Filter: </label>
-                        <input
-                            type="text" id="filter" placeholder="Enter text"
-                            oninput="filterElements(this.value)"
-                            title="Show only elements whose names match the given regular expression"
-                        />
-                    </div>
+                    <img src="${rrdIconPath}" id="rrdIcon" />
+                    <a class="actionButton" onClick="graphExport.exportToHTML('rrd', '${baseName}');"
+                        title="Save all diagrams to an HTML page">
+                        <span class="codicon codicon-preview" style="vertical-align: text-bottom"/>
+                    </a>
+                    <a class="actionButton" onClick="graphExport.exportToSVGFiles('rrd');"
+                        title="Save all diagrams to individual files">
+                        <span class="codicon codicon-sign-in" style="vertical-align: text-bottom"/>
+                    </a>
+                    <label id="filterLabel">Filter: </label>
+                    <input
+                        type="text" id="filter" placeholder="Example: .*List$"
+                        oninput="filterElements(this.value)"
+                        title="Show only elements whose names match the given regular expression"
+                    />
                 </div>
                 <div id="container">`;
 
@@ -121,17 +120,15 @@ export class RailroadDiagramProvider extends WebviewProvider {
 
             diagram += `
                 <div class="header">
-                    <span class="rrd-color">
-                        <span class="graph-initial">Ⓡ</span>ule&nbsp;&nbsp;
-                    </span>
-                        &nbsp;&nbsp;${this.currentRule} <span class="rule-index">(rule index: ${this.currentRuleIndex})
-                    </span>
-                    <span class="action-box">
-                        Save to SVG
-                        <a onClick="graphExport.exportToSVG('rrd', '${this.currentRule}');">
-                            <span class="rrd-save-image" />
-                        </a>
-                    </span>
+                   <img src="${rrdIconPath}" id="rrdIcon" />
+                    ${this.currentRule}
+                    <div class="badge" title="The index of this rule in the grammar">
+                        ${this.currentRuleIndex}
+                    </div>
+                    <a class="actionButton" onClick="graphExport.exportToSVG('rrd', '${this.currentRule}');"
+                        title="Save diagram to an SVG file">
+                        <span class="codicon codicon-sign-in" style="vertical-align: text-bottom"/>
+                    </a>
                 </div>
                 <div id="container">
                     <script nonce="${nonce}" type="module">

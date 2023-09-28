@@ -45,10 +45,6 @@ body.vscode-dark .atn-graph-save-image {
     background: rgba(206, 11, 70, 1) url('../misc/save-dark.png');
 }
 
-body.vscode-dark .rrd-save-image {
-    background: rgba(10, 188, 80, 1) url('../misc/save-dark.png');
-}
-
 body.vscode-dark .call-graph-save-image {
     background: rgba(255, 191, 15, 1) url('../misc/save-dark.png');
 }

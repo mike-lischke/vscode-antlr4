@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-/* Theme independent CSS rules. */
+/* Theme independent CSS rules and themed rules which use VS Code variables. */
 
 body {
     height: 100%;
@@ -12,23 +12,38 @@ body {
 
 .header {
     position: absolute;
+
     top: 0;
     left: 0;
     right: 0;
-    height: 45px;
+    height: 60px;
 
     z-index: 10;
     background: color-mix(in srgb, var(--vscode-editorWidget-background) 70%, transparent);
 
-    font-size: 12pt;
+    font-size: 10pt;
     display: flex;
     flex-direction: row;
 
     cursor: default;
     user-select: none;
     white-space: nowrap;
+    overflow: hidden;
+
+    align-items: center;
+    justify-content: flex-start;
 
     backdrop-filter: blur(10px);
+}
+
+.header > input {
+    font-size: 9pt;
+}
+
+.actionButton > span.codicon {
+    color: var(--vscode-inputOption-activeForeground);
+    font-size: 18pt;
+    margin-right: 8px;
 }
 
 #container {
@@ -37,13 +52,27 @@ body {
     height: 100vh;
 }
 
+#rrdIcon {
+    transform: scale(1.5) translate(15px, 0);
+    margin-right: 40px;
+}
+
+.header #filterLabel {
+    margin: 0 8px;
+}
+
 .graph-initial {
     font-size: 30pt;
     font-weight: 600;
     vertical-align: middle;
 }
 
-.rule-index {
+.badge {
+    color: var(--vscode-inputOption-activeForeground);
+    background-color: var(--vscode-inputOption-activeBackground);
     font-size: 8pt;
-    padding-left: 6px;
+
+    border-radius: 8px;
+    margin: 18px 16px 0 8px;
+    padding: 2px 6px;
 }
