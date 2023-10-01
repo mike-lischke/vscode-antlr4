@@ -73,7 +73,8 @@ export class ATNGraphRenderer {
         this.svg = d3.select<SVGElement, IATNGraphData>("svg")
             .attr("xmlns", "http://www.w3.org/2000/svg")
             .attr("version", "1.1")
-            .attr("width", "100%"); // Height is determined by the flex layout.
+            .attr("width", "100%")
+            .attr("height", "100%");
 
         this.zoom = d3.zoom<SVGElement, IATNGraphData>()
             .scaleExtent([0.15, 3])
@@ -84,6 +85,18 @@ export class ATNGraphRenderer {
         // Register a listener for data changes.
         window.addEventListener("message", (event: MessageEvent<IATNGraphUpdateMessageData>) => {
             if (event.data.command === "updateATNTreeData") {
+                const ruleName = event.data.graphData.ruleName;
+                document.querySelector(".ruleLabel")!.textContent = ruleName ?? "<no rule selected>";
+
+                const ruleIndex = event.data.ruleIndex;
+                const badge = document.querySelector(".badge") as HTMLDivElement;
+                if (ruleIndex !== undefined) {
+                    badge.textContent = ruleIndex.toString();
+                    badge.style.opacity = "1";
+                } else {
+                    badge.style.opacity = "0";
+                }
+
                 this.render(event.data.graphData);
             }
         });
@@ -115,15 +128,10 @@ export class ATNGraphRenderer {
         this.currentNodes = undefined;
 
         if (!data.ruleName) {
-            const label = document.createElement("label");
-            label.classList.add("noSelection");
-            label.innerText = "No rule selected";
-
             if (this.topGroup) {
                 this.topGroup.remove();
             }
 
-            document.body.appendChild(label);
             this.svg.style("display", "none");
 
             return;

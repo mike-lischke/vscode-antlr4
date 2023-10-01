@@ -17,8 +17,9 @@ export class RailroadDiagramProvider extends WebviewProvider {
         const baseName = basename(fileName, extname(fileName));
 
         const nonce = this.generateNonce();
+
+        const basePath = FrontendUtils.getOutPath("", this.context, webview) + "/";
         const diagramScriptPath = FrontendUtils.getMiscPath("railroad-diagrams.js", this.context, webview);
-        const rrdIconPath = FrontendUtils.getMiscPath("rrd.svg", this.context, webview);
         const diagramImports = `import { Start, Choice, ComplexDiagram, Diagram, Sequence, Stack, ` +
             `Comment, Terminal, NonTerminal, Optional, ZeroOrMore, OneOrMore, Options } from "${diagramScriptPath}";\n`;
         const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
@@ -36,17 +37,16 @@ export class RailroadDiagramProvider extends WebviewProvider {
                 </html>`;
         }
 
-        const codiconsUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, "node_modules",
-            "@vscode/codicons", "dist", "codicon.css"));
+        /*const codiconsUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, "node_modules",
+            "@vscode/codicons", "dist", "codicon.css"));*/
 
         let diagram = `<!DOCTYPE html>
             <html>
             <head>
                 <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
                 ${this.generateContentSecurityPolicy(webview, nonce)}
-                <link rel="stylesheet" href="${codiconsUri.toString()}" />
                 ${this.getStyles(webview)}
-                <base href="${uri.toString(true)}" />
+                <base href="${basePath}" />
                 <script nonce="${nonce}">
                     let graphExport;
 
@@ -73,15 +73,14 @@ export class RailroadDiagramProvider extends WebviewProvider {
         if (options.fullList) {
             diagram += `
                 <div class="header">
-                    <img src="${rrdIconPath}" id="rrdIcon" />
-                    <a class="actionButton" onClick="graphExport.exportToHTML('rrd', '${baseName}');"
-                        title="Save all diagrams to an HTML page">
-                        <span class="codicon codicon-preview" style="vertical-align: text-bottom"/>
-                    </a>
-                    <a class="actionButton" onClick="graphExport.exportToSVGFiles('rrd');"
-                        title="Save all diagrams to individual files">
-                        <span class="codicon codicon-sign-in" style="vertical-align: text-bottom"/>
-                    </a>
+                    <div class="graphTitle rrd-graph-color">RRD</div>
+                    <div class="saveHTMLButton" onClick="graphExport.exportToHTML('rrd', '${baseName}');"
+                        title="Save all diagrams to an HTML page"
+                    >
+                    </div>
+                    <div class="saveSVGButton" onClick="graphExport.exportToSVGFiles('rrd');"
+                        title="Save all diagrams to individual files"
+                    ></div>
                     <label id="filterLabel">Filter: </label>
                     <input
                         type="text" id="filter" placeholder="Example: .*List$"
@@ -120,15 +119,13 @@ export class RailroadDiagramProvider extends WebviewProvider {
 
             diagram += `
                 <div class="header">
-                   <img src="${rrdIconPath}" id="rrdIcon" />
-                    ${this.currentRule}
-                    <div class="badge" title="The index of this rule in the grammar">
-                        ${this.currentRuleIndex}
-                    </div>
-                    <a class="actionButton" onClick="graphExport.exportToSVG('rrd', '${this.currentRule}');"
-                        title="Save diagram to an SVG file">
-                        <span class="codicon codicon-sign-in" style="vertical-align: text-bottom"/>
-                    </a>
+                    <div class="graphTitle rrd-graph-color">RRD</div>
+                    <div class="saveSVGButton" onClick="graphExport.exportToSVG('rrd', '${this.currentRule}');"
+                        title="Save this diagram to an SVG file"
+                    ></div>
+
+                    <label class="ruleLabel">${this.currentRule}</label>
+                    <div class="badge" title="The index of this rule in the grammar">${this.currentRuleIndex}</div>
                 </div>
                 <div id="container">
                     <script nonce="${nonce}" type="module">

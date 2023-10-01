@@ -567,7 +567,7 @@
         "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --no-coverage",
         "generate": "antlr4ng -Dlanguage=TypeScript -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\"",
-        "esbuild": "esbuild ./src/extension.ts --bundle --outfile=out/main.cjs --external:vscode --format=cjs --platform=node --sourcemap=external",
+        "esbuild": "esbuild ./src/extension.ts --bundle --outfile=out/main.cjs --external:vscode --format=cjs --platform=node --sourcemap=external --loader:.svg=file",
         "esbuild-watch": "npm run esbuild -- --sourcemap --watch"
     },
     "dependencies": {

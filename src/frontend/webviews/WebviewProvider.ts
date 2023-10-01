@@ -112,48 +112,62 @@ export class WebviewProvider {
                     break;
                 }
 
-                case "saveSVGDirect": { // Save a list of files, without confirmation.
-                    const css: string[] = [];
-                    css.push(FrontendUtils.getMiscPath("light.css", this.context));
+                case "saveSVGList": { // Save a list of SVG files.
+                    if (typeof message.type === "string") {
+                        const section = "antlr4." + message.type;
+                        const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                        void window.showOpenDialog({
+                            defaultUri: Uri.file(saveDir),
+                            canSelectFolders: true,
+                            canSelectFiles: false,
+                            canSelectMany: false,
+                        }).then((uri) => {
+                            if (uri && uri.length === 1) {
+                                const css: string[] = [];
+                                css.push(FrontendUtils.getMiscPath("light.css", this.context));
 
-                    const customStyles = workspace.getConfiguration("antlr4")
-                        .customCSS as string | string[] | undefined;
-                    if (customStyles && Array.isArray(customStyles)) {
-                        for (const style of customStyles) {
-                            css.push(style);
-                        }
-                    } else if (customStyles) {
-                        css.push(customStyles);
-                    }
+                                const customStyles = workspace.getConfiguration("antlr4")
+                                    .customCSS as string | string[] | undefined;
+                                if (customStyles && Array.isArray(customStyles)) {
+                                    for (const style of customStyles) {
+                                        css.push(style);
+                                    }
+                                } else if (customStyles) {
+                                    css.push(customStyles);
+                                }
 
-                    let svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
-                    svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
-                        '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n';
+                                let svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n';
+                                svg += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
+                                    '"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n';
 
-                    let cssText = `<defs><style type="text/css"><![CDATA[\n`;
-                    for (const stylesheet of css) {
-                        const styles = FrontendUtils.readFile(stylesheet);
-                        cssText += this.extractRRDStyles(styles) + "\n";
-                    }
-                    cssText += ` ]]>\n</style></defs></svg>`;
+                                let cssText = `<defs><style type="text/css"><![CDATA[\n`;
+                                for (const stylesheet of css) {
+                                    const styles = FrontendUtils.readFile(stylesheet);
+                                    cssText += this.extractRRDStyles(styles) + "\n";
+                                }
+                                cssText += ` ]]>\n</style></defs></svg>`;
 
-                    try {
-                        if (typeof message.type === "string") {
-                            const section = "antlr4." + message.type;
-                            const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                                try {
+                                    if (typeof message.type === "string") {
+                                        const section = "antlr4." + message.type;
+                                        const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
 
-                            const data = message.data as { [key: string]: string; };
-                            for (const [key, value] of Object.entries(data)) {
-                                const target = join(saveDir, key + ".svg");
+                                        const data = message.data as { [key: string]: string; };
+                                        for (const [key, value] of Object.entries(data)) {
+                                            const target = join(saveDir, key + ".svg");
 
-                                const content = svg + value.replace("</svg>", cssText);
-                                FrontendUtils.exportData(target, content);
+                                            const content = svg + value.replace("</svg>", cssText);
+                                            FrontendUtils.exportData(target, content);
+                                        }
+                                    }
+
+                                    void window.showInformationMessage("Diagrams successfully written.");
+                                } catch (error) {
+                                    void window.showErrorMessage("Couldn't write SVG file: " + String(error));
+                                }
+
                             }
-                        }
-
-                        void window.showInformationMessage("Diagrams successfully written.");
-                    } catch (error) {
-                        void window.showErrorMessage("Couldn't write SVG file: " + String(error));
+                        });
                     }
 
                     break;

@@ -46,7 +46,7 @@ body.vscode-dark .atn-graph-save-image {
 }
 
 body.vscode-dark .call-graph-save-image {
-    background: rgba(255, 191, 15, 1) url('../misc/save-dark.png');
+    background: url('../misc/save-svg-dark.svg');
 }
 
 body.vscode-dark .parse-tree-save-image {
@@ -235,4 +235,18 @@ body.vscode-dark g .token-range {
     font: 8pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
 }
 
-/* Default CSS for internal elements, only visible in vscode */
+body.vscode-dark .saveSVGButton {
+    background-image: url(./save-svg-dark.svg);
+}
+
+body.vscode-dark .saveHTMLButton {
+    background-image: url(./save-html-dark.svg);
+}
+
+body.vscode-dark .rrdIcon {
+    background-image: url(./rrd-dark.svg);
+}
+
+body.vscode-dark .atnIcon {
+    background-image: url(./atn-dark.png);
+}

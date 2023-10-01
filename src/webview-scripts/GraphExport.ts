@@ -45,14 +45,14 @@ export class GraphExport {
         const data: { [key: string]: string; } = {};
         h3List.forEach((element) => {
             const name = element.textContent;
-            if (name) {
+            if (name && element.style.display !== "none") {
                 const svg = element.nextElementSibling!;
                 data[name] = svg.outerHTML;
             }
         });
 
         vscode.postMessage({
-            command: "saveSVGDirect",
+            command: "saveSVGList",
             type,
             data,
         });

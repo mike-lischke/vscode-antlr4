@@ -40,7 +40,6 @@ export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsu
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
                     ${this.generateContentSecurityPolicy(webview, nonce)}
                     ${this.getStyles(webview)}
-                    <base target="_blank">
                     <script nonce="${nonce}" src="${graphLibPath}"></script>
                     <script nonce="${nonce}">
                         let parseTreeRenderer;
@@ -49,7 +48,8 @@ export class ParseTreeProvider extends WebviewProvider implements IDebuggerConsu
                 </head>
 
             <body>
-                <div class="header"><span class="parse-tree-color"><span class="graph-initial">Ⓟ</span>arse Tree</span>
+                <div class="header">
+                <span class="graphTitle parse-tree-color">Parse Tree</span>
                     <span class="action-box">
                         Tree
                         <span class="switch">

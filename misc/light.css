@@ -189,7 +189,6 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
     stroke-opacity: .2;
     fill: none;
     pointer-events: none;
-    animation: fadeIn 1s ease-out 1s normal backwards;
 }
 
 .module-1 {
@@ -255,7 +254,6 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 .link-target {
     stroke-opacity: 1;
     stroke-width: 2px;
-    animation: none;
 }
 
 .link-source {
@@ -288,7 +286,6 @@ svg.railroad-diagram g.diagram-text:hover path.diagram-text {
 
 .link-dimmed {
     stroke-opacity: 0.075;
-    animation: fadeOut 0.3s ease-out 0s normal backwards;
 }
 
 
@@ -351,6 +348,44 @@ g .token-range {
     font: 8pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
 }
 
+.saveSVGButton {
+    background-image: url(./save-svg-light.svg);
+    width: 32px;
+    height: 32px;
+
+    margin-left: 8px;
+
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.saveHTMLButton {
+    background-image: url(./save-html-light.svg);
+    width: 32px;
+    height: 32px;
+
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.headerIcon {
+    width: 90px;
+    height: 90px;
+    margin-top: 20px;
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.rrdIcon {
+    background-image: url(./rrd-light.svg);
+}
+
+.atnIcon {
+    background-image: url(./atn-light.png);
+}
+
 g .rrd-warning {
     stroke: orange;
 }
@@ -359,30 +394,12 @@ g .rrd-predicate {
     stroke: rgba(23, 159, 255, 0.5);
 }
 
-/* Internal elements, only used in vscode */
-
 .atn-graph-color {
-    color: rgba(206, 11, 70, 1);
+    color: crimson;
 }
 
-.atn-graph-save-image {
-    background: rgba(206, 11, 70, 1) url('../misc/save.png');
-    vertical-align: middle;
-    margin-left: 5px;
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    cursor: pointer;
-}
-
-.rrd-save-image {
-    background: rgba(10, 188, 80, 1) url('../misc/save.png');
-    vertical-align: middle;
-    margin-left: 5px;
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    cursor: pointer;
+.rrd-graph-color {
+    color: rgba(10, 188, 80, 1);
 }
 
 .call-graph-color {
@@ -390,7 +407,7 @@ g .rrd-predicate {
 }
 
 .call-graph-save-image {
-    background: rgba(255, 191, 15, 1) url('../misc/save.png');
+    background: url('../misc/save-svg-light.png');
     vertical-align: middle;
     margin-left: 5px;
     width: 24px;

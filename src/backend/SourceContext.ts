@@ -1586,6 +1586,9 @@ export class SourceContext {
     }
 
     public formatGrammar(options: IFormattingOptions, start: number, stop: number): [string, number, number] {
+        this.lexer.reset();
+        this.tokenStream.setTokenSource(this.lexer);
+
         this.tokenStream.fill();
         const tokens = this.tokenStream.getTokens();
         const formatter = new GrammarFormatter(tokens);

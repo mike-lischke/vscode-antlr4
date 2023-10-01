@@ -60,6 +60,7 @@ export class ATNGraphProvider extends WebviewProvider {
     public override generateContent(webview: Webview, uri: Uri): string {
         const graphData = this.prepareRenderData(uri);
 
+        const basePath = FrontendUtils.getOutPath("", this.context, webview) + "/";
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/ATNGraphRenderer.js", this.context,
             webview);
         const exportScriptPath = FrontendUtils.getOutPath("src/webview-scripts/GraphExport.js", this.context,
@@ -75,7 +76,7 @@ export class ATNGraphProvider extends WebviewProvider {
                     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
                     ${this.generateContentSecurityPolicy(webview, nonce)}
                     ${this.getStyles(webview)}
-                    <base target="_blank">
+                    <base href="${basePath}" />
                     <script nonce="${nonce}" src="${graphLibPath}"></script>
                     <script nonce="${nonce}">
                         let atnGraphRenderer;
@@ -84,21 +85,21 @@ export class ATNGraphProvider extends WebviewProvider {
                 </head>
                 <body>
                     <div class="header">
-                        <span class="atn-graph-color">
-                            <span class="graph-initial">Ⓡ</span>ule&nbsp;&nbsp;</span>
-                            ${name}
-                            <span class="rule-index">(rule index: ${this.currentRuleIndex ?? "?"})</span>
-                        <span class="action-box">
-                            Reset display <a onClick="atnGraphRenderer.resetTransformation();">
-                            <span class="atn-graph-color" style="font-size: 120%; font-weight: 800; cursor: pointer;
-                                vertical-align: middle;">↺</span></a>&nbsp;
-                            Save to file<a onClick="graphExport.exportToSVG('atn', '${name}');">
-                                <span class="atn-graph-save-image" />
-                            </a>
-                        </span>
+                        <span class="graphTitle atn-graph-color">ATN</span>
+                        <div class="saveSVGButton" onClick="graphExport.exportToSVG('rrd', '${name}');"
+                            title="Save this diagram to an SVG file"
+                        ></div>
+                        <div onClick="atnGraphRenderer.resetTransformation();"
+                            title="Restore the initial graph transformation"
+                            style="font-size: 150%; font-weight: 800; cursor: pointer;
+                                vertical-align: middle; margin-left: 8px;"
+                        >↺</div>
+
+                        <label class="ruleLabel">${name}</label>
+                        <div class="badge" title="The index of this rule in the grammar">${this.currentRuleIndex}</div>
                     </div>
 
-                    <svg>
+                    <svg style="height: 100vh;">
                         <defs>
                             <filter id="white-glow" x="-150%" y="-150%" width="300%" height="300%">
                                 <feFlood result="flood" flood-color="#ffffff" flood-opacity="0.15" />
@@ -224,6 +225,7 @@ export class ATNGraphProvider extends WebviewProvider {
         this.sendMessage(uri, {
             command: "updateATNTreeData",
             graphData,
+            ruleIndex: this.currentRuleIndex,
         });
 
         return true;

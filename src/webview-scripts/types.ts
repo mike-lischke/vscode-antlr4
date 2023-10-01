@@ -94,6 +94,7 @@ export interface IATNGraphRendererData {
 
 export interface IATNGraphUpdateMessageData {
     command: "updateATNTreeData";
+    ruleIndex?: number;
     graphData: IATNGraphRendererData;
 }
 
