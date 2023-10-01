@@ -2,7 +2,7 @@
 
 This extension can create a number of graphical visualizations for you. All of them (except of the railroad/syntax diagram) share the same look and feel (they are all based on [D3.js](https://github.com/d3/d3)). You can press and hold the left mouse button in a free area in the graph and drag the mouse, to move the graph's view port. The mouse wheel or track pad can be used to zoom in and out. Certain graphs allow for additional actions, see below.
 
-All graphs also allow to export them to an SVG file (or in the case of the full RRD list, to an HTML file). The export will also copy the internal CSS file, as well as all custom CSS files you have specified for a graph type (in the settings). SVG files always use the light theme style colors, while the HTML output follows the currently set vscode theme.
+All graphs also allow to export them to an SVG file (and in the case of the full RRD list, also to an HTML file). The export will add the internal CSS file, as well as all custom CSS files you have specified for a graph type (in the settings) to the exported SVG. SVG files always use the light theme style colors, while the HTML output follows the currently set vscode theme.
 
 ## Railroad (aka. Syntax) Diagrams
 
@@ -22,5 +22,3 @@ In order to get an impression about the complexity of your grammar and visually 
 
 The more lines you see, the higher the rules interact with each other. You can hover with the mouse over a rule name and it will highlight all relationships for that rule (while the rest is faded out). Red lines are drawn to callers of that rule, green lines for those called by it. Hence many red lines means this is a rule used by many others and hence a good candidate for optimization. Many green lines however indicate a high complexity and you should perhaps refactor this rule into multiple smaller ones.
 >![](https://raw.githubusercontent.com/mike-lischke/vscode-antlr4/master/images/antlr4-11.png)
-
-

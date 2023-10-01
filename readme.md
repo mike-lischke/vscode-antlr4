@@ -68,7 +68,23 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
+### 2.4.0
+
+- Switched to a new TypeScript runtime (antlr4ng), which supports the latest features from ANTLR4 (e.g. case sensitive identifiers).
+- Fixed bug #195: Extension breaks if filename ends with Parser
+- Fixed bug #197: Use lexer token labels when generating tokens in debug console
+- Fixed bugs in the formatter (last token removal and wrong action with copy/paste).
+- Fixed a bug in the ATN graph renderer, where rule name + index were not properly updated, when navigating between rules.
+- Railroad diagrams received a big overhaul:
+  - Updated to latest version of the generation script.
+  - Added a button for exporting all diagrams in the all-rules list to individual SVG files.
+  - Added a new option to specify a character length in a line, after which an path is wrapped. This is useful for long alternatives.
+  - All CSS rules (including custom ones) are now inlined into exported SVG files, to avoid CSP problems.
+  - The all-rules list can now be filtered by typing a regular expression and only the visible diagrams are exported.
+  - A new option allows to strip out a part of rule names (e.g. a common `_SYMBOL` suffix), while rendering the SVG.
+
 ### 2.3.1
+
 A bug fix release for even stricter content security policies in VS Code starting at version 1.73.
 
 - Fixed bug #192: Broken Parse Tree Window on VSCode v1.73
