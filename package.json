@@ -118,7 +118,7 @@
                 "antlr4.atn.maxLabelCount": {
                     "type": "number",
                     "default": 3,
-                    "description": "Max number of labels displayed on a transition in an ATN graph"
+                    "description": "Highest number of labels displayed on a transition in an ATN graph"
                 },
                 "antlr4.call-graph.saveDir": {
                     "type": "string",
@@ -372,6 +372,19 @@
                             "description": "Use a clustered tree for visual parse trees where all terminals are aligned, or the more compact standard tree"
                         }
                     }
+                },
+                "antlr4.log": {
+                    "type": "string",
+                    "description": "Determines the level of logging",
+                    "default": "none",
+                    "enum": [
+                        "none",
+                        "debug"
+                    ],
+                    "enumDescriptions": [
+                        "No logging",
+                        "Log debug messages"
+                    ]
                 }
             }
         },
@@ -562,13 +575,13 @@
     "scripts": {
         "publish": "vsce publish",
         "package": "vsce package",
-        "vscode:prepublish": "tsc -b",
+        "vscode:prepublish": "npm run build",
         "local-test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
         "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --no-coverage",
         "generate": "antlr4ng -Dlanguage=TypeScript -visitor -Xexact-output-dir grammars/ANTLRv4LexBasic.g4 grammars/ANTLRv4Lexer.g4 grammars/ANTLRv4Parser.g4 -o src/parser",
         "lint": "eslint \"./src/**/*.ts\"",
-        "esbuild": "esbuild ./src/extension.ts --bundle --outfile=out/main.cjs --external:vscode --format=cjs --platform=node --sourcemap=external --loader:.svg=file",
-        "esbuild-watch": "npm run esbuild -- --sourcemap --watch"
+        "build": "tsc -b && esbuild ./src/extension.ts --bundle --outfile=out/main.cjs --external:vscode --format=cjs --platform=node --sourcemap=external --loader:.svg=file",
+        "build-watch": "npm run build -- --sourcemap --watch"
     },
     "dependencies": {
         "@unicode/unicode-11.0.0": "1.5.2",

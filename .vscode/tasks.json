@@ -2,9 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "esbuild",
+            "label": "build",
             "type": "npm",
-            "script": "esbuild-watch",
+            "script": "build-watch",
             "isBackground": true,
             "group": "build",
             "problemMatcher": [

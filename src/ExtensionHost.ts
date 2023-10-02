@@ -40,21 +40,21 @@ import { AntlrReferenceProvider } from "./frontend/ReferenceProvider.js";
 import { AntlrRenameProvider } from "./frontend/RenameProvider.js";
 import { AntlrSymbolProvider } from "./frontend/SymbolProvider.js";
 
-const errorOutputChannel = window.createOutputChannel("ANTLR4 Errors");
+const logOutputChannel = window.createOutputChannel("ANTLR4 Output");
 
-export const printErrors = (lines: unknown[], revealOutput: boolean): void => {
+export const printOutput = (lines: unknown[], revealOutput: boolean): void => {
     lines.forEach((line) => {
         if (typeof line === "string") {
-            errorOutputChannel.appendLine(line);
+            logOutputChannel.appendLine(line);
         } else if (line instanceof Error) {
-            errorOutputChannel.appendLine(line.stack ?? line.message);
+            logOutputChannel.appendLine(line.stack ?? line.message);
         } else {
-            errorOutputChannel.appendLine(String(line));
+            logOutputChannel.appendLine(String(line));
         }
     });
 
     if (revealOutput) {
-        errorOutputChannel.show(true);
+        logOutputChannel.show(true);
     }
 };
 
@@ -92,7 +92,7 @@ export class ExtensionHost {
     private changeTimers = new Map<string, ReturnType<typeof setTimeout>>(); // Keyed by file name.
 
     public constructor(context: ExtensionContext) {
-        this.importDir = workspace.getConfiguration("antlr4.generation").importDir as string;
+        this.importDir = workspace.getConfiguration("antlr4.generation").get<string>("importDir");
         this.backend = new AntlrFacade(this.importDir ?? "", context.extensionPath);
 
         this.importsProvider = new ImportsProvider(this.backend);
@@ -141,7 +141,7 @@ export class ExtensionHost {
                         { outputDir: antlrPath, loadOnly: true, generateIfNeeded: !doNotGenerate });
                     ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
                 } catch (error) {
-                    printErrors([error], true);
+                    printOutput([error], true);
                 }
             }
         }
@@ -218,7 +218,7 @@ export class ExtensionHost {
                     try {
                         config = JSON.parse(content) as ISentenceGenerationOptions;
                     } catch (reason) {
-                        printErrors(["Cannot parse sentence generation config file:", reason], true);
+                        printOutput(["Cannot parse sentence generation config file:", reason], true);
 
                         return;
                     }
@@ -234,7 +234,7 @@ export class ExtensionHost {
                 const [ruleName] = this.backend.ruleFromPosition(grammarFileName, caret.character, caret.line + 1);
 
                 if (!ruleName) {
-                    printErrors(["ANTLR4 sentence generation: no rule selected"], true);
+                    printOutput(["ANTLR4 sentence generation: no rule selected"], true);
 
                     return;
                 }
@@ -397,19 +397,19 @@ export class ExtensionHost {
 
         const options: IGenerationOptions = {
             baseDir: basePath,
-            libDir: workspace.getConfiguration("antlr4.generation").importDir as string,
+            libDir: this.importDir,
             outputDir,
             listeners: false,
             visitors: false,
-            alternativeJar: workspace.getConfiguration("antlr4.generation").alternativeJar as string,
-            additionalParameters: workspace.getConfiguration("antlr4.generation").additionalParameters as string,
+            alternativeJar: workspace.getConfiguration("antlr4.generation").get<string>("alternativeJar"),
+            additionalParameters: workspace.getConfiguration("antlr4.generation").get<string>("additionalParameters"),
+            language: workspace.getConfiguration("antlr4.generation").get<string>("language"),
+            package: workspace.getConfiguration("antlr4.generation").get<string>("package"),
         };
 
         if (externalMode) {
-            options.language = workspace.getConfiguration("antlr4.generation").language as string;
-            options.package = workspace.getConfiguration("antlr4.generation").package as string;
-            options.listeners = workspace.getConfiguration("antlr4.generation").listeners as boolean;
-            options.visitors = workspace.getConfiguration("antlr4.generation").visitors as boolean;
+            options.listeners = workspace.getConfiguration("antlr4.generation").get<boolean>("listeners");
+            options.visitors = workspace.getConfiguration("antlr4.generation").get<boolean>("visitors");
         }
 
         const result = this.backend.generate(document.fileName, options);
@@ -435,7 +435,7 @@ export class ExtensionHost {
                     }
                 } catch (reason) {
                     this.progress.stopAnimation();
-                    printErrors([reason], true);
+                    printOutput([reason], true);
                 }
             }
 
@@ -448,12 +448,12 @@ export class ExtensionHost {
                 this.progress.stopAnimation();
             }).catch((reason) => {
                 this.progress.stopAnimation();
-                printErrors([reason], true);
+                printOutput([reason], true);
             });
 
         }).catch((reason) => {
             this.progress.stopAnimation();
-            printErrors([reason], true);
+            printOutput([reason], true);
         });
     }
 

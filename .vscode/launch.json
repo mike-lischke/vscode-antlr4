@@ -13,7 +13,7 @@
             "outFiles": [
                 "${workspaceFolder}/out/main.cjs"
             ],
-            "preLaunchTask": "esbuild",
+            "preLaunchTask": "build",
             "trace": false,
             "smartStep": true,
         },
