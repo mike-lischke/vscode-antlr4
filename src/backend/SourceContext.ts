@@ -59,7 +59,8 @@ import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types.js";
 import { InterpreterLexerErrorListener } from "./InterpreterLexerErrorListener.js";
 import { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
 import { InterpreterParserErrorListener } from "./InterpreterParserErrorListener.js";
-import { FrontendUtils } from "../frontend/FrontendUtils.js";
+
+import { Log } from "../frontend/Log.js";
 
 /** One source context per file. Source contexts can reference each other (e.g. for symbol lookups). */
 export class SourceContext {
@@ -1641,7 +1642,7 @@ export class SourceContext {
 
         let errors = "";
         if (fs.existsSync(lexerInterpreterDataFile)) {
-            FrontendUtils.log("debug", `Loading lexer interpreter data from ${lexerInterpreterDataFile}`);
+            Log.debug(`Loading lexer interpreter data from ${lexerInterpreterDataFile}`);
 
             try {
                 this.grammarLexerData = InterpreterDataReader.parseFile(lexerInterpreterDataFile);
@@ -1655,7 +1656,7 @@ export class SourceContext {
                     `Error while reading lexer interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
             }
         } else {
-            FrontendUtils.log("debug", `No lexer interpreter data found at ${lexerInterpreterDataFile}`);
+            Log.debug(`No lexer interpreter data found at ${lexerInterpreterDataFile}`);
 
             this.grammarLexerData = undefined;
             this.grammarLexerRuleMap.clear();
@@ -1694,7 +1695,7 @@ export class SourceContext {
     private doGeneration(parameters: string[], spawnOptions: object, errorParser: ErrorParser,
         outputDir?: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            FrontendUtils.log("debug", `Running Java with parameters: ${parameters.join(" ")}`);
+            Log.debug(`Running Java with parameters: ${parameters.join(" ")}`);
 
             const java = child_process.spawn("java", parameters, spawnOptions);
 

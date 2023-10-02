@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import {
     window, DiagnosticSeverity, ExtensionContext, workspace, languages, commands, debug, Diagnostic, TextDocument,
     TextDocumentChangeEvent, TextEditor, TextEditorEdit, TextEditorRevealType, TextEditorSelectionChangeEvent,
-    Selection, Range, ViewColumn,
+    Selection, Range, ViewColumn, ConfigurationChangeEvent,
 } from "vscode";
 
 import {
@@ -40,25 +40,11 @@ import { AntlrReferenceProvider } from "./frontend/ReferenceProvider.js";
 import { AntlrRenameProvider } from "./frontend/RenameProvider.js";
 import { AntlrSymbolProvider } from "./frontend/SymbolProvider.js";
 
-const logOutputChannel = window.createOutputChannel("ANTLR4 Output");
+import { Log, LogLevel } from "./frontend/Log.js";
 
-export const printOutput = (lines: unknown[], revealOutput: boolean): void => {
-    lines.forEach((line) => {
-        if (typeof line === "string") {
-            logOutputChannel.appendLine(line);
-        } else if (line instanceof Error) {
-            logOutputChannel.appendLine(line.stack ?? line.message);
-        } else {
-            logOutputChannel.appendLine(String(line));
-        }
-    });
+const outputChannel = window.createOutputChannel("ANTLR4 Output");
 
-    if (revealOutput) {
-        logOutputChannel.show(true);
-    }
-};
-
-// This is the main extension class.
+/** This is the main extension class. */
 export class ExtensionHost {
     private static readonly diagnosticMap = new Map<DiagnosticType, DiagnosticSeverity>([
         [DiagnosticType.Hint, DiagnosticSeverity.Hint],
@@ -92,6 +78,8 @@ export class ExtensionHost {
     private changeTimers = new Map<string, ReturnType<typeof setTimeout>>(); // Keyed by file name.
 
     public constructor(context: ExtensionContext) {
+        Log.setChannel(outputChannel);
+
         this.importDir = workspace.getConfiguration("antlr4.generation").get<string>("importDir");
         this.backend = new AntlrFacade(this.importDir ?? "", context.extensionPath);
 
@@ -127,8 +115,8 @@ export class ExtensionHost {
             this.updateTreeProviders(editor.document);
         }
 
-        this.registerEventHandlers();
-        this.addSubscriptions(context);
+        this.registerEventHandlers(context);
+        this.addProvidersAndCommands(context);
 
         // Load interpreter + cache data for each open document, if there's any.
         const doNotGenerate = workspace.getConfiguration("antlr4.generation").mode === "none";
@@ -141,13 +129,13 @@ export class ExtensionHost {
                         { outputDir: antlrPath, loadOnly: true, generateIfNeeded: !doNotGenerate });
                     ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
                 } catch (error) {
-                    printOutput([error], true);
+                    Log.error([error]);
                 }
             }
         }
     }
 
-    private addSubscriptions(context: ExtensionContext): void {
+    private addProvidersAndCommands(context: ExtensionContext): void {
         context.subscriptions.push(languages.registerHoverProvider(ExtensionHost.antlrSelector,
             new AntlrHoverProvider(this.backend)));
         context.subscriptions.push(languages.registerDefinitionProvider(ExtensionHost.antlrSelector,
@@ -218,7 +206,7 @@ export class ExtensionHost {
                     try {
                         config = JSON.parse(content) as ISentenceGenerationOptions;
                     } catch (reason) {
-                        printOutput(["Cannot parse sentence generation config file:", reason], true);
+                        Log.error(["Cannot parse sentence generation config file:", reason]);
 
                         return;
                     }
@@ -234,7 +222,7 @@ export class ExtensionHost {
                 const [ruleName] = this.backend.ruleFromPosition(grammarFileName, caret.character, caret.line + 1);
 
                 if (!ruleName) {
-                    printOutput(["ANTLR4 sentence generation: no rule selected"], true);
+                    Log.error(["ANTLR4 sentence generation: no rule selected"]);
 
                     return;
                 }
@@ -275,22 +263,22 @@ export class ExtensionHost {
         }));
     }
 
-    private registerEventHandlers(): void {
-        workspace.onDidOpenTextDocument((document: TextDocument) => {
+    private registerEventHandlers(context: ExtensionContext): void {
+        context.subscriptions.push(workspace.onDidOpenTextDocument((document: TextDocument) => {
             if (FrontendUtils.isGrammarFile(document)) {
                 this.backend.loadGrammar(document.fileName);
                 this.regenerateBackgroundData(document);
             }
-        });
+        }));
 
-        workspace.onDidCloseTextDocument((document: TextDocument) => {
+        context.subscriptions.push(workspace.onDidCloseTextDocument((document: TextDocument) => {
             if (FrontendUtils.isGrammarFile(document)) {
                 this.backend.releaseGrammar(document.fileName);
                 this.diagnosticCollection.set(document.uri, []);
             }
-        });
+        }));
 
-        workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
+        context.subscriptions.push(workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
             if (event.contentChanges.length > 0 && FrontendUtils.isGrammarFile(event.document)) {
 
                 const fileName = event.document.fileName;
@@ -311,28 +299,35 @@ export class ExtensionHost {
                     this.codeLensProvider.refresh();
                 }, 300));
             }
-        });
+        }));
 
-        workspace.onDidSaveTextDocument((document: TextDocument) => {
+        context.subscriptions.push(workspace.onDidSaveTextDocument((document: TextDocument) => {
             if (FrontendUtils.isGrammarFile(document)) {
                 this.regenerateBackgroundData(document);
             }
-        });
+        }));
 
-        window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
+        context.subscriptions.push(window.onDidChangeTextEditorSelection((event: TextEditorSelectionChangeEvent) => {
             if (FrontendUtils.isGrammarFile(event.textEditor.document)) {
                 this.diagramProvider.update(event.textEditor);
                 this.atnGraphProvider.update(event.textEditor, false);
                 this.actionsProvider.update(event.textEditor);
             }
-        });
+        }));
 
-        window.onDidChangeActiveTextEditor((textEditor: TextEditor | undefined) => {
+        context.subscriptions.push(window.onDidChangeActiveTextEditor((textEditor: TextEditor | undefined) => {
             if (textEditor) {
                 FrontendUtils.updateVsCodeContext(this.backend, textEditor.document);
                 this.updateTreeProviders(textEditor.document);
             }
-        });
+        }));
+
+        context.subscriptions.push(workspace.onDidChangeConfiguration((event: ConfigurationChangeEvent) => {
+            if (event.affectsConfiguration("antlr4")) {
+                const level = workspace.getConfiguration("antlr4").get<LogLevel>("log") ?? "none";
+                Log.updateLogLevel(level);
+            }
+        }));
     }
 
     /**
@@ -435,7 +430,7 @@ export class ExtensionHost {
                     }
                 } catch (reason) {
                     this.progress.stopAnimation();
-                    printOutput([reason], true);
+                    Log.error([reason]);
                 }
             }
 
@@ -448,12 +443,12 @@ export class ExtensionHost {
                 this.progress.stopAnimation();
             }).catch((reason) => {
                 this.progress.stopAnimation();
-                printOutput([reason], true);
+                Log.error([reason]);
             });
 
         }).catch((reason) => {
             this.progress.stopAnimation();
-            printOutput([reason], true);
+            Log.error([reason]);
         });
     }
 

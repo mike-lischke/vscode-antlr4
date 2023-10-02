@@ -7,11 +7,11 @@ import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import * as path from "path";
 
-import { ExtensionContext, Uri, window, Webview, commands, ProviderResult, TextDocument, workspace } from "vscode";
+import { ExtensionContext, Uri, window, Webview, commands, ProviderResult, TextDocument } from "vscode";
 
 import { AntlrFacade } from "../backend/facade.js";
 import { ILexicalRange, GrammarType } from "../backend/types.js";
-import { printOutput } from "../ExtensionHost.js";
+import { Log } from "./Log.js";
 
 export interface IRangeHolder {
     range?: ILexicalRange;
@@ -77,7 +77,7 @@ export class FrontendUtils {
     }
 
     public static deleteFolderRecursive(target: string): void {
-        this.log("debug", `Deleting folder ${target}`);
+        Log.debug(`Deleting folder ${target}`);
 
         let files = [];
         if (fs.existsSync(target)) {
@@ -119,7 +119,7 @@ export class FrontendUtils {
      */
     public static copyFilesIfNewer(files: string[], targetPath: string): void {
         try {
-            this.log("debug", `Copying ${files.length} files to ${targetPath}`);
+            Log.debug(`Copying ${files.length} files to ${targetPath}`);
             fs.ensureDirSync(targetPath);
         } catch (error) {
             void window.showErrorMessage(`Could not create target folder '${targetPath}'. ${String(error)}`);
@@ -264,10 +264,4 @@ export class FrontendUtils {
         }
     }
 
-    public static log(type: string, message: string): void {
-        const logLevel = workspace.getConfiguration("antlr4").get<string>("log");
-        if (logLevel === "debug") {
-            printOutput([`[${type}] ${message}`], false);
-        }
-    }
 }
