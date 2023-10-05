@@ -93,7 +93,7 @@
                         "type": "string"
                     },
                     "default": [],
-                    "description": "List of custom CSS URIs for diagram SVG files"
+                    "description": "List of custom CSS file names for diagram SVG files"
                 },
                 "antlr4.rrd.saveDir": {
                     "type": "string",

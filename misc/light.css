@@ -149,14 +149,14 @@ svg.railroad-diagram text.comment {
 svg.railroad-diagram g.terminal rect {
     stroke-width: 2;
     stroke: #404040;
-    fill: rgba(255, 255, 255, 1);
+    fill: rgba(200, 200, 200, 1);
 }
 
 svg.railroad-diagram g.non-terminal rect {
     /* The non-terminal boxes. */
     stroke-width: 2;
     stroke: #404040;
-    fill: rgba(0, 0, 0, 0.1);
+    fill: rgba(255, 255, 255, 1);
 }
 
 /* Multiple choice text, not working atm. */
