@@ -1,6 +1,8 @@
 .vscode/
 .vscode-test/
 .github/
+**/.antlr
+
 tests/
 src/
 images/
@@ -11,9 +13,7 @@ coverage/
 
 cspell.json
 jest.config.js
-readme.md
 .gitignore
 .eslintignore
 tsconfig.json
 typings/**
-**/.antlr

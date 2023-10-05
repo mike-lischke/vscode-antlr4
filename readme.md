@@ -6,7 +6,7 @@
 
 ## What's New
 
-This release fixes content security problems in VS Code web views.
+Using a new ANTLR runtime that drives the parsers, as well as improved railroad diagrams and bug fixes.
 
 ## How To Contribute
 
@@ -68,7 +68,7 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
-### 2.4.0
+### 2.4.0 - 2.4.1
 
 - Switched to a new TypeScript runtime (antlr4ng), which supports the latest features from ANTLR4 (e.g. case sensitive identifiers).
 - Fixed bug #195: Extension breaks if filename ends with Parser
