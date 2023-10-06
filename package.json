@@ -7,7 +7,7 @@
         "color": "#2789e1",
         "theme": "dark"
     },
-    "version": "2.4.1",
+    "version": "2.4.2",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN License.txt",
     "repository": {
@@ -606,7 +606,7 @@
         "@typescript-eslint/parser": "6.7.2",
         "@vscode/codicons": "^0.0.33",
         "antlr4ng-cli": "1.0.2",
-        "esbuild": "^0.19.3",
+        "esbuild": "0.19.4",
         "eslint": "8.49.0",
         "eslint-plugin-import": "2.28.1",
         "eslint-plugin-jsdoc": "46.8.1",

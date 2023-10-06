@@ -6,7 +6,7 @@
 
 ## What's New
 
-Using a new ANTLR runtime that drives the parsers, as well as improved railroad diagrams and bug fixes.
+Using a new ANTLR runtime that drives the extension, as well as improved railroad diagrams and bug fixes.
 
 ## How To Contribute
 
@@ -68,11 +68,12 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
-### 2.4.0 - 2.4.1
+### 2.4.0 - 2.4.2
 
 - Switched to a new TypeScript runtime (antlr4ng), which supports the latest features from ANTLR4 (e.g. case sensitive identifiers).
 - Fixed bug #195: Extension breaks if filename ends with Parser
 - Fixed bug #197: Use lexer token labels when generating tokens in debug console
+- Fixed bug #218: Activation fails with TypeError: Invalid host defined options
 - Fixed bugs in the formatter (last token removal and wrong action with copy/paste).
 - Fixed a bug in the ATN graph renderer, where rule name + index were not properly updated, when navigating between rules.
 - Railroad diagrams received a big overhaul:
