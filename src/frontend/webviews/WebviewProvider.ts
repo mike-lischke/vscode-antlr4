@@ -92,20 +92,16 @@ export class WebviewProvider {
 
                         svg = svg.replace("</svg>", cssText);
 
-                        try {
-                            if (typeof message.type === "string") {
-                                const section = "antlr4." + message.type;
-                                const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                        if (typeof message.type === "string") {
+                            const section = "antlr4." + message.type;
+                            const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
 
-                                if (message.command === "saveSVG") {
-                                    const target = join(saveDir, message.name + "." + message.type);
-                                    FrontendUtils.exportDataWithConfirmation(target,
-                                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                                        { "Scalable Vector Graphic": ["svg"] }, svg, []);
-                                }
+                            if (message.command === "saveSVG") {
+                                const target = join(saveDir, message.name + "." + message.type);
+                                FrontendUtils.exportDataWithConfirmation(target,
+                                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                                    { "Scalable Vector Graphic": ["svg"] }, svg, []);
                             }
-                        } catch (error) {
-                            void window.showErrorMessage("Couldn't write SVG file: " + String(error));
                         }
                     }
 
@@ -115,9 +111,9 @@ export class WebviewProvider {
                 case "saveSVGList": { // Save a list of SVG files.
                     if (typeof message.type === "string") {
                         const section = "antlr4." + message.type;
-                        const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                        const saveDir = workspace.getConfiguration(section).get<string>("saveDir");
                         void window.showOpenDialog({
-                            defaultUri: Uri.file(saveDir),
+                            defaultUri: Uri.file(saveDir ?? ""),
                             canSelectFolders: true,
                             canSelectFiles: false,
                             canSelectMany: false,
@@ -147,25 +143,22 @@ export class WebviewProvider {
                                 }
                                 cssText += ` ]]>\n</style></defs></svg>`;
 
-                                try {
-                                    if (typeof message.type === "string") {
-                                        const section = "antlr4." + message.type;
-                                        const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                                const promises: Array<Promise<void>> = [];
+                                if (typeof message.type === "string") {
+                                    const data = message.data as { [key: string]: string; };
+                                    for (const [key, value] of Object.entries(data)) {
+                                        const target = join(uri[0].fsPath, key + ".svg");
 
-                                        const data = message.data as { [key: string]: string; };
-                                        for (const [key, value] of Object.entries(data)) {
-                                            const target = join(saveDir, key + ".svg");
-
-                                            const content = svg + value.replace("</svg>", cssText);
-                                            FrontendUtils.exportData(target, content);
-                                        }
+                                        const content = svg + value.replace("</svg>", cssText);
+                                        promises.push(FrontendUtils.exportData(target, content));
                                     }
-
-                                    void window.showInformationMessage("Diagrams successfully written.");
-                                } catch (error) {
-                                    void window.showErrorMessage("Couldn't write SVG file: " + String(error));
                                 }
 
+                                Promise.all(promises).then(() => {
+                                    void window.showInformationMessage("Diagrams successfully written.");
+                                }).catch((reason) => {
+                                    void window.showErrorMessage("Could not write SVG files: " + String(reason));
+                                });
                             }
                         });
                     }
@@ -185,16 +178,12 @@ export class WebviewProvider {
                             }
                         }
 
-                        try {
-                            const section = "antlr4." + message.type;
-                            const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
-                            const target = join(saveDir, message.name + "." + message.type);
-                            FrontendUtils.exportDataWithConfirmation(target,
-                                // eslint-disable-next-line @typescript-eslint/naming-convention
-                                { HTML: ["html"] }, message.html as string, css);
-                        } catch (error) {
-                            void window.showErrorMessage("Couldn't write HTML file: " + String(error));
-                        }
+                        const section = "antlr4." + message.type;
+                        const saveDir = workspace.getConfiguration(section).saveDir as string ?? "";
+                        const target = join(saveDir, message.name + "." + message.type);
+                        FrontendUtils.exportDataWithConfirmation(target,
+                            // eslint-disable-next-line @typescript-eslint/naming-convention
+                            { HTML: ["html"] }, message.html as string, css);
                     }
 
                     break;

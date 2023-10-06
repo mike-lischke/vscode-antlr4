@@ -151,12 +151,8 @@ export class FrontendUtils {
      * @param fileName A default file name the user can change, if wanted.
      * @param data The data to write.
      */
-    public static exportData(fileName: string, data: string): void {
-        fs.writeFile(fileName, data, (error) => {
-            if (error) {
-                void window.showErrorMessage("Could not write to file: " + fileName + ": " + error.message);
-            }
-        });
+    public static async exportData(fileName: string, data: string): Promise<void> {
+        await fs.writeFile(fileName, data);
     }
 
     /**

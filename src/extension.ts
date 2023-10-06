@@ -15,8 +15,8 @@ let extensionHost: ExtensionHost;
  *
  * @param context The extension context from vscode.
  */
-export const activate = async (context: ExtensionContext): Promise<void> => {
+export const activate = (context: ExtensionContext): void => {
     extensionHost = new ExtensionHost(context);
 
-    await AntlrFacade.initialize();
+    AntlrFacade.initialize();
 };

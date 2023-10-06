@@ -78,8 +78,8 @@ export class SentenceGenerator {
         }
     }
 
-    public static async initialize(): Promise<void> {
-        SentenceGenerator.printableUnicode = await printableUnicodePoints({
+    public static initialize(): void {
+        SentenceGenerator.printableUnicode = printableUnicodePoints({
             excludeCJK: true,
             excludeRTL: true,
             limitToBMP: false,

@@ -162,8 +162,8 @@ export class SourceContext {
         this.parser.addErrorListener(this.errorListener);
     }
 
-    public static async initialize(): Promise<void> {
-        SourceContext.printableChars = await printableUnicodePoints({});
+    public static initialize(): void {
+        SourceContext.printableChars = printableUnicodePoints({});
     }
 
     public get isInterpreterDataLoaded(): boolean {

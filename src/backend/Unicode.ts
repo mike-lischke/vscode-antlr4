@@ -5,6 +5,24 @@
 
 import { Interval, IntervalSet } from "antlr4ng";
 
+import unassignedCodepoints from "@unicode/unicode-11.0.0/General_Category/Unassigned/code-points.js";
+import controlCodepoints from "@unicode/unicode-11.0.0/General_Category/Control/code-points.js";
+import formatCodepoints from "@unicode/unicode-11.0.0/General_Category/Format/code-points.js";
+import surrogateCodepoints from "@unicode/unicode-11.0.0/General_Category/Surrogate/code-points.js";
+import privateUseCodepoints from "@unicode/unicode-11.0.0/General_Category/Private_Use/code-points.js";
+import unifiedIdeographsCodepoints from "@unicode/unicode-11.0.0/Block/CJK_Unified_Ideographs/code-points.js";
+import hangulSyllablesCodepoints from "@unicode/unicode-11.0.0/Block/Hangul_Syllables/code-points.js";
+import yiSyllablesCodepoints from "@unicode/unicode-11.0.0/Block/Yi_Syllables/code-points.js";
+import rtlCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left/code-points.js";
+import rtlEmbeddingCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left_Embedding/code-points.js";
+import rtlIsolateCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left_Isolate/code-points.js";
+import rtlOverrideCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left_Override/code-points.js";
+
+// eslint-disable-next-line max-len
+import unifiedIdeographsExtensionCodepoints from "@unicode/unicode-11.0.0/Block/CJK_Unified_Ideographs_Extension_A/code-points.js";
+// eslint-disable-next-line max-len
+import compatibilityIdeographsCodepoints from "@unicode/unicode-11.0.0/Block/CJK_Compatibility_Ideographs/code-points.js";
+
 /**
  * This structure contains all currently defined Unicode blocks (according to https://unicode-table.com/en/blocks/)
  * together with a weight value that determines the probability to select a given block in the random block selection.
@@ -294,22 +312,21 @@ const unicodeBlocks: Array<[Interval, string, number]> = [
 let predefinedWeightSum = 0;
 
 /**
- * Converts the code points from the given file to an interval set.
+ * Converts the given code points to an interval set.
  *
- * @param dataFile The name of a file to import.
+ * @param codePoints The code points to convert.
  * @param existing Optionally specifies an interval set with previously red values (to merge with the new ones).
  *
  * @returns A new set of Unicode code points.
  */
-const codePointsToIntervals = async (dataFile: string, existing?: IntervalSet): Promise<IntervalSet> => {
-    const charsToExclude: { default: number[]; } = await import("@unicode/unicode-11.0.0/" + dataFile);
+const codePointsToIntervals = (codePoints: number[], existing?: IntervalSet): IntervalSet => {
     const result = existing ?? new IntervalSet();
 
     // Code points are sorted in increasing order, which we can use to speed up insertion.
-    let start = charsToExclude.default[0];
+    let start = codePoints[0];
     let end = start;
-    for (let i = 1; i < charsToExclude.default.length; ++i) {
-        const code = charsToExclude.default[i];
+    for (let i = 1; i < codePoints.length; ++i) {
+        const code = codePoints[i];
         if (end + 1 === code) {
             ++end;
             continue;
@@ -355,35 +372,29 @@ export interface IUnicodeOptions {
  *
  * @returns A set of intervals with the requested Unicode code points.
  */
-export const printableUnicodePoints = async (options: IUnicodeOptions): Promise<IntervalSet> => {
+export const printableUnicodePoints = (options: IUnicodeOptions): IntervalSet => {
     // Create a set with all Unicode code points that are assigned and not in categories with unprintable chars,
     // surrogate pairs, formatting + private codes.
-    let intervalsToExclude = await codePointsToIntervals("General_Category/Unassigned/code-points.js");
-    intervalsToExclude = await codePointsToIntervals("General_Category/Control/code-points.js", intervalsToExclude);
-    intervalsToExclude = await codePointsToIntervals("General_Category/Format/code-points.js", intervalsToExclude);
-    intervalsToExclude = await codePointsToIntervals("General_Category/Surrogate/code-points.js", intervalsToExclude);
-    intervalsToExclude = await codePointsToIntervals("General_Category/Private_Use/code-points.js", intervalsToExclude);
+    let intervalsToExclude = codePointsToIntervals(unassignedCodepoints);
+    intervalsToExclude = codePointsToIntervals(controlCodepoints, intervalsToExclude);
+    intervalsToExclude = codePointsToIntervals(formatCodepoints, intervalsToExclude);
+    intervalsToExclude = codePointsToIntervals(surrogateCodepoints, intervalsToExclude);
+    intervalsToExclude = codePointsToIntervals(privateUseCodepoints, intervalsToExclude);
 
     if (options.excludeCJK) {
-        intervalsToExclude = await codePointsToIntervals("Block/CJK_Unified_Ideographs/code-points.js",
-            intervalsToExclude);
-        intervalsToExclude = await codePointsToIntervals("Block/CJK_Unified_Ideographs_Extension_A/code-points.js",
-            intervalsToExclude);
-        intervalsToExclude = await codePointsToIntervals("Block/CJK_Compatibility_Ideographs/code-points.js",
-            intervalsToExclude);
-        intervalsToExclude = await codePointsToIntervals("Block/Hangul_Syllables/code-points.js", intervalsToExclude);
-        intervalsToExclude = await codePointsToIntervals("Block/Yi_Syllables/code-points.js", intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(unifiedIdeographsCodepoints, intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(unifiedIdeographsExtensionCodepoints, intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(compatibilityIdeographsCodepoints, intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(hangulSyllablesCodepoints, intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(yiSyllablesCodepoints, intervalsToExclude);
     }
 
     if (options.excludeRTL) {
         // Note: there are also a few top-to-bottom scripts (e.g. mongolian), but these are not considered here.
-        intervalsToExclude = await codePointsToIntervals("Bidi_Class/Right_To_Left/code-points.js", intervalsToExclude);
-        intervalsToExclude = await codePointsToIntervals("Bidi_Class/Right_To_Left_Embedding/code-points.js",
-            intervalsToExclude);
-        intervalsToExclude = await codePointsToIntervals("Bidi_Class/Right_To_Left_Isolate/code-points.js",
-            intervalsToExclude);
-        intervalsToExclude = await codePointsToIntervals("Bidi_Class/Right_To_Left_Override/code-points.js",
-            intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(rtlCodepoints, intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(rtlEmbeddingCodepoints, intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(rtlIsolateCodepoints, intervalsToExclude);
+        intervalsToExclude = codePointsToIntervals(rtlOverrideCodepoints, intervalsToExclude);
     }
 
     if (options.includeLineTerminators) {

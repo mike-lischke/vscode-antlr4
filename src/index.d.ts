@@ -7,3 +7,8 @@ declare module "*.svg" {
     const content: string;
     export default content;
 }
+
+declare module "@unicode/*" {
+    const content: number[];
+    export default content;
+}

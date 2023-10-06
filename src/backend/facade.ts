@@ -32,11 +32,9 @@ export class AntlrFacade {
     public constructor(private importDir: string, private extensionDir: string) {
     }
 
-    public static async initialize(): Promise<void> {
-        await Promise.all([
-            SourceContext.initialize(),
-            SentenceGenerator.initialize(),
-        ]);
+    public static initialize(): void {
+        SourceContext.initialize();
+        SentenceGenerator.initialize();
     }
 
     /**

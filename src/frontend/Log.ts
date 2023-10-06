@@ -34,8 +34,12 @@ export class Log {
         this.print(["[warn] " + message], false);
     }
 
-    public static error(lines: unknown[]): void {
-        Log.print(lines, true);
+    public static error(lines: unknown[] | string): void {
+        if (typeof lines === "string") {
+            Log.print([lines], true);
+        } else {
+            Log.print(lines, true);
+        }
     }
 
     private static print(lines: unknown[], revealOutput: boolean): void {
