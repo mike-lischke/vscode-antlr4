@@ -19,16 +19,12 @@ export class CallGraphProvider extends WebviewProvider {
         const graph = this.backend.getReferenceGraph(fileName);
         const data: ICallGraphEntry[] = [];
         for (const entry of graph) {
-            const references: string[] = [];
-            for (const ref of entry[1].rules) {
-                references.push(ref);
-            }
-
-            for (const ref of entry[1].tokens) {
-                references.push(ref);
-            }
-
-            data.push({ name: entry[0], references });
+            data.push({
+                name: entry[0],
+                kind: entry[1].kind,
+                rules: Array.from(entry[1].rules),
+                tokens: Array.from(entry[1].tokens)
+            })
         }
 
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/CallGraphRenderer.js", this.context,
@@ -52,7 +48,7 @@ export class CallGraphProvider extends WebviewProvider {
                 </head>
 
             <body>
-                <div class="header">
+                <div id="header" class="header">
                     <span class="graphTitle call-graph-color">Call Graph</span>
 
                     <div class="saveSVGButton" onClick="graphExport.exportToSVG('call-graph', '${baseName}');"
