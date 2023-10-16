@@ -21,6 +21,10 @@ export interface IVSCode {
     setState(state: unknown): void;
 }
 
+declare const acquireVsCodeApi: () => IVSCode;
+
+export const vscode = acquireVsCodeApi();
+
 /**
  * A range within a text. Just like the range object in vscode the end position is not included in the range.
  * Hence when start and end position are equal the range is empty.
@@ -142,7 +146,9 @@ export interface IATNGraphLayoutLink extends SimulationLinkDatum<IATNGraphLayout
 
 export interface ICallGraphEntry {
     name: string;
-    references: string[];
+    kind: SymbolKind;
+    rules: string[];
+    tokens: string[];
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -163,4 +169,38 @@ export const enum ATNStateType {
     STAR_LOOP_ENTRY = 10,
     PLUS_LOOP_BACK = 11,
     LOOP_END = 12,
+}
+
+export enum SymbolKind {
+    Unknown,
+
+    Terminal,
+    Keyword,
+    TokenVocab,
+    Import,
+    BuiltInLexerToken,
+    VirtualLexerToken,
+    FragmentLexerToken,
+    LexerRule,
+    BuiltInMode,
+    LexerMode,
+    BuiltInChannel,
+    TokenChannel,
+    ParserRule,
+    Operator,
+    Option,
+    TokenReference,
+    RuleReference,
+    LexerCommand,
+
+    // Native code.
+    GlobalNamedAction,
+    LocalNamedAction,
+    ExceptionAction,
+    FinallyAction,
+    ParserAction,
+    LexerAction,
+    ParserPredicate,
+    LexerPredicate,
+    Arguments,
 }

@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { ICallGraphEntry } from "./types.js";
+import { ICallGraphEntry, SymbolKind, vscode } from "./types.js";
 
 interface ICallGraphRenderNode extends ICallGraphEntry {
     class: string;
@@ -16,6 +16,7 @@ interface ICallGraphRenderNode extends ICallGraphEntry {
     // the currently selected link.
     isSource: boolean;
     isTarget: boolean;
+    hop?: number;
 }
 
 // Type aliases for better handling/reading.
@@ -26,6 +27,11 @@ type CallGraphLinkSelection = d3.Selection<SVGElement, ICallGraphLayoutNodeLink,
 interface ICallGraphLayoutNodeLink {
     source: CallGraphLayoutNode;
     target: CallGraphLayoutNode;
+}
+
+interface State {
+    traverse: boolean
+    hideTokens: boolean
 }
 
 export class CallGraphRenderer {
@@ -41,7 +47,52 @@ export class CallGraphRenderer {
     private nodeSelection: CallGraphNodeSelection;
     private linkSelection: CallGraphLinkSelection;
 
+    private state: State;
+
     public constructor(private data: ICallGraphEntry[]) {
+
+        this.state = vscode.getState() as State || {
+            traverse: false,
+            hideTokens: false,
+        };
+
+        const header = document.getElementById('header');
+        {
+            const t = document.createElement("div");
+            t.setAttribute("style", "margin-left: 8px")
+            const tl = document.createElement("label")
+            tl.innerHTML = "Traverse";
+            t.appendChild(tl)
+            const tcb = document.createElement("input");
+            tcb.type = "checkbox";
+            tcb.checked = this.state.traverse;
+            tcb.addEventListener("change", () => {
+                this.state.traverse = tcb.checked;
+                vscode.setState(this.state)
+            });
+            t.appendChild(tcb)
+            header?.appendChild(t)
+        }
+        {
+            const t = document.createElement("div");
+            t.setAttribute("style", "margin-left: 8px")
+            const tl = document.createElement("label")
+            tl.innerHTML = "Hide Tokens";
+            t.appendChild(tl)
+            const tcb = document.createElement("input");
+            tcb.type = "checkbox";
+            tcb.checked = this.state.hideTokens;
+            tcb.addEventListener("change", () => {
+                this.state.hideTokens = tcb.checked;
+                vscode.setState(this.state);
+                this.linkSelection.remove()
+                this.nodeSelection.remove()
+                this.render();
+            });
+            t.appendChild(tcb)
+            header?.appendChild(t)
+        }
+
         const radius = this.diameter / 2;
 
         this.svg = d3.select<SVGElement, ICallGraphRenderNode>("svg")
@@ -137,7 +188,49 @@ export class CallGraphRenderer {
         this.render();
     }
 
+    timer: NodeJS.Timeout
+    visited: CallGraphLayoutNode[] = []
+
+    linkTarget = (hop: number, nodes: CallGraphLayoutNode[]) => {
+        this.visited.push(...nodes)
+        const kids: CallGraphLayoutNode[] = [];
+        this.linkSelection
+            .classed("link-source", (link) => {
+                const n = this.visited.find(n => n === link.source)
+                if ( n !== undefined) {
+                    if( this.visited.find(n => n === link.target) === undefined ) {
+                        kids.push(link.target)
+                        link.target.data.isTarget = true;
+                        link.target.data.hop = hop
+                    }
+                    return true
+                } else {
+                    return false
+                }
+            })
+            .classed("link-dimmed", (link) => {
+                return this.visited.find(n => n === link.source || n === link.target) === undefined
+            });
+
+        this.nodeSelection
+            .classed("node-target", (n) => {
+                return n.data.isTarget;
+            })
+            .text((d) => {
+                if( d.data.hop ) {
+                    return `[${d.data.hop}] ${d.data.key}`;
+                }
+                return `${d.data.key}`;
+            })
+        if( this.state.traverse ) {
+            if( kids.length > 0 ) {
+                this.timer = setTimeout(() => this.linkTarget(hop+1, kids), 30)
+            }
+        }
+    }
+
     private onMouseOver = (_event: MouseEvent, node: CallGraphLayoutNode) => {
+        this.visited = []
         // Reset all marker flags.
         this.nodeSelection.each((n) => {
             n.data.isSource = false;
@@ -153,17 +246,8 @@ export class CallGraphRenderer {
                 } else {
                     return false;
                 }
-            })
-            .classed("link-source", (link) => {
-                if (link.source === node) {
-                    return link.target.data.isTarget = true;
-                } else {
-                    return false;
-                }
-            })
-            .classed("link-dimmed", (link) => {
-                return (link.source !== node) && (link.target !== node);
             });
+        this.linkTarget(0, [node])
 
         this.nodeSelection
             .classed("node-target", (n) => {
@@ -175,12 +259,17 @@ export class CallGraphRenderer {
     };
 
     private onMouseOut = (_event: MouseEvent, _node: CallGraphLayoutNode) => {
+        clearTimeout(this.timer);
         this.linkSelection.classed("link-dimmed", false);
         this.linkSelection
             .classed("link-target", false)
             .classed("link-source", false);
 
         this.nodeSelection
+            .text((d) => {
+                d.data.hop = undefined;
+                return `${d.data.key}`;
+            })
             .classed("node-target", false)
             .classed("node-source", false);
     };
@@ -226,6 +315,15 @@ export class CallGraphRenderer {
         };
 
         entries.forEach((rule) => {
+            if( this.state.hideTokens ) {
+                switch (rule.kind) {
+                    // case SymbolKind.BuiltInLexerToken:
+                    case SymbolKind.VirtualLexerToken:
+                    case SymbolKind.FragmentLexerToken:
+                    case SymbolKind.LexerRule:
+                        return
+                }
+            }
             find(rule.name, rule);
         });
 
@@ -243,14 +341,20 @@ export class CallGraphRenderer {
 
         // For each import, construct a link from the source to target node.
         nodes.forEach((node) => {
-            if (node.data.references) {
-                node.data.references.forEach((name) => {
-                    references.push({
-                        source: map[node.data.name],
-                        target: map[name],
+            function addReferences(ref: string[]) {
+                if (ref) {
+                    ref.forEach((name) => {
+                        if( map[name] ) {
+                            references.push({
+                                source: map[node.data.name],
+                                target: map[name],
+                            });
+                        }
                     });
-                });
+                }
             }
+            addReferences(node.data.rules)
+            addReferences(node.data.tokens)
         });
 
         return references;
