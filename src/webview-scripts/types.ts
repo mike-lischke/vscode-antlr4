@@ -21,10 +21,6 @@ export interface IVSCode {
     setState(state: unknown): void;
 }
 
-declare const acquireVsCodeApi: () => IVSCode;
-
-export const vscode = acquireVsCodeApi();
-
 /**
  * A range within a text. Just like the range object in vscode the end position is not included in the range.
  * Hence when start and end position are equal the range is empty.

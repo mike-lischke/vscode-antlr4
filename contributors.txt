@@ -57,4 +57,3 @@ YYYY/MM/DD, github id, Full name, email
 2022/05/20, JoinedSenses, Arron Vinyard, jo**es@gmail.com
 2022/09/20, arlm, Alexandre Marcondes, ale**es@gmail.com
 2023/08/28, Ghost4Man, Daniel Kosík, kosik.dan@gmail.com
-2023/10/17, millergarym, miller.garym@gmail.com
