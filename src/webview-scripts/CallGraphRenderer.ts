@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { ICallGraphEntry, SymbolKind, vscode } from "./types.js";
+import { ICallGraphEntry, IVSCode, SymbolKind } from "./types.js";
 
 interface ICallGraphRenderNode extends ICallGraphEntry {
     class: string;
@@ -29,9 +29,10 @@ interface ICallGraphLayoutNodeLink {
     target: CallGraphLayoutNode;
 }
 
-interface State {
-    traverse: boolean
-    hideTokens: boolean
+interface IState {
+    traverse: boolean;
+    hideTokens: boolean;
+    delay: number;
 }
 
 export class CallGraphRenderer {
@@ -47,50 +48,69 @@ export class CallGraphRenderer {
     private nodeSelection: CallGraphNodeSelection;
     private linkSelection: CallGraphLinkSelection;
 
-    private state: State;
+    private state: IState;
+    private timer: NodeJS.Timeout;
+    private visited: CallGraphLayoutNode[] = [];
 
-    public constructor(private data: ICallGraphEntry[]) {
+    public constructor(
+        private vscode: IVSCode,
+        private data: ICallGraphEntry[],
+    ) {
 
-        this.state = vscode.getState() as State || {
+        this.state = this.vscode.getState() as IState || {
             traverse: false,
             hideTokens: false,
+            delay: 300,
         };
 
-        const header = document.getElementById('header');
+        const header = document.getElementById("header");
         {
             const t = document.createElement("div");
-            t.setAttribute("style", "margin-left: 8px")
-            const tl = document.createElement("label")
+            t.setAttribute("style", "margin-left: 8px");
+            const tl = document.createElement("label");
             tl.innerHTML = "Traverse";
-            t.appendChild(tl)
+            t.appendChild(tl);
             const tcb = document.createElement("input");
             tcb.type = "checkbox";
+            const tdelay = document.createElement("input");
+            tdelay.setAttribute("style", "width: 30px");
+            tdelay.value = this.state.delay + "";
+            tdelay.addEventListener("input", () => {
+                const delay = parseInt(tdelay.value, 10);
+                this.state.delay = isNaN(delay) ? 300 : delay;
+                this.vscode.setState(this.state);
+            });
+
             tcb.checked = this.state.traverse;
             tcb.addEventListener("change", () => {
                 this.state.traverse = tcb.checked;
-                vscode.setState(this.state)
+                this.vscode.setState(this.state);
             });
-            t.appendChild(tcb)
-            header?.appendChild(t)
+            t.appendChild(tcb);
+            t.appendChild(tdelay);
+            const tl2 = document.createElement("label");
+            tl2.innerHTML = "ms";
+            t.appendChild(tl2);
+            header?.appendChild(t);
         }
         {
             const t = document.createElement("div");
-            t.setAttribute("style", "margin-left: 8px")
-            const tl = document.createElement("label")
+            t.setAttribute("style", "margin-left: 8px");
+            const tl = document.createElement("label");
             tl.innerHTML = "Hide Tokens";
-            t.appendChild(tl)
+            t.appendChild(tl);
             const tcb = document.createElement("input");
             tcb.type = "checkbox";
             tcb.checked = this.state.hideTokens;
             tcb.addEventListener("change", () => {
                 this.state.hideTokens = tcb.checked;
-                vscode.setState(this.state);
-                this.linkSelection.remove()
-                this.nodeSelection.remove()
+                this.vscode.setState(this.state);
+                this.linkSelection.remove();
+                this.nodeSelection.remove();
                 this.render();
             });
-            t.appendChild(tcb)
-            header?.appendChild(t)
+            t.appendChild(tcb);
+            header?.appendChild(t);
         }
 
         const radius = this.diameter / 2;
@@ -188,28 +208,28 @@ export class CallGraphRenderer {
         this.render();
     }
 
-    timer: NodeJS.Timeout
-    visited: CallGraphLayoutNode[] = []
-
-    linkTarget = (hop: number, nodes: CallGraphLayoutNode[]) => {
-        this.visited.push(...nodes)
+    private linkTarget = (hop: number, nodes: CallGraphLayoutNode[]): void => {
+        this.visited.push(...nodes);
         const kids: CallGraphLayoutNode[] = [];
         this.linkSelection
             .classed("link-source", (link) => {
-                const n = this.visited.find(n => n === link.source)
-                if ( n !== undefined) {
-                    if( this.visited.find(n => n === link.target) === undefined ) {
-                        kids.push(link.target)
+                const n = this.visited.find((n) => { return (n === link.source); });
+                if (n !== undefined) {
+                    if (this.visited.find((n) => { return (n === link.target); }) === undefined) {
+                        kids.push(link.target);
                         link.target.data.isTarget = true;
-                        link.target.data.hop = hop
+                        link.target.data.hop = hop;
                     }
-                    return true
+
+                    return true;
                 } else {
-                    return false
+                    return false;
                 }
             })
             .classed("link-dimmed", (link) => {
-                return this.visited.find(n => n === link.source || n === link.target) === undefined
+                return this.visited.find((n) => {
+                    return (n === link.source || n === link.target);
+                }) === undefined;
             });
 
         this.nodeSelection
@@ -217,20 +237,23 @@ export class CallGraphRenderer {
                 return n.data.isTarget;
             })
             .text((d) => {
-                if( d.data.hop ) {
+                if (d.data.hop) {
                     return `[${d.data.hop}] ${d.data.key}`;
                 }
+
                 return `${d.data.key}`;
-            })
-        if( this.state.traverse ) {
-            if( kids.length > 0 ) {
-                this.timer = setTimeout(() => this.linkTarget(hop+1, kids), 30)
+            });
+        if (this.state.traverse) {
+            if (kids.length > 0) {
+                this.timer = setTimeout(() => {
+                    this.linkTarget(hop + 1, kids);
+                }, this.state.delay);
             }
         }
-    }
+    };
 
     private onMouseOver = (_event: MouseEvent, node: CallGraphLayoutNode) => {
-        this.visited = []
+        this.visited = [];
         // Reset all marker flags.
         this.nodeSelection.each((n) => {
             n.data.isSource = false;
@@ -247,7 +270,7 @@ export class CallGraphRenderer {
                     return false;
                 }
             });
-        this.linkTarget(0, [node])
+        this.linkTarget(0, [node]);
 
         this.nodeSelection
             .classed("node-target", (n) => {
@@ -268,6 +291,7 @@ export class CallGraphRenderer {
         this.nodeSelection
             .text((d) => {
                 d.data.hop = undefined;
+
                 return `${d.data.key}`;
             })
             .classed("node-target", false)
@@ -315,13 +339,15 @@ export class CallGraphRenderer {
         };
 
         entries.forEach((rule) => {
-            if( this.state.hideTokens ) {
+            if (this.state.hideTokens) {
                 switch (rule.kind) {
                     // case SymbolKind.BuiltInLexerToken:
                     case SymbolKind.VirtualLexerToken:
                     case SymbolKind.FragmentLexerToken:
                     case SymbolKind.LexerRule:
-                        return
+                        return;
+                    default:
+                        break;
                 }
             }
             find(rule.name, rule);
@@ -341,10 +367,10 @@ export class CallGraphRenderer {
 
         // For each import, construct a link from the source to target node.
         nodes.forEach((node) => {
-            function addReferences(ref: string[]) {
+            const addReferences = (ref: string[]): void => {
                 if (ref) {
                     ref.forEach((name) => {
-                        if( map[name] ) {
+                        if (map[name]) {
                             references.push({
                                 source: map[node.data.name],
                                 target: map[name],
@@ -352,9 +378,9 @@ export class CallGraphRenderer {
                         }
                     });
                 }
-            }
-            addReferences(node.data.rules)
-            addReferences(node.data.tokens)
+            };
+            addReferences(node.data.rules);
+            addReferences(node.data.tokens);
         });
 
         return references;

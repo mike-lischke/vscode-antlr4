@@ -23,8 +23,8 @@ export class CallGraphProvider extends WebviewProvider {
                 name: entry[0],
                 kind: entry[1].kind,
                 rules: Array.from(entry[1].rules),
-                tokens: Array.from(entry[1].tokens)
-            })
+                tokens: Array.from(entry[1].tokens),
+            });
         }
 
         const rendererScriptPath = FrontendUtils.getOutPath("src/webview-scripts/CallGraphRenderer.js", this.context,
@@ -67,10 +67,10 @@ export class CallGraphProvider extends WebviewProvider {
 
                 <script nonce="${nonce}" type="module">
                     import { CallGraphRenderer } from "${rendererScriptPath}";
-                    import { GraphExport } from "${exportScriptPath}";
+                    import { GraphExport, vscode } from "${exportScriptPath}";
 
                     const data = ${JSON.stringify(data)};
-                    callGraphRenderer = new CallGraphRenderer(data);
+                    callGraphRenderer = new CallGraphRenderer(vscode, data);
                     graphExport = new GraphExport();
 
                     callGraphRenderer.render();

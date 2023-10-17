@@ -3,11 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { IVSCode, vscode } from "./types.js";
+import { IVSCode } from "./types.js";
 
-// declare const acquireVsCodeApi: () => IVSCode;
+declare const acquireVsCodeApi: () => IVSCode;
 
-// export const vscode = acquireVsCodeApi();
+export const vscode = acquireVsCodeApi();
 
 /** These values directly correspond to the settings section names containing a "saveDir" entry. */
 export type GraphType = "rrd" | "atn" | "call-graph";
