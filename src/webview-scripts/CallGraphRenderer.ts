@@ -51,7 +51,8 @@ export class CallGraphRenderer {
 
     private state: IState;
     private timer: NodeJS.Timeout;
-    private visited: CallGraphLayoutNode[] = [];
+    private visited: CallGraphLayoutNode[][] = [];
+    private hop: number = 0;
 
     public constructor(private vscode: IVSCode, private data: ICallGraphEntry[]) {
 
@@ -60,6 +61,9 @@ export class CallGraphRenderer {
             hideTokens: false,
             delay: 300,
         };
+
+        document.addEventListener("keydown", this.onDown);
+        document.addEventListener("keyup", this.onUp);
 
         const header = document.getElementById("header");
         {
@@ -193,6 +197,7 @@ export class CallGraphRenderer {
             .text((d) => {
                 return d.data.key;
             })
+            .on("click", this.onMouseClick)
             .on("mouseover", this.onMouseOver)
             .on("mouseout", this.onMouseOut);
     }
@@ -206,17 +211,16 @@ export class CallGraphRenderer {
         this.render();
     }
 
-    private linkTarget = (hop: number, nodes: CallGraphLayoutNode[]): void => {
-        this.visited.push(...nodes);
+    private linkTarget = (): void => {
         const kids: CallGraphLayoutNode[] = [];
         this.linkSelection
             .classed("link-source", (link) => {
-                const n = this.visited.find((n) => { return (n === link.source); });
+                const n = this.visited.flat().find((n) => { return (n === link.source); });
                 if (n !== undefined) {
-                    if (this.visited.find((n) => { return (n === link.target); }) === undefined) {
+                    if (this.visited.flat().find((n) => { return (n === link.target); }) === undefined) {
                         kids.push(link.target);
                         link.target.data.isTarget = true;
-                        link.target.data.hop = hop;
+                        link.target.data.hop = this.hop;
                     }
 
                     return true;
@@ -225,7 +229,7 @@ export class CallGraphRenderer {
                 }
             })
             .classed("link-dimmed", (link) => {
-                return this.visited.find((n) => {
+                return this.visited.flat().find((n) => {
                     return (n === link.source || n === link.target);
                 }) === undefined;
             });
@@ -241,17 +245,56 @@ export class CallGraphRenderer {
 
                 return `${d.data.key}`;
             });
-        if (this.state.traverse) {
-            if (kids.length > 0) {
+        if (kids.length > 0) {
+            this.visited.push(kids);
+            this.hop = this.hop + 1;
+            if (this.state.traverse && !this.undo) {
                 this.timer = setTimeout(() => {
-                    this.linkTarget(hop + 1, kids);
+                    this.linkTarget();
                 }, this.state.delay);
             }
         }
     };
 
+    undo: boolean = false;
+
+    private onUp = () => {
+        this.undo = false;
+    };
+
+    private onDown = () => {
+        this.undo = true;
+    };
+
+    private onMouseClick = () => {
+        if (this.undo) {
+            if (this.visited.length < 3) {
+                return;
+            }
+            // get ride of the next nodes to be drawn
+            this.visited.pop();
+            const last = this.visited.pop();
+            // TODO get this undo test select & text to work
+            this.nodeSelection.each((n) => {
+                const n1 = last?.find((n0) => n0 === n)
+                if( n1 ) {
+                    n1.data.isTarget = false;
+                    n1.data.hop = undefined;
+                }
+            });
+    
+            // last?.forEach((n) => {
+            //     n.data.isTarget = false;
+            //     n.data.hop = undefined;
+            // })
+            this.hop = this.hop - 2;
+        }
+        this.linkTarget();
+    };
+
     private onMouseOver = (_event: MouseEvent, node: CallGraphLayoutNode) => {
         this.visited = [];
+        this.hop = 0;
         // Reset all marker flags.
         this.nodeSelection.each((n) => {
             n.data.isSource = false;
@@ -268,7 +311,8 @@ export class CallGraphRenderer {
                     return false;
                 }
             });
-        this.linkTarget(0, [node]);
+        this.visited.push([node]);
+        this.linkTarget();
 
         this.nodeSelection
             .classed("node-target", (n) => {
@@ -279,7 +323,7 @@ export class CallGraphRenderer {
             });
     };
 
-    private onMouseOut = (_event: MouseEvent, _node: CallGraphLayoutNode) => {
+    private onMouseOut = () => {
         clearTimeout(this.timer);
         this.linkSelection.classed("link-dimmed", false);
         this.linkSelection
