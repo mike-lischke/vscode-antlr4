@@ -53,6 +53,7 @@ export class CallGraphRenderer {
     private timer: NodeJS.Timeout;
     private visited: CallGraphLayoutNode[][] = [];
     private hop: number = 0;
+    private undo: boolean = false;
 
     public constructor(private vscode: IVSCode, private data: ICallGraphEntry[]) {
 
@@ -256,8 +257,6 @@ export class CallGraphRenderer {
         }
     };
 
-    undo: boolean = false;
-
     private onUp = () => {
         this.undo = false;
     };
@@ -276,13 +275,13 @@ export class CallGraphRenderer {
             const last = this.visited.pop();
             // TODO get this undo test select & text to work
             this.nodeSelection.each((n) => {
-                const n1 = last?.find((n0) => n0 === n)
-                if( n1 ) {
+                const n1 = last?.find((n0) => { return (n0 === n); });
+                if (n1) {
                     n1.data.isTarget = false;
                     n1.data.hop = undefined;
                 }
             });
-    
+
             // last?.forEach((n) => {
             //     n.data.isTarget = false;
             //     n.data.hop = undefined;
