@@ -6,7 +6,7 @@
 import * as fs from "fs";
 
 import { AntlrFacade } from "../../src/backend/facade.js";
-import { SymbolKind } from "../../src/backend/types.js";
+import { SymbolKind } from "../../src/types.js";
 
 describe("Symbol Info Retrieval (t.g4)", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.

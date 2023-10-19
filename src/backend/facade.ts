@@ -21,7 +21,7 @@ import { GrammarDebugger } from "./GrammarDebugger.js";
 import {
     ISelfDiagnostics, ISymbolInfo, CodeActionType, IDiagnosticEntry, IReferenceNode, IGenerationOptions,
     ISentenceGenerationOptions, IFormattingOptions, IContextDetails,
-} from "./types.js";
+} from "../types.js";
 import { IATNGraphData } from "../webview-scripts/types.js";
 import { SentenceGenerator } from "./SentenceGenerator.js";
 

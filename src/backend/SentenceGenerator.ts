@@ -12,7 +12,7 @@ import {
     IntervalSet, ATNStateType,
 } from "antlr4ng";
 
-import { ISentenceGenerationOptions, IRuleMappings, PredicateFunction } from "./types.js";
+import { ISentenceGenerationOptions, IRuleMappings, PredicateFunction } from "../types.js";
 
 import { printableUnicodePoints, fullUnicodeSet } from "./Unicode.js";
 import { IInterpreterData } from "./InterpreterDataReader.js";

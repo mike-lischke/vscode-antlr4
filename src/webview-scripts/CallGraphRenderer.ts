@@ -3,7 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { ICallGraphEntry, IVSCode, SymbolKind } from "./types.js";
+import { ICallGraphEntry, IVSCode } from "./types.js";
+import { SymbolKind } from "../types.js";
 
 interface ICallGraphRenderNode extends ICallGraphEntry {
     class: string;
@@ -52,12 +53,9 @@ export class CallGraphRenderer {
     private timer: NodeJS.Timeout;
     private visited: CallGraphLayoutNode[] = [];
 
-    public constructor(
-        private vscode: IVSCode,
-        private data: ICallGraphEntry[],
-    ) {
+    public constructor(private vscode: IVSCode, private data: ICallGraphEntry[]) {
 
-        this.state = this.vscode.getState() as IState || {
+        this.state = this.vscode.getState() as IState ?? {
             traverse: false,
             hideTokens: false,
             delay: 300,
@@ -72,11 +70,11 @@ export class CallGraphRenderer {
             t.appendChild(tl);
             const tcb = document.createElement("input");
             tcb.type = "checkbox";
-            const tdelay = document.createElement("input");
-            tdelay.setAttribute("style", "width: 30px");
-            tdelay.value = this.state.delay + "";
-            tdelay.addEventListener("input", () => {
-                const delay = parseInt(tdelay.value, 10);
+            const delayNode = document.createElement("input");
+            delayNode.setAttribute("style", "width: 30px");
+            delayNode.value = this.state.delay + "";
+            delayNode.addEventListener("input", () => {
+                const delay = parseInt(delayNode.value, 10);
                 this.state.delay = isNaN(delay) ? 300 : delay;
                 this.vscode.setState(this.state);
             });
@@ -87,7 +85,7 @@ export class CallGraphRenderer {
                 this.vscode.setState(this.state);
             });
             t.appendChild(tcb);
-            t.appendChild(tdelay);
+            t.appendChild(delayNode);
             const tl2 = document.createElement("label");
             tl2.innerHTML = "ms";
             t.appendChild(tl2);

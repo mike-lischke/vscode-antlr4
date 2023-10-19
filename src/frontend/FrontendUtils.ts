@@ -10,7 +10,7 @@ import * as path from "path";
 import { ExtensionContext, Uri, window, Webview, commands, ProviderResult, TextDocument } from "vscode";
 
 import { AntlrFacade } from "../backend/facade.js";
-import { ILexicalRange, GrammarType } from "../backend/types.js";
+import { ILexicalRange, GrammarType } from "../types.js";
 import { Log } from "./Log.js";
 
 export interface IRangeHolder {

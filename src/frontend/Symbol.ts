@@ -5,7 +5,7 @@
 
 import * as vscode from "vscode";
 
-import { SymbolKind } from "../backend/types.js";
+import { SymbolKind } from "../types.js";
 
 const symbolDescriptionMap = new Map<SymbolKind, string>([
     [SymbolKind.Terminal, "Terminal"],

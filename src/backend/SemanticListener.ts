@@ -5,7 +5,7 @@
 
 import { Token, ParserRuleContext, TerminalNode } from "antlr4ng";
 
-import { IDiagnosticEntry, DiagnosticType, SymbolGroupKind } from "./types.js";
+import { IDiagnosticEntry, DiagnosticType, SymbolGroupKind } from "../types.js";
 import { ContextSymbolTable } from "./ContextSymbolTable.js";
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 import {

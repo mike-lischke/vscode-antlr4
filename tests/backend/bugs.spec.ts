@@ -4,7 +4,7 @@
  */
 
 import { AntlrFacade } from "../../src/backend/facade.js";
-import { SymbolKind } from "../../src/backend/types.js";
+import { SymbolKind } from "../../src/types.js";
 
 describe("Test for Bugs", () => {
     let backend: AntlrFacade;

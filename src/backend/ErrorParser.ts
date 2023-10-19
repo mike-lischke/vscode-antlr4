@@ -5,7 +5,7 @@
 
 /* eslint-disable max-len */
 
-import { IDiagnosticEntry, DiagnosticType } from "./types.js";
+import { IDiagnosticEntry, DiagnosticType } from "../types.js";
 import { SourceContext } from "./SourceContext.js";
 
 /**

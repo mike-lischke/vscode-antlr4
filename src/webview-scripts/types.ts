@@ -9,6 +9,7 @@ import { Uri } from "vscode";
 
 import { TransitionType } from "antlr4ng";
 import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
+import { SymbolKind } from "../types.js";
 
 export interface IWebviewMessage {
     [key: string]: unknown;
@@ -165,38 +166,4 @@ export const enum ATNStateType {
     STAR_LOOP_ENTRY = 10,
     PLUS_LOOP_BACK = 11,
     LOOP_END = 12,
-}
-
-export enum SymbolKind {
-    Unknown,
-
-    Terminal,
-    Keyword,
-    TokenVocab,
-    Import,
-    BuiltInLexerToken,
-    VirtualLexerToken,
-    FragmentLexerToken,
-    LexerRule,
-    BuiltInMode,
-    LexerMode,
-    BuiltInChannel,
-    TokenChannel,
-    ParserRule,
-    Operator,
-    Option,
-    TokenReference,
-    RuleReference,
-    LexerCommand,
-
-    // Native code.
-    GlobalNamedAction,
-    LocalNamedAction,
-    ExceptionAction,
-    FinallyAction,
-    ParserAction,
-    LexerAction,
-    ParserPredicate,
-    LexerPredicate,
-    Arguments,
 }

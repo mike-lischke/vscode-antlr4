@@ -17,7 +17,7 @@ import {
 
 import { IInterpreterData } from "./InterpreterDataReader.js";
 import { SourceContext } from "./SourceContext.js";
-import { PredicateFunction } from "./types.js";
+import { PredicateFunction } from "../types.js";
 
 /* eslint-disable no-underscore-dangle */
 

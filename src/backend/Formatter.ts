@@ -5,7 +5,7 @@
 
 import { Interval, Token } from "antlr4ng";
 
-import { IFormattingOptions } from "./types.js";
+import { IFormattingOptions } from "../types.js";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
 
 /** Insert markers are what the output pipeline (see below) is made of (if not direct token indices). */

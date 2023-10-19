@@ -8,7 +8,7 @@ import { LexerInterpreter, RuleContext, CharStream } from "antlr4ng";
 import { IInterpreterData } from "./InterpreterDataReader.js";
 import { LexerPredicateSymbol } from "./ContextSymbolTable.js";
 import { SourceContext } from "./SourceContext.js";
-import { PredicateFunction } from "./types.js";
+import { PredicateFunction } from "../types.js";
 
 export class GrammarLexerInterpreter extends LexerInterpreter {
     private predicates: LexerPredicateSymbol[];

@@ -6,7 +6,7 @@
 import * as fs from "fs";
 
 import { AntlrFacade } from "../../src/backend/facade.js";
-import { IRuleMappings } from "../../src/backend/types.js";
+import { IRuleMappings } from "../../src/types.js";
 
 xdescribe("Sentence Generation", () => {
     const backend = new AntlrFacade(".", process.cwd()); // Search path is cwd for this test.

@@ -7,7 +7,7 @@ import {
     workspace, CodeLensProvider, TextDocument, CancellationToken, CodeLens, Range, EventEmitter, Event, ProviderResult,
 } from "vscode";
 import { AntlrFacade } from "../backend/facade.js";
-import { SymbolKind } from "../backend/types.js";
+import { SymbolKind } from "../types.js";
 import { SymbolCodeLens } from "./SymbolCodeLens.js";
 
 export class AntlrCodeLensProvider implements CodeLensProvider {

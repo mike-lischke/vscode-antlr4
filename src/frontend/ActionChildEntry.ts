@@ -1,6 +1,6 @@
 import * as path from "path";
 import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
-import { ILexicalRange, CodeActionType } from "../backend/types.js";
+import { ILexicalRange, CodeActionType } from "../types.js";
 import { IRangeHolder } from "./FrontendUtils.js";
 import { ActionsRootEntry } from "./ActionsRootEntry.js";
 

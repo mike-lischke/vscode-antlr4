@@ -1,5 +1,5 @@
 import { CodeLens, Range } from "vscode";
-import { ISymbolInfo } from "../backend/types.js";
+import { ISymbolInfo } from "../types.js";
 
 export class SymbolCodeLens extends CodeLens {
     public constructor(public symbol: ISymbolInfo, range: Range) {

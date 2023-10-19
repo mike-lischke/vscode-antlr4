@@ -13,7 +13,7 @@ import {
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
 import { IInterpreterData } from "./InterpreterDataReader.js";
-import { ILexerToken, ILexicalRange, IParseTreeNode, PredicateFunction } from "./types.js";
+import { ILexerToken, ILexicalRange, IParseTreeNode, PredicateFunction } from "../types.js";
 
 import { RuleSymbol } from "./ContextSymbolTable.js";
 import { SourceContext } from "./SourceContext.js";

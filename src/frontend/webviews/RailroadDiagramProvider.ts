@@ -7,7 +7,7 @@ import { basename, extname } from "path";
 
 import { TextEditor, Uri, Webview, workspace } from "vscode";
 
-import { SymbolKind } from "../../backend/types.js";
+import { SymbolKind } from "../../types.js";
 import { WebviewProvider, IWebviewShowOptions } from "./WebviewProvider.js";
 import { FrontendUtils } from "../FrontendUtils.js";
 

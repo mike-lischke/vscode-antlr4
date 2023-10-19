@@ -5,8 +5,6 @@
 
 import { Uri } from "vscode";
 
-import { D3DragEvent, SimulationLinkDatum, SimulationNodeDatum } from "d3";
-
 import {
     IATNGraphData, IATNNode, IATNGraphLayoutNode, IATNLink, IATNGraphLayoutLink, IATNGraphRendererData, IVSCode,
     IATNGraphUpdateMessageData, IATNStateSaveMessage, ATNStateType,
@@ -47,7 +45,7 @@ type ATNLinkSelection = d3.Selection<SVGLineElement, IATNLink, SVGElement, IATNG
 type ATNTextSelection = d3.Selection<SVGTextElement, IATNNode, SVGGElement, IATNGraphData>;
 type ATNLinkTextSelection = d3.Selection<SVGTextElement, IATNGraphLayoutLink, SVGGElement, IATNGraphData>;
 
-type ATNGraphDragEvent = D3DragEvent<SVGElement, IATNGraphData, IATNGraphLayoutNode>;
+type ATNGraphDragEvent = d3.D3DragEvent<SVGElement, IATNGraphData, IATNGraphLayoutNode>;
 
 export class ATNGraphRenderer {
 
@@ -188,7 +186,7 @@ export class ATNGraphRenderer {
         // Drawing primitives.
         const linesHost = this.topGroup.append("g").classed("linesHost", true);
 
-        this.lines = linesHost.selectAll<SVGElement, SimulationLinkDatum<IATNGraphLayoutNode>>("line")
+        this.lines = linesHost.selectAll<SVGElement, d3.SimulationLinkDatum<IATNGraphLayoutNode>>("line")
             .data(links)
             .enter().append("line")
             .attr("class", "transition")
@@ -663,7 +661,7 @@ export class ATNGraphRenderer {
         return (typeof node !== "string") && (typeof node !== "number");
     }
 
-    private isSimulationNodeDatum(node: string | number | d3.SimulationNodeDatum): node is SimulationNodeDatum {
+    private isSimulationNodeDatum(node: string | number | d3.SimulationNodeDatum): node is d3.SimulationNodeDatum {
         return (typeof node !== "string") && (typeof node !== "number");
     }
 }

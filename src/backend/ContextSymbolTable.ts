@@ -8,7 +8,7 @@
 import { ParseTree, ParserRuleContext } from "antlr4ng";
 import { SymbolTable, ISymbolTableOptions, BaseSymbol, ScopedSymbol, SymbolConstructor } from "antlr4-c3";
 
-import { ISymbolInfo, CodeActionType, SymbolKind, SymbolGroupKind } from "./types.js";
+import { ISymbolInfo, CodeActionType, SymbolKind, SymbolGroupKind } from "../types.js";
 import { SourceContext } from "./SourceContext.js";
 
 export class OptionSymbol extends BaseSymbol {

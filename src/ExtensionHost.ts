@@ -15,7 +15,7 @@ import {
 import {
     AntlrFacade,
 } from "./backend/facade.js";
-import { DiagnosticType, IGenerationOptions, ILexicalRange, ISentenceGenerationOptions } from "./backend/types.js";
+import { DiagnosticType, IGenerationOptions, ILexicalRange, ISentenceGenerationOptions } from "./types.js";
 import { FrontendUtils } from "./frontend/FrontendUtils.js";
 import { ProgressIndicator } from "./frontend/ProgressIndicator.js";
 import { AntlrDebugConfigurationProvider } from "./AntlrDebugConfigurationProvider.js";

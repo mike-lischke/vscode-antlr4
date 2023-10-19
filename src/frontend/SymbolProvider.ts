@@ -7,7 +7,7 @@ import {
 } from "vscode";
 
 import { AntlrFacade } from "../backend/facade.js";
-import { SymbolKind } from "../backend/types.js";
+import { SymbolKind } from "../types.js";
 import { symbolDescriptionFromEnum, translateSymbolKind } from "./Symbol.js";
 
 export class AntlrSymbolProvider implements DocumentSymbolProvider {

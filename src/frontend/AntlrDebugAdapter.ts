@@ -23,7 +23,7 @@ import { CommonToken } from "antlr4ng";
 import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger.js";
 import { ParseTreeProvider } from "./webviews/ParseTreeProvider.js";
 import { AntlrFacade } from "../backend/facade.js";
-import { IParseTreeNode } from "../backend/types.js";
+import { IParseTreeNode } from "../types.js";
 
 /**
  * Interface that reflects the arguments as specified in package.json.

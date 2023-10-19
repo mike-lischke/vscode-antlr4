@@ -5,7 +5,7 @@
 
 import { BaseErrorListener, Recognizer, RecognitionException, LexerATNSimulator, Token } from "antlr4ng";
 
-import { IDiagnosticEntry, DiagnosticType } from "./types.js";
+import { IDiagnosticEntry, DiagnosticType } from "../types.js";
 
 export class ContextLexerErrorListener extends BaseErrorListener<LexerATNSimulator> {
     public constructor(private errorList: IDiagnosticEntry[]) {

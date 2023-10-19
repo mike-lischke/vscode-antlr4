@@ -29,7 +29,7 @@ import {
     ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IGenerationOptions,
     ISentenceGenerationOptions, IFormattingOptions, IDefinition, IContextDetails, PredicateFunction,
     CodeActionType, SymbolKind, GrammarType,
-} from "./types.js";
+} from "../types.js";
 
 import { ContextErrorListener } from "./ContextErrorListener.js";
 import { ContextLexerErrorListener } from "./ContextLexerErrorListener.js";

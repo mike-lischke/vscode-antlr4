@@ -6,7 +6,7 @@
 import { TreeItem, TextEditor, TreeView, ProviderResult } from "vscode";
 
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
-import { CodeActionType } from "../backend/types.js";
+import { CodeActionType } from "../types.js";
 import { FrontendUtils } from "./FrontendUtils.js";
 import { ActionsRootEntry } from "./ActionsRootEntry.js";
 import { ActionChildEntry } from "./ActionChildEntry.js";
