@@ -7,7 +7,6 @@
 
 import { Uri } from "vscode";
 
-import { TransitionType } from "antlr4ng";
 import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import { SymbolKind } from "../types.js";
 
@@ -118,7 +117,7 @@ export interface IATNNode {
 export interface IATNLink {
     source: number;
     target: number;
-    type: TransitionType;
+    type: number;
     labels: Array<{ content: string; class?: string; }>;
 }
 
@@ -137,7 +136,7 @@ export interface IATNGraphLayoutNode extends SimulationNodeDatum, IATNNode {
 }
 
 export interface IATNGraphLayoutLink extends SimulationLinkDatum<IATNGraphLayoutNode> {
-    type: TransitionType;
+    type: number;
     labels: Array<{ content: string; class?: string; }>;
 }
 

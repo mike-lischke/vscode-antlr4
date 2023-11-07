@@ -20,7 +20,7 @@ export class BackendUtils {
         if (root instanceof TerminalNode) {
             const terminal = (root);
             const token = terminal.symbol;
-            if (token.line !== row) {
+            if (token?.line !== row) {
                 return null;
             }
 

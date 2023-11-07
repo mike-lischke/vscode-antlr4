@@ -1,6 +1,6 @@
 // Generated from grammars/ANTLRv4Parser.g4 by ANTLR 4.13.1
 
-import { ParseTreeVisitor } from "antlr4ng";
+import { AbstractParseTreeVisitor } from "antlr4ng";
 
 
 import { GrammarSpecContext } from "./ANTLRv4Parser.js";
@@ -75,7 +75,7 @@ import { IdentifierContext } from "./ANTLRv4Parser.js";
  * @param <Result> The return type of the visit operation. Use `void` for
  * operations with no return type.
  */
-export class ANTLRv4ParserVisitor<Result> extends ParseTreeVisitor<Result> {
+export class ANTLRv4ParserVisitor<Result> extends AbstractParseTreeVisitor<Result> {
     /**
      * Visit a parse tree produced by `ANTLRv4Parser.grammarSpec`.
      * @param ctx the parse tree

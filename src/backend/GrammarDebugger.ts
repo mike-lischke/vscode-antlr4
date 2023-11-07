@@ -219,7 +219,7 @@ export class GrammarDebugger extends EventEmitter {
             return 0;
         }
 
-        return this.parser.syntaxErrorCount;
+        return this.parser.numberOfSyntaxErrors;
     }
 
     public get inputSize(): number {
@@ -333,7 +333,7 @@ export class GrammarDebugger extends EventEmitter {
         if (run) {
             // Walk up the parent chain of the current parser rule context to find the
             // corresponding context for our stack frame.
-            let context = this.parser.context;
+            let context = this.parser.context!;
             while (index-- > 0) {
                 context = context.parent!;
             }
@@ -435,7 +435,7 @@ export class GrammarDebugger extends EventEmitter {
         let hash = 0;
         if (input instanceof ParserRuleContext) {
             // Seed with a value that for sure goes beyond any possible token index.
-            hash = (31 * hash) + input.start!.getInputStream().size;
+            hash = (31 * hash) + input.start!.inputStream!.size;
             if (input.parent) {
                 // Multiple invocations of the same rule which matches nothing appear as nodes in the parse tree with
                 // the same start token, so we need an additional property to tell them apart: the child index.
@@ -502,10 +502,10 @@ export class GrammarDebugger extends EventEmitter {
             if (breakPoint.line === rule.definition!.range.end.row) {
                 // If the breakpoint's line is on the rule's end (the semicolon) then
                 // use the rule's end state for break.
-                const stop = this.parserData.atn.ruleToStopState[index];
+                const stop = this.parserData.atn.ruleToStopState[index]!;
                 this.parser?.breakPoints.add(stop);
             } else {
-                const start = this.parserData.atn.ruleToStartState[index];
+                const start = this.parserData.atn.ruleToStartState[index]!;
                 this.parser?.breakPoints.add(start);
                 breakPoint.line = rule.definition!.range.start.row;
             }

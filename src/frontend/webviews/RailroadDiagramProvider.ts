@@ -37,9 +37,6 @@ export class RailroadDiagramProvider extends WebviewProvider {
                 </html>`;
         }
 
-        /*const codiconsUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, "node_modules",
-            "@vscode/codicons", "dist", "codicon.css"));*/
-
         let diagram = `<!DOCTYPE html>
             <html>
             <head>

@@ -288,7 +288,7 @@ export class SentenceGenerator {
             switch (run.stateType) {
                 case ATNStateType.BLOCK_START: {
                     result += this.generateFromDecisionState(run as BlockStartState, !inLexer);
-                    run = (run as BlockStartState).endState;
+                    run = (run as BlockStartState).endState!;
 
                     break;
                 }
@@ -341,7 +341,7 @@ export class SentenceGenerator {
                                 // Pick a random lexer rule.
                                 const ruleIndex = Math.floor(Math.random() *
                                     this.lexerData.atn.ruleToStartState.length);
-                                const state: RuleStartState = this.lexerData.atn.ruleToStartState[ruleIndex];
+                                const state = this.lexerData.atn.ruleToStartState[ruleIndex]!;
                                 [text] = this.generateFromATNSequence(state, state.stopState, !inLexer);
 
                             }
@@ -407,7 +407,7 @@ export class SentenceGenerator {
                                             result += `[Cannot generate value for virtual token ${token}]`;
                                         }
                                     } else {
-                                        const state = this.lexerData.atn.ruleToStartState[tokenIndex];
+                                        const state = this.lexerData.atn.ruleToStartState[tokenIndex]!;
                                         const [text] = this.generateFromATNSequence(state, state.stopState, !inLexer);
                                         result += text;
                                     }
@@ -465,7 +465,7 @@ export class SentenceGenerator {
             switch (state.stateType) {
                 case ATNStateType.STAR_BLOCK_START:
                 case ATNStateType.BLOCK_START: {
-                    endState = (state as BlockStartState).endState;
+                    endState = (state as BlockStartState).endState!;
                     break;
                 }
 

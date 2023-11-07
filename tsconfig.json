@@ -14,7 +14,6 @@
         "allowUmdGlobalAccess": true, // For D3.js
         "strictNullChecks": true,
         "alwaysStrict": true,
-        "rootDir": "./",
     },
     "references": [
         { // Webview scripts need a different module type (esm), so they are handled as a separate (sub) project.

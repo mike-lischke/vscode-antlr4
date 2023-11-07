@@ -6,7 +6,7 @@
 import { BaseSymbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 import {
     ATNState, ATNStateType, Lexer, ParserInterpreter, ParserRuleContext, RecognitionException, RuleContext,
-    RuleStartState, TerminalNode, TokenStream, Transition, TransitionType,
+    TerminalNode, TokenStream, Transition, TransitionType,
 } from "antlr4ng";
 
 import { TerminalRuleContext } from "../parser/ANTLRv4Parser.js";
@@ -63,14 +63,16 @@ export class GrammarParserInterpreter extends ParserInterpreter {
     public start(startRuleIndex: number): ParserRuleContext {
         this.pauseRequested = false;
         this.callStack = [];
-        const startRuleStartState: RuleStartState = this.atn.ruleToStartState[startRuleIndex];
-        this._rootContext = this.createInterpreterRuleContext(undefined, ATNState.INVALID_STATE_NUMBER, startRuleIndex);
-        if (startRuleStartState.isPrecedenceRule) {
-            this.enterRecursionRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
-        } else {
-            this.enterRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex);
+        const startRuleStartState = this.atn.ruleToStartState[startRuleIndex];
+        if (startRuleStartState) {
+            this._rootContext = this.createInterpreterRuleContext(null, ATNState.INVALID_STATE_NUMBER, startRuleIndex);
+            if (startRuleStartState.isPrecedenceRule) {
+                this.enterRecursionRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
+            } else {
+                this.enterRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex);
+            }
+            this.startIsPrecedenceRule = startRuleStartState.isPrecedenceRule;
         }
-        this.startIsPrecedenceRule = startRuleStartState.isPrecedenceRule;
 
         return this.rootContext;
     }
@@ -110,10 +112,10 @@ export class GrammarParserInterpreter extends ParserInterpreter {
 
             switch (p.stateType) {
                 case ATNStateType.RULE_STOP: {
-                    if (this._ctx.isEmpty()) {
+                    if (this.context!.isEmpty()) {
                         // End of start rule.
                         if (this.startIsPrecedenceRule) {
-                            const result = this._ctx;
+                            const result = this.context!;
                             const parentContext = this._parentContextStack.pop()!;
                             this.unrollRecursionContexts(parentContext[0]);
                             this.eventSink("end");
@@ -164,8 +166,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                         this.visitState(p);
                     } catch (e) {
                         if (e instanceof RecognitionException) {
-                            this.state = this.atn.ruleToStopState[p.ruleIndex].stateNumber;
-                            this.context.exception = e;
+                            this.state = this.atn.ruleToStopState[p.ruleIndex]!.stateNumber;
+                            this.context!.exception = e;
                             this.errorHandler.reportError(this, e);
                             this.recover(e);
                         } else {
@@ -271,7 +273,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         frame.next = [];
 
         const terminalMatches = (node: TerminalNode): boolean => {
-            const type = this.tokenIndexFromName(node.symbol.text);
+            const type = this.tokenIndexFromName(node.symbol.text!);
             const currentType = this.inputStream.LA(1);
             if (type === currentType
                 && transition.matches(currentType, Lexer.MIN_CHAR_VALUE, Lexer.MAX_CHAR_VALUE)) {

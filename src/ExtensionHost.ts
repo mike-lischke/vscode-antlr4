@@ -12,9 +12,7 @@ import {
     Selection, Range, ViewColumn, ConfigurationChangeEvent,
 } from "vscode";
 
-import {
-    AntlrFacade,
-} from "./backend/facade.js";
+import { AntlrFacade } from "./backend/facade.js";
 import { DiagnosticType, IGenerationOptions, ILexicalRange, ISentenceGenerationOptions } from "./types.js";
 import { FrontendUtils } from "./frontend/FrontendUtils.js";
 import { ProgressIndicator } from "./frontend/ProgressIndicator.js";

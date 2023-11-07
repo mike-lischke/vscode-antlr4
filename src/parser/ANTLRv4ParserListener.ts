@@ -1,6 +1,6 @@
 // Generated from grammars/ANTLRv4Parser.g4 by ANTLR 4.13.1
 
-import { ParseTreeListener } from "antlr4ng";
+import { ErrorNode, ParseTreeListener, ParserRuleContext, TerminalNode } from "antlr4ng";
 
 
 import { GrammarSpecContext } from "./ANTLRv4Parser.js";
@@ -72,7 +72,7 @@ import { IdentifierContext } from "./ANTLRv4Parser.js";
  * This interface defines a complete listener for a parse tree produced by
  * `ANTLRv4Parser`.
  */
-export class ANTLRv4ParserListener extends ParseTreeListener {
+export class ANTLRv4ParserListener implements ParseTreeListener {
     /**
      * Enter a parse tree produced by `ANTLRv4Parser.grammarSpec`.
      * @param ctx the parse tree
@@ -703,5 +703,10 @@ export class ANTLRv4ParserListener extends ParseTreeListener {
      * @param ctx the parse tree
      */
     exitIdentifier?: (ctx: IdentifierContext) => void;
+
+    visitTerminal(node: TerminalNode): void {}
+    visitErrorNode(node: ErrorNode): void {}
+    enterEveryRule(node: ParserRuleContext): void {}
+    exitEveryRule(node: ParserRuleContext): void {}
 }
 

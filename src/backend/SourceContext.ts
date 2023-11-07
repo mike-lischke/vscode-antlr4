@@ -13,7 +13,7 @@ import * as vm from "vm";
 
 import {
     ATNState, ATNStateType, ActionTransition, BailErrorStrategy, CharStreams, CommonTokenStream, DefaultErrorStrategy,
-    Interval, IntervalSet, ParseCancellationException, ParseTree, ParseTreeWalker, ParserRuleContext,
+    IntervalSet, ParseCancellationException, ParseTree, ParseTreeWalker, ParserRuleContext,
     PrecedencePredicateTransition, PredicateTransition, PredictionMode, RuleContext, RuleStartState, RuleTransition,
     TerminalNode, Token, TransitionType, Vocabulary,
 } from "antlr4ng";
@@ -135,18 +135,14 @@ export class SourceContext {
         this.symbolTable = new ContextSymbolTable(this.sourceId, { allowDuplicateSymbols: true }, this);
 
         // Initialize static global symbol table, if not yet done.
-        const eof = SourceContext.globalSymbols.resolve("EOF");
-        eof.then((value) => {
-            if (!value) {
-                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined,
-                    "DEFAULT_TOKEN_CHANNEL");
-                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined, "HIDDEN");
-                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInTokenSymbol, undefined, "EOF");
-                SourceContext.globalSymbols.addNewSymbolOfType(BuiltInModeSymbol, undefined, "DEFAULT_MODE");
-            }
-        }).catch(() => {
-            // ignore
-        });
+        const eof = SourceContext.globalSymbols.resolveSync("EOF");
+        if (!eof) {
+            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined,
+                "DEFAULT_TOKEN_CHANNEL");
+            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInChannelSymbol, undefined, "HIDDEN");
+            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInTokenSymbol, undefined, "EOF");
+            SourceContext.globalSymbols.addNewSymbolOfType(BuiltInModeSymbol, undefined, "DEFAULT_MODE");
+        }
 
         this.lexer = new ANTLRv4Lexer(CharStreams.fromString(""));
 
@@ -217,7 +213,8 @@ export class SourceContext {
         };
 
         if (ctx instanceof ParserRuleContext) {
-            const range = new Interval(ctx.start!.start, ctx.stop!.stop);
+            let start = ctx.start!.start;
+            let stop = ctx.stop!.stop;
 
             result.range.start.column = ctx.start!.column;
             result.range.start.row = ctx.start!.line;
@@ -227,25 +224,25 @@ export class SourceContext {
             // For mode definitions we only need the init line, not all the lexer rules following it.
             if (ctx.ruleIndex === ANTLRv4Parser.RULE_modeSpec) {
                 const modeSpec = ctx as ModeSpecContext;
-                range.stop = modeSpec.SEMI()!.symbol.stop;
+                stop = modeSpec.SEMI()!.symbol.stop;
                 result.range.end.column = modeSpec.SEMI()!.symbol.column;
                 result.range.end.row = modeSpec.SEMI()!.symbol.line;
             } else if (ctx.ruleIndex === ANTLRv4Parser.RULE_grammarSpec) {
                 // Similar for entire grammars. We only need the introducer line here.
                 const grammarSpec = ctx as GrammarSpecContext;
-                range.stop = grammarSpec.SEMI()!.symbol.stop;
+                stop = grammarSpec.SEMI()!.symbol.stop;
                 result.range.end.column = grammarSpec.SEMI()!.symbol.column;
                 result.range.end.row = grammarSpec.SEMI()!.symbol.line;
 
-                range.start = grammarSpec.grammarType().start!.start;
+                start = grammarSpec.grammarType().start!.start;
                 result.range.start.column = grammarSpec.grammarType().start!.column;
                 result.range.start.row = grammarSpec.grammarType().start!.line;
             }
 
-            const inputStream = ctx.start?.getTokenSource()?.inputStream;
+            const inputStream = ctx.start?.tokenSource?.inputStream;
             if (inputStream) {
                 try {
-                    result.text = inputStream.getText(range);
+                    result.text = inputStream.getText(start, stop);
                 } catch (e) {
                     // The method getText uses an unreliable JS String API which can throw on larger texts.
                     // In this case we cannot return the text of the given context.
@@ -1149,13 +1146,13 @@ export class SourceContext {
         const ruleNames = isLexerRule ? this.grammarLexerData!.ruleNames : this.grammarParserData!.ruleNames;
         const vocabulary = isLexerRule ? this.grammarLexerData!.vocabulary : this.grammarParserData!.vocabulary;
 
-        const startState = atn.ruleToStartState[ruleIndex];
+        const startState = atn.ruleToStartState[ruleIndex]!;
         const stopState = atn.ruleToStopState[ruleIndex];
 
         const lexerPredicates = this.listActions(CodeActionType.LexerPredicate);
         const parserPredicates = this.listActions(CodeActionType.ParserPredicate);
 
-        const seenStates: Set<ATNState> = new Set([startState]);
+        const seenStates = new Set<ATNState>([startState]);
         const pipeline: ATNState[] = [startState];
 
         const nodes: IATNNode[] = [];
@@ -1452,7 +1449,7 @@ export class SourceContext {
 
                 return;
             }
-            start = lexerData.atn.ruleToStartState[index];
+            start = lexerData.atn.ruleToStartState[index]!;
         } else {
             const index = this.grammarParserRuleMap.get(rule);
             if (index === undefined) {
@@ -1460,7 +1457,7 @@ export class SourceContext {
 
                 return;
             }
-            start = parserData!.atn.ruleToStartState[index];
+            start = parserData!.atn.ruleToStartState[index]!;
         }
 
         try {

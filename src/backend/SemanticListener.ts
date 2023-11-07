@@ -106,10 +106,6 @@ export class SemanticListener extends ANTLRv4ParserListener {
         }
     };
 
-    public override visitTerminal = (_node: TerminalNode): void => {
-        // Nothing to do here.
-    };
-
     protected checkSymbolExistence(mustExist: boolean, kind: SymbolGroupKind, symbol: string, message: string,
         offendingToken: Token): void {
         if (this.symbolTable.symbolExistsInGroup(symbol, kind, false) !== mustExist) {

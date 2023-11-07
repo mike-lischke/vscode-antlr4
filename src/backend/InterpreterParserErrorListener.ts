@@ -3,16 +3,17 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { ATNSimulator, BaseErrorListener, ParserATNSimulator, RecognitionException, Recognizer, Token } from "antlr4ng";
+import { ATNSimulator, BaseErrorListener, RecognitionException, Recognizer, Token } from "antlr4ng";
 
-export class InterpreterParserErrorListener extends BaseErrorListener<ParserATNSimulator> {
+export class InterpreterParserErrorListener extends BaseErrorListener {
     public constructor(private eventSink: (event: string | symbol, ...args: unknown[]) => void) {
         super();
     }
 
-    public override syntaxError<T extends Token>(recognizer: Recognizer<ATNSimulator>, offendingSymbol: T | undefined,
-        line: number, charPositionInLine: number, msg: string, _e: RecognitionException | null): void {
-        this.eventSink("output", `Parser error (${line}, ${charPositionInLine + 1}): ${msg}`,
-            recognizer.inputStream.getSourceName(), line, charPositionInLine, true);
+    public override syntaxError<S extends Token, T extends ATNSimulator>(recognizer: Recognizer<T>,
+        _offendingSymbol: S | null, line: number, column: number, msg: string,
+        _e: RecognitionException | null): void {
+        this.eventSink("output", `Parser error (${line}, ${column + 1}): ${msg}`,
+            recognizer.inputStream.getSourceName(), line, column, true);
     }
 }

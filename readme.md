@@ -68,6 +68,10 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
+### 2.4.3
+
+Updated 3rd party dependencies.
+
 ### 2.4.0 - 2.4.2
 
 - Switched to a new TypeScript runtime (antlr4ng), which supports the latest features from ANTLR4 (e.g. case sensitive identifiers).

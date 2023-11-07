@@ -154,7 +154,7 @@ export class ANTLRv4Lexer extends LexerAdaptor {
 
     public get modeNames(): string[] { return ANTLRv4Lexer.modeNames; }
 
-    public action(localContext: antlr.RuleContext, ruleIndex: number, actionIndex: number): void {
+    public override action(localContext: antlr.RuleContext, ruleIndex: number, actionIndex: number): void {
         switch (ruleIndex) {
         case 6:
             this.BEGIN_ARGUMENT_action(localContext, actionIndex);

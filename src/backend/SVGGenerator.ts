@@ -58,7 +58,7 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
         this.#stripPattern = strip;
         this.#wrapAfter = wrapAfter;
 
-        const code = this.visit(tree);
+        const code = this.visit(tree)!;
 
         return [code, this.#isWrapped];
     }
