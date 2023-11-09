@@ -137,6 +137,7 @@ export class GrammarFormatter {
 
         let coalesceWhitespaces = false; // Set in situations where we don't want multiple consecutive whitespaces.
         let inBraces = false; // Set between {} (e.g. in options).
+        let inMeta = false;   // Set for meta commands (grammar, import, mode etc.).
         let inRule = false;   // Set when we are processing a lexer or parser rule.
         let inNamedAction = false; // Ditto for a named action.
         let inLexerCommand = false; // Ditto for a lexer command (the part starting with ->).
@@ -235,7 +236,8 @@ export class GrammarFormatter {
                     done = true;
                     break;
                 }
-                case ANTLRv4Lexer.COLON: // Also pretty clear. We are in a rule.
+
+                case ANTLRv4Lexer.COLON: { // Also pretty clear. We are in a rule.
                     if (this.tokens[run].line < startRow) {
                         ++this.currentIndentation;
                         inRule = true;
@@ -243,12 +245,16 @@ export class GrammarFormatter {
                     }
                     done = true;
                     break;
-                case ANTLRv4Lexer.AT: // A named action. Want this to be formatted as a whole.
+                }
+
+                case ANTLRv4Lexer.AT: { // A named action. Want this to be formatted as a whole.
                     startRow = this.tokens[run].line;
                     startIndex = run;
                     targetStart = this.tokens[run].start;
                     done = true;
                     break;
+                }
+
                 case ANTLRv4Lexer.LBRACE:
                 case ANTLRv4Lexer.BEGIN_ACTION:
                     // A braced block (e.g. tokens, channels etc.).
@@ -382,7 +388,8 @@ export class GrammarFormatter {
                     // Even if the rule is on a single line we have to check for semicolon placement,
                     // because in case of a hanging colon only the body of the rule is on a single line,
                     // while name and semicolon are placed on own lines.
-                    const canAlignSemicolon = !inSingleLineRule || this.options.alignColons === "hanging";
+                    const canAlignSemicolon = !inMeta && (!inSingleLineRule || this.options.alignColons === "hanging"
+                        || this.options.alignSemicolons !== "none");
                     if (canAlignSemicolon && !inBraces && inRule) {
                         switch (this.options.alignSemicolons) {
                             case "none": {
@@ -390,14 +397,12 @@ export class GrammarFormatter {
                             }
 
                             case "ownLine": {
-                                const forceNewLine = !this.options.singleLineOverrulesHangingColon
-                                    && this.options.alignColons === "hanging";
-                                this.addLineBreak(forceNewLine);
+                                this.addLineBreak(!this.options.singleLineOverrulesHangingColon);
                                 break;
                             }
                             case "hanging": {
-                                this.addLineBreak();
-                                this.pushCurrentIndentation();
+                                this.addLineBreak(true);
+                                this.pushCurrentIndentation(true);
                                 break;
                             }
 
@@ -426,6 +431,7 @@ export class GrammarFormatter {
 
                     coalesceWhitespaces = false;
                     inLexerCommand = false;
+                    inMeta = false;
                     if (!inBraces) {
                         inRule = false;
                     }
@@ -711,12 +717,11 @@ export class GrammarFormatter {
                         // when handling the ending semicolon. Otherwise we would have to add
                         // extra checks to know which command the semicolon ends.
                         ++this.currentIndentation;
-
-                        inSingleLineRule = true;
                         coalesceWhitespaces = true;
-                        inRule = true;
+                        inMeta = true;
                     }
                     this.add(i);
+
                     break;
                 }
 
@@ -1733,7 +1738,7 @@ export class GrammarFormatter {
         let text = this.tokens[index].text!;
         text = text.substring(2, text.length).trim();
         if (text.startsWith(formatIntroducer)) {
-            const entries = text.substr(formatIntroducer.length + 1, text.length).split(",");
+            const entries = text.substring(formatIntroducer.length + 1).split(",");
             for (const entry of entries) {
                 const groups = /(\w+)(?:(?:\s*:)?\s*)?(\w+|[0-9]+)?/i.exec(entry.trim());
                 if (groups) {
@@ -2135,14 +2140,14 @@ export class GrammarFormatter {
                     if (first === "//") {
                         pipeline = pipeline.slice(1);
                     } else {
-                        pipeline[0] = first.substr(2);
+                        pipeline[0] = first.substring(2);
                     }
                 } else {
                     if (first === "*") {
                         pipeline = pipeline.slice(1);
                     } else {
                         if (first.startsWith("*")) {
-                            pipeline[0] = first.substr(1);
+                            pipeline[0] = first.substring(1);
                         }
                     }
                 }
