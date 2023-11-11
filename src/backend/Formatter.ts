@@ -2110,6 +2110,7 @@ export class GrammarFormatter {
         }
 
         let index = 1;
+        let haveContent = false; // True if we have content beyond the introducer on the current line.
         let column = this.computeLineLength(line);
         while (true) {
             while (index < pipeline.length) {
@@ -2119,6 +2120,8 @@ export class GrammarFormatter {
                     line = lineIntroducer;
                     column = this.computeLineLength(line);
                 }
+
+                haveContent = true;
                 line += pipeline[index++] + " ";
                 column = this.computeLineLength(line);
             }
@@ -2155,17 +2158,18 @@ export class GrammarFormatter {
 
             if (pipeline.length === 0) {
                 // Keep empty lines. Push the current line only if this is not still the first line
-                // (because we already pushed it already).
+                // (because then we pushed it already).
                 if (!isFirst) {
                     result.push(line.slice(0, -1));
                 }
                 result.push(lineIntroducer);
                 line = lineIntroducer;
+                haveContent = false;
             }
             isFirst = false;
         }
 
-        if (line.length > 0) {
+        if (line.length > 0 && haveContent) {
             result.push(line.slice(0, -1));
         }
 
