@@ -1,5 +1,12 @@
+/*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 import * as path from "path";
+
 import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
+
 import { ILexicalRange, CodeActionType } from "../types.js";
 import { IRangeHolder } from "./FrontendUtils.js";
 import { ActionsRootEntry } from "./ActionsRootEntry.js";

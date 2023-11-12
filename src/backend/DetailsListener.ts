@@ -8,15 +8,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
 import { LiteralSymbol, BlockSymbol, BaseSymbol, VariableSymbol, SymbolConstructor } from "antlr4-c3";
-import { ParseTree, TerminalNode } from "antlr4ng";
+import { ParseTree, ParserRuleContext, TerminalNode } from "antlr4ng";
 
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 import {
     LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,
-    ModeSpecContext, DelegateGrammarContext, TerminalRuleContext, RulerefContext,
+    ModeSpecContext, DelegateGrammarContext, TerminalDefContext, RulerefContext,
     BlockContext, AlternativeContext, RuleBlockContext, EbnfSuffixContext,
     OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledElementContext,
-    LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext, NamedActionContext,
+    LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext, Action_Context,
     LexerCommandContext, OptionContext, OptionValueContext, ANTLRv4Parser,
 } from "../parser/ANTLRv4Parser.js";
 
@@ -146,7 +146,7 @@ export class DetailsListener extends ANTLRv4ParserListener {
         }
     };
 
-    public override exitTerminalRule = (ctx: TerminalRuleContext): void => {
+    public override exitTerminalDef = (ctx: TerminalDefContext): void => {
         let token = ctx.TOKEN_REF();
         if (token) {
             this.addNewSymbol(TokenReferenceSymbol, ctx, token.getText());
@@ -206,7 +206,7 @@ export class DetailsListener extends ANTLRv4ParserListener {
      * @param ctx The parser context for the action block.
      */
     public override exitActionBlock = (ctx: ActionBlockContext): void => {
-        let run = ctx.parent;
+        let run = ctx.parent as ParserRuleContext | null;
 
         while (run) {
             switch (run.ruleIndex) {
@@ -216,9 +216,10 @@ export class DetailsListener extends ANTLRv4ParserListener {
                     return;
                 }
 
-                case ANTLRv4Parser.RULE_namedAction: {
+                // eslint-disable-next-line no-underscore-dangle
+                case ANTLRv4Parser.RULE_action_: {
                     // Global level named action, like @parser.
-                    const localContext = run as NamedActionContext;
+                    const localContext = run as Action_Context;
                     let prefix = "";
 
                     const actionScopeName = localContext.actionScopeName();

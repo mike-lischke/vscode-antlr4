@@ -34,13 +34,13 @@ describe("ATN Tests", () => {
             expect(graph).toBeDefined();
             if (graph) {
                 expect(graph.nodes).toHaveLength(4);
-                expect(graph.nodes[0].name).toEqual("56");
+                expect(graph.nodes[0].name).toEqual("58");
                 expect(graph.nodes[0].type).toEqual(2);
-                expect(graph.nodes[1].name).toEqual("364");
+                expect(graph.nodes[1].name).toEqual("351");
                 expect(graph.nodes[1].type).toEqual(1);
-                expect(graph.nodes[2].name).toEqual("365");
+                expect(graph.nodes[2].name).toEqual("352");
                 expect(graph.nodes[2].type).toEqual(1);
-                expect(graph.nodes[3].name).toEqual("57");
+                expect(graph.nodes[3].name).toEqual("59");
                 expect(graph.nodes[3].type).toEqual(7);
 
                 expect(graph.links).toHaveLength(3);

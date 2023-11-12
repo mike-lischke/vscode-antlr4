@@ -5,7 +5,7 @@
 /** * */
 grammar raw;
 
-/**
+/*
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute,
@@ -21,7 +21,6 @@ grammar raw;
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-unusualCode: xyz;
 
 /*
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -59,7 +58,8 @@ unusualCode: xyz;
 //-------------------------------------------------------------------------------------------------
 
 // $antlr-format minEmptyLines 0
-options { // Trailing comment, that moves behind the opening brace.
+options
+       {
 	/*Inline comment that stays before the non-comment content.*/ superClass = Base1;
 	superClass = Base2;
 	/* Another such comment. The previous code moved to an own line. */ superClass = Base3;
@@ -88,7 +88,9 @@ tokens { // Trailing comment, which only gets a space in front.
 }
 
 // $antlr-format minEmptyLines 1
-options { // Trailing comment.
+options 
+
+       {
 	/*Other comment.*/ superClass = Base1;
 	superClass = Base2;
 	/* comment */ superClass = Base3;
@@ -106,14 +108,14 @@ channels {
 }
 
 // Tokens comment.
-tokens { // Trailing comment.
+tokens { // Trailing comment 1.
 	DUMMY,
 	Blah,
 
 	// Description of these tokens.
 	AnotherToken,
 	YetAnotherOneWithLongName // This is important.
-}
+} // Trailing comment 2.
 
 import Blah;
 

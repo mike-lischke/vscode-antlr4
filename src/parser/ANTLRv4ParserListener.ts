@@ -4,6 +4,7 @@ import { ErrorNode, ParseTreeListener, ParserRuleContext, TerminalNode } from "a
 
 
 import { GrammarSpecContext } from "./ANTLRv4Parser.js";
+import { GrammarDeclContext } from "./ANTLRv4Parser.js";
 import { GrammarTypeContext } from "./ANTLRv4Parser.js";
 import { PrequelConstructContext } from "./ANTLRv4Parser.js";
 import { OptionsSpecContext } from "./ANTLRv4Parser.js";
@@ -14,7 +15,7 @@ import { DelegateGrammarContext } from "./ANTLRv4Parser.js";
 import { TokensSpecContext } from "./ANTLRv4Parser.js";
 import { ChannelsSpecContext } from "./ANTLRv4Parser.js";
 import { IdListContext } from "./ANTLRv4Parser.js";
-import { NamedActionContext } from "./ANTLRv4Parser.js";
+import { Action_Context } from "./ANTLRv4Parser.js";
 import { ActionScopeNameContext } from "./ANTLRv4Parser.js";
 import { ActionBlockContext } from "./ANTLRv4Parser.js";
 import { ArgActionBlockContext } from "./ANTLRv4Parser.js";
@@ -41,7 +42,6 @@ import { LexerAltListContext } from "./ANTLRv4Parser.js";
 import { LexerAltContext } from "./ANTLRv4Parser.js";
 import { LexerElementsContext } from "./ANTLRv4Parser.js";
 import { LexerElementContext } from "./ANTLRv4Parser.js";
-import { LabeledLexerElementContext } from "./ANTLRv4Parser.js";
 import { LexerBlockContext } from "./ANTLRv4Parser.js";
 import { LexerCommandsContext } from "./ANTLRv4Parser.js";
 import { LexerCommandContext } from "./ANTLRv4Parser.js";
@@ -62,7 +62,7 @@ import { SetElementContext } from "./ANTLRv4Parser.js";
 import { BlockContext } from "./ANTLRv4Parser.js";
 import { RulerefContext } from "./ANTLRv4Parser.js";
 import { CharacterRangeContext } from "./ANTLRv4Parser.js";
-import { TerminalRuleContext } from "./ANTLRv4Parser.js";
+import { TerminalDefContext } from "./ANTLRv4Parser.js";
 import { ElementOptionsContext } from "./ANTLRv4Parser.js";
 import { ElementOptionContext } from "./ANTLRv4Parser.js";
 import { IdentifierContext } from "./ANTLRv4Parser.js";
@@ -83,6 +83,16 @@ export class ANTLRv4ParserListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitGrammarSpec?: (ctx: GrammarSpecContext) => void;
+    /**
+     * Enter a parse tree produced by `ANTLRv4Parser.grammarDecl`.
+     * @param ctx the parse tree
+     */
+    enterGrammarDecl?: (ctx: GrammarDeclContext) => void;
+    /**
+     * Exit a parse tree produced by `ANTLRv4Parser.grammarDecl`.
+     * @param ctx the parse tree
+     */
+    exitGrammarDecl?: (ctx: GrammarDeclContext) => void;
     /**
      * Enter a parse tree produced by `ANTLRv4Parser.grammarType`.
      * @param ctx the parse tree
@@ -184,15 +194,15 @@ export class ANTLRv4ParserListener implements ParseTreeListener {
      */
     exitIdList?: (ctx: IdListContext) => void;
     /**
-     * Enter a parse tree produced by `ANTLRv4Parser.namedAction`.
+     * Enter a parse tree produced by `ANTLRv4Parser.action_`.
      * @param ctx the parse tree
      */
-    enterNamedAction?: (ctx: NamedActionContext) => void;
+    enterAction_?: (ctx: Action_Context) => void;
     /**
-     * Exit a parse tree produced by `ANTLRv4Parser.namedAction`.
+     * Exit a parse tree produced by `ANTLRv4Parser.action_`.
      * @param ctx the parse tree
      */
-    exitNamedAction?: (ctx: NamedActionContext) => void;
+    exitAction_?: (ctx: Action_Context) => void;
     /**
      * Enter a parse tree produced by `ANTLRv4Parser.actionScopeName`.
      * @param ctx the parse tree
@@ -454,16 +464,6 @@ export class ANTLRv4ParserListener implements ParseTreeListener {
      */
     exitLexerElement?: (ctx: LexerElementContext) => void;
     /**
-     * Enter a parse tree produced by `ANTLRv4Parser.labeledLexerElement`.
-     * @param ctx the parse tree
-     */
-    enterLabeledLexerElement?: (ctx: LabeledLexerElementContext) => void;
-    /**
-     * Exit a parse tree produced by `ANTLRv4Parser.labeledLexerElement`.
-     * @param ctx the parse tree
-     */
-    exitLabeledLexerElement?: (ctx: LabeledLexerElementContext) => void;
-    /**
      * Enter a parse tree produced by `ANTLRv4Parser.lexerBlock`.
      * @param ctx the parse tree
      */
@@ -664,15 +664,15 @@ export class ANTLRv4ParserListener implements ParseTreeListener {
      */
     exitCharacterRange?: (ctx: CharacterRangeContext) => void;
     /**
-     * Enter a parse tree produced by `ANTLRv4Parser.terminalRule`.
+     * Enter a parse tree produced by `ANTLRv4Parser.terminalDef`.
      * @param ctx the parse tree
      */
-    enterTerminalRule?: (ctx: TerminalRuleContext) => void;
+    enterTerminalDef?: (ctx: TerminalDefContext) => void;
     /**
-     * Exit a parse tree produced by `ANTLRv4Parser.terminalRule`.
+     * Exit a parse tree produced by `ANTLRv4Parser.terminalDef`.
      * @param ctx the parse tree
      */
-    exitTerminalRule?: (ctx: TerminalRuleContext) => void;
+    exitTerminalDef?: (ctx: TerminalDefContext) => void;
     /**
      * Enter a parse tree produced by `ANTLRv4Parser.elementOptions`.
      * @param ctx the parse tree

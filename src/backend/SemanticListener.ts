@@ -9,7 +9,7 @@ import { IDiagnosticEntry, DiagnosticType, SymbolGroupKind } from "../types.js";
 import { ContextSymbolTable } from "./ContextSymbolTable.js";
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 import {
-    TerminalRuleContext, RulerefContext, SetElementContext, LexerCommandContext, LexerRuleSpecContext,
+    TerminalDefContext, RulerefContext, SetElementContext, LexerCommandContext, LexerRuleSpecContext,
     ParserRuleSpecContext,
 } from "../parser/ANTLRv4Parser.js";
 
@@ -23,7 +23,7 @@ export class SemanticListener extends ANTLRv4ParserListener {
     }
 
     // Check references to other lexer tokens.
-    public override exitTerminalRule = (ctx: TerminalRuleContext): void => {
+    public override exitTerminalDef = (ctx: TerminalDefContext): void => {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
             const symbol = tokenRef.getText();

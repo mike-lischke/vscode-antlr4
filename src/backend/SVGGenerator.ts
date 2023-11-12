@@ -11,9 +11,9 @@ import { ANTLRv4ParserVisitor } from "../parser/ANTLRv4ParserVisitor.js";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
 import {
     ParserRuleSpecContext, RuleAltListContext, LexerRuleSpecContext, LexerAltListContext, LexerAltContext,
-    LexerElementsContext, LexerElementContext, LabeledLexerElementContext, AltListContext, AlternativeContext,
+    LexerElementsContext, LexerElementContext, AltListContext, AlternativeContext,
     ElementContext, LabeledElementContext, EbnfContext, EbnfSuffixContext, LexerAtomContext, AtomContext,
-    NotSetContext, BlockSetContext, CharacterRangeContext, TerminalRuleContext, SetElementContext,
+    NotSetContext, BlockSetContext, CharacterRangeContext, TerminalDefContext, SetElementContext,
     ElementOptionsContext,
 } from "../parser/ANTLRv4Parser.js";
 
@@ -147,14 +147,7 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
     public override visitLexerElement = (ctx: LexerElementContext): string => {
         const hasEbnfSuffix = (ctx.ebnfSuffix() !== null);
 
-        if (ctx.labeledLexerElement()) {
-            if (hasEbnfSuffix) {
-                return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" +
-                    this.visitLabeledLexerElement(ctx.labeledLexerElement()!) + ")";
-            } else {
-                return this.visitLabeledLexerElement(ctx.labeledLexerElement()!);
-            }
-        } else if (ctx.lexerAtom()) {
+        if (ctx.lexerAtom()) {
             if (hasEbnfSuffix) {
                 return this.visitEbnfSuffix(ctx.ebnfSuffix()!) + "(" + this.visitLexerAtom(ctx.lexerAtom()!) + ")";
             } else {
@@ -172,16 +165,6 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
         } else {
             return "new Comment('{ action code }')";
         }
-    };
-
-    public override visitLabeledLexerElement = (ctx: LabeledLexerElementContext): string => {
-        if (ctx.lexerAtom()) {
-            return this.visitLexerAtom(ctx.lexerAtom()!);
-        } else if (ctx.block()) {
-            return this.visitAltList(ctx.block()!.altList());
-        }
-
-        return "";
     };
 
     public override visitAltList = (ctx: AltListContext): string => {
@@ -307,8 +290,8 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
     public override visitLexerAtom = (ctx: LexerAtomContext): string => {
         if (ctx.characterRange()) {
             return this.visitCharacterRange(ctx.characterRange()!);
-        } else if (ctx.terminalRule()) {
-            return this.visitTerminalRule(ctx.terminalRule()!);
+        } else if (ctx.terminalDef()) {
+            return this.visitTerminalDef(ctx.terminalDef()!);
         } else if (ctx.notSet()) {
             return this.visitNotSet(ctx.notSet()!);
         } else if (ctx.LEXER_CHAR_SET()) {
@@ -327,10 +310,8 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
     };
 
     public override visitAtom = (ctx: AtomContext): string => {
-        if (ctx.characterRange()) {
-            return this.visitCharacterRange(ctx.characterRange()!);
-        } else if (ctx.terminalRule()) {
-            return this.visitTerminalRule(ctx.terminalRule()!);
+        if (ctx.terminalDef()) {
+            return this.visitTerminalDef(ctx.terminalDef()!);
         } else if (ctx.ruleref()) {
             return this.visitTerminal(ctx.ruleref()!.RULE_REF()!);
         } else if (ctx.notSet()) {
@@ -387,7 +368,7 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
         return this.escapeTerminal(ctx.STRING_LITERAL(0)!) + " .. ?";
     };
 
-    public override visitTerminalRule = (ctx: TerminalRuleContext): string => {
+    public override visitTerminalDef = (ctx: TerminalDefContext): string => {
         if (ctx.TOKEN_REF()) {
             return this.visitTerminal(ctx.TOKEN_REF()!);
         } else {

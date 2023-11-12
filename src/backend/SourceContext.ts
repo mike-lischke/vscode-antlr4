@@ -6,7 +6,7 @@
 // This file contains the handling for a single source file. It provides syntactic and semantic
 // information, symbol lookups and more.
 
-import * as child_process from "child_process";
+import { spawn } from "child_process";
 import * as path from "path";
 import * as fs from "fs";
 import * as vm from "vm";
@@ -229,14 +229,14 @@ export class SourceContext {
                 result.range.end.row = modeSpec.SEMI()!.symbol.line;
             } else if (ctx.ruleIndex === ANTLRv4Parser.RULE_grammarSpec) {
                 // Similar for entire grammars. We only need the introducer line here.
-                const grammarSpec = ctx as GrammarSpecContext;
-                stop = grammarSpec.SEMI()!.symbol.stop;
-                result.range.end.column = grammarSpec.SEMI()!.symbol.column;
-                result.range.end.row = grammarSpec.SEMI()!.symbol.line;
+                const grammarDecl = (ctx as GrammarSpecContext).grammarDecl();
+                stop = grammarDecl.SEMI()!.symbol.stop;
+                result.range.end.column = grammarDecl.SEMI()!.symbol.column;
+                result.range.end.row = grammarDecl.SEMI()!.symbol.line;
 
-                start = grammarSpec.grammarType().start!.start;
-                result.range.start.column = grammarSpec.grammarType().start!.column;
-                result.range.start.row = grammarSpec.grammarType().start!.line;
+                start = grammarDecl.grammarType().start!.start;
+                result.range.start.column = grammarDecl.grammarType().start!.column;
+                result.range.start.row = grammarDecl.grammarType().start!.line;
             }
 
             const inputStream = ctx.start?.tokenSource?.inputStream;
@@ -295,7 +295,7 @@ export class SourceContext {
 
         switch (parent.ruleIndex) {
             case ANTLRv4Parser.RULE_ruleref:
-            case ANTLRv4Parser.RULE_terminalRule: {
+            case ANTLRv4Parser.RULE_terminalDef: {
                 let symbol = this.symbolTable.symbolContainingContext(terminal);
                 if (symbol) {
                     // This is only the reference to a symbol. See if that symbol exists actually.
@@ -492,7 +492,7 @@ export class SourceContext {
         core.preferredRules = new Set([
             ANTLRv4Parser.RULE_argActionBlock,
             ANTLRv4Parser.RULE_actionBlock,
-            ANTLRv4Parser.RULE_terminalRule,
+            ANTLRv4Parser.RULE_terminalDef,
             ANTLRv4Parser.RULE_lexerCommandName,
             ANTLRv4Parser.RULE_identifier,
             ANTLRv4Parser.RULE_ruleref,
@@ -664,7 +664,7 @@ export class SourceContext {
                     break;
                 }
 
-                case ANTLRv4Parser.RULE_terminalRule: { // Lexer rules.
+                case ANTLRv4Parser.RULE_terminalDef: { // Lexer rules.
                     promises.push(this.symbolTable.getAllSymbols(BuiltInTokenSymbol));
                     promises.push(this.symbolTable.getAllSymbols(VirtualTokenSymbol));
                     promises.push(this.symbolTable.getAllSymbols(TokenSymbol));
@@ -717,7 +717,8 @@ export class SourceContext {
                             break;
                         }
 
-                        case ANTLRv4Parser.RULE_namedAction: {
+                        // eslint-disable-next-line no-underscore-dangle
+                        case ANTLRv4Parser.RULE_action_: {
                             ["header", "members", "preinclude", "postinclude", "context", "declarations", "definitions",
                                 "listenerpreinclude", "listenerpostinclude", "listenerdeclarations", "listenermembers",
                                 "listenerdefinitions", "baselistenerpreinclude", "baselistenerpostinclude",
@@ -825,7 +826,7 @@ export class SourceContext {
 
         if (this.tree && this.tree.getChildCount() > 0) {
             try {
-                const typeContext = this.tree.grammarType();
+                const typeContext = this.tree.grammarDecl().grammarType();
                 if (typeContext.LEXER()) {
                     this.info.type = GrammarType.Lexer;
                 } else if (typeContext.PARSER()) {
@@ -1694,7 +1695,7 @@ export class SourceContext {
         return new Promise((resolve, reject) => {
             Log.debug(`Running Java with parameters: ${parameters.join(" ")}`);
 
-            const java = child_process.spawn("java", parameters, spawnOptions);
+            const java = spawn("java", parameters, spawnOptions);
 
             java.on("error", (error) => {
                 resolve(`Error while running Java: "${error.message}". Is Java installed on you machine?`);

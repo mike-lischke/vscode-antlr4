@@ -65,7 +65,7 @@ export interface IIndexRange {
 }
 
 /**
- * This interface is a duplicate of the same named interface in backend/types.ts. We need the duplication
+ * This interface is a duplicate of the same named interface in src/types.ts. We need the duplication
  * because it's used both, in the (CommonJS) extension code and the (ESM) webview code.
  */
 export interface IParseTreeNode {

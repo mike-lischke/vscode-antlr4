@@ -31,6 +31,7 @@ This is a settings object named **antlr4.generation** with the following members
 
 This is a settings object named **antlr4.format** with the following members:
 
+* **disabled**: boolean (default: false), if true disables formatting
 * **alignTrailingComments**: boolean (default: false), if true, aligns trailing comments
 * **allowShortBlocksOnASingleLine**: boolean (default: true), allows contracting short blocks to a single line
 * **breakBeforeBraces**: boolean (default: false), when true start predicates and actions on a new line

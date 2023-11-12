@@ -1,5 +1,4 @@
-{
-	/*Inline comment that stays before the non-comment content.*/ superClass = Base1;
+	Base1;
 	superClass = Base2;
 	/* Another such comment. The previous code moved to an own line. */ superClass = Base3;
 	// trailing comment
@@ -9,3 +8,4 @@
 		Base4
 	/* inline comment */;
 	// Single line comment, non-trailing. Stays as is without separator line.
+	/*Standalone comment (indentation needs correction)*/

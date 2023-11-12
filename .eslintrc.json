@@ -13,7 +13,8 @@
         "plugin:jsdoc/recommended"
     ],
     "ignorePatterns": [
-        "**/generated/*",
+        "**/parser/ANTLRv4*.ts",
+        "**/parser/LexBasic.ts",
         "jest.config.ts"
     ],
     "parser": "@typescript-eslint/parser",

@@ -4,6 +4,7 @@ import { AbstractParseTreeVisitor } from "antlr4ng";
 
 
 import { GrammarSpecContext } from "./ANTLRv4Parser.js";
+import { GrammarDeclContext } from "./ANTLRv4Parser.js";
 import { GrammarTypeContext } from "./ANTLRv4Parser.js";
 import { PrequelConstructContext } from "./ANTLRv4Parser.js";
 import { OptionsSpecContext } from "./ANTLRv4Parser.js";
@@ -14,7 +15,7 @@ import { DelegateGrammarContext } from "./ANTLRv4Parser.js";
 import { TokensSpecContext } from "./ANTLRv4Parser.js";
 import { ChannelsSpecContext } from "./ANTLRv4Parser.js";
 import { IdListContext } from "./ANTLRv4Parser.js";
-import { NamedActionContext } from "./ANTLRv4Parser.js";
+import { Action_Context } from "./ANTLRv4Parser.js";
 import { ActionScopeNameContext } from "./ANTLRv4Parser.js";
 import { ActionBlockContext } from "./ANTLRv4Parser.js";
 import { ArgActionBlockContext } from "./ANTLRv4Parser.js";
@@ -41,7 +42,6 @@ import { LexerAltListContext } from "./ANTLRv4Parser.js";
 import { LexerAltContext } from "./ANTLRv4Parser.js";
 import { LexerElementsContext } from "./ANTLRv4Parser.js";
 import { LexerElementContext } from "./ANTLRv4Parser.js";
-import { LabeledLexerElementContext } from "./ANTLRv4Parser.js";
 import { LexerBlockContext } from "./ANTLRv4Parser.js";
 import { LexerCommandsContext } from "./ANTLRv4Parser.js";
 import { LexerCommandContext } from "./ANTLRv4Parser.js";
@@ -62,7 +62,7 @@ import { SetElementContext } from "./ANTLRv4Parser.js";
 import { BlockContext } from "./ANTLRv4Parser.js";
 import { RulerefContext } from "./ANTLRv4Parser.js";
 import { CharacterRangeContext } from "./ANTLRv4Parser.js";
-import { TerminalRuleContext } from "./ANTLRv4Parser.js";
+import { TerminalDefContext } from "./ANTLRv4Parser.js";
 import { ElementOptionsContext } from "./ANTLRv4Parser.js";
 import { ElementOptionContext } from "./ANTLRv4Parser.js";
 import { IdentifierContext } from "./ANTLRv4Parser.js";
@@ -82,6 +82,12 @@ export class ANTLRv4ParserVisitor<Result> extends AbstractParseTreeVisitor<Resul
      * @return the visitor result
      */
     visitGrammarSpec?: (ctx: GrammarSpecContext) => Result;
+    /**
+     * Visit a parse tree produced by `ANTLRv4Parser.grammarDecl`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitGrammarDecl?: (ctx: GrammarDeclContext) => Result;
     /**
      * Visit a parse tree produced by `ANTLRv4Parser.grammarType`.
      * @param ctx the parse tree
@@ -143,11 +149,11 @@ export class ANTLRv4ParserVisitor<Result> extends AbstractParseTreeVisitor<Resul
      */
     visitIdList?: (ctx: IdListContext) => Result;
     /**
-     * Visit a parse tree produced by `ANTLRv4Parser.namedAction`.
+     * Visit a parse tree produced by `ANTLRv4Parser.action_`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitNamedAction?: (ctx: NamedActionContext) => Result;
+    visitAction_?: (ctx: Action_Context) => Result;
     /**
      * Visit a parse tree produced by `ANTLRv4Parser.actionScopeName`.
      * @param ctx the parse tree
@@ -305,12 +311,6 @@ export class ANTLRv4ParserVisitor<Result> extends AbstractParseTreeVisitor<Resul
      */
     visitLexerElement?: (ctx: LexerElementContext) => Result;
     /**
-     * Visit a parse tree produced by `ANTLRv4Parser.labeledLexerElement`.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    visitLabeledLexerElement?: (ctx: LabeledLexerElementContext) => Result;
-    /**
      * Visit a parse tree produced by `ANTLRv4Parser.lexerBlock`.
      * @param ctx the parse tree
      * @return the visitor result
@@ -431,11 +431,11 @@ export class ANTLRv4ParserVisitor<Result> extends AbstractParseTreeVisitor<Resul
      */
     visitCharacterRange?: (ctx: CharacterRangeContext) => Result;
     /**
-     * Visit a parse tree produced by `ANTLRv4Parser.terminalRule`.
+     * Visit a parse tree produced by `ANTLRv4Parser.terminalDef`.
      * @param ctx the parse tree
      * @return the visitor result
      */
-    visitTerminalRule?: (ctx: TerminalRuleContext) => Result;
+    visitTerminalDef?: (ctx: TerminalDefContext) => Result;
     /**
      * Visit a parse tree produced by `ANTLRv4Parser.elementOptions`.
      * @param ctx the parse tree

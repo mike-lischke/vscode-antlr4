@@ -109,7 +109,7 @@ export class GrammarFormatter {
      *          to replace the old text range.
      */
     public formatGrammar(options: IFormattingOptions, start: number, stop: number): [string, number, number] {
-        if (this.tokens.length === 0) {
+        if (this.tokens.length === 0 || options.disabled) {
             return ["", -1, -1];
         }
 
@@ -192,8 +192,10 @@ export class GrammarFormatter {
                     let localRun = run;
                     while (localRun-- > 0 && !done) {
                         switch (this.tokens[localRun].type) {
-                            case ANTLRv4Lexer.LBRACE: {
-                                // In an options {} rule. Increase indentation if the token is not
+                            case ANTLRv4Lexer.OPTIONS:
+                            case ANTLRv4Lexer.TOKENS:
+                            case ANTLRv4Lexer.CHANNELS: { // These tokens include an opening curly brace.
+                                // Increase indentation if the token is not
                                 // on the same line as the start token (in which case we would do that
                                 // in the main formatting loop then).
                                 if (this.tokens[localRun].line < startRow) {
@@ -234,6 +236,7 @@ export class GrammarFormatter {
                         }
                     }
                     done = true;
+
                     break;
                 }
 
@@ -244,6 +247,7 @@ export class GrammarFormatter {
                         coalesceWhitespaces = true;
                     }
                     done = true;
+
                     break;
                 }
 
@@ -252,12 +256,15 @@ export class GrammarFormatter {
                     startIndex = run;
                     targetStart = this.tokens[run].start;
                     done = true;
+
                     break;
                 }
 
-                case ANTLRv4Lexer.LBRACE:
+                case ANTLRv4Lexer.OPTIONS:
+                case ANTLRv4Lexer.TOKENS:
+                case ANTLRv4Lexer.CHANNELS: // These tokens include an opening curly brace.
                 case ANTLRv4Lexer.BEGIN_ACTION:
-                    // A braced block (e.g. tokens, channels etc.).
+                    // A braced block.
                     if (this.tokens[run].line < startRow) {
                         ++this.currentIndentation;
                         inBraces = true;
@@ -424,6 +431,10 @@ export class GrammarFormatter {
 
                     if (this.currentIndentation === 0) {
                         minLineInsertionPending = true;
+
+                        if (inMeta) {
+                            this.addLineBreak();
+                        }
                     } else {
                         this.addLineBreak();
                         this.pushCurrentIndentation();
@@ -438,17 +449,12 @@ export class GrammarFormatter {
                     break;
                 }
 
-                case ANTLRv4Lexer.LBRACE: {
-                    if (this.singleLineBlockNesting === 0 && this.options.breakBeforeBraces) {
-                        this.removeTrailingWhitespaces();
-                        this.addLineBreak();
-                        this.pushCurrentIndentation();
-                        this.add(i);
-                    } else {
-                        this.removeTrailingWhitespaces();
-                        this.addSpace();
-                        this.add(i);
-                    }
+                case ANTLRv4Lexer.OPTIONS:
+                case ANTLRv4Lexer.TOKENS:
+                case ANTLRv4Lexer.CHANNELS: { // These tokens include an opening curly brace.
+                    this.add(i);
+
+                    coalesceWhitespaces = true;
 
                     ++this.currentIndentation;
                     inBraces = true;
@@ -708,8 +714,6 @@ export class GrammarFormatter {
                     break;
 
                 case ANTLRv4Lexer.IMPORT:
-                case ANTLRv4Lexer.LEXER:
-                case ANTLRv4Lexer.PARSER:
                 case ANTLRv4Lexer.GRAMMAR:
                 case ANTLRv4Lexer.MODE: {
                     if (!inNamedAction && !inRule) {
@@ -734,12 +738,7 @@ export class GrammarFormatter {
                     if (!inNamedAction && !inBraces) {
                         inRule = true;
                     }
-                    // [falls-through]
-                }
 
-                case ANTLRv4Lexer.OPTIONS:
-                case ANTLRv4Lexer.TOKENS:
-                case ANTLRv4Lexer.CHANNELS: {
                     coalesceWhitespaces = true;
                     this.add(i);
                     if (!inLexerCommand) {
@@ -1042,8 +1041,8 @@ export class GrammarFormatter {
         let hadErrorOnLine = false;
         for (const entry of this.outputPipeline) {
             switch (entry) {
-                case GrammarFormatter.LineBreak:
-                    if (pendingLineComment > 0) {
+                case GrammarFormatter.LineBreak: {
+                    if (pendingLineComment > -1) {
                         if (result.length > 0) {
                             const lastChar = result[result.length - 1];
                             if (lastChar !== " " && lastChar !== "\t" && lastChar !== "\n") {
@@ -1055,21 +1054,35 @@ export class GrammarFormatter {
                     }
                     result += "\n";
                     hadErrorOnLine = false;
+
                     break;
-                case GrammarFormatter.Space:
+                }
+
+                case GrammarFormatter.Space: {
                     result += " ";
+
                     break;
-                case GrammarFormatter.Tab:
+                }
+
+                case GrammarFormatter.Tab: {
                     result += "\t";
+
                     break;
-                case GrammarFormatter.WhitespaceEraser: // Ignore.
+                }
+
+                case GrammarFormatter.WhitespaceEraser: {// Ignore.
                     break;
-                case GrammarFormatter.Error:
+                }
+
+                case GrammarFormatter.Error: {
                     if (!hadErrorOnLine) { // Don't output more than one error per line.
                         result += "<<Unexpected input or wrong formatter command>>";
                         hadErrorOnLine = true;
                     }
+
                     break;
+                }
+
                 default:
                     if (entry < 0) {
                         // One of the block markers. Alignment blocks are removed at this point and
@@ -2110,7 +2123,6 @@ export class GrammarFormatter {
         }
 
         let index = 1;
-        let haveContent = false; // True if we have content beyond the introducer on the current line.
         let column = this.computeLineLength(line);
         while (true) {
             while (index < pipeline.length) {
@@ -2120,8 +2132,6 @@ export class GrammarFormatter {
                     line = lineIntroducer;
                     column = this.computeLineLength(line);
                 }
-
-                haveContent = true;
                 line += pipeline[index++] + " ";
                 column = this.computeLineLength(line);
             }
@@ -2158,18 +2168,17 @@ export class GrammarFormatter {
 
             if (pipeline.length === 0) {
                 // Keep empty lines. Push the current line only if this is not still the first line
-                // (because then we pushed it already).
+                // (because we already pushed it already).
                 if (!isFirst) {
                     result.push(line.slice(0, -1));
                 }
                 result.push(lineIntroducer);
                 line = lineIntroducer;
-                haveContent = false;
             }
             isFirst = false;
         }
 
-        if (line.length > 0 && haveContent) {
+        if (line.length > 0) {
             result.push(line.slice(0, -1));
         }
 

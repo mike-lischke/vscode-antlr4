@@ -1,4 +1,5 @@
 //-------------------------------------------------------------------------------------------------
 
 // $antlr-format minEmptyLines 0
-options // Trailing comment, that moves behind the opening brace.
+options
+       {

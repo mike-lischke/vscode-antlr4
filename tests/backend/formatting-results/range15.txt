@@ -13,7 +13,9 @@ tokens { // Trailing comment, which only gets a space in front.
 }
 
 // $antlr-format minEmptyLines 1
-options { // Trailing comment.
+options 
+
+       {
 	/*Other comment.*/ superClass = Base1;
 	superClass = Base2;
 	/* comment */ superClass = Base3;

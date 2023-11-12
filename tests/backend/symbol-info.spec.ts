@@ -76,14 +76,14 @@ describe("Symbol Info Retrieval (t.g4)", () => {
             expect(diagnostics).toHaveLength(4);
 
             expect(diagnostics[0].message).toEqual("mismatched input '::' expecting {BEGIN_ARGUMENT, " +
-                "'options', 'returns', 'locals', 'throws', COLON, AT}");
+                "OPTIONS, 'returns', 'locals', 'throws', COLON, AT}");
             expect(diagnostics[0].range.start.column).toEqual(12);
             expect(diagnostics[0].range.start.row).toEqual(1);
             expect(diagnostics[0].range.end.column).toEqual(14);
             expect(diagnostics[0].range.end.row).toEqual(1);
 
             expect(diagnostics[1].message).toEqual("mismatched input '|' expecting {BEGIN_ARGUMENT, " +
-                "'options', 'returns', 'locals', 'throws', COLON, AT}");
+                "OPTIONS, 'returns', 'locals', 'throws', COLON, AT}");
             expect(diagnostics[1].range.start.column).toEqual(0);
             expect(diagnostics[1].range.start.row).toEqual(2);
             expect(diagnostics[1].range.end.column).toEqual(1);

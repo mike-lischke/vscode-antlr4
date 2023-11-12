@@ -1,10 +1,10 @@
-// Generated from grammars/ANTLRv4LexBasic.g4 by ANTLR 4.13.1
+// Generated from grammars/LexBasic.g4 by ANTLR 4.13.1
 
 import * as antlr from "antlr4ng";
 import { Token } from "antlr4ng";
 
 
-export class ANTLRv4LexBasic extends antlr.Lexer {
+export class LexBasic extends antlr.Lexer {
 
     public static readonly channelNames = [
         "DEFAULT_TOKEN_CHANNEL", "HIDDEN"
@@ -34,20 +34,20 @@ export class ANTLRv4LexBasic extends antlr.Lexer {
 
     public constructor(input: antlr.CharStream) {
         super(input);
-        this.interpreter = new antlr.LexerATNSimulator(this, ANTLRv4LexBasic._ATN, ANTLRv4LexBasic.decisionsToDFA, new antlr.PredictionContextCache());
+        this.interpreter = new antlr.LexerATNSimulator(this, LexBasic._ATN, LexBasic.decisionsToDFA, new antlr.PredictionContextCache());
     }
 
-    public get grammarFileName(): string { return "ANTLRv4LexBasic.g4"; }
+    public get grammarFileName(): string { return "LexBasic.g4"; }
 
-    public get literalNames(): (string | null)[] { return ANTLRv4LexBasic.literalNames; }
-    public get symbolicNames(): (string | null)[] { return ANTLRv4LexBasic.symbolicNames; }
-    public get ruleNames(): string[] { return ANTLRv4LexBasic.ruleNames; }
+    public get literalNames(): (string | null)[] { return LexBasic.literalNames; }
+    public get symbolicNames(): (string | null)[] { return LexBasic.symbolicNames; }
+    public get ruleNames(): string[] { return LexBasic.ruleNames; }
 
-    public get serializedATN(): number[] { return ANTLRv4LexBasic._serializedATN; }
+    public get serializedATN(): number[] { return LexBasic._serializedATN; }
 
-    public get channelNames(): string[] { return ANTLRv4LexBasic.channelNames; }
+    public get channelNames(): string[] { return LexBasic.channelNames; }
 
-    public get modeNames(): string[] { return ANTLRv4LexBasic.modeNames; }
+    public get modeNames(): string[] { return LexBasic.modeNames; }
 
     public static readonly _serializedATN: number[] = [
         4,0,0,302,6,-1,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,
@@ -158,19 +158,19 @@ export class ANTLRv4LexBasic extends antlr.Lexer {
 
     private static __ATN: antlr.ATN;
     public static get _ATN(): antlr.ATN {
-        if (!ANTLRv4LexBasic.__ATN) {
-            ANTLRv4LexBasic.__ATN = new antlr.ATNDeserializer().deserialize(ANTLRv4LexBasic._serializedATN);
+        if (!LexBasic.__ATN) {
+            LexBasic.__ATN = new antlr.ATNDeserializer().deserialize(LexBasic._serializedATN);
         }
 
-        return ANTLRv4LexBasic.__ATN;
+        return LexBasic.__ATN;
     }
 
 
-    private static readonly vocabulary = new antlr.Vocabulary(ANTLRv4LexBasic.literalNames, ANTLRv4LexBasic.symbolicNames, []);
+    private static readonly vocabulary = new antlr.Vocabulary(LexBasic.literalNames, LexBasic.symbolicNames, []);
 
     public override get vocabulary(): antlr.Vocabulary {
-        return ANTLRv4LexBasic.vocabulary;
+        return LexBasic.vocabulary;
     }
 
-    private static readonly decisionsToDFA = ANTLRv4LexBasic._ATN.decisionToState.map( (ds: antlr.DecisionState, index: number) => new antlr.DFA(ds, index) );
+    private static readonly decisionsToDFA = LexBasic._ATN.decisionToState.map( (ds: antlr.DecisionState, index: number) => new antlr.DFA(ds, index) );
 }

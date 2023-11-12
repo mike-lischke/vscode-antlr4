@@ -60,7 +60,7 @@ xdescribe("Sentence Generation", () => {
         // The ANTLR4 grammar is a split grammar, so we have to explicitly load the other parts we need here.
         result = await backend.generate("grammars/ANTLRv4Lexer.g4",
             { outputDir: "generated-sentence", loadOnly: true });
-        result = await backend.generate("grammars/ANTLRv4LexBasic.g4",
+        result = await backend.generate("grammars/LexBasic.g4",
             { outputDir: "generated-sentence", loadOnly: true });
         result = await backend.generate("tests/backend/test-data/sentences.g4",
             { outputDir: "generated-sentence", language: "Java" });

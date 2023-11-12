@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import * as Net from "net";
+import * as net from "net";
 
 import {
     CancellationToken, DebugConfiguration, DebugConfigurationProvider, ProviderResult, workspace, WorkspaceFolder,
@@ -18,7 +18,7 @@ import { ParseTreeProvider } from "./frontend/webviews/ParseTreeProvider.js";
  * Validates launch configuration for grammar debugging.
  */
 export class AntlrDebugConfigurationProvider implements DebugConfigurationProvider {
-    private server?: Net.Server;
+    private server?: net.Server;
 
     public constructor(private backend: AntlrFacade, private parseTreeProvider: ParseTreeProvider) { }
 
@@ -33,7 +33,7 @@ export class AntlrDebugConfigurationProvider implements DebugConfigurationProvid
         }
 
         if (!this.server) {
-            this.server = Net.createServer((socket) => {
+            this.server = net.createServer((socket) => {
                 socket.on("end", () => {
                     //console.error('>> ANTLR debugging client connection closed\n');
                 });
@@ -44,7 +44,7 @@ export class AntlrDebugConfigurationProvider implements DebugConfigurationProvid
             }).listen(0);
         }
 
-        const info = this.server.address() as Net.AddressInfo;
+        const info = this.server.address() as net.AddressInfo;
         if (info) {
             config.debugServer = info.port;
         } else {

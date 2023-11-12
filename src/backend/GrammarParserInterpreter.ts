@@ -9,7 +9,7 @@ import {
     TerminalNode, TokenStream, Transition, TransitionType,
 } from "antlr4ng";
 
-import { TerminalRuleContext } from "../parser/ANTLRv4Parser.js";
+import { TerminalDefContext } from "../parser/ANTLRv4Parser.js";
 import {
     ParserPredicateSymbol, ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, ParserActionSymbol,
     LexerActionSymbol, LexerPredicateSymbol,
@@ -291,7 +291,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 } else {
                     if (candidate.name === ";") { // Special case: end of rule.
                         frame.next.push(candidate);
-                    } else if (candidate.context instanceof TerminalRuleContext) {
+                    } else if (candidate.context instanceof TerminalDefContext) {
                         if (candidate.context.TOKEN_REF()) {
                             if (terminalMatches(candidate.context.TOKEN_REF()!)) {
                                 frame.next.push(candidate);

@@ -280,6 +280,9 @@ export interface IFormattingOptions {
     [key: string]: boolean | number | string | undefined;
 
     /** Default: false */
+    disabled?: boolean;
+
+    /** Default: false */
     alignTrailingComments?: boolean;
 
     /** Default: true; */

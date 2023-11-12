@@ -66,9 +66,8 @@ describe("Formatting", () => {
         const rangeTests = JSON.parse(fs.readFileSync("tests/backend/formatting/ranges.json",
             { encoding: "utf8" })) as ITestRange[];
         const source = fs.readFileSync("tests/backend/formatting/raw.g4", { encoding: "utf8" });
-        for (let i = 1; i <= rangeTests.length; ++i) {
-            const rangeTest = rangeTests[i - 1];
 
+        for (const rangeTest of rangeTests) {
             // Range ends are non-inclusive.
             const startIndex = positionToIndex(source, rangeTest.source.start.column, rangeTest.source.start.row);
             const stopIndex = positionToIndex(source, rangeTest.source.end.column, rangeTest.source.end.row) - 1;
@@ -81,7 +80,7 @@ describe("Formatting", () => {
                 start: { column: startColumn, row: startRow }, end: { column: stopColumn, row: stopRow },
             };
 
-            //fs.writeFileSync("tests/backend/formatting-results/" + rangeTest.result, text, "utf8");
+            //fs.writeFileSync("tests/backend/formatting-results/res-" + rangeTest.result, text, "utf8");
             const expected = fs.readFileSync("tests/backend/formatting-results/" + rangeTest.result,
                 { encoding: "utf8" });
             expect(range).toStrictEqual(rangeTest.target);

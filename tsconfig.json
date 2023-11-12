@@ -25,7 +25,7 @@
         "src/*.ts",
         "src/backend/**/*.ts",
         "src/frontend/**/*.ts",
-        "src/parser/**/*.ts",
+        "src/parser/*.ts",
         "tests/**/*.ts"
     ],
     "exclude": [
