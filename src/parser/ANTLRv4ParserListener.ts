@@ -50,6 +50,8 @@ import { LexerCommandExprContext } from "./ANTLRv4Parser.js";
 import { AltListContext } from "./ANTLRv4Parser.js";
 import { AlternativeContext } from "./ANTLRv4Parser.js";
 import { ElementContext } from "./ANTLRv4Parser.js";
+import { PredicateOptionsContext } from "./ANTLRv4Parser.js";
+import { PredicateOptionContext } from "./ANTLRv4Parser.js";
 import { LabeledElementContext } from "./ANTLRv4Parser.js";
 import { EbnfContext } from "./ANTLRv4Parser.js";
 import { BlockSuffixContext } from "./ANTLRv4Parser.js";
@@ -543,6 +545,26 @@ export class ANTLRv4ParserListener implements ParseTreeListener {
      * @param ctx the parse tree
      */
     exitElement?: (ctx: ElementContext) => void;
+    /**
+     * Enter a parse tree produced by `ANTLRv4Parser.predicateOptions`.
+     * @param ctx the parse tree
+     */
+    enterPredicateOptions?: (ctx: PredicateOptionsContext) => void;
+    /**
+     * Exit a parse tree produced by `ANTLRv4Parser.predicateOptions`.
+     * @param ctx the parse tree
+     */
+    exitPredicateOptions?: (ctx: PredicateOptionsContext) => void;
+    /**
+     * Enter a parse tree produced by `ANTLRv4Parser.predicateOption`.
+     * @param ctx the parse tree
+     */
+    enterPredicateOption?: (ctx: PredicateOptionContext) => void;
+    /**
+     * Exit a parse tree produced by `ANTLRv4Parser.predicateOption`.
+     * @param ctx the parse tree
+     */
+    exitPredicateOption?: (ctx: PredicateOptionContext) => void;
     /**
      * Enter a parse tree produced by `ANTLRv4Parser.labeledElement`.
      * @param ctx the parse tree

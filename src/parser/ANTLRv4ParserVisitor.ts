@@ -50,6 +50,8 @@ import { LexerCommandExprContext } from "./ANTLRv4Parser.js";
 import { AltListContext } from "./ANTLRv4Parser.js";
 import { AlternativeContext } from "./ANTLRv4Parser.js";
 import { ElementContext } from "./ANTLRv4Parser.js";
+import { PredicateOptionsContext } from "./ANTLRv4Parser.js";
+import { PredicateOptionContext } from "./ANTLRv4Parser.js";
 import { LabeledElementContext } from "./ANTLRv4Parser.js";
 import { EbnfContext } from "./ANTLRv4Parser.js";
 import { BlockSuffixContext } from "./ANTLRv4Parser.js";
@@ -358,6 +360,18 @@ export class ANTLRv4ParserVisitor<Result> extends AbstractParseTreeVisitor<Resul
      * @return the visitor result
      */
     visitElement?: (ctx: ElementContext) => Result;
+    /**
+     * Visit a parse tree produced by `ANTLRv4Parser.predicateOptions`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPredicateOptions?: (ctx: PredicateOptionsContext) => Result;
+    /**
+     * Visit a parse tree produced by `ANTLRv4Parser.predicateOption`.
+     * @param ctx the parse tree
+     * @return the visitor result
+     */
+    visitPredicateOption?: (ctx: PredicateOptionContext) => Result;
     /**
      * Visit a parse tree produced by `ANTLRv4Parser.labeledElement`.
      * @param ctx the parse tree
