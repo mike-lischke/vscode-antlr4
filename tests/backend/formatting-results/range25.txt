@@ -1,8 +1,0 @@
-;
-catch[...] {
-  // Replaces the standard exception handling.
-}
-finally {
-  cleanUp();
-}
-

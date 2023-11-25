@@ -1,5 +1,0 @@
-// $antlr-format minEmptyLines 0
-options
-       {
-	/*Inline comment that stays before the non-comment content.*/ superClass = Base1;
-	superClass = Base2;

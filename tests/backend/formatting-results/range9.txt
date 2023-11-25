@@ -1,2 +1,0 @@
-	/* Comment stays as it is. Min-empty-line-setting only has an effect on top level elements. */
-	

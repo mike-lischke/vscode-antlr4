@@ -1,2 +1,0 @@
-@parser::listenerdefinitions {/* listener definitions section */}
-

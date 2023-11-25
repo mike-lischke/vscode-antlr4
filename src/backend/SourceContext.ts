@@ -20,6 +20,8 @@ import {
 
 import { CodeCompletionCore, BaseSymbol, LiteralSymbol } from "antlr4-c3";
 
+import { GrammarFormatter } from "antlr-format";
+
 import {
     ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, OptionsSpecContext, ModeSpecContext,
 } from "../parser/ANTLRv4Parser.js";
@@ -49,7 +51,6 @@ import {
 } from "./ContextSymbolTable.js";
 
 import { SentenceGenerator } from "./SentenceGenerator.js";
-import { GrammarFormatter } from "./Formatter.js";
 
 import { GrammarLexerInterpreter } from "./GrammarLexerInterpreter.js";
 import { printableUnicodePoints } from "./Unicode.js";
