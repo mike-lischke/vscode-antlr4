@@ -1659,7 +1659,9 @@ export class SourceContext {
                     `Error while reading lexer interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
             }
         } else {
-            Log.debug(`No lexer interpreter data found at ${lexerInterpreterDataFile}`);
+            if (lexerInterpreterDataFile.length > 0) {
+                Log.debug(`No lexer interpreter data found at ${lexerInterpreterDataFile}`);
+            }
 
             this.grammarLexerData = undefined;
             this.grammarLexerRuleMap.clear();
