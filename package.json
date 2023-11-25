@@ -180,8 +180,11 @@
                             "description": "Path to a Java jar file to be used for parser generation"
                         },
                         "additionalParameters": {
-                            "type": "string",
-                            "description": "Any other command line parameters you want to send to the ANTLR4 jar"
+                            "type": [
+                                "string",
+                                "array"
+                            ],
+                            "description": "Additional command line parameters you want to send to the ANTLR4 jar. Either a single string or a list of strings."
                         }
                     }
                 },

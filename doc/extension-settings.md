@@ -25,7 +25,7 @@ This is a settings object named **antlr4.generation** with the following members
 * **listeners**, boolean (default: true), also create listeners on code generation (used only in external mode)
 * **visitors**, boolean (default: false), also create visitors on code generation (used only in external mode)
 * **alternativeJar**, string (default: undefined), specifies the ANTLR4 jar to use for generation, instead of the ones shipping with this extension.
-* **additionalParameters**, string (default: undefined), specifies additional parameters to be passed on to the ANTLR4 jar (built-in or custom) during parser generation.
+* **additionalParameters**, string | string[] (default: undefined), specifies additional parameters to be passed on to the ANTLR4 jar (built-in or custom) during parser generation.
 
 ## Grammar Formatting
 

@@ -197,8 +197,8 @@ export class ATNGraphProvider extends WebviewProvider {
 
             for (const node of saveMessage.nodes) {
                 ruleEntry.statePositions[node.id] = {
-                    fx: node.fx === null ? undefined : node.fx,
-                    fy: node.fy === null ? undefined : node.fy,
+                    fx: node.fx ?? undefined,
+                    fy: node.fy ?? undefined,
                 };
             }
 

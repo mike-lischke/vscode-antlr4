@@ -201,7 +201,7 @@ export interface IGenerationOptions {
     alternativeJar?: string;
 
     /** Any additional parameter you want to send to ANTLR4 for generation (e.g. "-XdbgST"). */
-    additionalParameters?: string;
+    additionalParameters?: string | string[];
 }
 
 /**

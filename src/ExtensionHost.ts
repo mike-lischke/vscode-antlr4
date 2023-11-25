@@ -395,7 +395,8 @@ export class ExtensionHost {
             listeners: false,
             visitors: false,
             alternativeJar: workspace.getConfiguration("antlr4.generation").get<string>("alternativeJar"),
-            additionalParameters: workspace.getConfiguration("antlr4.generation").get<string>("additionalParameters"),
+            additionalParameters: workspace.getConfiguration("antlr4.generation")
+                .get<string | string[]>("additionalParameters"),
             language: workspace.getConfiguration("antlr4.generation").get<string>("language"),
             package: workspace.getConfiguration("antlr4.generation").get<string>("package"),
         };

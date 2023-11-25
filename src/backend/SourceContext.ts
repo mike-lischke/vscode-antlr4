@@ -1104,7 +1104,11 @@ export class SourceContext {
         parameters.push("-Xexact-output-dir"); // Available starting with 4.7.2.
 
         if (options.additionalParameters) {
-            parameters.push(options.additionalParameters);
+            if (Array.isArray(options.additionalParameters)) {
+                parameters.push(...options.additionalParameters);
+            } else {
+                parameters.push(options.additionalParameters);
+            }
         }
 
         dependencies.add(this); // Needs this also in the error parser.
