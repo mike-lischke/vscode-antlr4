@@ -89,8 +89,12 @@ export class AntlrFacade {
         if (!contextEntry) {
             if (!source) {
                 try {
-                    fs.statSync(path.join(process.cwd(), fileName));
-                    source = fs.readFileSync(fileName, "utf8");
+                    if (path.isAbsolute(fileName)) {
+                        source = fs.readFileSync(fileName, "utf8");
+                    } else {
+                        fs.statSync(path.join(this.extensionDir, fileName));
+                        source = fs.readFileSync(fileName, "utf8");
+                    }
                 } catch (e) {
                     source = "";
                 }
