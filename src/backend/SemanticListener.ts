@@ -10,7 +10,7 @@ import { ContextSymbolTable } from "./ContextSymbolTable.js";
 import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 import {
     TerminalDefContext, RulerefContext, SetElementContext, LexerCommandContext, LexerRuleSpecContext,
-    ParserRuleSpecContext,
+    ParserRuleSpecContext, OptionContext,
 } from "../parser/ANTLRv4Parser.js";
 
 
@@ -22,7 +22,10 @@ export class SemanticListener extends ANTLRv4ParserListener {
         super();
     }
 
-    // Check references to other lexer tokens.
+    /**
+     * Check references to other lexer tokens.
+     * @param ctx The terminal definition context.
+     */
     public override exitTerminalDef = (ctx: TerminalDefContext): void => {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
@@ -33,7 +36,10 @@ export class SemanticListener extends ANTLRv4ParserListener {
         }
     };
 
-    // Check references to other parser rules.
+    /**
+     * Check references to other parser rules.
+     * @param ctx The rule reference context.
+     */
     public override exitRuleref = (ctx: RulerefContext): void => {
         const ruleRef = ctx.RULE_REF();
         if (ruleRef) {
@@ -43,7 +49,10 @@ export class SemanticListener extends ANTLRv4ParserListener {
         }
     };
 
-    // Check references to other lexer tokens.
+    /**
+     * Check references to other lexer tokens.
+     * @param ctx The set element context.
+     */
     public override exitSetElement = (ctx: SetElementContext): void => {
         const tokenRef = ctx.TOKEN_REF();
         if (tokenRef) {
@@ -54,7 +63,10 @@ export class SemanticListener extends ANTLRv4ParserListener {
         }
     };
 
-    // Check references to modes + channels in lexer actions.
+    /**
+     * Check references to modes + channels in lexer actions.
+     * @param ctx The lexer command context.
+     */
     public override exitLexerCommand = (ctx: LexerCommandContext): void => {
         const lexerCommandExpr = ctx.lexerCommandExpr();
         const lexerCommandExprId = lexerCommandExpr ? lexerCommandExpr.identifier() : undefined;
@@ -75,7 +87,10 @@ export class SemanticListener extends ANTLRv4ParserListener {
         }
     };
 
-    // Check definition of a lexer token.
+    /**
+     * Check definition of a lexer token.
+     * @param ctx The lexer rule context.
+     */
     public override exitLexerRuleSpec = (ctx: LexerRuleSpecContext): void => {
         const tokenRef = ctx.TOKEN_REF()!;
         const name = tokenRef.getText();
@@ -92,7 +107,10 @@ export class SemanticListener extends ANTLRv4ParserListener {
         }
     };
 
-    // Check definition of a parser rule.
+    /**
+     * Check definition of a parser rule.
+     * @param ctx The parser rule context.
+     */
     public override exitParserRuleSpec = (ctx: ParserRuleSpecContext): void => {
         // Same processing here as for lexer rules.
         const ruleRef = ctx.RULE_REF()!;
@@ -103,6 +121,30 @@ export class SemanticListener extends ANTLRv4ParserListener {
         } else {
             this.seenSymbols.set(name, ruleRef.symbol);
             void this.resolveAndReportDuplicate(name, ruleRef);
+        }
+    };
+
+    public override exitOption = (ctx: OptionContext): void => {
+        const name = ctx.identifier().getText();
+        if (name === "tokenVocab") {
+            const optionValue = ctx.optionValue().getText();
+            if (optionValue === this.symbolTable.name) {
+                const entry: IDiagnosticEntry = {
+                    type: DiagnosticType.Error,
+                    message: "A token vocabulary cannot reference itself.",
+                    range: {
+                        start: {
+                            column: ctx.start!.column,
+                            row: ctx.start!.line,
+                        },
+                        end: {
+                            column: ctx.stop!.column + ctx.stop!.stop - ctx.stop!.start + 1,
+                            row: ctx.stop!.line,
+                        },
+                    },
+                };
+                this.diagnostics.push(entry);
+            }
         }
     };
 

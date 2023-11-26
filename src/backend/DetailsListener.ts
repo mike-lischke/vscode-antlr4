@@ -192,9 +192,12 @@ export class DetailsListener extends ANTLRv4ParserListener {
         const option = ctx.identifier().getText();
         const valueContext = ctx.getRuleContext(0, OptionValueContext);
         if (valueContext && valueContext.getChildCount() > 0) {
-            const symbol = this.addNewSymbol(OptionSymbol, valueContext.getChild(0)!, option);
-            symbol.value = valueContext.getText();
-            if (option === "tokenVocab") {
+            const value = valueContext.getText();
+
+            // Do not add a symbol for the tokenVocab option if it references this grammar.
+            if (option === "tokenVocab" && this.symbolTable.name !== value) {
+                const symbol = this.addNewSymbol(OptionSymbol, valueContext.getChild(0)!, option);
+                symbol.value = value;
                 this.imports.push(valueContext.getText());
             }
         }

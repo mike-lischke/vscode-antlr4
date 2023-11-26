@@ -126,6 +126,8 @@ export class ExtensionHost {
                     void this.backend.generate(document.fileName,
                         { outputDir: antlrPath, loadOnly: true, generateIfNeeded: !doNotGenerate });
                     ATNGraphProvider.addStatesForGrammar(antlrPath, document.fileName);
+
+                    this.processDiagnostic(document);
                 } catch (error) {
                     Log.error([error]);
                 }

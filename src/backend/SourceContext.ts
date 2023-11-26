@@ -1636,19 +1636,26 @@ export class SourceContext {
         }
 
         let errors = "";
+        const grammarStat = fs.statSync(this.fileName);
         if (fs.existsSync(lexerInterpreterDataFile)) {
-            Log.debug(`Loading lexer interpreter data from ${lexerInterpreterDataFile}`);
+            const lexerStat = fs.statSync(lexerInterpreterDataFile);
+            if (lexerStat.mtimeMs < grammarStat.mtimeMs) {
+                Log.debug(`Lexer interpreter data is older than its grammar file (${lexerInterpreterDataFile})\n`);
+            } else {
 
-            try {
-                this.grammarLexerData = InterpreterDataReader.parseFile(lexerInterpreterDataFile);
-                const map = new Map<string, number>();
-                for (let i = 0; i < this.grammarLexerData.ruleNames.length; ++i) {
-                    map.set(this.grammarLexerData.ruleNames[i], i);
+                Log.debug(`Loading lexer interpreter data from ${lexerInterpreterDataFile}`);
+
+                try {
+                    this.grammarLexerData = InterpreterDataReader.parseFile(lexerInterpreterDataFile);
+                    const map = new Map<string, number>();
+                    for (let i = 0; i < this.grammarLexerData.ruleNames.length; ++i) {
+                        map.set(this.grammarLexerData.ruleNames[i], i);
+                    }
+                    this.grammarLexerRuleMap = map;
+                } catch (error) {
+                    errors +=
+                        `Error while reading lexer interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
                 }
-                this.grammarLexerRuleMap = map;
-            } catch (error) {
-                errors +=
-                    `Error while reading lexer interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
             }
         } else {
             if (lexerInterpreterDataFile.length > 0) {
@@ -1660,16 +1667,23 @@ export class SourceContext {
         }
 
         if (fs.existsSync(parserInterpreterDataFile)) {
-            try {
-                this.grammarParserData = InterpreterDataReader.parseFile(parserInterpreterDataFile);
-                const map = new Map<string, number>();
-                for (let i = 0; i < this.grammarParserData.ruleNames.length; ++i) {
-                    map.set(this.grammarParserData.ruleNames[i], i);
+            const parserStat = fs.statSync(parserInterpreterDataFile);
+            if (parserStat.mtimeMs < grammarStat.mtimeMs) {
+                Log.debug(`Parser interpreter data is older than its grammar file (${parserInterpreterDataFile})\n`);
+            } else {
+                Log.debug(`Loading parser interpreter data from ${parserInterpreterDataFile}`);
+
+                try {
+                    this.grammarParserData = InterpreterDataReader.parseFile(parserInterpreterDataFile);
+                    const map = new Map<string, number>();
+                    for (let i = 0; i < this.grammarParserData.ruleNames.length; ++i) {
+                        map.set(this.grammarParserData.ruleNames[i], i);
+                    }
+                    this.grammarParserRuleMap = map;
+                } catch (error) {
+                    errors +=
+                        `Error while reading parser interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
                 }
-                this.grammarParserRuleMap = map;
-            } catch (error) {
-                errors +=
-                    `Error while reading parser interpreter data (${lexerInterpreterDataFile}): ${String(error)}\n`;
             }
         } else {
             this.grammarParserData = undefined;
