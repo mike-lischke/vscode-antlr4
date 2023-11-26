@@ -72,10 +72,6 @@ export class FrontendUtils {
         return webview.asWebviewUri(path).toString();
     }
 
-    public static isAbsolute(p: string): boolean {
-        return path.normalize(p + "/") === path.normalize(path.resolve(p) + "/");
-    }
-
     public static deleteFolderRecursive(target: string): void {
         Log.debug(`Deleting folder ${target}`);
 

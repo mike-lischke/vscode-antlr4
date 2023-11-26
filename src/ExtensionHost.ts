@@ -349,7 +349,7 @@ export class ExtensionHost {
     /**
      * For certain services we have to (re)generate files from grammars in the background:
      * - syntactic + semantic grammar analysis by the ANTLR tool
-     * - generate interpreter data (for debugging + ATN views)
+     * - generate interpreter data (for debugging + web views)
      *
      * @param document For which to generate the data.
      */

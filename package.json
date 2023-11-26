@@ -129,7 +129,6 @@
                     "type": "object",
                     "default": {
                         "mode": "internal",
-                        "language": "Java",
                         "listeners": true,
                         "visitors": false
                     },
@@ -162,7 +161,7 @@
                         },
                         "language": {
                             "type": "string",
-                            "default": "Java",
+                            "default": "",
                             "description": "Specifies the target language for the generated code, overriding what is specified in the grammar"
                         },
                         "listeners": {
