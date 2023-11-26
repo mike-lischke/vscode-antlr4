@@ -488,9 +488,9 @@ export class AntlrFacade {
         // Using a set for the context list here, to automatically exclude duplicates.
         for (const dep of entry.dependencies) {
             const depEntry = this.sourceContexts.get(dep);
-            if (depEntry) {
-                this.pushDependencyFiles(depEntry, contexts);
+            if (depEntry && !contexts.has(depEntry.context)) {
                 contexts.add(depEntry.context);
+                this.pushDependencyFiles(depEntry, contexts);
             }
         }
     }
