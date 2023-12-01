@@ -70,7 +70,20 @@ Bug fixing and what feels appealing to hack on.
 
 ### 2.4.3
 
-Updated 3rd party dependencies.
+- Updated 3rd party dependencies.
+- Extracted the formatter into an own Node.js package for broader use.
+- Added new animation to call graphs, which highlights (in steps) which rule calls another rule. This is an implementation from Garry Miller.
+- Fixed bug #134 alignColons formatting setting affects semicolon on first line
+- Fixed bug #151: Formatting comments adds empty lines in some situations
+- Fixed bug #150: Language server fails to accept 'fail' option after semantic predicate.
+- Added support for predicate options.
+- Fixed bug #180: How to pass multi CLI arguments to antlr?
+- Fixed bug #182: Setting no generation language should not automatically apply Java as default
+- Fixed bug #210: RangeError: Maximum call stack size exceeded
+- Added a check to avoid endless recursion if a grammar uses itself as token vocabulary.
+- Added a new semantic check for this (erroneous situation).
+- Interpreter data is now also regenerated on start of the extension, if the grammar is newer than existing data and diagnostic checks are executed on startup.
+- Fixed bug #235: Extension does not work on Windows
 
 ### 2.4.0 - 2.4.2
 
