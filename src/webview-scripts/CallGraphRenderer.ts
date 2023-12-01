@@ -55,61 +55,14 @@ export class CallGraphRenderer {
 
     public constructor(private vscode: IVSCode, private data: ICallGraphEntry[]) {
 
-        this.state = this.vscode.getState() as IState ?? {
+        this.state = this.vscode.getState() ?? {
             traverse: false,
             hideTokens: false,
-            delay: 300,
+            delay: 100,
         };
 
-        const header = document.getElementById("header");
-        {
-            const t = document.createElement("div");
-            t.setAttribute("style", "margin-left: 8px");
-            const tl = document.createElement("label");
-            tl.innerHTML = "Traverse";
-            t.appendChild(tl);
-            const tcb = document.createElement("input");
-            tcb.type = "checkbox";
-            const delayNode = document.createElement("input");
-            delayNode.setAttribute("style", "width: 30px");
-            delayNode.value = this.state.delay + "";
-            delayNode.addEventListener("input", () => {
-                const delay = parseInt(delayNode.value, 10);
-                this.state.delay = isNaN(delay) ? 300 : delay;
-                this.vscode.setState(this.state);
-            });
-
-            tcb.checked = this.state.traverse;
-            tcb.addEventListener("change", () => {
-                this.state.traverse = tcb.checked;
-                this.vscode.setState(this.state);
-            });
-            t.appendChild(tcb);
-            t.appendChild(delayNode);
-            const tl2 = document.createElement("label");
-            tl2.innerHTML = "ms";
-            t.appendChild(tl2);
-            header?.appendChild(t);
-        }
-        {
-            const t = document.createElement("div");
-            t.setAttribute("style", "margin-left: 8px");
-            const tl = document.createElement("label");
-            tl.innerHTML = "Hide Tokens";
-            t.appendChild(tl);
-            const tcb = document.createElement("input");
-            tcb.type = "checkbox";
-            tcb.checked = this.state.hideTokens;
-            tcb.addEventListener("change", () => {
-                this.state.hideTokens = tcb.checked;
-                this.vscode.setState(this.state);
-                this.linkSelection.remove();
-                this.nodeSelection.remove();
-                this.render();
-            });
-            t.appendChild(tcb);
-            header?.appendChild(t);
-        }
+        const delayInput = document.getElementById("traverseDelayInput") as HTMLInputElement;
+        delayInput.value = this.state.delay.toString();
 
         const radius = this.diameter / 2;
 
@@ -206,6 +159,26 @@ export class CallGraphRenderer {
         this.render();
     }
 
+    public toggleTraverse(): void {
+        this.state.traverse = !this.state.traverse;
+        this.vscode.setState(this.state);
+    }
+
+    public updateTraverseDelay(value: string): void {
+        console.log(value);
+        const delay = parseInt(value, 10);
+        this.state.delay = isNaN(delay) ? 300 : delay;
+        this.vscode.setState(this.state);
+    }
+
+    public toggleHideTokens(): void {
+        this.state.hideTokens = !this.state.hideTokens;
+        this.vscode.setState(this.state);
+        this.linkSelection.remove();
+        this.nodeSelection.remove();
+        this.render();
+    }
+
     private linkTarget = (hop: number, nodes: CallGraphLayoutNode[]): void => {
         this.visited.push(...nodes);
         const kids: CallGraphLayoutNode[] = [];
@@ -241,6 +214,7 @@ export class CallGraphRenderer {
 
                 return `${d.data.key}`;
             });
+
         if (this.state.traverse) {
             if (kids.length > 0) {
                 this.timer = setTimeout(() => {

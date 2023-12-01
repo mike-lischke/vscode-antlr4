@@ -43,11 +43,15 @@ input:focus {
 
 .header > input {
     font-size: 9pt;
-    margin-right: 12px;
+    margin-right: 8px;
     background-color: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
     border: none;
     padding: 4px;
+}
+
+.header > input[type="text"] {
+    margin-right: 8px;
 }
 
 .header > .ruleLabel {
@@ -71,6 +75,87 @@ input:focus {
     margin: 0 16px;
 }
 
+.header #filterLabel {
+    margin: 0 8px;
+    margin-left: auto;
+}
+
+.header > label {
+    margin: 0 4px 0 8px;
+}
+
+.header > span.large,
+.header > div.large {
+    font-size: 120%;
+    font-weight: 800;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.header > #traverseDelayInput {
+    width: 40px;
+}
+
+.header > .checkboxHost {
+    display: block;
+    position: relative;
+    padding-left: 0;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* CSS for our custom checkbox. Hide the browser's default checkbox */
+
+.header > .checkboxHost input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.header .checkboxHost .checkMark {
+    position: absolute;
+    top: 0;
+    left: -8px;
+    height: 11px;
+    width: 11px;
+    background-color: var(--vscode-checkbox-background);
+    border-radius: 2px;
+    border: 1px solid var(--vscode-checkbox-border);
+}
+
+.header > .checkboxHost:hover input ~ .checkMark {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.header .checkboxHost .checkMark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.header > .checkboxHost input:checked ~ .checkMark:after {
+    display: block;
+}
+
+.header .checkboxHost .checkMark:after {
+    left: 3.5px;
+    top: 1px;
+    width: 3px;
+    height: 5px;
+    border: solid var(--vscode-foreground);
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
 #container {
     padding: 60px 0 0 16px;
     overflow: scroll;
@@ -84,11 +169,6 @@ input:focus {
 #rrdIcon {
     transform: scale(1.5) translate(15px, 0);
     margin-right: 30px;
-}
-
-.header #filterLabel {
-    margin: 0 8px;
-    margin-left: auto;
 }
 
 .badge {

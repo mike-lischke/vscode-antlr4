@@ -55,12 +55,35 @@ export class CallGraphProvider extends WebviewProvider {
                         title="Save this diagram to an SVG file"
                     ></div>
 
-                    <label style="margin-left: 8px">Radius: </label>
-                    <div onClick="callGraphRenderer.changeDiameter(0.8);"
-                        style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">-</div>
-                    <span style="font-size: 120%; font-weight: 800; margin: 0 2px; cursor: default;">/</span>
-                    <div onClick="callGraphRenderer.changeDiameter(1.2);"
-                        style="font-size: 120%; font-weight: 800; cursor: pointer; vertical-align: middle;">+</div>
+                    <label>Diameter: </label>
+                    <div class="large" onClick="callGraphRenderer.changeDiameter(0.8);">-</div>
+                    <span class="large">/</span>
+                    <div class="large" onClick="callGraphRenderer.changeDiameter(1.2);">+</div>
+                    <label>Traverse:</label>
+
+                    <label class="checkboxHost">
+                        <input id="traverseCheckbox" type="checkbox" onClick="callGraphRenderer.toggleTraverse();" />
+                        <span class="checkMark" />
+                    </label>
+
+                    <label>Delay:</label>
+                    <input
+                        id="traverseDelayInput"
+                        type="text"
+                        title="The delay between to steps"
+                        onInput="callGraphRenderer.updateTraverseDelay(this.value);"
+                    /> ms
+                    <label>Hide Tokens:</label>
+
+                    <label class="checkboxHost" title="Show or hide tokens in the graph">
+                        <input
+                            id="hideTokensCheckbox"
+                            type="checkbox"
+                            onClick="callGraphRenderer.toggleHideTokens();"
+                        />
+                        <span class="checkMark" />
+                    </label>
+
                 </div>
 
                 <svg style="width: 100%; height: 100vh;"></svg>

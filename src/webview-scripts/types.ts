@@ -17,7 +17,7 @@ export interface IWebviewMessage {
 /** Describes the structure of the object returned by `acquireVsCodeApi()`. */
 export interface IVSCode {
     postMessage(message: IWebviewMessage): void;
-    getState(): unknown;
+    getState<T>(): T;
     setState(state: unknown): void;
 }
 
