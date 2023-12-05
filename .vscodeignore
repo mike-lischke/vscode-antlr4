@@ -9,7 +9,9 @@ images/
 grammars/
 doc/
 coverage/
+node_modules/
 **/*.map
+build/
 
 cspell.json
 jest.config.js

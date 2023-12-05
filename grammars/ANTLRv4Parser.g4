@@ -42,8 +42,7 @@
 // $antlr-format useTab off, allowShortRulesOnASingleLine off, allowShortBlocksOnASingleLine on, alignSemicolons hanging
 // $antlr-format alignColons hanging
 
-parser grammar ANTLRv4Parser
-    ;
+parser grammar ANTLRv4Parser;
 
 options {
     tokenVocab = ANTLRv4Lexer;

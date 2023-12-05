@@ -1065,8 +1065,7 @@ export class SourceContext {
         if (options.alternativeJar) {
             parameters.push(options.alternativeJar);
         } else {
-            parameters.push(path.join(this.extensionDir,
-                "node_modules/antlr4ng-cli/antlr4-4.13.2-SNAPSHOT-complete.jar"));
+            parameters.push(path.join(this.extensionDir, "out/antlr4-4.13.2-SNAPSHOT-complete.jar"));
         }
 
         if (options.language) {
