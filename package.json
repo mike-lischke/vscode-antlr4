@@ -7,7 +7,7 @@
         "color": "#2789e1",
         "theme": "dark"
     },
-    "version": "2.4.3",
+    "version": "2.4.4",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN License.txt",
     "repository": {
@@ -594,7 +594,7 @@
         "@unicode/unicode-11.0.0": "1.5.2",
         "@vscode/debugadapter": "1.64.0",
         "@vscode/debugprotocol": "1.64.0",
-        "antlr-format": "2.0.1",
+        "antlr-format": "2.1.0",
         "antlr4-c3": "3.3.4",
         "antlr4ng": "2.0.2",
         "await-notify": "1.0.1",

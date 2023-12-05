@@ -6,7 +6,7 @@
 
 ## What's New
 
-Using a new ANTLR runtime that drives the extension, as well as improved railroad diagrams and bug fixes.
+Externalized the formatter into an own Node.js package for broader use.
 
 ## How To Contribute
 
@@ -67,6 +67,10 @@ See the [Git issue tracker](https://github.com/mike-lischke/vscode-antlr4/issues
 Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
+
+### 2.4.4
+
+- Upgraded to the latest formatter package to fix a number of issues.
 
 ### 2.4.3
 
