@@ -68,6 +68,10 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
+### 2.4.5
+
+Upgraded dependencies.
+
 ### 2.4.4
 
 - Upgraded to the latest formatter package to fix a number of issues.
