@@ -225,15 +225,15 @@ export class SourceContext {
             // For mode definitions we only need the init line, not all the lexer rules following it.
             if (ctx.ruleIndex === ANTLRv4Parser.RULE_modeSpec) {
                 const modeSpec = ctx as ModeSpecContext;
-                stop = modeSpec.SEMI()!.symbol.stop;
-                result.range.end.column = modeSpec.SEMI()!.symbol.column;
-                result.range.end.row = modeSpec.SEMI()!.symbol.line;
+                stop = modeSpec.SEMI().symbol.stop;
+                result.range.end.column = modeSpec.SEMI().symbol.column;
+                result.range.end.row = modeSpec.SEMI().symbol.line;
             } else if (ctx.ruleIndex === ANTLRv4Parser.RULE_grammarSpec) {
                 // Similar for entire grammars. We only need the introducer line here.
                 const grammarDecl = (ctx as GrammarSpecContext).grammarDecl();
-                stop = grammarDecl.SEMI()!.symbol.stop;
-                result.range.end.column = grammarDecl.SEMI()!.symbol.column;
-                result.range.end.row = grammarDecl.SEMI()!.symbol.line;
+                stop = grammarDecl.SEMI().symbol.stop;
+                result.range.end.column = grammarDecl.SEMI().symbol.column;
+                result.range.end.row = grammarDecl.SEMI().symbol.line;
 
                 start = grammarDecl.grammarType().start!.start;
                 result.range.start.column = grammarDecl.grammarType().start!.column;
@@ -1019,7 +1019,7 @@ export class SourceContext {
 
         if (context) {
             if (context.ruleIndex === ANTLRv4Parser.RULE_parserRuleSpec) {
-                const ruleName = (context as ParserRuleSpecContext).RULE_REF()!.getText();
+                const ruleName = (context as ParserRuleSpecContext).RULE_REF().getText();
                 let ruleIndex;
                 if (this.grammarParserData) {
                     ruleIndex = this.grammarParserRuleMap.get(ruleName);
@@ -1028,7 +1028,7 @@ export class SourceContext {
                 return [ruleName, ruleIndex];
             }
 
-            const name = (context as LexerRuleSpecContext).TOKEN_REF()!.getText();
+            const name = (context as LexerRuleSpecContext).TOKEN_REF().getText();
             let index;
             if (this.grammarLexerData) {
                 index = this.grammarLexerRuleMap.get(name);

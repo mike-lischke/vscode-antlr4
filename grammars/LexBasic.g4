@@ -34,12 +34,11 @@
  *
  */
 
-// $antlr-format alignTrailingComments on, columnLimit 130, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments off
-// $antlr-format useTab off, allowShortRulesOnASingleLine off, allowShortBlocksOnASingleLine on, alignSemicolons hanging
-// $antlr-format alignColons hanging
+// $antlr-format alignTrailingComments true, columnLimit 150, maxEmptyLinesToKeep 1, reflowComments false, useTab false
+// $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
+// $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-lexer grammar LexBasic
-    ;
+lexer grammar LexBasic;
 
 // ======================================================
 // Lexer fragments
@@ -47,104 +46,55 @@ lexer grammar LexBasic
 // -----------------------------------
 // Whitespace & Comments
 
-fragment Ws
-    : Hws
-    | Vws
-    ;
-
-fragment Hws
-    : [ \t]
-    ;
-
-fragment Vws
-    : [\r\n\f]
-    ;
-
-fragment BlockComment
-    : '/*' .*? ('*/' | EOF)
-    ;
-
-fragment DocComment
-    : '/**' .*? ('*/' | EOF)
-    ;
-
-fragment LineComment
-    : '//' ~ [\r\n]*
-    ;
+fragment Ws           : Hws | Vws;
+fragment Hws          : [ \t];
+fragment Vws          : [\r\n\f];
+fragment BlockComment : '/*' .*? ('*/' | EOF);
+fragment DocComment   : '/**' .*? ('*/' | EOF);
+fragment LineComment  : '//' ~ [\r\n]*;
 
 // -----------------------------------
 // Escapes
 // Any kind of escaped character that we can embed within ANTLR literal strings.
 
-fragment EscSeq
-    : Esc ([btnfr"'\\] | UnicodeEsc | . | EOF)
-    ;
-
-fragment EscAny
-    : Esc .
-    ;
-
-fragment UnicodeEsc
-    : 'u' (HexDigit (HexDigit (HexDigit HexDigit?)?)?)?
-    ;
+fragment EscSeq     : Esc ([btnfr"'\\] | UnicodeEsc | . | EOF);
+fragment EscAny     : Esc .;
+fragment UnicodeEsc : 'u' (HexDigit (HexDigit (HexDigit HexDigit?)?)?)?;
 
 // -----------------------------------
 // Numerals
 
-fragment DecimalNumeral
-    : '0'
-    | [1-9] DecDigit*
-    ;
+fragment DecimalNumeral: '0' | [1-9] DecDigit*;
 
 // -----------------------------------
 // Digits
 
-fragment HexDigit
-    : [0-9a-fA-F]
-    ;
-
-fragment DecDigit
-    : [0-9]
-    ;
+fragment HexDigit : [0-9a-fA-F];
+fragment DecDigit : [0-9];
 
 // -----------------------------------
 // Literals
 
-fragment BoolLiteral
-    : 'true'
-    | 'false'
-    ;
-
-fragment CharLiteral
-    : SQuote (EscSeq | ~ ['\r\n\\]) SQuote
-    ;
-
-fragment SQuoteLiteral
-    : SQuote (EscSeq | ~ ['\r\n\\])* SQuote
-    ;
-
-fragment DQuoteLiteral
-    : DQuote (EscSeq | ~ ["\r\n\\])* DQuote
-    ;
-
-fragment USQuoteLiteral
-    : SQuote (EscSeq | ~ ['\r\n\\])*
-    ;
+fragment BoolLiteral    : 'true' | 'false';
+fragment CharLiteral    : SQuote (EscSeq | ~ ['\r\n\\]) SQuote;
+fragment SQuoteLiteral  : SQuote (EscSeq | ~ ['\r\n\\])* SQuote;
+fragment DQuoteLiteral  : DQuote (EscSeq | ~ ["\r\n\\])* DQuote;
+fragment USQuoteLiteral : SQuote (EscSeq | ~ ['\r\n\\])*;
 
 // -----------------------------------
 // Character ranges
 
-fragment NameChar
-    : NameStartChar
+fragment NameChar:
+    NameStartChar
     | '0' .. '9'
     | Underscore
     | '\u00B7'
     | '\u0300' .. '\u036F'
     | '\u203F' .. '\u2040'
-    ;
+;
 
-fragment NameStartChar
-    : 'A' .. 'Z'
+fragment NameStartChar:
+    'A' .. 'Z'
     | 'a' .. 'z'
     | '\u00C0' .. '\u00D6'
     | '\u00D8' .. '\u00F6'
@@ -158,130 +108,42 @@ fragment NameStartChar
     | '\uF900' .. '\uFDCF'
     | '\uFDF0' .. '\uFFFD'
     // ignores | ['\u10000-'\uEFFFF]
-    ;
+;
 
 // -----------------------------------
 // Types
 
-fragment Int
-    : 'int'
-    ;
+fragment Int: 'int';
 
 // -----------------------------------
 // Symbols
 
-fragment Esc
-    : '\\'
-    ;
-
-fragment Colon
-    : ':'
-    ;
-
-fragment DColon
-    : '::'
-    ;
-
-fragment SQuote
-    : '\''
-    ;
-
-fragment DQuote
-    : '"'
-    ;
-
-fragment LParen
-    : '('
-    ;
-
-fragment RParen
-    : ')'
-    ;
-
-fragment LBrace
-    : '{'
-    ;
-
-fragment RBrace
-    : '}'
-    ;
-
-fragment LBrack
-    : '['
-    ;
-
-fragment RBrack
-    : ']'
-    ;
-
-fragment RArrow
-    : '->'
-    ;
-
-fragment Lt
-    : '<'
-    ;
-
-fragment Gt
-    : '>'
-    ;
-
-fragment Equal
-    : '='
-    ;
-
-fragment Question
-    : '?'
-    ;
-
-fragment Star
-    : '*'
-    ;
-
-fragment Plus
-    : '+'
-    ;
-
-fragment PlusAssign
-    : '+='
-    ;
-
-fragment Underscore
-    : '_'
-    ;
-
-fragment Pipe
-    : '|'
-    ;
-
-fragment Dollar
-    : '$'
-    ;
-
-fragment Comma
-    : ','
-    ;
-
-fragment Semi
-    : ';'
-    ;
-
-fragment Dot
-    : '.'
-    ;
-
-fragment Range
-    : '..'
-    ;
-
-fragment At
-    : '@'
-    ;
-
-fragment Pound
-    : '#'
-    ;
-
-fragment Tilde
-    : '~'
-    ;
+fragment Esc        : '\\';
+fragment Colon      : ':';
+fragment DColon     : '::';
+fragment SQuote     : '\'';
+fragment DQuote     : '"';
+fragment LParen     : '(';
+fragment RParen     : ')';
+fragment LBrace     : '{';
+fragment RBrace     : '}';
+fragment LBrack     : '[';
+fragment RBrack     : ']';
+fragment RArrow     : '->';
+fragment Lt         : '<';
+fragment Gt         : '>';
+fragment Equal      : '=';
+fragment Question   : '?';
+fragment Star       : '*';
+fragment Plus       : '+';
+fragment PlusAssign : '+=';
+fragment Underscore : '_';
+fragment Pipe       : '|';
+fragment Dollar     : '$';
+fragment Comma      : ',';
+fragment Semi       : ';';
+fragment Dot        : '.';
+fragment Range      : '..';
+fragment At         : '@';
+fragment Pound      : '#';
+fragment Tilde      : '~';

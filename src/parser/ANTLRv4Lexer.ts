@@ -146,7 +146,7 @@ export class ANTLRv4Lexer extends LexerAdaptor {
 
     public get modeNames(): string[] { return ANTLRv4Lexer.modeNames; }
 
-    public override action(localContext: antlr.RuleContext, ruleIndex: number, actionIndex: number): void {
+    public override action(localContext: antlr.RuleContext | null, ruleIndex: number, actionIndex: number): void {
         switch (ruleIndex) {
         case 6:
             this.BEGIN_ARGUMENT_action(localContext, actionIndex);
@@ -159,21 +159,21 @@ export class ANTLRv4Lexer extends LexerAdaptor {
             break;
         }
     }
-    private BEGIN_ARGUMENT_action(localContext: antlr.RuleContext, actionIndex: number): void {
+    private BEGIN_ARGUMENT_action(localContext: antlr.RuleContext | null, actionIndex: number): void {
         switch (actionIndex) {
         case 0:
              this.handleBeginArgument(); 
             break;
         }
     }
-    private END_ARGUMENT_action(localContext: antlr.RuleContext, actionIndex: number): void {
+    private END_ARGUMENT_action(localContext: antlr.RuleContext | null, actionIndex: number): void {
         switch (actionIndex) {
         case 1:
              this.handleEndArgument(); 
             break;
         }
     }
-    private END_ACTION_action(localContext: antlr.RuleContext, actionIndex: number): void {
+    private END_ACTION_action(localContext: antlr.RuleContext | null, actionIndex: number): void {
         switch (actionIndex) {
         case 2:
              this.handleEndAction(); 
