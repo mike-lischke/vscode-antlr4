@@ -68,9 +68,10 @@ Bug fixing and what feels appealing to hack on.
 
 ## Release Notes
 
-### 2.4.5
+### 2.4.5 - 2.4.6
 
-Upgraded dependencies.
+- Upgraded dependencies.
+- Fixed bug #242 Visual parse tree not showing for version 2.4.5
 
 ### 2.4.4
 
