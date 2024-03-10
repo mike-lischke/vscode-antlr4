@@ -410,12 +410,12 @@ export const printableUnicodePoints = (options: IUnicodeOptions): IntervalSet =>
 
     let sourceIntervals: IntervalSet;
     if (options.limitToBMP) {
-        sourceIntervals = IntervalSet.COMPLETE_CHAR_SET;
+        sourceIntervals = IntervalSet.of(0, 0xFFFF);
     } else {
         sourceIntervals = fullUnicodeSet;
     }
 
-    return intervalsToExclude.complement(sourceIntervals);
+    return intervalsToExclude.complementWithVocabulary(sourceIntervals);
 };
 
 /**

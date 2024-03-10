@@ -353,9 +353,9 @@ export class ContextSymbolTable extends SymbolTable {
                 if (symbol.context && symbol.name === symbolName) {
                     let context = symbol.context;
                     if (symbol instanceof FragmentTokenSymbol) {
-                        context = (symbol.context as ParserRuleContext).children![1];
+                        context = (symbol.context as ParserRuleContext).children[1];
                     } else if (symbol instanceof TokenSymbol || symbol instanceof RuleSymbol) {
-                        context = (symbol.context as ParserRuleContext).children![0];
+                        context = (symbol.context as ParserRuleContext).children[0];
                     }
 
                     result.push({

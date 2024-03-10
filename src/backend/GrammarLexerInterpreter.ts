@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { LexerInterpreter, RuleContext, CharStream } from "antlr4ng";
+import { LexerInterpreter, ParserRuleContext, CharStream } from "antlr4ng";
 
 import { IInterpreterData } from "./InterpreterDataReader.js";
 import { LexerPredicateSymbol } from "./ContextSymbolTable.js";
@@ -30,7 +30,7 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         });
     }
 
-    public override sempred(_localctx: RuleContext | null, ruleIndex: number, predIndex: number): boolean {
+    public override sempred(_localctx: ParserRuleContext | null, ruleIndex: number, predIndex: number): boolean {
         if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.getText();
@@ -49,7 +49,7 @@ export class GrammarLexerInterpreter extends LexerInterpreter {
         return true;
     }
 
-    public override action(_localctx: RuleContext | null, _ruleIndex: number, _actionIndex: number): void {
+    public override action(_localctx: ParserRuleContext | null, _ruleIndex: number, _actionIndex: number): void {
         // not used yet
     }
 }

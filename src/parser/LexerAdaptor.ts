@@ -47,41 +47,41 @@ export abstract class LexerAdaptor extends Lexer {
     }
 
     public override emit(): Token {
-        if ((this._type === ANTLRv4Lexer.OPTIONS || this._type === ANTLRv4Lexer.TOKENS
-            || this._type === ANTLRv4Lexer.CHANNELS)
+        if ((this.type === ANTLRv4Lexer.OPTIONS || this.type === ANTLRv4Lexer.TOKENS
+            || this.type === ANTLRv4Lexer.CHANNELS)
             && this.#currentRuleType === Token.INVALID_TYPE) {
             // enter prequel construct ending with an RBRACE
             this.#currentRuleType = LexerAdaptor.#PREQUEL_CONSTRUCT;
-        } else if (this._type === ANTLRv4Lexer.OPTIONS && this.#currentRuleType === ANTLRv4Lexer.TOKEN_REF) {
+        } else if (this.type === ANTLRv4Lexer.OPTIONS && this.#currentRuleType === ANTLRv4Lexer.TOKEN_REF) {
             this.#currentRuleType = LexerAdaptor.#OPTIONS_CONSTRUCT;
-        } else if (this._type === ANTLRv4Lexer.RBRACE
+        } else if (this.type === ANTLRv4Lexer.RBRACE
             && this.#currentRuleType === LexerAdaptor.#PREQUEL_CONSTRUCT) {
             // exit prequel construct
             this.#currentRuleType = Token.INVALID_TYPE;
-        } else if (this._type === ANTLRv4Lexer.RBRACE
+        } else if (this.type === ANTLRv4Lexer.RBRACE
             && this.#currentRuleType === LexerAdaptor.#OPTIONS_CONSTRUCT) {
             // exit options
             this.#currentRuleType = ANTLRv4Lexer.TOKEN_REF;
-        } else if (this._type === ANTLRv4Lexer.AT && this.#currentRuleType === Token.INVALID_TYPE) { // enter action
+        } else if (this.type === ANTLRv4Lexer.AT && this.#currentRuleType === Token.INVALID_TYPE) { // enter action
             this.#currentRuleType = ANTLRv4Lexer.AT;
-        } else if (this._type === ANTLRv4Lexer.SEMI
+        } else if (this.type === ANTLRv4Lexer.SEMI
             && this.#currentRuleType === LexerAdaptor.#OPTIONS_CONSTRUCT) {
             // ';' in options { .... }. Don't change anything.
-        } else if (this._type === ANTLRv4Lexer.END_ACTION && this.#currentRuleType === ANTLRv4Lexer.AT) { // exit action
+        } else if (this.type === ANTLRv4Lexer.END_ACTION && this.#currentRuleType === ANTLRv4Lexer.AT) { // exit action
             this.#currentRuleType = Token.INVALID_TYPE;
-        } else if (this._type === ANTLRv4Lexer.ID) {
-            const firstChar = this._input.getText(this._tokenStartCharIndex, this._tokenStartCharIndex);
+        } else if (this.type === ANTLRv4Lexer.ID) {
+            const firstChar = this.inputStream.getTextFromRange(this.tokenStartCharIndex, this.tokenStartCharIndex);
             const c = firstChar.charAt(0);
             if (c === c.toUpperCase()) {
-                this._type = ANTLRv4Lexer.TOKEN_REF;
+                this.type = ANTLRv4Lexer.TOKEN_REF;
             } else {
-                this._type = ANTLRv4Lexer.RULE_REF;
+                this.type = ANTLRv4Lexer.RULE_REF;
             }
 
             if (this.#currentRuleType === Token.INVALID_TYPE) { // if outside of rule def
-                this.#currentRuleType = this._type; // set to inside lexer or parser rule
+                this.#currentRuleType = this.type; // set to inside lexer or parser rule
             }
-        } else if (this._type === ANTLRv4Lexer.SEMI) { // exit rule def
+        } else if (this.type === ANTLRv4Lexer.SEMI) { // exit rule def
             this.#currentRuleType = Token.INVALID_TYPE;
         }
 
@@ -99,20 +99,20 @@ export abstract class LexerAdaptor extends Lexer {
 
     protected handleEndArgument(): void {
         this.popMode();
-        if (this._modeStack.length > 0) {
-            this._type = ANTLRv4Lexer.ARGUMENT_CONTENT;
+        if (this.modeStack.length > 0) {
+            this.type = ANTLRv4Lexer.ARGUMENT_CONTENT;
         }
     }
 
     protected handleEndAction(): void {
-        const oldMode = this._mode;
+        const oldMode = this.mode;
         const newMode = this.popMode();
-        const isActionWithinAction = this._modeStack.length > 0
+        const isActionWithinAction = this.modeStack.length > 0
             && newMode === ANTLRv4Lexer.TargetLanguageAction
             && oldMode === newMode;
 
         if (isActionWithinAction) {
-            this._type = ANTLRv4Lexer.ACTION_CONTENT;
+            this.type = ANTLRv4Lexer.ACTION_CONTENT;
         }
     }
 }

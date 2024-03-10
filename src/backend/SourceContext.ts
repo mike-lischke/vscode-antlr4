@@ -12,10 +12,10 @@ import * as fs from "fs";
 import * as vm from "vm";
 
 import {
-    ATNState, ATNStateType, ActionTransition, BailErrorStrategy, CharStreams, CommonTokenStream, DefaultErrorStrategy,
+    ATNState, ActionTransition, BailErrorStrategy, CharStream, CommonTokenStream, DefaultErrorStrategy,
     IntervalSet, ParseCancellationException, ParseTree, ParseTreeWalker, ParserRuleContext,
-    PrecedencePredicateTransition, PredicateTransition, PredictionMode, RuleContext, RuleStartState, RuleTransition,
-    TerminalNode, Token, TransitionType, Vocabulary,
+    PrecedencePredicateTransition, PredicateTransition, PredictionMode, RuleStartState, RuleTransition,
+    TerminalNode, Token, Transition, Vocabulary,
 } from "antlr4ng";
 
 import { CodeCompletionCore, BaseSymbol, LiteralSymbol } from "antlr4-c3";
@@ -145,7 +145,7 @@ export class SourceContext {
             SourceContext.globalSymbols.addNewSymbolOfType(BuiltInModeSymbol, undefined, "DEFAULT_MODE");
         }
 
-        this.lexer = new ANTLRv4Lexer(CharStreams.fromString(""));
+        this.lexer = new ANTLRv4Lexer(CharStream.fromString(""));
 
         // There won't be lexer errors actually. They are silently bubbled up and will cause parser errors.
         this.lexer.removeErrorListeners();
@@ -243,7 +243,7 @@ export class SourceContext {
             const inputStream = ctx.start?.tokenSource?.inputStream;
             if (inputStream) {
                 try {
-                    result.text = inputStream.getText(start, stop);
+                    result.text = inputStream.getTextFromRange(start, stop);
                 } catch (e) {
                     // The method getText uses an unreliable JS String API which can throw on larger texts.
                     // In this case we cannot return the text of the given context.
@@ -289,9 +289,9 @@ export class SourceContext {
             return this.getSymbolInfo(terminal.getText());
         }
 
-        let parent = (terminal.parent as RuleContext);
+        let parent = (terminal.parent as ParserRuleContext);
         if (parent.ruleIndex === ANTLRv4Parser.RULE_identifier) {
-            parent = (parent.parent as RuleContext);
+            parent = (parent.parent as ParserRuleContext);
         }
 
         switch (parent.ruleIndex) {
@@ -774,7 +774,7 @@ export class SourceContext {
      * @param source The new content of the editor.
      */
     public setText(source: string): void {
-        this.lexer.inputStream = CharStreams.fromString(source);
+        this.lexer.inputStream = CharStream.fromString(source);
     }
 
     public parse(): string[] {
@@ -1011,7 +1011,7 @@ export class SourceContext {
             return [undefined, undefined];
         }
 
-        let context: RuleContext | null = (tree as RuleContext);
+        let context: ParserRuleContext | null = (tree as ParserRuleContext);
         while (context && context.ruleIndex !== ANTLRv4Parser.RULE_parserRuleSpec
             && context.ruleIndex !== ANTLRv4Parser.RULE_lexerRuleSpec) {
             context = context.parent;
@@ -1178,11 +1178,12 @@ export class SourceContext {
                 nodes.push({
                     id,
                     name: id.toString(),
-                    type: state.stateType,
+                    type: (state.constructor as typeof ATNState).stateType,
                 });
 
                 // If this state transits to a new rule, create also a fake node for that rule.
-                if (transitions.length === 1 && transitions[0].target.stateType === ATNStateType.RULE_START) {
+                if (transitions.length === 1
+                    && (transitions[0].target.constructor as typeof ATNState).stateType === ATNState.RULE_START) {
                     const marker = state.stateNumber * transitions[0].target.stateNumber;
                     stateToIndex.set(marker, index + 1);
 
@@ -1190,7 +1191,7 @@ export class SourceContext {
                     nodes.push({
                         id: currentRuleIndex--,
                         name: ruleNames[transitions[0].target.ruleIndex],
-                        type: ATNStateType.INVALID_TYPE,
+                        type: ATNState.INVALID_TYPE,
                     });
                 }
             }
@@ -1210,7 +1211,8 @@ export class SourceContext {
                     continue;
                 }
 
-                const transitsToRule = transition.target.stateType === ATNStateType.RULE_START;
+                const transitsToRule =
+                    (transition.target.constructor as typeof ATNState).stateType === ATNState.RULE_START;
                 const marker = transition.target.stateNumber * (transitsToRule ? state.stateNumber : 1);
                 const targetIndex = ensureATNNode(marker, transition.target);
 
@@ -1218,29 +1220,29 @@ export class SourceContext {
                 const link: IATNLink = {
                     source: sourceIndex,
                     target: targetIndex,
-                    type: transition.serializationType,
+                    type: transition.transitionType,
                     labels,
                 };
 
-                switch (transition.serializationType) {
-                    case TransitionType.EPSILON: {
+                switch (transition.transitionType) {
+                    case Transition.EPSILON: {
                         // Label added below.
                         break;
                     }
 
-                    case TransitionType.RANGE: {
+                    case Transition.RANGE: {
                         labels.push({ content: "Range Transition", class: "heading" });
 
                         break;
                     }
 
-                    case TransitionType.RULE: {
+                    case Transition.RULE: {
                         labels.push({ content: "Rule Transition", class: "heading" });
 
                         break;
                     }
 
-                    case TransitionType.PREDICATE: {
+                    case Transition.PREDICATE: {
                         const predicateTransition = transition as PredicateTransition;
                         const index = predicateTransition.predIndex;
                         labels.push({
@@ -1267,14 +1269,14 @@ export class SourceContext {
                         break;
                     }
 
-                    case TransitionType.ATOM: {
+                    case Transition.ATOM: {
                         labels.push({ content: "Atom Transition", class: "heading" });
 
 
                         break;
                     }
 
-                    case TransitionType.ACTION: {
+                    case Transition.ACTION: {
                         const actionTransition = transition as ActionTransition;
                         const index = actionTransition.actionIndex === 0xFFFF ? -1 : actionTransition.actionIndex;
                         if (isLexerRule) {
@@ -1288,22 +1290,22 @@ export class SourceContext {
                         break;
                     }
 
-                    case TransitionType.SET: {
+                    case Transition.SET: {
                         labels.push({ content: "Set Transition", class: "heading" });
                         break;
                     }
 
-                    case TransitionType.NOT_SET: {
+                    case Transition.NOT_SET: {
                         labels.push({ content: "Not-Set Transition", class: "heading" });
                         break;
                     }
 
-                    case TransitionType.WILDCARD: {
+                    case Transition.WILDCARD: {
                         labels.push({ content: "Wildcard Transition", class: "heading" });
                         break;
                     }
 
-                    case TransitionType.PRECEDENCE: {
+                    case Transition.PRECEDENCE: {
                         const precedenceTransition = transition as PrecedencePredicateTransition;
                         labels.push({
                             content: `Precedence Predicate (${precedenceTransition.precedence})`,
@@ -1318,7 +1320,7 @@ export class SourceContext {
                     }
                 }
 
-                if (transition.serializationType !== TransitionType.PREDICATE) {
+                if (transition.transitionType !== Transition.PREDICATE) {
                     if (transition.isEpsilon) {
                         labels.push({ content: "ε" });
                     } else if (transition.label) {
@@ -1348,7 +1350,7 @@ export class SourceContext {
                     const nodeLink: IATNLink = {
                         source: targetIndex,
                         target: returnIndex,
-                        type: TransitionType.RULE,
+                        type: Transition.RULE,
                         labels: [{ content: "ε" }],
                     };
                     links.push(nodeLink);
@@ -1463,7 +1465,7 @@ export class SourceContext {
 
             const count = Math.max(options.count ?? 1, 1);
             for (let i = 0; i < count; ++i) {
-                callback(generator.generate(options, start), i);
+                callback(generator.generate(options, start, isLexerRule), i);
             }
         } catch (e) {
             callback(String(e), 0);
@@ -1493,7 +1495,7 @@ export class SourceContext {
                 predicateFunction = vm.runInNewContext(code) as PredicateFunction;
             }
 
-            const stream = CharStreams.fromString(input);
+            const stream = CharStream.fromString(input);
             const lexer = new GrammarLexerInterpreter(predicateFunction, this, "<unnamed>",
                 this.grammarLexerData, stream);
             lexer.removeErrorListeners();
@@ -1547,7 +1549,7 @@ export class SourceContext {
             errors.push(args[0] as string);
         };
 
-        const stream = CharStreams.fromString(input);
+        const stream = CharStream.fromString(input);
         const lexer = new GrammarLexerInterpreter(predicateFunction, this, "<unnamed>", this.grammarLexerData, stream);
         lexer.removeErrorListeners();
 

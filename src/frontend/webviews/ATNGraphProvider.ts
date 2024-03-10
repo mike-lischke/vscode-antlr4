@@ -6,7 +6,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { ATNStateType } from "antlr4ng";
+import { ATNState } from "antlr4ng";
 
 import { window, workspace, Uri, TextEditor, Webview } from "vscode";
 
@@ -251,7 +251,7 @@ export class ATNGraphProvider extends WebviewProvider {
             const fx = position?.fx;
             const fy = position?.fy;
             switch (node.type) {
-                case ATNStateType.RULE_START: {
+                case ATNState.RULE_START: {
                     node.fy = fy ?? 0;
                     if (fx !== undefined) {
                         node.fx = fx;
@@ -261,7 +261,7 @@ export class ATNGraphProvider extends WebviewProvider {
                     break;
                 }
 
-                case ATNStateType.RULE_STOP: {
+                case ATNState.RULE_STOP: {
                     node.fy = fy ?? 0;
                     if (fx !== undefined) {
                         node.fx = fx;

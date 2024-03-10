@@ -5,8 +5,8 @@
 
 import { BaseSymbol, VariableSymbol, ScopedSymbol, BlockSymbol } from "antlr4-c3";
 import {
-    ATNState, ATNStateType, Lexer, ParserInterpreter, ParserRuleContext, RecognitionException, RuleContext,
-    TerminalNode, TokenStream, Transition, TransitionType,
+    ATNState, Lexer, ParserInterpreter, ParserRuleContext, RecognitionException,
+    TerminalNode, TokenStream, Transition,
 } from "antlr4ng";
 
 import { TerminalDefContext } from "../parser/ANTLRv4Parser.js";
@@ -65,7 +65,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         this.callStack = [];
         const startRuleStartState = this.atn.ruleToStartState[startRuleIndex];
         if (startRuleStartState) {
-            this._rootContext = this.createInterpreterRuleContext(null, ATNState.INVALID_STATE_NUMBER, startRuleIndex);
+            this.rootContext = this.createInterpreterRuleContext(null, ATNState.INVALID_STATE_NUMBER, startRuleIndex);
             if (startRuleStartState.isPrecedenceRule) {
                 this.enterRecursionRule(this.rootContext, startRuleStartState.stateNumber, startRuleIndex, 0);
             } else {
@@ -92,7 +92,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         // If we are not going to jump into a rule then make step over a step in.
         // This way we can use step over exclusively for rule processing.
         let p = this.atnState;
-        if (p.transitions[0].serializationType !== TransitionType.RULE && runMode === RunMode.StepOver) {
+        if (p.transitions[0].transitionType !== Transition.RULE && runMode === RunMode.StepOver) {
             runMode = RunMode.StepIn;
         }
 
@@ -104,19 +104,19 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                 runMode = RunMode.StepIn; // Stop at next possible position.
             }
 
-            if (this.breakPoints.has(p) && p.stateType !== ATNStateType.RULE_STOP) {
+            if (this.breakPoints.has(p) && (p.constructor as typeof ATNState).stateType !== ATNState.RULE_STOP) {
                 // Don't mark a pending rule end break point here. That has already been handled.
                 breakPointPending = true;
                 runMode = RunMode.StepIn;
             }
 
-            switch (p.stateType) {
-                case ATNStateType.RULE_STOP: {
+            switch ((p.constructor as typeof ATNState).stateType) {
+                case ATNState.RULE_STOP: {
                     if (this.context!.isEmpty()) {
                         // End of start rule.
                         if (this.startIsPrecedenceRule) {
                             const result = this.context!;
-                            const parentContext = this._parentContextStack.pop()!;
+                            const parentContext = this.parentContextStack.pop()!;
                             this.unrollRecursionContexts(parentContext[0]);
                             this.eventSink("end");
 
@@ -140,7 +140,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                     break;
                 }
 
-                case ATNStateType.RULE_START: {
+                case ATNState.RULE_START: {
                     const ruleName = this.ruleNameFromIndex(this.atnState.ruleIndex);
                     if (ruleName) {
                         const ruleSymbol = this.mainContext.resolveSymbol(ruleName);
@@ -167,7 +167,6 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                     } catch (e) {
                         if (e instanceof RecognitionException) {
                             this.state = this.atn.ruleToStopState[p.ruleIndex]!.stateNumber;
-                            this.context!.exception = e;
                             this.errorHandler.reportError(this, e);
                             this.recover(e);
                         } else {
@@ -182,13 +181,13 @@ export class GrammarParserInterpreter extends ParserInterpreter {
             p = this.atnState;
             if (p.transitions.length === 1) {
                 const transition = p.transitions[0];
-                switch (transition.serializationType) {
-                    case TransitionType.RULE:
-                    case TransitionType.ATOM:
-                    case TransitionType.NOT_SET:
-                    case TransitionType.RANGE:
-                    case TransitionType.SET:
-                    case TransitionType.WILDCARD: {
+                switch (transition.transitionType) {
+                    case Transition.RULE:
+                    case Transition.ATOM:
+                    case Transition.NOT_SET:
+                    case Transition.RANGE:
+                    case Transition.SET:
+                    case Transition.WILDCARD: {
                         const lastStackFrame = this.callStack[this.callStack.length - 1];
                         lastStackFrame.current = lastStackFrame.next;
                         this.computeNextSymbols(lastStackFrame, transition);
@@ -204,8 +203,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
                         break;
                     }
 
-                    case TransitionType.EPSILON: { // Stop on the rule's semicolon.
-                        if (transition.target.stateType === ATNStateType.RULE_STOP) {
+                    case Transition.EPSILON: { // Stop on the rule's semicolon.
+                        if ((transition.target.constructor as typeof ATNState).stateType === ATNState.RULE_STOP) {
                             const isBreakPoint = this.breakPoints.has(transition.target);
                             if (runMode === RunMode.StepIn || isBreakPoint) {
                                 const lastStackFrame = this.callStack[this.callStack.length - 1];
@@ -230,7 +229,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         }
     }
 
-    public override sempred(_localctx: RuleContext | null, ruleIndex: number, predIndex: number): boolean {
+    public override sempred(_localctx: ParserRuleContext | null, ruleIndex: number, predIndex: number): boolean {
         if (this.runPredicate) {
             if (predIndex < this.predicates.length) {
                 let predicate = this.predicates[predIndex].context!.getText();
@@ -249,7 +248,7 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         return true;
     }
 
-    public override action(_localctx: RuleContext | null, _ruleIndex: number, _actionIndex: number): void {
+    public override action(_localctx: ParserRuleContext | null, _ruleIndex: number, _actionIndex: number): void {
         // not used yet
     }
 
@@ -276,7 +275,8 @@ export class GrammarParserInterpreter extends ParserInterpreter {
             const type = this.tokenIndexFromName(node.symbol.text!);
             const currentType = this.inputStream.LA(1);
             if (type === currentType
-                && transition.matches(currentType, Lexer.MIN_CHAR_VALUE, Lexer.MAX_CHAR_VALUE)) {
+                && transition.matches(currentType, (this.inputStream.tokenSource as Lexer).options.minCodePoint,
+                    (this.inputStream.tokenSource as Lexer).options.maxCodePoint)) {
                 return true;
             }
 

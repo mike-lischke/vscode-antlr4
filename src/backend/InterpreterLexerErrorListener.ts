@@ -13,6 +13,6 @@ export class InterpreterLexerErrorListener extends BaseErrorListener {
     public override syntaxError<S extends Token, T extends ATNSimulator>(recognizer: Recognizer<T>,
         _offendingSymbol: S | null, line: number, column: number, msg: string, _e: RecognitionException | null): void {
         this.eventSink("output", `Lexer error (${line}, ${column + 1}): ${msg}`,
-            recognizer.inputStream.getSourceName(), line, column, true);
+            recognizer.inputStream!.getSourceName(), line, column, true);
     }
 }

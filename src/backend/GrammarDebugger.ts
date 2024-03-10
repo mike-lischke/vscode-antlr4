@@ -8,7 +8,7 @@ import * as fs from "fs";
 import { EventEmitter } from "events";
 
 import {
-    CharStreams, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, ErrorNode, ParseTree, TerminalNode,
+    CharStream, CommonTokenStream, CommonToken, ParserRuleContext, Token, Lexer, ErrorNode, ParseTree, TerminalNode,
 } from "antlr4ng";
 import { ScopedSymbol, VariableSymbol } from "antlr4-c3";
 
@@ -96,7 +96,7 @@ export class GrammarDebugger extends EventEmitter {
             };
 
             if (this.lexerData) {
-                const stream = CharStreams.fromString("");
+                const stream = CharStream.fromString("");
                 this.lexer = new GrammarLexerInterpreter(predicateFunction, this.contexts[0], lexerName,
                     this.lexerData, stream);
                 this.lexer.removeErrorListeners();
@@ -119,7 +119,7 @@ export class GrammarDebugger extends EventEmitter {
     }
 
     public start(startRuleIndex: number, input: string, noDebug: boolean): void {
-        const stream = CharStreams.fromString(input);
+        const stream = CharStream.fromString(input);
         this.lexer.inputStream = stream;
 
         if (!this.parser) {
@@ -439,7 +439,7 @@ export class GrammarDebugger extends EventEmitter {
             if (input.parent) {
                 // Multiple invocations of the same rule which matches nothing appear as nodes in the parse tree with
                 // the same start token, so we need an additional property to tell them apart: the child index.
-                hash = (31 * hash) + input.parent.children!.findIndex((element) => {
+                hash = (31 * hash) + input.parent.children.findIndex((element) => {
                     return element === input;
                 });
             }

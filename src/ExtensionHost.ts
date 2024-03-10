@@ -303,6 +303,11 @@ export class ExtensionHost {
 
         context.subscriptions.push(workspace.onDidSaveTextDocument((document: TextDocument) => {
             if (FrontendUtils.isGrammarFile(document)) {
+                const timer = this.changeTimers.get(document.fileName);
+                if (timer) {
+                    clearTimeout(timer);
+                }
+
                 this.regenerateBackgroundData(document);
             }
         }));

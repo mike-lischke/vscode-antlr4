@@ -14,6 +14,7 @@
         "allowUmdGlobalAccess": true, // For D3.js
         "strictNullChecks": true,
         "alwaysStrict": true,
+        "skipLibCheck": true,
     },
     "references": [
         { // Webview scripts need a different module type (esm), so they are handled as a separate (sub) project.
@@ -29,7 +30,7 @@
         "tests/**/*.ts"
     ],
     "exclude": [
-        "node_modules",
+        "node_modules/**",
         ".vscode-test",
         "images",
         "**/generated/*"
