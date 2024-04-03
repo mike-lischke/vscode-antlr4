@@ -596,7 +596,7 @@
         "@vscode/debugprotocol": "1.65.0",
         "antlr-format": "^2.1.5",
         "antlr4-c3": "^3.4.1",
-        "antlr4ng": "^3.0.3",
+        "antlr4ng": "^3.0.4",
         "await-notify": "1.0.1",
         "d3": "7.8.5",
         "fs-extra": "11.2.0"
