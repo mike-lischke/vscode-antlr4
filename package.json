@@ -606,7 +606,7 @@
         "@types/fs-extra": "11.0.4",
         "@types/jest": "29.5.12",
         "@types/node": "20.11.24",
-        "@types/vscode": "1.66.0",
+        "@types/vscode": "1.87.0",
         "@typescript-eslint/eslint-plugin": "7.5.0",
         "@typescript-eslint/eslint-plugin-tslint": "7.0.2",
         "@typescript-eslint/parser": "7.1.0",
