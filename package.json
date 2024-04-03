@@ -611,7 +611,7 @@
         "@typescript-eslint/eslint-plugin-tslint": "7.0.2",
         "@typescript-eslint/parser": "7.1.0",
         "antlr4ng-cli": "^2.0.0",
-        "esbuild": "0.20.1",
+        "esbuild": "0.20.2",
         "eslint": "8.57.0",
         "eslint-plugin-import": "2.29.1",
         "eslint-plugin-jsdoc": "48.2.0",
