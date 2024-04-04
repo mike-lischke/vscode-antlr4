@@ -102,6 +102,36 @@ Example:
 }
 ```
 
+Example of the use of Command Variable:
+
+```json
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "Debug ANTLR4 grammar",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "${fileDirname}/${fileBasenameNoExtension}.test.txt",
+            "grammar": "${file}",
+            "startRule": "${input:fileBasenameNoExtensionLowerCase}",
+            "printParseTree": true,
+            "visualParseTree": true
+        }
+    ],
+    "inputs": [
+        {
+          "id": "fileBasenameNoExtensionLowerCase",
+          "type": "command",
+          "command": "extension.commandvariable.transform",
+          "args": {
+            "text": "${fileBasenameNoExtension|lowerCase}"
+          }
+        }
+      ]
+}
+```
+
 To tell the interpreter where to start parsing we need a start rule. You can omit that, in which case the interpreter starts with the first parser rule in the grammar. However, specifying it allows to parse only a sub language (say, only expressions) or other subrules, instead of the entire possible language. A great possibility to focus only on those parts of your grammar that need fixing.
 
 The 2 boolean parameters determine visualizations. The entry `printParseTree` causes the debugger to print a textual parse tree to the `DEBUG CONSOLE` window, after a debug session has finished. The `visualParseTree` parameter however lets it generate a graphical parse tree that will grow on each debug step.
