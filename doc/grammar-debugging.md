@@ -81,6 +81,26 @@ A typical launch config looks like this:
 ```
 
 The value for `type` must be "antlr-debug" to denote a debug configuration for ANTLR4 grammars. For `request` "launch" must be set (attach is not supported and doesn't make sense, since we have no process to attach to). A name for the config is also mandatory as well as the name of the test input and the grammar file. The rest of the options is optional. The `actionFile` parameter refers to a file that must be structured as described in the [Actions and Semantic Predicates](#actions-and-semantic-predicates) section. All file entries can [use variables](https://code.visualstudio.com/docs/editor/variables-reference) to specify the file loaded in the current editor or specific folders etc.
+If the variables provided by visual studio are not sufficient, the project [Command Variable](https://marketplace.visualstudio.com/items?itemName=rioj7.command-variable) can help.
+
+Example:
+```json
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "Debug ANTLR4 grammar",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "${fileDirname}/${fileBasenameNoExtension}.input.txt",
+            "grammar": "${file}",
+            "startRule": "grammar",
+            "printParseTree": true,
+            "visualParseTree": true
+        }
+    ]
+}
+```
 
 To tell the interpreter where to start parsing we need a start rule. You can omit that, in which case the interpreter starts with the first parser rule in the grammar. However, specifying it allows to parse only a sub language (say, only expressions) or other subrules, instead of the entire possible language. A great possibility to focus only on those parts of your grammar that need fixing.
 
