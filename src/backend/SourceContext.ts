@@ -1114,7 +1114,7 @@ export class SourceContext {
             fileList.push(dependency.fileName);
 
             const actualParameters = [...parameters, dependency.fileName];
-            const result = await this.doGeneration(actualParameters, spawnOptions, errorParser, options.outputDir);
+            const result = await this.doGeneration(actualParameters, spawnOptions, errorParser, options.javaHomeOverride, options.outputDir);
             if (result.length > 0) {
                 message += "\n" + result;
             }
@@ -1701,16 +1701,21 @@ export class SourceContext {
      * @param parameters The command line parameters fro ANTLR4.
      * @param spawnOptions The options for spawning Java.
      * @param errorParser The parser to use for ANTLR4 error messages.
+     * @param javaHomeOverride The path to use for locating the Java binary.
      * @param outputDir The directory to find the interpreter data.
      *
      * @returns A string containing the error for non-grammar problems (process or java issues) otherwise empty.
      */
     private doGeneration(parameters: string[], spawnOptions: object, errorParser: ErrorParser,
-        outputDir?: string): Promise<string> {
+        javaHomeOverride?: string, outputDir?: string): Promise<string> {
         return new Promise((resolve, reject) => {
+            const javaHome = javaHomeOverride || process.env.JAVA_HOME;
+            const javaBinPath = javaHome ? path.join(javaHome, "bin", "java") : "java";
+
+            Log.debug(`Using Java binary at: ${javaBinPath}`);
             Log.debug(`Running Java with parameters: ${parameters.join(" ")}`);
 
-            const java = spawn("java", parameters, spawnOptions);
+            const java = spawn(javaBinPath, parameters, spawnOptions);
 
             java.on("error", (error) => {
                 resolve(`Error while running Java: "${error.message}". Is Java installed on you machine?`);

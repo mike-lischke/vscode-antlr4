@@ -197,6 +197,9 @@ export interface IGenerationOptions {
     /** Used with `loadOnly` to generate if no interpreter data exists yet. */
     generateIfNeeded?: boolean;
 
+    /** Use this path to find the Java binary instead of JAVA_HOME */
+    javaHomeOverride?: string;
+
     /** Use this jar for work instead of the built-in one(s). */
     alternativeJar?: string;
 
