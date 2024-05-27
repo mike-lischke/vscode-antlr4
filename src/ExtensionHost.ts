@@ -401,6 +401,7 @@ export class ExtensionHost {
             outputDir,
             listeners: false,
             visitors: false,
+            javaHomeOverride: workspace.getConfiguration("antlr4.generation").get<string>("javaHomeOverride"),
             alternativeJar: workspace.getConfiguration("antlr4.generation").get<string>("alternativeJar"),
             additionalParameters: workspace.getConfiguration("antlr4.generation")
                 .get<string | string[]>("additionalParameters"),
