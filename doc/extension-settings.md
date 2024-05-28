@@ -24,6 +24,7 @@ This is a settings object named **antlr4.generation** with the following members
 * **language**, string (default: "Java"), specifies the target language for the generated code, overriding what is specified in the grammar (used only in external mode)
 * **listeners**, boolean (default: true), also create listeners on code generation (used only in external mode)
 * **visitors**, boolean (default: false), also create visitors on code generation (used only in external mode)
+* **javaHomeOverride**, string (default: undefined), specifies an alternative `JAVA_HOME` if the environment variable is not set or a different Java installation should be used. If this variable is undefined and the process does not have the environment variable `JAVA_HOME` set then the extension will try to launch `java` in the current `PATH`.
 * **alternativeJar**, string (default: undefined), specifies the ANTLR4 jar to use for generation, instead of the ones shipping with this extension.
 * **additionalParameters**, string | string[] (default: undefined), specifies additional parameters to be passed on to the ANTLR4 jar (built-in or custom) during parser generation.
 
