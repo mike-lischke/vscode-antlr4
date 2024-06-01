@@ -609,7 +609,7 @@
         "@types/d3": "7.4.3",
         "@types/fs-extra": "11.0.4",
         "@types/jest": "29.5.12",
-        "@types/node": "20.12.7",
+        "@types/node": "20.13.0",
         "@types/vscode": "1.89.0",
         "@typescript-eslint/eslint-plugin": "7.8.0",
         "@typescript-eslint/eslint-plugin-tslint": "7.0.2",
