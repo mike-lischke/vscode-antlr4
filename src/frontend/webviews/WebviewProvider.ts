@@ -28,7 +28,7 @@ export class WebviewProvider {
     protected currentRuleIndex: number | undefined;
 
     // Keep track of all created panels, to avoid duplicates.
-    private webViewMap = new Map<String, [WebviewPanel, IWebviewShowOptions]>();
+    private webViewMap = new Map<string, [WebviewPanel, IWebviewShowOptions]>();
 
     public constructor(protected backend: AntlrFacade, protected context: ExtensionContext) { }
 

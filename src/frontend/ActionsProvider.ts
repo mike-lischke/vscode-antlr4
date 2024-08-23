@@ -171,7 +171,9 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
                 resolve(list);
             } catch (e) {
-                reject(e);
+                if (e instanceof Error) {
+                    reject(e);
+                }
             }
         });
     }
@@ -244,7 +246,9 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
                 resolve(rootList);
             } catch (e) {
-                reject(e);
+                if (e instanceof Error) {
+                    reject(e);
+                }
             }
         });
     }

@@ -22,7 +22,7 @@ export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbolIte
                     rules.forEach((rule, index) => {
                         const info = this.backend.infoForSymbol(this.currentFile!, rule);
                         const parameters: Command = { title: "", command: "" };
-                        const caption = `${index}: ${rules![index]}`;
+                        const caption = `${index}: ${rules[index]}`;
                         if (info && info.definition) {
                             parameters.title = "";
                             parameters.command = "antlr.selectGrammarRange";

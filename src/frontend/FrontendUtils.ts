@@ -247,7 +247,7 @@ export class FrontendUtils {
      */
     public static updateVsCodeContext(backend: AntlrFacade, document: TextDocument | undefined): void {
         if (document && FrontendUtils.isGrammarFile(document)) {
-            const info = backend.getContextDetails(document.fileName); 1;
+            const info = backend.getContextDetails(document.fileName);
             void FrontendUtils.switchVsCodeContext("antlr4.isLexer", info.type === GrammarType.Lexer);
             void FrontendUtils.switchVsCodeContext("antlr4.isParser", info.type === GrammarType.Parser);
             void FrontendUtils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);

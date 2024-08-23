@@ -69,7 +69,7 @@ export class DetailsListener extends ANTLRv4ParserListener {
     }
 
     public override enterParserRuleSpec = (ctx: ParserRuleSpecContext): void => {
-        this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF()!.getText());
+        this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF().getText());
     };
 
     public override exitParserRuleSpec = (_ctx: ParserRuleSpecContext): void => {
@@ -86,9 +86,9 @@ export class DetailsListener extends ANTLRv4ParserListener {
 
     public override enterLexerRuleSpec = (ctx: LexerRuleSpecContext): void => {
         if (ctx.FRAGMENT()) {
-            this.pushNewSymbol(FragmentTokenSymbol, ctx, ctx.TOKEN_REF()!.getText());
+            this.pushNewSymbol(FragmentTokenSymbol, ctx, ctx.TOKEN_REF().getText());
         } else {
-            this.pushNewSymbol(TokenSymbol, ctx, ctx.TOKEN_REF()!.getText());
+            this.pushNewSymbol(TokenSymbol, ctx, ctx.TOKEN_REF().getText());
         }
     };
 
@@ -209,7 +209,7 @@ export class DetailsListener extends ANTLRv4ParserListener {
      * @param ctx The parser context for the action block.
      */
     public override exitActionBlock = (ctx: ActionBlockContext): void => {
-        let run = ctx.parent as ParserRuleContext | null;
+        let run = ctx.parent;
 
         while (run) {
             switch (run.ruleIndex) {

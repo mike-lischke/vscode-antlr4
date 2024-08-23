@@ -1057,7 +1057,7 @@ export class SourceContext {
                     return Promise.resolve([]);
                 }
             } else {
-                return Promise.reject(errors);
+                return Promise.reject(Error(errors));
             }
         }
 
@@ -1114,7 +1114,11 @@ export class SourceContext {
             fileList.push(dependency.fileName);
 
             const actualParameters = [...parameters, dependency.fileName];
-            const result = await this.doGeneration(actualParameters, spawnOptions, errorParser, options.javaHomeOverride, options.outputDir);
+            const result = await this.doGeneration(actualParameters,
+                spawnOptions,
+                errorParser,
+                options.javaHomeOverride,
+                options.outputDir);
             if (result.length > 0) {
                 message += "\n" + result;
             }
@@ -1743,7 +1747,7 @@ export class SourceContext {
                 if (flag) {
                     resolve(this.setupInterpreters(outputDir));
                 } else {
-                    reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
+                    reject(Error(buffer)); // Treat this as non-grammar output (e.g. Java exception).
                 }
             });
         });

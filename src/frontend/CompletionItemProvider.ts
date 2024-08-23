@@ -69,7 +69,9 @@ export class AntlrCompletionItemProvider {
 
                     resolve(new CompletionList(completionList, false));
                 }).catch((reason) => {
-                    reject(reason);
+                    if (reason instanceof Error) {
+                        reject(reason);
+                    }
                 });
         });
     }
