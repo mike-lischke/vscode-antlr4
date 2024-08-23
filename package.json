@@ -604,7 +604,10 @@
         "antlr4ng": "^3.0.4",
         "await-notify": "1.0.1",
         "d3": "7.9.0",
-        "fs-extra": "11.2.0"
+        "fs-extra": "11.2.0",
+        "node-notifier": "^10.0.1",
+        "swc": "^1.0.11",
+        "@swc/core": "^1.7.14"
     },
     "devDependencies": {
         "@types/d3": "7.4.3",
@@ -616,7 +619,7 @@
         "@typescript-eslint/eslint-plugin-tslint": "7.0.2",
         "@typescript-eslint/parser": "8.0.0",
         "antlr4ng-cli": "^2.0.0",
-        "esbuild": "0.23.0",
+        "esbuild": "0.23.1",
         "eslint": "8.57.0",
         "eslint-plugin-import": "2.29.1",
         "eslint-plugin-jsdoc": "48.2.7",
