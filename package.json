@@ -595,6 +595,7 @@
         "build-watch": "npm run build -- --watch"
     },
     "dependencies": {
+        "@stylistic/eslint-plugin-ts": "^2.6.4",
         "@unicode/unicode-11.0.0": "1.5.2",
         "@vscode/debugadapter": "1.65.0",
         "@vscode/debugprotocol": "1.65.0",
