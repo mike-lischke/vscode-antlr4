@@ -559,7 +559,7 @@
         "@typescript-eslint/no-loss-of-precision": "off", // TODO: enable
         "@typescript-eslint/prefer-for-of": "error",
         "@typescript-eslint/prefer-function-type": "error",
-        "@typescript-eslint/quotes": [
+        "@stylistic/ts/quotes": [
             "error",
             "double",
             {
