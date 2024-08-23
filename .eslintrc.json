@@ -567,7 +567,7 @@
                 "allowTemplateLiterals": true
             }
         ],
-        "@typescript-eslint/semi": [
+        "@stylistic/ts/semi": [
             "error",
             "always"
         ],
