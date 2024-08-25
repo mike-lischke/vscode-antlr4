@@ -3,9 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import {
-    TextDocument, Position, CancellationToken, CompletionItem, ProviderResult, CompletionList,
-} from "vscode";
+import { CancellationToken, CompletionItem, CompletionList, Position, ProviderResult, TextDocument } from "vscode";
+
 import { AntlrFacade } from "../backend/facade.js";
 import { translateCompletionKind } from "./Symbol.js";
 
@@ -68,8 +67,9 @@ export class AntlrCompletionItemProvider {
                     });
 
                     resolve(new CompletionList(completionList, false));
-                }).catch((reason) => {
-                    reject(reason);
+                }).catch((e) => {
+                    const message = e instanceof Error ? e.message : String(e);
+                    reject(new Error(message));
                 });
         });
     }

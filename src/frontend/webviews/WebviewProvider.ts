@@ -5,7 +5,7 @@
 
 import { join } from "path";
 
-import { window, workspace, TextEditor, ExtensionContext, Uri, WebviewPanel, Webview, ViewColumn } from "vscode";
+import { ExtensionContext, TextEditor, Uri, ViewColumn, Webview, WebviewPanel, window, workspace } from "vscode";
 
 import { AntlrFacade } from "../../backend/facade.js";
 import { FrontendUtils } from "../FrontendUtils.js";
@@ -28,7 +28,7 @@ export class WebviewProvider {
     protected currentRuleIndex: number | undefined;
 
     // Keep track of all created panels, to avoid duplicates.
-    private webViewMap = new Map<String, [WebviewPanel, IWebviewShowOptions]>();
+    private webViewMap = new Map<string, [WebviewPanel, IWebviewShowOptions]>();
 
     public constructor(protected backend: AntlrFacade, protected context: ExtensionContext) { }
 

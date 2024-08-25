@@ -3,4 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-declare module "await-notify";
+import { ScopedSymbol } from "antlr4-c3";
+
+export class AlternativeSymbol extends ScopedSymbol { }

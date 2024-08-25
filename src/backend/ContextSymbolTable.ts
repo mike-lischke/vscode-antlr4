@@ -3,52 +3,24 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable max-classes-per-file */
-
+import { BaseSymbol, ISymbolTableOptions, ScopedSymbol, SymbolConstructor, SymbolTable } from "antlr4-c3";
 import { ParseTree, ParserRuleContext } from "antlr4ng";
-import { SymbolTable, ISymbolTableOptions, BaseSymbol, ScopedSymbol, SymbolConstructor } from "antlr4-c3";
 
-import { ISymbolInfo, CodeActionType, SymbolKind, SymbolGroupKind } from "../types.js";
-import { SourceContext } from "./SourceContext.js";
-
-export class OptionSymbol extends BaseSymbol {
-    public value: string;
-}
-
-export class ImportSymbol extends BaseSymbol { }
-export class BuiltInTokenSymbol extends BaseSymbol { }
-export class VirtualTokenSymbol extends BaseSymbol { }
-export class FragmentTokenSymbol extends ScopedSymbol { }
-export class TokenSymbol extends ScopedSymbol { }
-export class TokenReferenceSymbol extends BaseSymbol { }
-export class BuiltInModeSymbol extends BaseSymbol { }
-export class LexerModeSymbol extends BaseSymbol { }
-export class BuiltInChannelSymbol extends BaseSymbol { }
-export class TokenChannelSymbol extends BaseSymbol { }
-export class RuleSymbol extends ScopedSymbol { }
-export class RuleReferenceSymbol extends BaseSymbol { }
-export class AlternativeSymbol extends ScopedSymbol { }
-export class EbnfSuffixSymbol extends BaseSymbol { }
-export class OptionsSymbol extends ScopedSymbol { }
-export class ArgumentSymbol extends ScopedSymbol { }
-export class OperatorSymbol extends BaseSymbol { }
-export class TerminalSymbol extends BaseSymbol { }          // Any other terminal but operators.
-export class LexerCommandSymbol extends BaseSymbol { }      // Commands in lexer rules after the -> introducer.
-
-// Symbols for all kind of native code blocks in a grammar.
-export class GlobalNamedActionSymbol extends BaseSymbol { } // Top level actions prefixed with @.
-export class LocalNamedActionSymbol extends BaseSymbol { }  // Rule level actions prefixed with @.
-
-export class ExceptionActionSymbol extends BaseSymbol { }   // Action code in exception blocks.
-export class FinallyActionSymbol extends BaseSymbol { }     // Ditto for finally clauses.
-
-export class ParserActionSymbol extends BaseSymbol { }      // Simple code blocks in rule alts for a parser rule.
-export class LexerActionSymbol extends BaseSymbol { }       // Ditto for lexer rules.
-
-export class ParserPredicateSymbol extends BaseSymbol { }   // Predicate code in a parser rule.
-export class LexerPredicateSymbol extends BaseSymbol { }    // Ditto for lexer rules.
-
-export class ArgumentsSymbol extends BaseSymbol { }          // Native code for argument blocks and local variables.
+import { CodeActionType, ISymbolInfo, SymbolGroupKind, SymbolKind } from "../types.js";
+import { BuiltInChannelSymbol } from "./parser-symbols/BuiltInChannelSymbol.js";
+import { BuiltInModeSymbol } from "./parser-symbols/BuiltInModeSymbol.js";
+import { BuiltInTokenSymbol } from "./parser-symbols/BuiltInTokenSymbol.js";
+import { FragmentTokenSymbol } from "./parser-symbols/FragmentTokenSymbol.js";
+import { GlobalNamedActionSymbol } from "./parser-symbols/GlobalNamedActionSymbol.js";
+import { definitionForContext, getKindFromSymbol, type ISourceContext } from "./helpers.js";
+import { ImportSymbol } from "./parser-symbols/ImportSymbol.js";
+import { LexerModeSymbol } from "./parser-symbols/LexerModeSymbol.js";
+import { LexerPredicateSymbol } from "./parser-symbols/LexerPredicateSymbol.js";
+import { LocalNamedActionSymbol } from "./parser-symbols/LocalNamedActionSymbol.js";
+import { RuleSymbol } from "./parser-symbols/RuleSymbol.js";
+import { TokenChannelSymbol } from "./parser-symbols/TokenChannelSymbol.js";
+import { TokenSymbol } from "./parser-symbols/TokenSymbol.js";
+import { VirtualTokenSymbol } from "./parser-symbols/VirtualTokenSymbol.js";
 
 export class ContextSymbolTable extends SymbolTable {
     public tree: ParserRuleContext; // Set by the owning source context after each parse run.
@@ -62,7 +34,7 @@ export class ContextSymbolTable extends SymbolTable {
     private parserPredicates: BaseSymbol[] = [];
     private lexerPredicates: BaseSymbol[] = [];
 
-    public constructor(name: string, options: ISymbolTableOptions, public owner?: SourceContext) {
+    public constructor(name: string, options: ISymbolTableOptions, public owner?: ISourceContext) {
         super(name, options);
     }
 
@@ -162,7 +134,7 @@ export class ContextSymbolTable extends SymbolTable {
             symbol = temp;
         }
 
-        let kind = SourceContext.getKindFromSymbol(symbol);
+        let kind = getKindFromSymbol(symbol);
         const name = symbol.name;
 
         // Special handling for certain symbols.
@@ -176,7 +148,7 @@ export class ContextSymbolTable extends SymbolTable {
                             kind,
                             name,
                             source: table.owner.fileName,
-                            definition: SourceContext.definitionForContext(table.tree, true),
+                            definition: definitionForContext(table.tree, true),
                         };
                     }
                 });
@@ -190,7 +162,7 @@ export class ContextSymbolTable extends SymbolTable {
                     const actualSymbol = table.resolveSync(name);
                     if (actualSymbol) {
                         symbol = actualSymbol;
-                        kind = SourceContext.getKindFromSymbol(actualSymbol);
+                        kind = getKindFromSymbol(actualSymbol);
                     }
                 });
 
@@ -208,7 +180,7 @@ export class ContextSymbolTable extends SymbolTable {
             kind,
             name,
             source: (symbol.context && symbolTable && symbolTable.owner) ? symbolTable.owner.fileName : "ANTLR runtime",
-            definition: SourceContext.definitionForContext(symbol.context, true),
+            definition: definitionForContext(symbol.context, true),
             description: undefined,
         };
 
@@ -265,7 +237,7 @@ export class ContextSymbolTable extends SymbolTable {
         try {
             const list = this.actionListOfType(type);
             for (const entry of list) {
-                const definition = SourceContext.definitionForContext(entry.context, true);
+                const definition = definitionForContext(entry.context, true);
                 if (definition && entry.name.toLowerCase() === "skip") {
                     // Seems there's a bug for the skip action where the parse tree indicates a
                     // single letter source range.
@@ -273,14 +245,14 @@ export class ContextSymbolTable extends SymbolTable {
                 }
 
                 result.push({
-                    kind: SourceContext.getKindFromSymbol(entry),
+                    kind: getKindFromSymbol(entry),
                     name: entry.name,
                     source: this.owner ? this.owner.fileName : "",
                     definition,
                     description: entry.context!.getText(),
                 });
             }
-        } catch (e) {
+        } catch {
             result.push({
                 kind: SymbolKind.Unknown,
                 name: "Error getting actions list",
@@ -359,10 +331,10 @@ export class ContextSymbolTable extends SymbolTable {
                     }
 
                     result.push({
-                        kind: SourceContext.getKindFromSymbol(symbol),
+                        kind: getKindFromSymbol(symbol),
                         name: symbolName,
                         source: owner.fileName,
-                        definition: SourceContext.definitionForContext(context, true),
+                        definition: definitionForContext(context, true),
                         description: undefined,
                     });
                 }
@@ -371,10 +343,10 @@ export class ContextSymbolTable extends SymbolTable {
                     const references = symbol.getAllNestedSymbolsSync(symbolName);
                     for (const reference of references) {
                         result.push({
-                            kind: SourceContext.getKindFromSymbol(reference),
+                            kind: getKindFromSymbol(reference),
                             name: symbolName,
                             source: owner.fileName,
-                            definition: SourceContext.definitionForContext(reference.context, true),
+                            definition: definitionForContext(reference.context, true),
                             description: undefined,
                         });
                     }
@@ -512,10 +484,10 @@ export class ContextSymbolTable extends SymbolTable {
         for (const symbol of filtered) {
             const root = symbol.root as ContextSymbolTable;
             result.push({
-                kind: SourceContext.getKindFromSymbol(symbol),
+                kind: getKindFromSymbol(symbol),
                 name: symbol.name,
                 source: root.owner ? root.owner.fileName : "ANTLR runtime",
-                definition: SourceContext.definitionForContext(symbol.context, true),
+                definition: definitionForContext(symbol.context, true),
                 description: undefined,
             });
         }

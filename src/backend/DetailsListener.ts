@@ -7,26 +7,45 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
-import { LiteralSymbol, BlockSymbol, BaseSymbol, VariableSymbol, SymbolConstructor } from "antlr4-c3";
-import { ParseTree, ParserRuleContext, TerminalNode } from "antlr4ng";
+import { BaseSymbol, BlockSymbol, LiteralSymbol, SymbolConstructor, VariableSymbol } from "antlr4-c3";
+import { ParseTree, TerminalNode } from "antlr4ng";
 
-import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 import {
-    LexerRuleSpecContext, ParserRuleSpecContext, TokensSpecContext, ChannelsSpecContext,
-    ModeSpecContext, DelegateGrammarContext, TerminalDefContext, RulerefContext,
-    BlockContext, AlternativeContext, RuleBlockContext, EbnfSuffixContext,
-    OptionsSpecContext, ActionBlockContext, ArgActionBlockContext, LabeledElementContext,
-    LexerRuleBlockContext, LexerAltContext, ElementContext, LexerElementContext, Action_Context,
-    LexerCommandContext, OptionContext, OptionValueContext, ANTLRv4Parser,
+    Action_Context, ActionBlockContext, AlternativeContext, ANTLRv4Parser, ArgActionBlockContext, BlockContext,
+    ChannelsSpecContext, DelegateGrammarContext, EbnfSuffixContext, ElementContext, LabeledElementContext,
+    LexerAltContext, LexerCommandContext, LexerElementContext, LexerRuleBlockContext, LexerRuleSpecContext,
+    ModeSpecContext, OptionContext, OptionsSpecContext, OptionValueContext, ParserRuleSpecContext,
+    RuleBlockContext, RulerefContext, TerminalDefContext, TokensSpecContext,
 } from "../parser/ANTLRv4Parser.js";
+import { ANTLRv4ParserListener } from "../parser/ANTLRv4ParserListener.js";
 
 import {
-    ContextSymbolTable, FragmentTokenSymbol, TokenSymbol, TokenReferenceSymbol, RuleSymbol, RuleReferenceSymbol,
-    VirtualTokenSymbol, TokenChannelSymbol, LexerModeSymbol, ImportSymbol, AlternativeSymbol, EbnfSuffixSymbol,
-    ArgumentSymbol, OperatorSymbol, GlobalNamedActionSymbol, ExceptionActionSymbol, FinallyActionSymbol,
-    ParserActionSymbol, LexerActionSymbol, OptionsSymbol, OptionSymbol, LexerPredicateSymbol,
-    ParserPredicateSymbol, LocalNamedActionSymbol, LexerCommandSymbol,
+    ContextSymbolTable,
 } from "./ContextSymbolTable.js";
+import { LexerPredicateSymbol } from "./parser-symbols/LexerPredicateSymbol.js";
+import { ParserPredicateSymbol } from "./parser-symbols/ParserPredicateSymbol.js";
+import { LexerActionSymbol } from "./parser-symbols/LexerActionSymbol.js";
+import { ParserActionSymbol } from "./parser-symbols/ParserActionSymbol.js";
+import { FinallyActionSymbol } from "./parser-symbols/FinallyActionSymbol.js";
+import { ExceptionActionSymbol } from "./parser-symbols/ExceptionActionSymbol.js";
+import { LocalNamedActionSymbol } from "./parser-symbols/LocalNamedActionSymbol.js";
+import { GlobalNamedActionSymbol } from "./parser-symbols/GlobalNamedActionSymbol.js";
+import { LexerCommandSymbol } from "./parser-symbols/LexerCommandSymbol.js";
+import { OperatorSymbol } from "./parser-symbols/OperatorSymbol.js";
+import { ArgumentSymbol } from "./parser-symbols/ArgumentSymbol.js";
+import { OptionsSymbol } from "./parser-symbols/OptionsSymbol.js";
+import { EbnfSuffixSymbol } from "./parser-symbols/EbnfSuffixSymbol.js";
+import { AlternativeSymbol } from "./parser-symbols/AlternativeSymbol.js";
+import { RuleReferenceSymbol } from "./parser-symbols/RuleReferenceSymbol.js";
+import { RuleSymbol } from "./parser-symbols/RuleSymbol.js";
+import { TokenChannelSymbol } from "./parser-symbols/TokenChannelSymbol.js";
+import { LexerModeSymbol } from "./parser-symbols/LexerModeSymbol.js";
+import { TokenReferenceSymbol } from "./parser-symbols/TokenReferenceSymbol.js";
+import { TokenSymbol } from "./parser-symbols/TokenSymbol.js";
+import { FragmentTokenSymbol } from "./parser-symbols/FragmentTokenSymbol.js";
+import { VirtualTokenSymbol } from "./parser-symbols/VirtualTokenSymbol.js";
+import { ImportSymbol } from "./parser-symbols/ImportSymbol.js";
+import { OptionSymbol } from "./parser-symbols/OptionSymbol.js";
 
 import { SourceContext } from "./SourceContext.js";
 
@@ -69,7 +88,7 @@ export class DetailsListener extends ANTLRv4ParserListener {
     }
 
     public override enterParserRuleSpec = (ctx: ParserRuleSpecContext): void => {
-        this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF()!.getText());
+        this.pushNewSymbol(RuleSymbol, ctx, ctx.RULE_REF().getText());
     };
 
     public override exitParserRuleSpec = (_ctx: ParserRuleSpecContext): void => {
@@ -86,9 +105,9 @@ export class DetailsListener extends ANTLRv4ParserListener {
 
     public override enterLexerRuleSpec = (ctx: LexerRuleSpecContext): void => {
         if (ctx.FRAGMENT()) {
-            this.pushNewSymbol(FragmentTokenSymbol, ctx, ctx.TOKEN_REF()!.getText());
+            this.pushNewSymbol(FragmentTokenSymbol, ctx, ctx.TOKEN_REF().getText());
         } else {
-            this.pushNewSymbol(TokenSymbol, ctx, ctx.TOKEN_REF()!.getText());
+            this.pushNewSymbol(TokenSymbol, ctx, ctx.TOKEN_REF().getText());
         }
     };
 
@@ -209,7 +228,7 @@ export class DetailsListener extends ANTLRv4ParserListener {
      * @param ctx The parser context for the action block.
      */
     public override exitActionBlock = (ctx: ActionBlockContext): void => {
-        let run = ctx.parent as ParserRuleContext | null;
+        let run = ctx.parent;
 
         while (run) {
             switch (run.ruleIndex) {

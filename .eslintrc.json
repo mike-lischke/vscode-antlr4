@@ -33,7 +33,8 @@
         "@typescript-eslint/tslint",
         "jsdoc",
         "prefer-arrow",
-        "eslint-plugin-import"
+        "eslint-plugin-import",
+        "@stylistic/ts"
     ],
     "settings": {},
     "globals": {
@@ -489,7 +490,7 @@
                 "accessibility": "explicit"
             }
         ],
-        "@typescript-eslint/indent": [
+        "@stylistic/ts/indent": [
             "error",
             4,
             {
@@ -558,7 +559,7 @@
         "@typescript-eslint/no-loss-of-precision": "off", // TODO: enable
         "@typescript-eslint/prefer-for-of": "error",
         "@typescript-eslint/prefer-function-type": "error",
-        "@typescript-eslint/quotes": [
+        "@stylistic/ts/quotes": [
             "error",
             "double",
             {
@@ -566,7 +567,7 @@
                 "allowTemplateLiterals": true
             }
         ],
-        "@typescript-eslint/semi": [
+        "@stylistic/ts/semi": [
             "error",
             "always"
         ],
@@ -657,6 +658,7 @@
         ],
         "@typescript-eslint/no-unsafe-enum-comparison": "off",
         "@typescript-eslint/no-base-to-string": "off",
+        "@typescript-eslint/triple-slash-reference": "off",
         "jsdoc/check-alignment": "error",
         "jsdoc/check-indentation": "off",
         "jsdoc/require-param-type": "off",

@@ -3,14 +3,14 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import * as fs from "fs-extra";
 import * as crypto from "crypto";
+import * as fs from "fs-extra";
 import * as path from "path";
 
-import { ExtensionContext, Uri, window, Webview, commands, ProviderResult, TextDocument } from "vscode";
+import { commands, ExtensionContext, ProviderResult, TextDocument, Uri, Webview, window } from "vscode";
 
 import { AntlrFacade } from "../backend/facade.js";
-import { ILexicalRange, GrammarType } from "../types.js";
+import { GrammarType, ILexicalRange } from "../types.js";
 import { Log } from "./Log.js";
 
 export interface IRangeHolder {
@@ -247,7 +247,7 @@ export class FrontendUtils {
      */
     public static updateVsCodeContext(backend: AntlrFacade, document: TextDocument | undefined): void {
         if (document && FrontendUtils.isGrammarFile(document)) {
-            const info = backend.getContextDetails(document.fileName); 1;
+            const info = backend.getContextDetails(document.fileName);
             void FrontendUtils.switchVsCodeContext("antlr4.isLexer", info.type === GrammarType.Lexer);
             void FrontendUtils.switchVsCodeContext("antlr4.isParser", info.type === GrammarType.Parser);
             void FrontendUtils.switchVsCodeContext("antlr4.isCombined", info.type === GrammarType.Combined);

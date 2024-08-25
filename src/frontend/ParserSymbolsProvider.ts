@@ -3,7 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { TreeItemCollapsibleState, Command, ProviderResult } from "vscode";
+import { Command, ProviderResult, TreeItemCollapsibleState } from "vscode";
+
 import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
 import { ParserSymbolItem } from "./ParserSymbolItem.js";
 
@@ -22,7 +23,7 @@ export class ParserSymbolsProvider extends AntlrTreeDataProvider<ParserSymbolIte
                     rules.forEach((rule, index) => {
                         const info = this.backend.infoForSymbol(this.currentFile!, rule);
                         const parameters: Command = { title: "", command: "" };
-                        const caption = `${index}: ${rules![index]}`;
+                        const caption = `${index}: ${rules[index]}`;
                         if (info && info.definition) {
                             parameters.title = "";
                             parameters.command = "antlr.selectGrammarRange";

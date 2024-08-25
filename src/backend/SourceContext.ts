@@ -7,8 +7,8 @@
 // information, symbol lookups and more.
 
 import { spawn } from "child_process";
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
 import * as vm from "vm";
 
 import {
@@ -18,81 +18,59 @@ import {
     TerminalNode, Token, Transition, Vocabulary,
 } from "antlr4ng";
 
-import { CodeCompletionCore, BaseSymbol, LiteralSymbol } from "antlr4-c3";
+import { BaseSymbol, CodeCompletionCore, LiteralSymbol } from "antlr4-c3";
 
 import { GrammarFormatter } from "antlr-format";
 
-import {
-    ANTLRv4Parser, ParserRuleSpecContext, LexerRuleSpecContext, GrammarSpecContext, OptionsSpecContext, ModeSpecContext,
-} from "../parser/ANTLRv4Parser.js";
 import { ANTLRv4Lexer } from "../parser/ANTLRv4Lexer.js";
+import {
+    ANTLRv4Parser, GrammarSpecContext, LexerRuleSpecContext, ModeSpecContext, OptionsSpecContext, ParserRuleSpecContext,
+} from "../parser/ANTLRv4Parser.js";
 
 import {
-    ISymbolInfo, IDiagnosticEntry, DiagnosticType, IReferenceNode, IGenerationOptions,
-    ISentenceGenerationOptions, IFormattingOptions, IDefinition, IContextDetails, PredicateFunction,
-    CodeActionType, SymbolKind, GrammarType,
+    CodeActionType, DiagnosticType, GrammarType, IContextDetails, IDefinition, IDiagnosticEntry, IFormattingOptions,
+    IGenerationOptions, IReferenceNode, ISentenceGenerationOptions, ISymbolInfo, PredicateFunction, SymbolKind,
 } from "../types.js";
 
 import { ContextErrorListener } from "./ContextErrorListener.js";
 import { ContextLexerErrorListener } from "./ContextLexerErrorListener.js";
 
 import { DetailsListener } from "./DetailsListener.js";
+import { ErrorParser } from "./ErrorParser.js";
+import { IInterpreterData, InterpreterDataReader } from "./InterpreterDataReader.js";
 import { SemanticListener } from "./SemanticListener.js";
 import { SVGGenerator } from "./SVGGenerator.js";
-import { InterpreterDataReader, IInterpreterData } from "./InterpreterDataReader.js";
-import { ErrorParser } from "./ErrorParser.js";
 
 import {
-    ContextSymbolTable, BuiltInChannelSymbol, BuiltInTokenSymbol, BuiltInModeSymbol, RuleSymbol,
-    VirtualTokenSymbol, FragmentTokenSymbol, TokenSymbol, RuleReferenceSymbol, TokenReferenceSymbol, ImportSymbol,
-    LexerModeSymbol, TokenChannelSymbol, OperatorSymbol, ArgumentsSymbol, ExceptionActionSymbol,
-    FinallyActionSymbol, LexerActionSymbol, LexerPredicateSymbol, ParserActionSymbol, ParserPredicateSymbol,
-    LexerCommandSymbol, TerminalSymbol, GlobalNamedActionSymbol, LocalNamedActionSymbol,
+    ContextSymbolTable,
 } from "./ContextSymbolTable.js";
+import { BuiltInChannelSymbol } from "./parser-symbols/BuiltInChannelSymbol.js";
+import { BuiltInModeSymbol } from "./parser-symbols/BuiltInModeSymbol.js";
+import { BuiltInTokenSymbol } from "./parser-symbols/BuiltInTokenSymbol.js";
+import { FragmentTokenSymbol } from "./parser-symbols/FragmentTokenSymbol.js";
+import { RuleReferenceSymbol } from "./parser-symbols/RuleReferenceSymbol.js";
+import { TokenReferenceSymbol } from "./parser-symbols/TokenReferenceSymbol.js";
+import { TokenSymbol } from "./parser-symbols/TokenSymbol.js";
+import { VirtualTokenSymbol } from "./parser-symbols/VirtualTokenSymbol.js";
+import { RuleSymbol } from "./parser-symbols/RuleSymbol.js";
 
 import { SentenceGenerator } from "./SentenceGenerator.js";
 
+import { BackendUtils } from "./BackendUtils.js";
 import { GrammarLexerInterpreter } from "./GrammarLexerInterpreter.js";
 import { printableUnicodePoints } from "./Unicode.js";
-import { BackendUtils } from "./BackendUtils.js";
 
 import { IATNGraphData, IATNLink, IATNNode } from "../webview-scripts/types.js";
-import { InterpreterLexerErrorListener } from "./InterpreterLexerErrorListener.js";
 import { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
+import { InterpreterLexerErrorListener } from "./InterpreterLexerErrorListener.js";
 import { InterpreterParserErrorListener } from "./InterpreterParserErrorListener.js";
 
 import { Log } from "../frontend/Log.js";
+import { getKindFromSymbol, type ISourceContext } from "./helpers.js";
 
 /** One source context per file. Source contexts can reference each other (e.g. for symbol lookups). */
-export class SourceContext {
+export class SourceContext implements ISourceContext {
     private static globalSymbols = new ContextSymbolTable("Global Symbols", { allowDuplicateSymbols: false });
-    private static symbolToKindMap: Map<new () => BaseSymbol, SymbolKind> = new Map([
-        [GlobalNamedActionSymbol, SymbolKind.GlobalNamedAction],
-        [LocalNamedActionSymbol, SymbolKind.LocalNamedAction],
-        [ImportSymbol, SymbolKind.Import],
-        [BuiltInTokenSymbol, SymbolKind.BuiltInLexerToken],
-        [VirtualTokenSymbol, SymbolKind.VirtualLexerToken],
-        [FragmentTokenSymbol, SymbolKind.FragmentLexerToken],
-        [TokenSymbol, SymbolKind.LexerRule],
-        [BuiltInModeSymbol, SymbolKind.BuiltInMode],
-        [LexerModeSymbol, SymbolKind.LexerMode],
-        [BuiltInChannelSymbol, SymbolKind.BuiltInChannel],
-        [TokenChannelSymbol, SymbolKind.TokenChannel],
-        [RuleSymbol, SymbolKind.ParserRule],
-        [OperatorSymbol, SymbolKind.Operator],
-        [TerminalSymbol, SymbolKind.Terminal],
-        [TokenReferenceSymbol, SymbolKind.TokenReference],
-        [RuleReferenceSymbol, SymbolKind.RuleReference],
-        [LexerCommandSymbol, SymbolKind.LexerCommand],
-
-        [ExceptionActionSymbol, SymbolKind.ExceptionAction],
-        [FinallyActionSymbol, SymbolKind.FinallyAction],
-        [ParserActionSymbol, SymbolKind.ParserAction],
-        [LexerActionSymbol, SymbolKind.LexerAction],
-        [ParserPredicateSymbol, SymbolKind.ParserPredicate],
-        [LexerPredicateSymbol, SymbolKind.LexerPredicate],
-        [ArgumentsSymbol, SymbolKind.Arguments],
-    ]);
 
     private static printableChars: IntervalSet;
 
@@ -186,14 +164,6 @@ export class SourceContext {
         return false;
     }
 
-    public static getKindFromSymbol(symbol: BaseSymbol): SymbolKind {
-        if (symbol.name === "tokenVocab") {
-            return SymbolKind.TokenVocab;
-        }
-
-        return this.symbolToKindMap.get(symbol.constructor as typeof BaseSymbol) || SymbolKind.Unknown;
-    }
-
     /**
      * @param ctx The context to get info for.
      * @param keepQuotes A flag indicating if quotes should be kept if there are any around the context's text.
@@ -244,7 +214,7 @@ export class SourceContext {
             if (inputStream) {
                 try {
                     result.text = inputStream.getTextFromRange(start, stop);
-                } catch (e) {
+                } catch {
                     // The method getText uses an unreliable JS String API which can throw on larger texts.
                     // In this case we cannot return the text of the given context.
                     // A context with such a large size is probably an error case anyway (unfinished multi line comment
@@ -753,7 +723,7 @@ export class SourceContext {
                 symbols.forEach((symbol) => {
                     if (symbol.name !== "EOF") {
                         result.push({
-                            kind: SourceContext.getKindFromSymbol(symbol),
+                            kind: getKindFromSymbol(symbol),
                             name: symbol.name,
                             source: this.fileName,
                             definition: undefined,
@@ -827,7 +797,7 @@ export class SourceContext {
                 } else {
                     this.info.type = GrammarType.Combined;
                 }
-            } catch (e) {
+            } catch {
                 // ignored
             }
         }
@@ -1057,7 +1027,7 @@ export class SourceContext {
                     return Promise.resolve([]);
                 }
             } else {
-                return Promise.reject(errors);
+                return Promise.reject(new Error(errors));
             }
         }
 
@@ -1114,7 +1084,8 @@ export class SourceContext {
             fileList.push(dependency.fileName);
 
             const actualParameters = [...parameters, dependency.fileName];
-            const result = await this.doGeneration(actualParameters, spawnOptions, errorParser, options.javaHomeOverride, options.outputDir);
+            const result = await this.doGeneration(actualParameters, spawnOptions, errorParser,
+                options.javaHomeOverride, options.outputDir);
             if (result.length > 0) {
                 message += "\n" + result;
             }
@@ -1743,7 +1714,7 @@ export class SourceContext {
                 if (flag) {
                     resolve(this.setupInterpreters(outputDir));
                 } else {
-                    reject(buffer); // Treat this as non-grammar output (e.g. Java exception).
+                    reject(new Error(buffer)); // Treat this as non-grammar output (e.g. Java exception).
                 }
             });
         });

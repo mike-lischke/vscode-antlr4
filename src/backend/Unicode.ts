@@ -3,25 +3,26 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
+/// <reference path="./unicode.d.ts" />
+
 import { Interval, IntervalSet } from "antlr4ng";
 
-import unassignedCodepoints from "@unicode/unicode-11.0.0/General_Category/Unassigned/code-points.js";
-import controlCodepoints from "@unicode/unicode-11.0.0/General_Category/Control/code-points.js";
-import formatCodepoints from "@unicode/unicode-11.0.0/General_Category/Format/code-points.js";
-import surrogateCodepoints from "@unicode/unicode-11.0.0/General_Category/Surrogate/code-points.js";
-import privateUseCodepoints from "@unicode/unicode-11.0.0/General_Category/Private_Use/code-points.js";
-import unifiedIdeographsCodepoints from "@unicode/unicode-11.0.0/Block/CJK_Unified_Ideographs/code-points.js";
-import hangulSyllablesCodepoints from "@unicode/unicode-11.0.0/Block/Hangul_Syllables/code-points.js";
-import yiSyllablesCodepoints from "@unicode/unicode-11.0.0/Block/Yi_Syllables/code-points.js";
-import rtlCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left/code-points.js";
-import rtlEmbeddingCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left_Embedding/code-points.js";
-import rtlIsolateCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left_Isolate/code-points.js";
-import rtlOverrideCodepoints from "@unicode/unicode-11.0.0/Bidi_Class/Right_To_Left_Override/code-points.js";
+import unassignedCodepoints from "@unicode/unicode-15.1.0/General_Category/Unassigned/ranges.js";
+import controlCodepoints from "@unicode/unicode-15.1.0/General_Category/Control/ranges.js";
+import formatCodepoints from "@unicode/unicode-15.1.0/General_Category/Format/ranges.js";
+import surrogateCodepoints from "@unicode/unicode-15.1.0/General_Category/Surrogate/ranges.js";
+import privateUseCodepoints from "@unicode/unicode-15.1.0/General_Category/Private_Use/ranges.js";
+import unifiedIdeographsCodepoints from "@unicode/unicode-15.1.0/Block/CJK_Unified_Ideographs/ranges.js";
+import hangulSyllablesCodepoints from "@unicode/unicode-15.1.0/Block/Hangul_Syllables/ranges.js";
+import yiSyllablesCodepoints from "@unicode/unicode-15.1.0/Block/Yi_Syllables/ranges.js";
+import rtlCodepoints from "@unicode/unicode-15.1.0/Bidi_Class/Right_To_Left/ranges.js";
+import rtlEmbeddingCodepoints from "@unicode/unicode-15.1.0/Bidi_Class/Right_To_Left_Embedding/ranges.js";
+import rtlIsolateCodepoints from "@unicode/unicode-15.1.0/Bidi_Class/Right_To_Left_Isolate/ranges.js";
+import rtlOverrideCodepoints from "@unicode/unicode-15.1.0/Bidi_Class/Right_To_Left_Override/ranges.js";
+import compatibilityIdeographsCodepoints from "@unicode/unicode-15.1.0/Block/CJK_Compatibility_Ideographs/ranges.js";
 
 // eslint-disable-next-line max-len
-import unifiedIdeographsExtensionCodepoints from "@unicode/unicode-11.0.0/Block/CJK_Unified_Ideographs_Extension_A/code-points.js";
-// eslint-disable-next-line max-len
-import compatibilityIdeographsCodepoints from "@unicode/unicode-11.0.0/Block/CJK_Compatibility_Ideographs/code-points.js";
+import unifiedIdeographsExtensionCodepoints from "@unicode/unicode-15.1.0/Block/CJK_Unified_Ideographs_Extension_A/ranges.js";
 
 /**
  * This structure contains all currently defined Unicode blocks (according to https://unicode-table.com/en/blocks/)
@@ -314,30 +315,17 @@ let predefinedWeightSum = 0;
 /**
  * Converts the given code points to an interval set.
  *
- * @param codePoints The code points to convert.
+ * @param ranges A list of code point range to add to the set.
  * @param existing Optionally specifies an interval set with previously red values (to merge with the new ones).
  *
  * @returns A new set of Unicode code points.
  */
-const codePointsToIntervals = (codePoints: number[], existing?: IntervalSet): IntervalSet => {
+const codePointsToIntervals = (ranges: IUnicodeRange[], existing?: IntervalSet): IntervalSet => {
     const result = existing ?? new IntervalSet();
 
-    // Code points are sorted in increasing order, which we can use to speed up insertion.
-    let start = codePoints[0];
-    let end = start;
-    for (let i = 1; i < codePoints.length; ++i) {
-        const code = codePoints[i];
-        if (end + 1 === code) {
-            ++end;
-            continue;
-        }
-
-        result.addRange(start, end);
-        start = code;
-        end = code;
+    for (const range of ranges) {
+        result.addRange(range.begin, range.end);
     }
-
-    result.addRange(start, end);
 
     return result;
 };

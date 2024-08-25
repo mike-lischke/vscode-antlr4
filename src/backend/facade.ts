@@ -8,6 +8,16 @@ import * as path from "path";
 
 import { Vocabulary } from "antlr4ng";
 
+/** Import modules that depend on these enums after their definition, to allow for static initializations. */
+import {
+    CodeActionType, IContextDetails, IDiagnosticEntry, IFormattingOptions, IGenerationOptions, IReferenceNode,
+    ISelfDiagnostics, ISentenceGenerationOptions, ISymbolInfo,
+} from "../types.js";
+import { IATNGraphData } from "../webview-scripts/types.js";
+import { GrammarDebugger } from "./GrammarDebugger.js";
+import { SentenceGenerator } from "./SentenceGenerator.js";
+import { SourceContext } from "./SourceContext.js";
+
 export interface IContextEntry {
     context: SourceContext;
     refCount: number;
@@ -15,18 +25,8 @@ export interface IContextEntry {
     grammar: string; // The grammar file name.
 }
 
-// Import modules that depend on these enums after their definition, to allow for static initializations.
-import { SourceContext } from "./SourceContext.js";
-import { GrammarDebugger } from "./GrammarDebugger.js";
-import {
-    ISelfDiagnostics, ISymbolInfo, CodeActionType, IDiagnosticEntry, IReferenceNode, IGenerationOptions,
-    ISentenceGenerationOptions, IFormattingOptions, IContextDetails,
-} from "../types.js";
-import { IATNGraphData } from "../webview-scripts/types.js";
-import { SentenceGenerator } from "./SentenceGenerator.js";
-
 export class AntlrFacade {
-    // Mapping file names to SourceContext instances.
+    /** Mapping file names to SourceContext instances. */
     private sourceContexts: Map<string, IContextEntry> = new Map<string, IContextEntry>();
 
     public constructor(private importDir: string, private extensionDir: string) {
@@ -95,7 +95,7 @@ export class AntlrFacade {
                         fs.statSync(path.join(this.extensionDir, fileName));
                         source = fs.readFileSync(fileName, "utf8");
                     }
-                } catch (e) {
+                } catch {
                     source = "";
                 }
             }
@@ -406,7 +406,7 @@ export class AntlrFacade {
             contextEntry.dependencies.push(depPath);
 
             return this.loadGrammar(depPath);
-        } catch (e) {
+        } catch {
             // ignore
         }
 
@@ -418,7 +418,7 @@ export class AntlrFacade {
             contextEntry.dependencies.push(depPath);
 
             return this.loadGrammar(depPath);
-        } catch (e) {
+        } catch {
             // ignore
         }
 
@@ -429,7 +429,7 @@ export class AntlrFacade {
             contextEntry.dependencies.push(depPath);
 
             return this.loadGrammar(depPath);
-        } catch (e) {
+        } catch {
             // ignore
         }
 
@@ -439,7 +439,7 @@ export class AntlrFacade {
             contextEntry.dependencies.push(depPath);
 
             return this.loadGrammar(depPath);
-        } catch (e) {
+        } catch {
             // ignore
         }
 

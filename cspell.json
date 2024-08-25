@@ -94,6 +94,7 @@
     ],
     "ignoreWords": [
         "Dname",
+        "ERRCHAR",
         "antl",
         "atngraph",
         "baselistenerdeclarations",

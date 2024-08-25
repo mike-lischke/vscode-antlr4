@@ -8,13 +8,13 @@ import * as path from "path";
 
 import { ATNState } from "antlr4ng";
 
-import { window, workspace, Uri, TextEditor, Webview } from "vscode";
+import { TextEditor, Uri, Webview, window, workspace } from "vscode";
 
-import { WebviewProvider, IWebviewMessage } from "./WebviewProvider.js";
-import { FrontendUtils } from "../FrontendUtils.js";
 import {
     IATNGraphData, IATNGraphLayoutNode, IATNGraphRendererData, IATNStateSaveMessage,
 } from "../../webview-scripts/types.js";
+import { FrontendUtils } from "../FrontendUtils.js";
+import { IWebviewMessage, WebviewProvider } from "./WebviewProvider.js";
 
 interface IATNStatePosition {
     fx?: number;
@@ -51,7 +51,7 @@ export class ATNGraphProvider extends WebviewProvider {
             try {
                 const fileEntry = JSON.parse(data) as IATNStateMap;
                 ATNGraphProvider.cachedATNTransformations[hash] = fileEntry;
-            } catch (e) {
+            } catch {
                 // Ignore cache loading errors.
             }
         }
@@ -209,7 +209,7 @@ export class ATNGraphProvider extends WebviewProvider {
             try {
                 fs.writeFileSync(path.join(atnCachePath, hash + ".atn"), JSON.stringify(fileEntry),
                     { encoding: "utf-8" });
-            } catch (error) {
+            } catch {
                 void window.showErrorMessage(`Couldn't write ATN state data for: ${saveMessage.uri.fsPath} (${hash})`);
             }
 
@@ -301,7 +301,7 @@ export class ATNGraphProvider extends WebviewProvider {
                         }
                     }
                 }
-            } catch (e) {
+            } catch {
                 // Ignore errors.
             }
         }

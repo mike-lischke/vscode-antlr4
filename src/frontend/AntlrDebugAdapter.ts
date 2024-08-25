@@ -16,7 +16,6 @@ import { DebugProtocol } from "@vscode/debugprotocol";
 import { window, Uri, WorkspaceFolder } from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Subject } from "await-notify";
 
 import { CommonToken } from "antlr4ng";
 
@@ -24,6 +23,7 @@ import { GrammarDebugger, IGrammarBreakPoint } from "../backend/GrammarDebugger.
 import { ParseTreeProvider } from "./webviews/ParseTreeProvider.js";
 import { AntlrFacade } from "../backend/facade.js";
 import { IParseTreeNode } from "../types.js";
+import { Signal } from "./Signal.js";
 
 /**
  * Interface that reflects the arguments as specified in package.json.
@@ -59,7 +59,7 @@ export class AntlrDebugSession extends DebugSession {
 
     private debugger: GrammarDebugger | undefined;
     private parseTreeProvider?: ParseTreeProvider;
-    private configurationDone = new Subject();
+    private configurationDone = new Signal();
 
     private showTextualParseTree = false;
     private showGraphicalParseTree = false;
@@ -206,30 +206,36 @@ export class AntlrDebugSession extends DebugSession {
 
         // Need to wait here for the configuration to be done, which happens after break points are set.
         // This in turn is triggered by sending the InitializedEvent above.
-        this.configurationDone.wait(1000).then(() => {
-            this.showTextualParseTree = args.printParseTree ?? false;
-            this.showGraphicalParseTree = args.visualParseTree ?? false;
-            this.testInput = args.input;
+        void this.configurationDone.wait(1000).then((inTime: boolean) => {
+            if (inTime) {
+                this.showTextualParseTree = args.printParseTree ?? false;
+                this.showGraphicalParseTree = args.visualParseTree ?? false;
+                this.testInput = args.input;
 
-            try {
-                const testInput = fs.readFileSync(args.input, { encoding: "utf8" });
+                try {
+                    const testInput = fs.readFileSync(args.input, { encoding: "utf8" });
 
-                const startRuleIndex = args.startRule ? this.debugger!.ruleIndexFromName(args.startRule) : 0;
+                    const startRuleIndex = args.startRule ? this.debugger!.ruleIndexFromName(args.startRule) : 0;
 
-                if (startRuleIndex < 0) {
+                    if (startRuleIndex < 0) {
+                        this.sendErrorResponse(response, {
+                            id: 2,
+                            format: `Error while launching debug session: start rule "${args.startRule}" not found`,
+                        });
+
+                        return;
+                    }
+
+                    this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
+                } catch (e) {
+                    const message = e instanceof Error ? e.message : String(e);
                     this.sendErrorResponse(response, {
-                        id: 2,
-                        format: "Error while launching debug session: start rule \"" + args.startRule + "\" not found",
+                        id: 3,
+                        format: `Could not launch debug session:\n\n${message}`,
                     });
 
                     return;
                 }
-
-                this.debugger!.start(startRuleIndex, testInput, args.noDebug ? true : false);
-            } catch (e) {
-                this.sendErrorResponse(response, { id: 3, format: "Could not launch debug session:\n\n" + String(e) });
-
-                return;
             }
 
             this.sendResponse(response);

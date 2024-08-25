@@ -65,7 +65,7 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
 
     public override visitParserRuleSpec = (ctx: ParserRuleSpecContext): string => {
         this.#nestedCharLength = 0;
-        const ruleName = ctx.RULE_REF()!.getText();
+        const ruleName = ctx.RULE_REF().getText();
         if (ruleName === this.#requestedRuleName) {
             this.#done = true;
 
@@ -93,11 +93,11 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
     };
 
     public override visitLexerRuleSpec = (ctx: LexerRuleSpecContext): string => {
-        const ruleName = ctx.TOKEN_REF()!.getText();
+        const ruleName = ctx.TOKEN_REF().getText();
         if (ruleName === this.#requestedRuleName) {
             this.#done = true;
 
-            return "new Diagram(" + this.visitLexerAltList(ctx.lexerRuleBlock()!.lexerAltList()) + ")";
+            return "new Diagram(" + this.visitLexerAltList(ctx.lexerRuleBlock().lexerAltList()) + ")";
         }
 
         return "";
@@ -266,9 +266,9 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
 
         if (ctx.blockSuffix()) {
             return this.visitEbnfSuffix(ctx.blockSuffix()!.ebnfSuffix()) + "(" +
-                this.visitAltList(ctx.block()!.altList()) + ")";
+                this.visitAltList(ctx.block().altList()) + ")";
         } else {
-            return this.visitAltList(ctx.block()!.altList());
+            return this.visitAltList(ctx.block().altList());
         }
     };
 
@@ -313,7 +313,7 @@ export class SVGGenerator extends ANTLRv4ParserVisitor<string> {
         if (ctx.terminalDef()) {
             return this.visitTerminalDef(ctx.terminalDef()!);
         } else if (ctx.ruleref()) {
-            return this.visitTerminal(ctx.ruleref()!.RULE_REF()!);
+            return this.visitTerminal(ctx.ruleref()!.RULE_REF());
         } else if (ctx.notSet()) {
             return this.visitNotSet(ctx.notSet()!);
         }

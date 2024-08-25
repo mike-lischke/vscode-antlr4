@@ -11,9 +11,15 @@ import {
 
 import { TerminalDefContext } from "../parser/ANTLRv4Parser.js";
 import {
-    ParserPredicateSymbol, ContextSymbolTable, RuleReferenceSymbol, RuleSymbol, EbnfSuffixSymbol, ParserActionSymbol,
-    LexerActionSymbol, LexerPredicateSymbol,
+    ContextSymbolTable,
 } from "./ContextSymbolTable.js";
+import { LexerPredicateSymbol } from "./parser-symbols/LexerPredicateSymbol.js";
+import { ParserPredicateSymbol } from "./parser-symbols/ParserPredicateSymbol.js";
+import { LexerActionSymbol } from "./parser-symbols/LexerActionSymbol.js";
+import { ParserActionSymbol } from "./parser-symbols/ParserActionSymbol.js";
+import { EbnfSuffixSymbol } from "./parser-symbols/EbnfSuffixSymbol.js";
+import { RuleReferenceSymbol } from "./parser-symbols/RuleReferenceSymbol.js";
+import { RuleSymbol } from "./parser-symbols/RuleSymbol.js";
 
 import { IInterpreterData } from "./InterpreterDataReader.js";
 import { SourceContext } from "./SourceContext.js";

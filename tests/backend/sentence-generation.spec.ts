@@ -114,7 +114,7 @@ xdescribe("Sentence Generation", () => {
             const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
             try {
                 expect(error).toHaveLength(0);
-            } catch (e) {
+            } catch {
                 //
             }
         };

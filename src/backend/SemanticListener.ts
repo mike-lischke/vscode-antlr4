@@ -92,7 +92,7 @@ export class SemanticListener extends ANTLRv4ParserListener {
      * @param ctx The lexer rule context.
      */
     public override exitLexerRuleSpec = (ctx: LexerRuleSpecContext): void => {
-        const tokenRef = ctx.TOKEN_REF()!;
+        const tokenRef = ctx.TOKEN_REF();
         const name = tokenRef.getText();
 
         // The symbol table already contains an entry for this symbol. So we can only partially use that
@@ -113,7 +113,7 @@ export class SemanticListener extends ANTLRv4ParserListener {
      */
     public override exitParserRuleSpec = (ctx: ParserRuleSpecContext): void => {
         // Same processing here as for lexer rules.
-        const ruleRef = ctx.RULE_REF()!;
+        const ruleRef = ctx.RULE_REF();
         const name = ruleRef.getText();
         const seenSymbol = this.seenSymbols.get(name);
         if (seenSymbol) {

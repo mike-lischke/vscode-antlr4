@@ -3,13 +3,13 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-import { TreeItem, TextEditor, TreeView, ProviderResult } from "vscode";
+import { ProviderResult, TextEditor, TreeItem, TreeView } from "vscode";
 
-import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
 import { CodeActionType } from "../types.js";
-import { FrontendUtils } from "./FrontendUtils.js";
-import { ActionsRootEntry } from "./ActionsRootEntry.js";
 import { ActionChildEntry } from "./ActionChildEntry.js";
+import { ActionsRootEntry } from "./ActionsRootEntry.js";
+import { AntlrTreeDataProvider } from "./AntlrTreeDataProvider.js";
+import { FrontendUtils } from "./FrontendUtils.js";
 
 export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
@@ -171,7 +171,8 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
                 resolve(list);
             } catch (e) {
-                reject(e);
+                const message = e instanceof Error ? e.message : String(e);
+                reject(new Error(message));
             }
         });
     }
@@ -244,7 +245,8 @@ export class ActionsProvider extends AntlrTreeDataProvider<TreeItem> {
 
                 resolve(rootList);
             } catch (e) {
-                reject(e);
+                const message = e instanceof Error ? e.message : String(e);
+                reject(new Error(message));
             }
         });
     }
