@@ -7,7 +7,7 @@
         "color": "#2789e1",
         "theme": "dark"
     },
-    "version": "2.4.6",
+    "version": "2.4.7",
     "publisher": "mike-lischke",
     "license": "SEE LICENSE IN License.txt",
     "repository": {
@@ -19,7 +19,7 @@
     },
     "homepage": "http://www.soft-gems.net",
     "engines": {
-        "vscode": "^1.75.0"
+        "vscode": "^1.92.0"
     },
     "categories": [
         "Programming Languages",
