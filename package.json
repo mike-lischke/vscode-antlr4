@@ -597,7 +597,7 @@
     "dependencies": {
         "@unicode/unicode-15.1.0": "1.5.2",
         "@vscode/debugadapter": "1.66.0",
-        "@vscode/debugprotocol": "1.66.0",
+        "@vscode/debugprotocol": "1.67.0",
         "antlr-format": "2.1.5",
         "antlr4-c3": "3.4.1",
         "antlr4ng": "3.0.4",
