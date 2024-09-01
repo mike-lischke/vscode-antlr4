@@ -2,7 +2,7 @@
     "name": "vscode-antlr4",
     "displayName": "ANTLR4 grammar syntax support",
     "description": "Language support for ANTLR4 grammar files",
-    "icon": "misc/antlr-logo.png",
+    "icon": "misc/ANTLRng2.png",
     "galleryBanner": {
         "color": "#2789e1",
         "theme": "dark"
