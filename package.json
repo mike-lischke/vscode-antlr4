@@ -611,7 +611,7 @@
         "@types/jest": "29.5.12",
         "@types/node": "22.5.0",
         "@types/vscode": "1.92.0",
-        "@typescript-eslint/eslint-plugin": "8.2.0",
+        "@typescript-eslint/eslint-plugin": "8.3.0",
         "@typescript-eslint/eslint-plugin-tslint": "7.0.2",
         "@typescript-eslint/parser": "8.2.0",
         "antlr4ng-cli": "2.0.0",
