@@ -383,7 +383,7 @@ export class AntlrDebugSession extends DebugSession {
                         variablesReference: 0,
                     });
                     variables.push({
-                        name: "Input Tokens",
+                        name: `Input Tokens`,
                         value: (this.tokens.length - this.debugger.currentTokenIndex).toString(),
                         variablesReference: VarRef.Tokens,
                         indexedVariables: this.tokens.length - this.debugger.currentTokenIndex,
@@ -403,11 +403,12 @@ export class AntlrDebugSession extends DebugSession {
                     const length = args.count ? args.count : this.tokens.length;
                     for (let i = 0; i < length; ++i) {
                         const index = start + i;
+                        const variableReference = VarRef.Tokens + index + 1
                         variables.push({
                             name: `${index}: ${this.debugger.tokenTypeName(this.tokens[index])}`,
                             type: "Token",
-                            value: "",
-                            variablesReference: VarRef.Tokens + index,
+                            value: (variableReference).toString(),
+                            variablesReference: variableReference,
                             presentationHint: { kind: "class", attributes: ["readonly"] },
                         });
                     }
@@ -418,7 +419,7 @@ export class AntlrDebugSession extends DebugSession {
 
             default: {
                 if (args.variablesReference >= VarRef.Tokens && this.tokens) {
-                    const tokenIndex = args.variablesReference % VarRef.Tokens;
+                    const tokenIndex = args.variablesReference % VarRef.Tokens - 1;
                     if (tokenIndex >= 0 && tokenIndex < this.tokens.length) {
                         const token = this.tokens[tokenIndex];
                         variables.push({
