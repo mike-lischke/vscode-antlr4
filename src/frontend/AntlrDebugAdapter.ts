@@ -403,12 +403,11 @@ export class AntlrDebugSession extends DebugSession {
                     const length = args.count ? args.count : this.tokens.length;
                     for (let i = 0; i < length; ++i) {
                         const index = start + i;
-                        const variableReference = VarRef.Tokens + index + 1
                         variables.push({
                             name: `${index}: ${this.debugger.tokenTypeName(this.tokens[index])}`,
                             type: "Token",
                             value: "",
-                            variablesReference: variableReference,
+                            variablesReference: VarRef.Tokens + index + 1,
                             presentationHint: { kind: "class", attributes: ["readonly"] },
                         });
                     }
