@@ -764,7 +764,7 @@ export class SourceContext implements ISourceContext {
         this.grammarLexerData = undefined;
         this.grammarLexerRuleMap.clear();
         this.grammarParserData = undefined;
-        this.grammarLexerRuleMap.clear();
+        this.grammarParserRuleMap.clear();
 
         this.semanticAnalysisDone = false;
         this.diagnostics.length = 0;
