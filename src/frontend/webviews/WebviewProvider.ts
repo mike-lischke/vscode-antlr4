@@ -86,7 +86,7 @@ export class WebviewProvider {
                         let cssText = `<defs><style type="text/css"><![CDATA[\n`;
                         for (const stylesheet of css) {
                             const styles = FrontendUtils.readFile(stylesheet);
-                            cssText += this.extractRRDStyles(styles) + "\n";
+                            cssText += styles + "\n";
                         }
                         cssText += ` ]]>\n</style></defs></svg>`;
 
@@ -139,7 +139,7 @@ export class WebviewProvider {
                                 let cssText = `<defs><style type="text/css"><![CDATA[\n`;
                                 for (const stylesheet of css) {
                                     const styles = FrontendUtils.readFile(stylesheet);
-                                    cssText += this.extractRRDStyles(styles) + "\n";
+                                    cssText += styles + "\n";
                                 }
                                 cssText += ` ]]>\n</style></defs></svg>`;
 
@@ -278,22 +278,5 @@ export class WebviewProvider {
 
     protected generateNonce(): string {
         return `${new Date().getTime()}${new Date().getMilliseconds()}`;
-    }
-
-    /**
-     * Helper method to extract and minify the style sheet content from a given text.
-     *
-     * @param text The text to extract the style sheet from.
-     *
-     * @returns The extracted style sheet.
-     */
-    private extractRRDStyles(text: string): string {
-        const first = text.indexOf("svg.railroad-diagram");
-        let last = text.lastIndexOf("svg.railroad-diagram");
-        last = text.lastIndexOf("}", last);
-
-        const result = text.substring(first, last + 1);
-
-        return result.replace(/\n/g, "").replace(/\s\s+/g, " ");
     }
 }

@@ -10,7 +10,7 @@ declare const acquireVsCodeApi: () => IVSCode;
 export const vscode = acquireVsCodeApi();
 
 /** These values directly correspond to the settings section names containing a "saveDir" entry. */
-export type GraphType = "rrd" | "atn" | "call-graph";
+export type GraphType = "rrd" | "atn" | "call-graph" | "parse-tree";
 
 export class GraphExport {
     /**
