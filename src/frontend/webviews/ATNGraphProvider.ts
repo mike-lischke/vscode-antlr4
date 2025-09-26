@@ -86,7 +86,7 @@ export class ATNGraphProvider extends WebviewProvider {
                 <body>
                     <div class="header">
                         <span class="graphTitle atn-graph-color">ATN</span>
-                        <div class="saveSVGButton" onClick="graphExport.exportToSVG('rrd', '${name}');"
+                        <div class="saveSVGButton" onClick="graphExport.exportToSVG('atn', '${name}');"
                             title="Save this diagram to an SVG file"
                         ></div>
                         <div onClick="atnGraphRenderer.resetTransformation();"
