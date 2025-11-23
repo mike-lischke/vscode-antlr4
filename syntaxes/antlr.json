@@ -183,7 +183,7 @@
                 },
                 {
                     "name": "variable.other.antlr",
-                    "match": "\\w+\\s*="
+                    "match": "\\w+\\s*\\+?="
                 },
                 {
                     "name": "entity.name.tag.antlr",
