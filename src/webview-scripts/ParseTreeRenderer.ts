@@ -192,7 +192,7 @@ export class ParseTreeRenderer {
 
         const switch2 = document.getElementById("switch2") as HTMLInputElement;
         if (switch2) {
-            switch2.checked = !this.data?.horizontal ?? true;
+            switch2.checked = !(this.data?.horizontal ?? false);
         }
     }
 

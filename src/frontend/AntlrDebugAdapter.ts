@@ -3,9 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-// Have to disable these rules here for the await-notify functionality.
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import {
     DebugSession, InitializedEvent, Thread, Scope, Source, OutputEvent,
@@ -250,7 +247,7 @@ export class AntlrDebugSession extends DebugSession {
                 const actualBreakpoints = args.breakpoints.map((sourceBreakPoint) => {
                     const { validated, line, id } = this.debugger!.addBreakPoint(args.source.path!,
                         this.convertDebuggerLineToClient(sourceBreakPoint.line));
-                    const targetBreakPoint = <DebugProtocol.Breakpoint>new Breakpoint(validated,
+                    const targetBreakPoint = <DebugProtocol.Breakpoint> new Breakpoint(validated,
                         this.convertClientLineToDebugger(line));
                     targetBreakPoint.id = id;
 

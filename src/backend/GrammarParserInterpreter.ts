@@ -25,7 +25,6 @@ import { IInterpreterData } from "./InterpreterDataReader.js";
 import { SourceContext } from "./SourceContext.js";
 import { PredicateFunction } from "../types.js";
 
-/* eslint-disable no-underscore-dangle */
 
 export enum RunMode {
     Normal,
@@ -83,7 +82,6 @@ export class GrammarParserInterpreter extends ParserInterpreter {
         return this.rootContext;
     }
 
-    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Resume parsing from the current ATN state until the end or we hit a breakpoint.
      *

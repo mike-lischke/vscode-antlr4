@@ -474,7 +474,6 @@ export class ContextSymbolTable extends SymbolTable {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private symbolsOfType<T extends BaseSymbol, Args extends unknown[]>(t: SymbolConstructor<T, Args>,
         localOnly = false): ISymbolInfo[] {
         const result: ISymbolInfo[] = [];

@@ -235,7 +235,7 @@ export class FrontendUtils {
      *
      * @returns True if this is indeed a grammar file.
      */
-    public static isGrammarFile(document?: TextDocument | undefined): boolean {
+    public static isGrammarFile(document?: TextDocument): boolean {
         return document ? (document.languageId === "antlr" && document.uri.scheme === "file") : false;
     }
 

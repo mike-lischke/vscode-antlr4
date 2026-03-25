@@ -12,7 +12,6 @@ export class ContextErrorListener extends BaseErrorListener {
         super();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public override syntaxError<S extends Token, T extends ATNSimulator>(recognizer: Recognizer<T>,
         offendingSymbol: S | null, line: number, column: number, msg: string, _e: RecognitionException | null): void {
         const error: IDiagnosticEntry = {

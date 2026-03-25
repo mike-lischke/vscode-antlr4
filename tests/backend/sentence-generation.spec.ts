@@ -110,8 +110,7 @@ xdescribe("Sentence Generation", () => {
         const tester = (token: string, sentence: string) => {
             // console.log(token + ": " + sentence);
             expect(sentence.length).toBeGreaterThan(0);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [_, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
+            const [, error] = backend.lexTestInput("grammars/ANTLRv4Lexer.g4", sentence);
             try {
                 expect(error).toHaveLength(0);
             } catch {
