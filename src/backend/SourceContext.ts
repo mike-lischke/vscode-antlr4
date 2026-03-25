@@ -85,7 +85,6 @@ export class SourceContext implements ISourceContext {
     /* @internal */
     public diagnostics: IDiagnosticEntry[] = [];
 
-    // eslint-disable-next-line no-use-before-define
     private references: SourceContext[] = []; // Contexts referencing us.
 
     // Result related fields.
@@ -1080,7 +1079,7 @@ export class SourceContext implements ISourceContext {
         const spawnOptions = { cwd: options.baseDir ? options.baseDir : undefined };
 
         const errorParser = new ErrorParser(dependencies);
-        for await (const dependency of dependencies) {
+        for (const dependency of dependencies) {
             fileList.push(dependency.fileName);
 
             const actualParameters = [...parameters, dependency.fileName];

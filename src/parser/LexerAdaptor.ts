@@ -5,7 +5,7 @@
  * See LICENSE file for more info.
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-underscore-dangle */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 import { CharStream, Lexer, Token } from "antlr4ng";
 
@@ -19,7 +19,6 @@ export abstract class LexerAdaptor extends Lexer {
     static #OPTIONS_CONSTRUCT = -11;
 
     #currentRuleType: number = Token.INVALID_TYPE;
-    #insideOptionsBlock: boolean = false;
 
     public constructor(input: CharStream) {
         super(input);
@@ -37,12 +36,10 @@ export abstract class LexerAdaptor extends Lexer {
          * Char sets can only occur in lexical rules and arg actions cannot occur.
          */
         this.#currentRuleType = Token.INVALID_TYPE;
-        this.#insideOptionsBlock = false;
     }
 
     public override reset(): void {
         this.#currentRuleType = Token.INVALID_TYPE;
-        this.#insideOptionsBlock = false;
         super.reset();
     }
 

@@ -15,6 +15,7 @@ export default tseslint.config(
             "jest.config.ts",
             "out/**",
             "eslint.config.js",
+            "misc/railroad-diagrams.js",
         ],
     },
 

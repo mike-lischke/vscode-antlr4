@@ -351,7 +351,7 @@ export interface IFormattingOptions {
     breakBeforeParens?: boolean;
 
     /**
-     * Place rule internals (return value, local variables, @init, @after) all on a single line, if true.
+     * Place rule internals (return value, local variables, `@init`, `@after`) all on a single line, if true.
      * Default: false.
      */
     ruleInternalsOnSingleLine?: boolean;

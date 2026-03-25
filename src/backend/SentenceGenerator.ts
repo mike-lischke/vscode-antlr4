@@ -76,7 +76,6 @@ export class SentenceGenerator {
             runPredicate;
             `;
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             this.runPredicate = vm.runInNewContext(code) as PredicateFunction;
         }
     }

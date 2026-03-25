@@ -48,7 +48,7 @@ export class AntlrFacade {
         };
     }
 
-    public getContext(fileName: string, source?: string | undefined): SourceContext {
+    public getContext(fileName: string, source?: string): SourceContext {
         const contextEntry = this.sourceContexts.get(fileName);
         if (!contextEntry) {
             return this.loadGrammar(fileName, source);
